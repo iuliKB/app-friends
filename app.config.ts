@@ -18,7 +18,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/images/adaptive-icon.png',
+      foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundColor: '#ff6b35',
     },
     package: 'com.campfire.app',

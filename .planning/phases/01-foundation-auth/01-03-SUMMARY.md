@@ -92,7 +92,7 @@ Each task was committed atomically:
 1. **Task 1: Create reusable UI components and utility modules** - `4b585ce` (feat)
 2. **Task 2: Build 5-tab navigation shell with tab stubs, Squad Coming Soon, and Profile with logout** - `e43c049` (feat)
 
-**Plan metadata:** (docs commit will follow)
+**Plan metadata:** `1bd7e76` (docs: complete plan)
 
 ## Files Created/Modified
 
