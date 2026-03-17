@@ -137,67 +137,67 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| AUTH-05 | — | Pending |
-| PROF-01 | — | Pending |
-| PROF-02 | — | Pending |
-| PROF-03 | — | Pending |
-| PROF-04 | — | Pending |
-| FRND-01 | — | Pending |
-| FRND-02 | — | Pending |
-| FRND-03 | — | Pending |
-| FRND-04 | — | Pending |
-| FRND-05 | — | Pending |
-| FRND-06 | — | Pending |
-| FRND-07 | — | Pending |
-| STAT-01 | — | Pending |
-| STAT-02 | — | Pending |
-| STAT-03 | — | Pending |
-| STAT-04 | — | Pending |
-| HOME-01 | — | Pending |
-| HOME-02 | — | Pending |
-| HOME-03 | — | Pending |
-| HOME-04 | — | Pending |
-| HOME-05 | — | Pending |
-| PLAN-01 | — | Pending |
-| PLAN-02 | — | Pending |
-| PLAN-03 | — | Pending |
-| PLAN-04 | — | Pending |
-| PLAN-05 | — | Pending |
-| PLAN-06 | — | Pending |
-| PLAN-07 | — | Pending |
-| PLAN-08 | — | Pending |
-| PLAN-09 | — | Pending |
-| CHAT-01 | — | Pending |
-| CHAT-02 | — | Pending |
-| CHAT-03 | — | Pending |
-| CHAT-04 | — | Pending |
-| CHAT-05 | — | Pending |
-| CHAT-06 | — | Pending |
-| CHAT-07 | — | Pending |
-| NOTF-01 | — | Pending |
-| NOTF-02 | — | Pending |
-| NAV-01 | — | Pending |
-| NAV-02 | — | Pending |
-| INFR-01 | — | Pending |
-| INFR-02 | — | Pending |
-| INFR-03 | — | Pending |
-| INFR-04 | — | Pending |
-| INFR-05 | — | Pending |
-| INFR-06 | — | Pending |
-| UIPOL-01 | — | Pending |
-| UIPOL-02 | — | Pending |
-| UIPOL-03 | — | Pending |
-| UIPOL-04 | — | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Pending |
+| PROF-01 | Phase 1 | Pending |
+| PROF-02 | Phase 1 | Pending |
+| PROF-03 | Phase 6 | Pending |
+| PROF-04 | Phase 6 | Pending |
+| FRND-01 | Phase 2 | Pending |
+| FRND-02 | Phase 2 | Pending |
+| FRND-03 | Phase 2 | Pending |
+| FRND-04 | Phase 2 | Pending |
+| FRND-05 | Phase 2 | Pending |
+| FRND-06 | Phase 2 | Pending |
+| FRND-07 | Phase 2 | Pending |
+| STAT-01 | Phase 2 | Pending |
+| STAT-02 | Phase 2 | Pending |
+| STAT-03 | Phase 2 | Pending |
+| STAT-04 | Phase 2 | Pending |
+| HOME-01 | Phase 3 | Pending |
+| HOME-02 | Phase 3 | Pending |
+| HOME-03 | Phase 3 | Pending |
+| HOME-04 | Phase 3 | Pending |
+| HOME-05 | Phase 3 | Pending |
+| PLAN-01 | Phase 4 | Pending |
+| PLAN-02 | Phase 4 | Pending |
+| PLAN-03 | Phase 4 | Pending |
+| PLAN-04 | Phase 4 | Pending |
+| PLAN-05 | Phase 4 | Pending |
+| PLAN-06 | Phase 4 | Pending |
+| PLAN-07 | Phase 4 | Pending |
+| PLAN-08 | Phase 4 | Pending |
+| PLAN-09 | Phase 4 | Pending |
+| CHAT-01 | Phase 5 | Pending |
+| CHAT-02 | Phase 5 | Pending |
+| CHAT-03 | Phase 5 | Pending |
+| CHAT-04 | Phase 5 | Pending |
+| CHAT-05 | Phase 5 | Pending |
+| CHAT-06 | Phase 5 | Pending |
+| CHAT-07 | Phase 5 | Pending |
+| NOTF-01 | Phase 6 | Pending |
+| NOTF-02 | Phase 6 | Pending |
+| NAV-01 | Phase 1 | Pending |
+| NAV-02 | Phase 1 | Pending |
+| INFR-01 | Phase 1 | Pending |
+| INFR-02 | Phase 1 | Pending |
+| INFR-03 | Phase 1 | Pending |
+| INFR-04 | Phase 1 | Pending |
+| INFR-05 | Phase 1 | Pending |
+| INFR-06 | Phase 1 | Pending |
+| UIPOL-01 | Phase 6 | Pending |
+| UIPOL-02 | Phase 6 | Pending |
+| UIPOL-03 | Phase 6 | Pending |
+| UIPOL-04 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 50 total
-- Mapped to phases: 0
-- Unmapped: 50 ⚠️
+- v1 requirements: 55 total
+- Mapped to phases: 55
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-17 after initial definition*
+*Last updated: 2026-03-17 after roadmap creation — all 55 requirements mapped*
