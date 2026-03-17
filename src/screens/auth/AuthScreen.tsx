@@ -126,9 +126,13 @@ export default function AuthScreen() {
       }
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
       if (result.type === 'success' && result.url) {
+        // Supabase returns tokens as URL fragments (#access_token=...), not query params
         const url = new URL(result.url);
-        const accessToken = url.searchParams.get('access_token');
-        const refreshToken = url.searchParams.get('refresh_token');
+        const params = new URLSearchParams(
+          url.hash.startsWith('#') ? url.hash.substring(1) : url.search.substring(1),
+        );
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
         if (accessToken && refreshToken) {
           await supabase.auth.setSession({
             access_token: accessToken,

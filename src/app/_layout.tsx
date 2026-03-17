@@ -86,7 +86,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
         </Stack.Protected>
         <Stack.Protected guard={!!session && needsProfileSetup}>
-          <Stack.Screen name="(auth)/profile-setup" />
+          <Stack.Screen name="profile-setup" />
         </Stack.Protected>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="(auth)" />
