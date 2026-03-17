@@ -294,18 +294,18 @@ export type Database = {
       };
       get_friends: {
         Args: Record<string, never>;
-        Returns: Array<{
+        Returns: {
           friend_id: string;
           username: string | null;
           display_name: string;
           avatar_url: string | null;
           friendship_status: Database['public']['Enums']['friendship_status'];
           created_at: string;
-        }>;
+        }[];
       };
       get_free_friends: {
         Args: Record<string, never>;
-        Returns: Array<{
+        Returns: {
           friend_id: string;
           username: string | null;
           display_name: string;
@@ -313,7 +313,7 @@ export type Database = {
           status: Database['public']['Enums']['availability_status'];
           context_tag: string | null;
           status_updated_at: string;
-        }>;
+        }[];
       };
       get_or_create_dm_channel: {
         Args: {
@@ -336,8 +336,7 @@ export type TablesInsert<T extends keyof Database['public']['Tables']> =
 export type TablesUpdate<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Update'];
 
-export type Enums<T extends keyof Database['public']['Enums']> =
-  Database['public']['Enums'][T];
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T];
 
 // Row type aliases for common use
 export type Profile = Tables<'profiles'>;
