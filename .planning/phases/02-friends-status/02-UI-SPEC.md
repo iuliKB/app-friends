@@ -132,8 +132,8 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 | Item separator | 1px solid #3f3f46 |
 | Friend card height | min 64px |
 | Card paddingHorizontal | 16px (md) |
-| Card paddingVertical | 12px |
-| Avatar | AvatarCircle 40px diameter, marginRight: 12px |
+| Card paddingVertical | 16px (md) |
+| Avatar | AvatarCircle 40px diameter, marginRight: 16 (md) |
 | Display name | Body (16px/400), color #f5f5f5 |
 | Username | "@username" — Label (14px/400), color #9ca3af, marginTop: 4 (xs) |
 | Status pill | Right-aligned; height 24px, paddingHorizontal: 8 (sm), borderRadius 12; background = status colour; text = status label ("Free"/"Busy"/"Maybe") in Label (14px/600), color #1a1a1a |
@@ -175,10 +175,10 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 | Sheet borderRadius | 16px top-left and top-right; 0 bottom |
 | Sheet padding | paddingTop: 8, paddingBottom: safe area + 8 |
 | Drag handle | 4px × 40px rounded rect, background #3f3f46, centered, marginBottom: 8 |
-| Friend header | AvatarCircle 48px + display name Body (16px/600) #f5f5f5 + "@username" Label (14px/400) #9ca3af; paddingHorizontal: 16, paddingVertical: 12; border-bottom: 1px solid #3f3f46 |
+| Friend header | AvatarCircle 48px + display name Body (16px/600) #f5f5f5 + "@username" Label (14px/400) #9ca3af; paddingHorizontal: 16, paddingVertical: 16; border-bottom: 1px solid #3f3f46 |
 | Action row height | 52px |
 | Action row padding | paddingHorizontal: 16 |
-| Action icon | 22px Ionicons, marginRight: 12 |
+| Action icon | 22px Ionicons, marginRight: 16 (md) |
 | "View profile" row | `person-outline` icon #9ca3af + "View profile" Body (16px/400) #f5f5f5 |
 | "Start DM" row | `chatbubble-outline` icon #9ca3af + "Start DM" Body (16px/400) #f5f5f5 |
 | "Remove friend" row | `person-remove-outline` icon #ef4444 + "Remove friend" Body (16px/400) #ef4444 |
@@ -211,8 +211,8 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 | Element | Specification |
 |---------|---------------|
 | Card paddingHorizontal | 16px |
-| Card paddingVertical | 12px |
-| Avatar | AvatarCircle 44px, marginRight: 12 |
+| Card paddingVertical | 16px (md) |
+| Avatar | AvatarCircle 44px, marginRight: 16 (md) |
 | Display name | Body (16px/600), color #f5f5f5 |
 | Username | "@username" — Label (14px/400), color #9ca3af, marginTop: 4 (xs) |
 | Timestamp | "2 hours ago" style — Label (14px/400), color #9ca3af, right-aligned, vertically centered |
