@@ -1,16 +1,118 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import React from 'react';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { useEffect, useState } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { OfflineBanner } from '@/components/common/OfflineBanner';
+import { COLORS } from '@/constants/colors';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
+  const { session, setSession, setLoading, needsProfileSetup, setNeedsProfileSetup } =
+    useAuthStore();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+      setSession(s);
+
+      if (s) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', s.user.id)
+          .maybeSingle();
+
+        if (!profile?.username) {
+          setNeedsProfileSetup(true);
+        }
+      }
+
+      setReady(true);
+      setLoading(false);
+      SplashScreen.hideAsync();
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, s) => {
+      setSession(s);
+
+      if (event === 'SIGNED_IN' && s) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', s.user.id)
+          .maybeSingle();
+
+        if (!profile?.username) {
+          setNeedsProfileSetup(true);
+        } else {
+          setNeedsProfileSetup(false);
+        }
+      }
+
+      if (event === 'SIGNED_OUT') {
+        setNeedsProfileSetup(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setSession, setLoading, setNeedsProfileSetup]);
+
+  if (!ready) {
+    return (
+      <LinearGradient
+        colors={[COLORS.splashGradientStart, COLORS.splashGradientEnd]}
+        style={styles.splash}
+      >
+        <Text style={styles.splashEmoji}>🔥</Text>
+        <Text style={styles.splashTitle}>Campfire</Text>
+        <ActivityIndicator color={COLORS.splashText} style={styles.splashLoader} />
+      </LinearGradient>
+    );
+  }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <View style={{ flex: 1, backgroundColor: COLORS.dominant }}>
+      <OfflineBanner />
+      <Stack
+        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.dominant } }}
+      >
+        <Stack.Protected guard={!!session && !needsProfileSetup}>
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+        <Stack.Protected guard={!!session && needsProfileSetup}>
+          <Stack.Screen name="(auth)/profile-setup" />
+        </Stack.Protected>
+        <Stack.Protected guard={!session}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
+      </Stack>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  splash: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  splashEmoji: {
+    fontSize: 64,
+    marginBottom: 8,
+  },
+  splashTitle: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: COLORS.splashText,
+    marginBottom: 48,
+  },
+  splashLoader: {
+    marginTop: 0,
+  },
+});
