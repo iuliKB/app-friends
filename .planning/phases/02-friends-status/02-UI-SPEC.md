@@ -51,18 +51,20 @@ Exceptions:
 
 ## Typography
 
-Inherited from Phase 1 — Phase 2 uses 3 of the 4 declared sizes:
+Inherited from Phase 1 — Phase 2 uses all 4 declared sizes:
 
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 |
 | Label | 14px | 400 (regular) | 1.4 |
 | Heading | 20px | 600 (semibold) | 1.2 |
+| Badge | 12px | 600 (semibold) | 1.2 |
 
 **Phase 2 usage notes:**
 - Heading (20px/600): Screen titles ("Friends", "Add Friend", "Friend Requests", "My QR Code")
 - Body (16px/400): Display names in friend cards, search input text, bottom sheet action labels, QR hint text
 - Label (14px/400): Usernames below display names, status pill text, "Pending" button text, empty state body copy, emoji picker section label, section headers in Profile tab rows; segmented control labels (both inactive 14px/400 and active 14px/600)
+- Badge (12px/600): Notification count badges in header and profile rows, count pills
 
 **Weights in use:** 400 (regular) and 600 (semibold) only.
 
@@ -121,7 +123,7 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 |---------|---------------|
 | Screen title | "Friends" — Heading (20px/600), color #f5f5f5 |
 | Navigation bar | Standard Expo Router stack header, background #1a1a1a, title centered |
-| Request badge button | `notifications-outline` icon (Ionicons) 24px, color #f97316 with numeric badge overlay; placed in header right; badge: #ef4444 background, #f5f5f5 text, 16px diameter minimum, Label (12px/600); hidden when count = 0; `accessibilityLabel="Friend requests"` |
+| Request badge button | `notifications-outline` icon (Ionicons) 24px, color #f97316 with numeric badge overlay; placed in header right; badge: #ef4444 background, #f5f5f5 text, 16px diameter minimum, Badge (12px/600); hidden when count = 0; `accessibilityLabel="Friend requests"` |
 
 #### Friend List (FlatList)
 | Element | Specification |
@@ -133,8 +135,8 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 | Card paddingVertical | 12px |
 | Avatar | AvatarCircle 40px diameter, marginRight: 12px |
 | Display name | Body (16px/400), color #f5f5f5 |
-| Username | "@username" — Label (14px/400), color #9ca3af, 2px below display name |
-| Status pill | Right-aligned; height 24px, paddingHorizontal 10px, borderRadius 12; background = status colour; text = status label ("Free"/"Busy"/"Maybe") in Label (14px/600), color #1a1a1a |
+| Username | "@username" — Label (14px/400), color #9ca3af, marginTop: 4 (xs) |
+| Status pill | Right-aligned; height 24px, paddingHorizontal: 8 (sm), borderRadius 12; background = status colour; text = status label ("Free"/"Busy"/"Maybe") in Label (14px/600), color #1a1a1a |
 | Tap action | Opens FriendActionSheet (bottom sheet) |
 
 **Sort order:** Free friends first → Busy → Maybe; alphabetical by display name within each group. Source: CONTEXT.md.
@@ -212,11 +214,11 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 | Card paddingVertical | 12px |
 | Avatar | AvatarCircle 44px, marginRight: 12 |
 | Display name | Body (16px/600), color #f5f5f5 |
-| Username | "@username" — Label (14px/400), color #9ca3af, 2px below display name |
+| Username | "@username" — Label (14px/400), color #9ca3af, marginTop: 4 (xs) |
 | Timestamp | "2 hours ago" style — Label (14px/400), color #9ca3af, right-aligned, vertically centered |
-| Accept button | Height 36px, paddingHorizontal: 16, borderRadius: 8, background #f97316 (accent), label "Accept" Label (14px/600) color #1a1a1a |
-| Reject button | Height 36px, paddingHorizontal: 16, borderRadius: 8, background transparent, border 1px solid #3f3f46, label "Decline" Label (14px/400) color #9ca3af |
-| Button row | marginTop: 10, flexDirection row, gap: 8 |
+| Accept button | Height 36px, paddingHorizontal: 16, borderRadius: 8, background #f97316 (accent), label "Accept Request" Label (14px/600) color #1a1a1a |
+| Reject button | Height 36px, paddingHorizontal: 16, borderRadius: 8, background transparent, border 1px solid #3f3f46, label "Decline Request" Label (14px/400) color #9ca3af |
+| Button row | marginTop: 8 (sm), flexDirection row, gap: 8 |
 | Loading state | Both buttons replaced with ActivityIndicator (color #9ca3af) while request is processing |
 | Item separator | 1px solid #3f3f46 |
 
@@ -348,8 +350,8 @@ New rows to add to the existing Profile tab settings list:
 
 **Count badge style (for My Friends N and Friend Requests N):**
 - Pill shape: paddingHorizontal 8, paddingVertical 2, borderRadius 10, min width 20
-- My Friends count: background #3f3f46, text Label (12px/600) #9ca3af
-- Friend Requests count: background #ef4444 (if > 0), text Label (12px/600) #f5f5f5; hidden (renders as #3f3f46 with #9ca3af text) if count = 0
+- My Friends count: background #3f3f46, text Badge (12px/600) #9ca3af
+- Friend Requests count: background #ef4444 (if > 0), text Badge (12px/600) #f5f5f5; hidden (renders as #3f3f46 with #9ca3af text) if count = 0
 
 **Row styling (consistent with existing profile rows):**
 - Height: 52px minimum
@@ -364,11 +366,11 @@ New rows to add to the existing Profile tab settings list:
 | Element | Copy |
 |---------|------|
 | Primary CTA — Add Friend (search result) | "Add Friend" |
-| Primary CTA — Accept request | "Accept" |
+| Primary CTA — Accept request | "Accept Request" |
 | Primary CTA — Remove friend confirmation | "Remove" |
 | Primary CTA — QR scan confirm add | "Add Friend" |
 | Primary CTA — Grant camera permission | "Grant Access" |
-| Secondary action — Reject request | "Decline" |
+| Secondary action — Reject request | "Decline Request" |
 | Secondary action — Cancel remove | "Keep Friend" |
 | Secondary action — Scan another | "Scan Again" |
 | Pending state button | "Pending" |
