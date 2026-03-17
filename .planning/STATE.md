@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-03-17T23:35:12.930Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-17T23:40:37.761Z"
 last_activity: 2026-03-17 — Completed 01-03 UI components, navigation shell, Squad stub, Profile logout
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 10
 ---
 
@@ -55,6 +55,7 @@ Progress: [█░░░░░░░░░] 10%
 | Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
 | Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
 | Phase 02-friends-status P03 | 15 | 2 tasks | 7 files |
+| Phase 02-friends-status P01 | 8 | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 02-03]: Server confirmation (not optimistic): status updates wait for Supabase response before updating local state
 - [Phase 02-03]: EmojiTagPicker on Profile tab only (not Home screen) — Home screen is the quick toggle per CONTEXT.md
 - [Phase 02-03]: savingTag tracked in parent component so per-emoji loading spinner shows on the correct button
+- [Phase 02-friends-status]: FriendWithStatus type exported from useFriends.ts hook — screens share this type
+- [Phase 02-friends-status]: router.push('/qr-code' as never) for forward-reference to Plan 02 route
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:35:12.927Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-03-17T23:40:37.759Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None

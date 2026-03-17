@@ -22,11 +22,11 @@
 
 ### Friends
 
-- [ ] **FRND-01**: User can search for other users by username
-- [ ] **FRND-02**: User can send friend request to another user
-- [ ] **FRND-03**: User can view pending friend requests
-- [ ] **FRND-04**: User can accept or reject a friend request
-- [ ] **FRND-05**: User can view list of all accepted friends with their status
+- [x] **FRND-01**: User can search for other users by username
+- [x] **FRND-02**: User can send friend request to another user
+- [x] **FRND-03**: User can view pending friend requests
+- [x] **FRND-04**: User can accept or reject a friend request
+- [x] **FRND-05**: User can view list of all accepted friends with their status
 - [ ] **FRND-06**: User can generate QR code for their own profile
 - [ ] **FRND-07**: User can scan QR code to add a friend
 
@@ -146,11 +146,11 @@
 | PROF-02 | Phase 1 | Complete |
 | PROF-03 | Phase 6 | Pending |
 | PROF-04 | Phase 6 | Pending |
-| FRND-01 | Phase 2 | Pending |
-| FRND-02 | Phase 2 | Pending |
-| FRND-03 | Phase 2 | Pending |
-| FRND-04 | Phase 2 | Pending |
-| FRND-05 | Phase 2 | Pending |
+| FRND-01 | Phase 2 | Complete |
+| FRND-02 | Phase 2 | Complete |
+| FRND-03 | Phase 2 | Complete |
+| FRND-04 | Phase 2 | Complete |
+| FRND-05 | Phase 2 | Complete |
 | FRND-06 | Phase 2 | Pending |
 | FRND-07 | Phase 2 | Pending |
 | STAT-01 | Phase 2 | Complete |
