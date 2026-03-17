@@ -60,13 +60,16 @@ CREATE TABLE public.friendships (
   status        public.friendship_status NOT NULL DEFAULT 'pending',
   created_at    timestamptz NOT NULL DEFAULT now(),
   updated_at    timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT friendships_canonical_pair UNIQUE (
-    (least(requester_id, addressee_id)),
-    (greatest(requester_id, addressee_id))
-  )
+  CONSTRAINT friendships_no_self CHECK (requester_id <> addressee_id)
 );
 
 ALTER TABLE public.friendships ENABLE ROW LEVEL SECURITY;
+
+-- Unique index on canonical pair to prevent duplicate friendships regardless of direction
+CREATE UNIQUE INDEX idx_friendships_canonical_pair ON public.friendships (
+  least(requester_id, addressee_id),
+  greatest(requester_id, addressee_id)
+);
 
 -- ---------------------------------------------------------------
 -- plans
@@ -107,13 +110,16 @@ CREATE TABLE public.dm_channels (
   user_a     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_b     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT dm_channels_canonical_pair UNIQUE (
-    (least(user_a, user_b)),
-    (greatest(user_a, user_b))
-  )
+  CONSTRAINT dm_channels_no_self CHECK (user_a <> user_b)
 );
 
 ALTER TABLE public.dm_channels ENABLE ROW LEVEL SECURITY;
+
+-- Unique index on canonical pair to prevent duplicate DM channels regardless of direction
+CREATE UNIQUE INDEX idx_dm_channels_canonical_pair ON public.dm_channels (
+  least(user_a, user_b),
+  greatest(user_a, user_b)
+);
 
 -- ---------------------------------------------------------------
 -- messages
