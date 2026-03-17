@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 01-04 Task 1, awaiting checkpoint:human-verify Task 2"
-last_updated: "2026-03-17T15:04:48.232Z"
+stopped_at: Completed 01-04-PLAN.md — Phase 1 auth flow verified on physical device
+last_updated: "2026-03-17T18:17:46.995Z"
 last_activity: 2026-03-17 — Completed 01-03 UI components, navigation shell, Squad stub, Profile logout
 progress:
   total_phases: 6
@@ -53,6 +53,7 @@ Progress: [█░░░░░░░░░] 10%
 | Phase 01-foundation-auth P01 | 9 | 2 tasks | 13 files |
 | Phase 01-foundation-auth P03 | 7 | 2 tasks | 15 files |
 | Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
+| Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [01-03]: Profile tab relies on Stack.Protected guard for post-logout navigation — no manual redirect
 - [Phase 01-04]: Stack.Protected guards with session+needsProfileSetup state correctly routes users to (tabs), profile-setup, or (auth) without manual redirects
 - [Phase 01-04]: Google OAuth uses skipBrowserRedirect:true + WebBrowser.openAuthSessionAsync + manual setSession — required for Expo Go managed workflow
+- [Phase 01-foundation-auth]: Stack.Protected guards with session+needsProfileSetup state correctly routes users to (tabs), profile-setup, or (auth) without manual redirects
+- [Phase 01-foundation-auth]: Google OAuth uses skipBrowserRedirect:true + WebBrowser.openAuthSessionAsync + manual setSession — required for Expo Go managed workflow
+- [Phase 01-foundation-auth]: Profile-setup moved to top-level route to avoid Stack.Protected conflict with nested (auth) group navigation
 
 ### Pending Todos
 
@@ -88,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T15:04:48.230Z
-Stopped at: Completed 01-04 Task 1, awaiting checkpoint:human-verify Task 2
+Last session: 2026-03-17T18:17:46.993Z
+Stopped at: Completed 01-04-PLAN.md — Phase 1 auth flow verified on physical device
 Resume file: None
