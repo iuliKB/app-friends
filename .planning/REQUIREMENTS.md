@@ -79,12 +79,12 @@
 
 ### Infrastructure
 
-- [ ] **INFR-01**: Supabase project created with all migration SQL applied
-- [ ] **INFR-02**: RLS enabled on every table with policies as specified
-- [ ] **INFR-03**: TypeScript types generated from Supabase schema
-- [ ] **INFR-04**: Seed data (test users, friendships, sample plans) in supabase/seed.sql
+- [x] **INFR-01**: Supabase project created with all migration SQL applied
+- [x] **INFR-02**: RLS enabled on every table with policies as specified
+- [x] **INFR-03**: TypeScript types generated from Supabase schema
+- [x] **INFR-04**: Seed data (test users, friendships, sample plans) in supabase/seed.sql
 - [ ] **INFR-05**: Environment variables configured (.env.local with EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY)
-- [ ] **INFR-06**: Supabase RPC functions: get_free_friends(), get_friends(), get_or_create_dm_channel()
+- [x] **INFR-06**: Supabase RPC functions: get_free_friends(), get_friends(), get_or_create_dm_channel()
 
 ### UI Polish
 
@@ -182,12 +182,12 @@
 | NOTF-02 | Phase 6 | Pending |
 | NAV-01 | Phase 1 | Pending |
 | NAV-02 | Phase 1 | Pending |
-| INFR-01 | Phase 1 | Pending |
-| INFR-02 | Phase 1 | Pending |
-| INFR-03 | Phase 1 | Pending |
-| INFR-04 | Phase 1 | Pending |
+| INFR-01 | Phase 1 | Complete |
+| INFR-02 | Phase 1 | Complete |
+| INFR-03 | Phase 1 | Complete |
+| INFR-04 | Phase 1 | Complete |
 | INFR-05 | Phase 1 | Pending |
-| INFR-06 | Phase 1 | Pending |
+| INFR-06 | Phase 1 | Complete |
 | UIPOL-01 | Phase 6 | Pending |
 | UIPOL-02 | Phase 6 | Pending |
 | UIPOL-03 | Phase 6 | Pending |
