@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-03-17T14:57:00.000Z"
+stopped_at: "Completed 01-04 Task 1, awaiting checkpoint:human-verify Task 2"
+last_updated: "2026-03-17T15:04:48.232Z"
 last_activity: 2026-03-17 — Completed 01-03 UI components, navigation shell, Squad stub, Profile logout
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 10
 ---
 
@@ -52,6 +52,7 @@ Progress: [█░░░░░░░░░] 10%
 *Updated after each plan completion*
 | Phase 01-foundation-auth P01 | 9 | 2 tasks | 13 files |
 | Phase 01-foundation-auth P03 | 7 | 2 tasks | 15 files |
+| Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Recent decisions affecting current work:
 - [01-03]: useNetworkStatus returns always-true in Phase 1 — OfflineBanner wired, real detection deferred
 - [01-03]: UsernameField exports onAvailabilityChange so parent can disable submit while checking
 - [01-03]: Profile tab relies on Stack.Protected guard for post-logout navigation — no manual redirect
+- [Phase 01-04]: Stack.Protected guards with session+needsProfileSetup state correctly routes users to (tabs), profile-setup, or (auth) without manual redirects
+- [Phase 01-04]: Google OAuth uses skipBrowserRedirect:true + WebBrowser.openAuthSessionAsync + manual setSession — required for Expo Go managed workflow
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T14:57:00.000Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-03-17T15:04:48.230Z
+Stopped at: Completed 01-04 Task 1, awaiting checkpoint:human-verify Task 2
 Resume file: None

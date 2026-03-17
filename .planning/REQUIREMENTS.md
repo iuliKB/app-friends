@@ -7,16 +7,16 @@
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can create account with email and password
-- [ ] **AUTH-02**: User can log in with Google OAuth (browser-redirect for Expo Go)
-- [ ] **AUTH-03**: User can log in with Apple Sign-In
-- [ ] **AUTH-04**: User session persists across app restarts (reopens to home if session exists)
+- [x] **AUTH-01**: User can create account with email and password
+- [x] **AUTH-02**: User can log in with Google OAuth (browser-redirect for Expo Go)
+- [x] **AUTH-03**: User can log in with Apple Sign-In
+- [x] **AUTH-04**: User session persists across app restarts (reopens to home if session exists)
 - [x] **AUTH-05**: User can log out from settings
 
 ### Profiles
 
-- [ ] **PROF-01**: User can create profile with username, display name, and avatar
-- [ ] **PROF-02**: User can upload avatar image to Supabase Storage
+- [x] **PROF-01**: User can create profile with username, display name, and avatar
+- [x] **PROF-02**: User can upload avatar image to Supabase Storage
 - [ ] **PROF-03**: User can edit display name and change avatar
 - [ ] **PROF-04**: User can view other users' profiles
 
@@ -137,13 +137,13 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
+| AUTH-04 | Phase 1 | Complete |
 | AUTH-05 | Phase 1 | Complete |
-| PROF-01 | Phase 1 | Pending |
-| PROF-02 | Phase 1 | Pending |
+| PROF-01 | Phase 1 | Complete |
+| PROF-02 | Phase 1 | Complete |
 | PROF-03 | Phase 6 | Pending |
 | PROF-04 | Phase 6 | Pending |
 | FRND-01 | Phase 2 | Pending |
