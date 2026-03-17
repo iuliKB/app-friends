@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
@@ -26,8 +26,12 @@ export default function ProfileScreen() {
   const [loggingOut, setLoggingOut] = useState(false);
   const { status, contextTag, loading, saving, updateStatus, updateContextTag } = useStatus();
   const [savingTag, setSavingTag] = useState<EmojiTag>(null);
-  const { friends } = useFriends();
+  const { friends, fetchFriends } = useFriends();
   const { count: pendingCount } = usePendingRequestsCount();
+
+  useEffect(() => {
+    fetchFriends();
+  }, [fetchFriends]);
 
   async function handleLogout() {
     setLoggingOut(true);
