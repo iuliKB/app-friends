@@ -51,12 +51,12 @@ Plans:
   5. User can scan another user's QR code to initiate a friend request
   6. User can set their availability to Free, Busy, or Maybe with one tap; new users default to Maybe
   7. User can attach and clear an emoji context tag from the 8 preset options
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Friend search, send/accept/reject request flow, friend list screen
-- [ ] 02-02: QR code generation and scanning (expo-camera)
-- [ ] 02-03: Status toggle UI (3 large tap targets), emoji tag picker, Zustand optimistic update, Supabase persistence
+- [ ] 02-01-PLAN.md — Friend hooks + components, search/add/accept/reject flow, friends list, Profile tab integration
+- [ ] 02-02-PLAN.md — QR code generation (react-native-qrcode-svg) and scanning (expo-camera), My QR Code screen
+- [ ] 02-03-PLAN.md — Status segmented control (Free/Busy/Maybe), emoji tag picker, useStatus hook, Home + Profile wiring
 
 ### Phase 3: Home Screen
 **Goal**: The "Who's Free" home screen is the first thing users see — it loads instantly from cache, updates in realtime, and makes it obvious who to hang out with
