@@ -38,21 +38,21 @@ export default function RootLayout() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, s) => {
+    } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
 
       if (event === 'SIGNED_IN' && s) {
-        const { data: profile } = await supabase
+        // Profile check must NOT block the auth state change callback —
+        // setSession waits for all listeners to complete, causing a deadlock
+        // if we await a Supabase query here. Fire-and-forget instead.
+        supabase
           .from('profiles')
           .select('username')
           .eq('id', s.user.id)
-          .maybeSingle();
-
-        if (!profile?.username) {
-          setNeedsProfileSetup(true);
-        } else {
-          setNeedsProfileSetup(false);
-        }
+          .maybeSingle()
+          .then(({ data: profile }) => {
+            setNeedsProfileSetup(!profile?.username);
+          });
       }
 
       if (event === 'SIGNED_OUT') {
