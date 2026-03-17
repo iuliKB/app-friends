@@ -55,10 +55,10 @@ Exceptions:
 | Body | 16px | 400 (regular) | 1.5 |
 | Label | 14px | 400 (regular) | 1.4 |
 | Heading | 20px | 600 (semibold) | 1.2 |
-| Display | 28px | 700 (bold) | 1.1 |
+| Display | 28px | 600 (semibold) | 1.1 |
 
 **Notes (source: default — standard mobile type scale):**
-- Display (28px/700) used only for: Campfire app name in branded header on auth screen and splash screen
+- Display (28px/600) used only for: Campfire app name in branded header on auth screen and splash screen
 - Heading (20px/600) used for: screen titles, auth tab labels (Login / Sign Up) when active, profile creation section header
 - Body (16px/400) used for: form field input text, placeholder text, paragraph copy, tagline
 - Label (14px/400) used for: form field labels above inputs, helper text below fields, tab bar labels, "or continue with" divider text, inline error messages (color change to destructive, weight stays 400)
@@ -110,7 +110,7 @@ These are not used in Phase 1 UI directly (no status UI until Phase 2) but must 
 |---------|---------------|
 | Background | Full-screen gradient: #ff6b35 → #dc2626 (top to bottom) |
 | Logo | Campfire emoji (🔥) at 64px, centered vertically at 40% screen height |
-| App name | "Campfire" in Display (28px/700), color #fef3c7 (warm white), 8px below emoji |
+| App name | "Campfire" in Display (28px/600), color #fef3c7 (warm white), 8px below emoji |
 | Loading indicator | ActivityIndicator, color #fef3c7, 48px below app name |
 | Safe area | Respect top + bottom safe area insets |
 
@@ -171,7 +171,7 @@ These are not used in Phase 1 UI directly (no status UI until Phase 2) but must 
 | Divider | Horizontal line (#3f3f46), with "or continue with" Label (14px/400) color #9ca3af centered, marginVertical: 24 |
 | Google button | Background #2a2a2a, border #3f3f46 1px, borderRadius: 12, height: 52px, Google "G" icon (Ionicons or inline SVG) + "Continue with Google" Body (16px/400) color #f5f5f5, icon gap 8px |
 | Apple button | Background #2a2a2a, border #3f3f46 1px, borderRadius: 12, height: 52px, Apple logo icon + "Continue with Apple" Body (16px/400) color #f5f5f5, icon gap 8px — iOS only (hide on Android) |
-| Button gap | 12px between Google and Apple buttons |
+| Button gap | 8px (sm) between Google and Apple buttons |
 
 #### Bottom Link
 | Element | Specification |
