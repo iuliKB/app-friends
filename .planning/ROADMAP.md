@@ -13,7 +13,7 @@ Six phases following the natural dependency chain of the app: foundation and aut
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation + Auth** - Expo scaffold, Supabase schema + RLS, email/Google/Apple auth, session persistence, navigation shell (completed 2026-03-17)
-- [ ] **Phase 2: Friends + Status** - Friend system (username add, QR code, accept/reject), daily Free/Busy/Maybe status with emoji tags
+- [x] **Phase 2: Friends + Status** - Friend system (username add, QR code, accept/reject), daily Free/Busy/Maybe status with emoji tags (completed 2026-03-17)
 - [ ] **Phase 3: Home Screen** - "Who's Free" screen with realtime Supabase subscription, friend cards, Start Plan CTA
 - [ ] **Phase 4: Plans** - Quick Plan creation (<10 seconds), plan dashboard with RSVP, link dump, IOU notes, plan chat link
 - [ ] **Phase 5: Chat** - Plan group chats, 1:1 DMs, realtime messaging, chat list
@@ -138,7 +138,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Auth | 4/4 | Complete    | 2026-03-17 |
-| 2. Friends + Status | 2/3 | In Progress|  |
+| 2. Friends + Status | 2/3 | Complete    | 2026-03-17 |
 | 3. Home Screen | 0/2 | Not started | - |
 | 4. Plans | 0/3 | Not started | - |
 | 5. Chat | 0/3 | Not started | - |
