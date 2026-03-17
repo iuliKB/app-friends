@@ -33,7 +33,7 @@ Declared values (multiples of 4) — inherited from Phase 1 unchanged:
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xs | 4px | Icon gaps, badge padding, segment control inner padding (3px — see exception) |
+| xs | 4px | Icon gaps, badge padding, segmented control inner padding |
 | sm | 8px | Between emoji tag buttons, between accept/reject buttons, card internal gap |
 | md | 16px | Screen horizontal padding, list item vertical padding, section spacing |
 | lg | 24px | Section gaps, card padding, between segmented control and emoji row |
@@ -42,7 +42,6 @@ Declared values (multiples of 4) — inherited from Phase 1 unchanged:
 | 3xl | 64px | Not used in Phase 2 |
 
 Exceptions:
-- Segmented control inner padding: 3px (non-standard — matches iOS visual weight; source: RESEARCH.md Pattern 4)
 - Touch targets minimum 44px height (Apple HIG) — segmented control height 44px, all friend card rows min 44px, emoji tag buttons 44px, accept/reject buttons 44px
 - FAB button: 56px diameter circle
 - Status pill height: 24px (compact badge — not a tap target itself)
@@ -52,22 +51,20 @@ Exceptions:
 
 ## Typography
 
-Inherited from Phase 1 — no new sizes or weights introduced:
+Inherited from Phase 1 — Phase 2 uses 3 of the 4 declared sizes:
 
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 |
 | Label | 14px | 400 (regular) | 1.4 |
 | Heading | 20px | 600 (semibold) | 1.2 |
-| Display | 28px | 600 (semibold) | 1.1 |
 
 **Phase 2 usage notes:**
 - Heading (20px/600): Screen titles ("Friends", "Add Friend", "Friend Requests", "My QR Code")
 - Body (16px/400): Display names in friend cards, search input text, bottom sheet action labels, QR hint text
-- Label (14px/400): Usernames below display names, status pill text, "Pending" button text, empty state body copy, emoji picker section label, section headers in Profile tab rows
-- Display (28px/600): Not used in Phase 2
+- Label (14px/400): Usernames below display names, status pill text, "Pending" button text, empty state body copy, emoji picker section label, section headers in Profile tab rows; segmented control labels (both inactive 14px/400 and active 14px/600)
 
-**Segmented control label exception:** 15px/500 (medium weight) for inactive segments, 15px/600 (semibold) for active segment — matches iOS segmented control convention. Source: RESEARCH.md Pattern 4.
+**Weights in use:** 400 (regular) and 600 (semibold) only.
 
 ---
 
@@ -124,7 +121,7 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 |---------|---------------|
 | Screen title | "Friends" — Heading (20px/600), color #f5f5f5 |
 | Navigation bar | Standard Expo Router stack header, background #1a1a1a, title centered |
-| Request badge button | `notifications-outline` icon (Ionicons) 24px, color #f97316 with numeric badge overlay; placed in header right; badge: #ef4444 background, #f5f5f5 text, 16px diameter minimum, Label (12px/600); hidden when count = 0 |
+| Request badge button | `notifications-outline` icon (Ionicons) 24px, color #f97316 with numeric badge overlay; placed in header right; badge: #ef4444 background, #f5f5f5 text, 16px diameter minimum, Label (12px/600); hidden when count = 0; `accessibilityLabel="Friend requests"` |
 
 #### Friend List (FlatList)
 | Element | Specification |
@@ -151,6 +148,7 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 | Icon | `person-add-outline` Ionicons, 24px, color #1a1a1a |
 | Shadow | elevation: 4 (Android), shadowColor #000 / shadowOpacity 0.3 / shadowRadius 4 (iOS) |
 | Tap action | Navigate to `app/friends/add.tsx` |
+| Accessibility | `accessibilityLabel="Add friend"` |
 
 #### Empty State
 | Element | Specification |
@@ -190,7 +188,7 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 - After tapping "Remove friend": replace sheet content inline with a confirmation view
 - Confirmation heading: "Remove [display name]?" — Heading (20px/600), color #f5f5f5, textAlign center
 - Confirmation body: "They won't be notified." — Body (16px/400), color #9ca3af, textAlign center, marginTop: 8
-- Two full-width buttons stacked: "Remove" (background #ef4444, text #f5f5f5, height 52px, borderRadius 12) above "Cancel" (background #2a2a2a, border 1px #3f3f46, text #f5f5f5, height 52px, borderRadius 12), gap: 8px
+- Two full-width buttons stacked: "Remove" (background #ef4444, text #f5f5f5, height 52px, borderRadius 12) above "Keep Friend" (background #2a2a2a, border 1px #3f3f46, text #f5f5f5, height 52px, borderRadius 12), gap: 8px
 - After confirmed remove: dismiss sheet immediately, remove friend from list
 
 ---
@@ -298,14 +296,14 @@ Inherited from Phase 1 — `src/constants/colors.ts` is the single source of tru
 
 | Element | Specification |
 |---------|---------------|
-| Container | flexDirection row, background #2a2a2a, borderRadius 8, padding 3, height 44, marginHorizontal 16 |
+| Container | flexDirection row, background #2a2a2a, borderRadius 8, padding 4 (xs), height 44, marginHorizontal 16 |
 | Each segment | flex 1, borderRadius 6, alignItems center, justifyContent center |
 | Inactive segment background | transparent (shows #2a2a2a track) |
 | Active segment — Free | background #22c55e (status.free) |
 | Active segment — Busy | background #ef4444 (status.busy) |
 | Active segment — Maybe | background #eab308 (status.maybe) |
-| Inactive label | 15px/500 weight, color #9ca3af |
-| Active label | 15px/600 weight, color #1a1a1a (dominant — legible on all status colours) |
+| Inactive label | Label (14px/400), color #9ca3af |
+| Active label | Label (14px/600), color #1a1a1a (dominant — legible on all status colours) |
 | Saving/loading state | Active segment shows ActivityIndicator size "small" color #1a1a1a instead of label text; other segments non-interactive (disabled) |
 | Haptic feedback | `expo-haptics` `impactAsync(ImpactFeedbackStyle.Light)` on each segment tap; source: RESEARCH.md Standard Stack |
 
@@ -371,7 +369,7 @@ New rows to add to the existing Profile tab settings list:
 | Primary CTA — QR scan confirm add | "Add Friend" |
 | Primary CTA — Grant camera permission | "Grant Access" |
 | Secondary action — Reject request | "Decline" |
-| Secondary action — Cancel remove | "Cancel" |
+| Secondary action — Cancel remove | "Keep Friend" |
 | Secondary action — Scan another | "Scan Again" |
 | Pending state button | "Pending" |
 | Empty state — Friends list heading | "No friends yet" |
