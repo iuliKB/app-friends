@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 UI-SPEC approved
-last_updated: "2026-03-17T23:19:45.178Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-03-17T23:35:12.930Z"
 last_activity: 2026-03-17 — Completed 01-03 UI components, navigation shell, Squad stub, Profile logout
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 7
+  completed_plans: 5
   percent: 10
 ---
 
@@ -54,6 +54,7 @@ Progress: [█░░░░░░░░░] 10%
 | Phase 01-foundation-auth P03 | 7 | 2 tasks | 15 files |
 | Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
 | Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
+| Phase 02-friends-status P03 | 15 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation-auth]: Stack.Protected guards with session+needsProfileSetup state correctly routes users to (tabs), profile-setup, or (auth) without manual redirects
 - [Phase 01-foundation-auth]: Google OAuth uses skipBrowserRedirect:true + WebBrowser.openAuthSessionAsync + manual setSession — required for Expo Go managed workflow
 - [Phase 01-foundation-auth]: Profile-setup moved to top-level route to avoid Stack.Protected conflict with nested (auth) group navigation
+- [Phase 02-03]: Server confirmation (not optimistic): status updates wait for Supabase response before updating local state
+- [Phase 02-03]: EmojiTagPicker on Profile tab only (not Home screen) — Home screen is the quick toggle per CONTEXT.md
+- [Phase 02-03]: savingTag tracked in parent component so per-emoji loading spinner shows on the correct button
 
 ### Pending Todos
 
@@ -92,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:19:45.175Z
-Stopped at: Phase 2 UI-SPEC approved
-Resume file: .planning/phases/02-friends-status/02-UI-SPEC.md
+Last session: 2026-03-17T23:35:12.927Z
+Stopped at: Completed 02-03-PLAN.md
+Resume file: None

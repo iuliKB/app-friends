@@ -32,10 +32,10 @@
 
 ### Status
 
-- [ ] **STAT-01**: User can set availability to Free, Busy, or Maybe via 3 large tap targets
-- [ ] **STAT-02**: User can set an emoji context tag from 8 presets (☕️ 🎮 🏋️ 🍕 🎵 🎉 🎬 😴)
-- [ ] **STAT-03**: User can clear emoji context tag by tapping it again
-- [ ] **STAT-04**: New users default to "Maybe" status
+- [x] **STAT-01**: User can set availability to Free, Busy, or Maybe via 3 large tap targets
+- [x] **STAT-02**: User can set an emoji context tag from 8 presets (☕️ 🎮 🏋️ 🍕 🎵 🎉 🎬 😴)
+- [x] **STAT-03**: User can clear emoji context tag by tapping it again
+- [x] **STAT-04**: New users default to "Maybe" status
 
 ### Home Screen
 
@@ -153,10 +153,10 @@
 | FRND-05 | Phase 2 | Pending |
 | FRND-06 | Phase 2 | Pending |
 | FRND-07 | Phase 2 | Pending |
-| STAT-01 | Phase 2 | Pending |
-| STAT-02 | Phase 2 | Pending |
-| STAT-03 | Phase 2 | Pending |
-| STAT-04 | Phase 2 | Pending |
+| STAT-01 | Phase 2 | Complete |
+| STAT-02 | Phase 2 | Complete |
+| STAT-03 | Phase 2 | Complete |
+| STAT-04 | Phase 2 | Complete |
 | HOME-01 | Phase 3 | Pending |
 | HOME-02 | Phase 3 | Pending |
 | HOME-03 | Phase 3 | Pending |
