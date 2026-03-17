@@ -11,7 +11,7 @@
 - [ ] **AUTH-02**: User can log in with Google OAuth (browser-redirect for Expo Go)
 - [ ] **AUTH-03**: User can log in with Apple Sign-In
 - [ ] **AUTH-04**: User session persists across app restarts (reopens to home if session exists)
-- [ ] **AUTH-05**: User can log out from settings
+- [x] **AUTH-05**: User can log out from settings
 
 ### Profiles
 
@@ -74,8 +74,8 @@
 
 ### Navigation
 
-- [ ] **NAV-01**: Bottom tab navigator with 5 tabs: Home, Plans, Chat, Squad, Profile
-- [ ] **NAV-02**: Squad Goals tab shows "Coming soon" card with lock icon and brief description
+- [x] **NAV-01**: Bottom tab navigator with 5 tabs: Home, Plans, Chat, Squad, Profile
+- [x] **NAV-02**: Squad Goals tab shows "Coming soon" card with lock icon and brief description
 
 ### Infrastructure
 
@@ -141,7 +141,7 @@
 | AUTH-02 | Phase 1 | Pending |
 | AUTH-03 | Phase 1 | Pending |
 | AUTH-04 | Phase 1 | Pending |
-| AUTH-05 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Complete |
 | PROF-01 | Phase 1 | Pending |
 | PROF-02 | Phase 1 | Pending |
 | PROF-03 | Phase 6 | Pending |
@@ -180,8 +180,8 @@
 | CHAT-07 | Phase 5 | Pending |
 | NOTF-01 | Phase 6 | Pending |
 | NOTF-02 | Phase 6 | Pending |
-| NAV-01 | Phase 1 | Pending |
-| NAV-02 | Phase 1 | Pending |
+| NAV-01 | Phase 1 | Complete |
+| NAV-02 | Phase 1 | Complete |
 | INFR-01 | Phase 1 | Complete |
 | INFR-02 | Phase 1 | Complete |
 | INFR-03 | Phase 1 | Complete |

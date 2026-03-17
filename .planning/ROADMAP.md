@@ -137,7 +137,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Auth | 2/4 | In Progress|  |
+| 1. Foundation + Auth | 3/4 | In Progress|  |
 | 2. Friends + Status | 0/3 | Not started | - |
 | 3. Home Screen | 0/2 | Not started | - |
 | 4. Plans | 0/3 | Not started | - |
