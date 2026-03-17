@@ -31,12 +31,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can log in with Apple Sign-In on iOS
   4. App reopens to the home screen when a valid session exists; reopens to the login screen when it does not
   5. User can log out from the settings screen and is returned to the login screen
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [ ] 01-01: Expo project scaffold, app.config.ts, folder structure, Supabase client singleton, env vars
-- [ ] 01-02: Supabase schema migrations, RLS policies, RPC functions, seed.sql
-- [ ] 01-03: Auth screens (email/password, Google OAuth, Apple Sign-In), session persistence, Expo Router protected routes, navigation shell (bottom tabs + Stack.Protected)
+- [ ] 01-02: Supabase schema migrations, RLS policies, RPC functions, seed.sql, TypeScript type generation
+- [ ] 01-03: Reusable UI components, utility modules, 5-tab navigation shell with stubs
+- [ ] 01-04: Auth screens (email/password, Google OAuth, Apple Sign-In), profile setup, root layout with Stack.Protected session guards
 
 ### Phase 2: Friends + Status
 **Goal**: Users can find and connect with friends, and set their daily availability status
@@ -136,7 +137,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Auth | 0/3 | Not started | - |
+| 1. Foundation + Auth | 0/4 | Not started | - |
 | 2. Friends + Status | 0/3 | Not started | - |
 | 3. Home Screen | 0/2 | Not started | - |
 | 4. Plans | 0/3 | Not started | - |
