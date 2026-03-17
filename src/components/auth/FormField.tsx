@@ -71,9 +71,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
-    height: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 52,
     paddingHorizontal: 16,
-    justifyContent: 'center',
   },
   inputFocused: {
     borderColor: COLORS.accent,
@@ -83,10 +84,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.destructive,
   },
   input: {
+    flex: 1,
     fontSize: 16,
     fontWeight: '400',
     color: COLORS.textPrimary,
-    height: '100%',
+    paddingVertical: 14,
   },
   errorText: {
     fontSize: 14,
