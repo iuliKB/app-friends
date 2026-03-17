@@ -27,8 +27,8 @@
 - [x] **FRND-03**: User can view pending friend requests
 - [x] **FRND-04**: User can accept or reject a friend request
 - [x] **FRND-05**: User can view list of all accepted friends with their status
-- [ ] **FRND-06**: User can generate QR code for their own profile
-- [ ] **FRND-07**: User can scan QR code to add a friend
+- [x] **FRND-06**: User can generate QR code for their own profile
+- [x] **FRND-07**: User can scan QR code to add a friend
 
 ### Status
 
@@ -151,8 +151,8 @@
 | FRND-03 | Phase 2 | Complete |
 | FRND-04 | Phase 2 | Complete |
 | FRND-05 | Phase 2 | Complete |
-| FRND-06 | Phase 2 | Pending |
-| FRND-07 | Phase 2 | Pending |
+| FRND-06 | Phase 2 | Complete |
+| FRND-07 | Phase 2 | Complete |
 | STAT-01 | Phase 2 | Complete |
 | STAT-02 | Phase 2 | Complete |
 | STAT-03 | Phase 2 | Complete |

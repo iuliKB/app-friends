@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-17T23:40:37.761Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-17T23:46:30.560Z"
 last_activity: 2026-03-17 — Completed 01-03 UI components, navigation shell, Squad stub, Profile logout
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 10
 ---
 
@@ -56,6 +56,7 @@ Progress: [█░░░░░░░░░] 10%
 | Phase 01-foundation-auth P04 | 15 | 2 tasks | 6 files |
 | Phase 02-friends-status P03 | 15 | 2 tasks | 7 files |
 | Phase 02-friends-status P01 | 8 | 2 tasks | 16 files |
+| Phase 02-friends-status P02 | 3 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [Phase 02-03]: savingTag tracked in parent component so per-emoji loading spinner shows on the correct button
 - [Phase 02-friends-status]: FriendWithStatus type exported from useFriends.ts hook — screens share this type
 - [Phase 02-friends-status]: router.push('/qr-code' as never) for forward-reference to Plan 02 route
+- [Phase 02-friends-status]: QRScanView validates UUID format client-side before calling onScanned — prevents Supabase lookup for garbage data
+- [Phase 02-friends-status]: scanState machine in AddFriend parent rather than QRScanView — keeps QRScanView a pure scanning primitive
+- [Phase 02-friends-status]: Tab switch to QR resets scanState to scanning — ensures clean state on every QR tab visit
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:40:37.759Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-17T23:46:30.557Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
