@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can log in with Apple Sign-In on iOS
   4. App reopens to the home screen when a valid session exists; reopens to the login screen when it does not
   5. User can log out from the settings screen and is returned to the login screen
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 01-01: Expo project scaffold, app.config.ts, folder structure, Supabase client singleton, env vars
