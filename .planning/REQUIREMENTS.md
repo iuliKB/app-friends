@@ -83,7 +83,7 @@
 - [x] **INFR-02**: RLS enabled on every table with policies as specified
 - [x] **INFR-03**: TypeScript types generated from Supabase schema
 - [x] **INFR-04**: Seed data (test users, friendships, sample plans) in supabase/seed.sql
-- [ ] **INFR-05**: Environment variables configured (.env.local with EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY)
+- [x] **INFR-05**: Environment variables configured (.env.local with EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY)
 - [x] **INFR-06**: Supabase RPC functions: get_free_friends(), get_friends(), get_or_create_dm_channel()
 
 ### UI Polish
@@ -186,7 +186,7 @@
 | INFR-02 | Phase 1 | Complete |
 | INFR-03 | Phase 1 | Complete |
 | INFR-04 | Phase 1 | Complete |
-| INFR-05 | Phase 1 | Pending |
+| INFR-05 | Phase 1 | Complete |
 | INFR-06 | Phase 1 | Complete |
 | UIPOL-01 | Phase 6 | Pending |
 | UIPOL-02 | Phase 6 | Pending |
