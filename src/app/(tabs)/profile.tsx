@@ -5,21 +5,29 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { COLORS } from '@/constants/colors';
 import { useStatus } from '@/hooks/useStatus';
+import { useFriends } from '@/hooks/useFriends';
+import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { SegmentedControl } from '@/components/status/SegmentedControl';
 import { EmojiTagPicker } from '@/components/status/EmojiTagPicker';
 import type { EmojiTag, StatusValue } from '@/types/app';
 
 export default function ProfileScreen() {
   const session = useAuthStore((s) => s.session);
+  const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const { status, contextTag, loading, saving, updateStatus, updateContextTag } = useStatus();
   const [savingTag, setSavingTag] = useState<EmojiTag>(null);
+  const { friends } = useFriends();
+  const { count: pendingCount } = usePendingRequestsCount();
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -62,7 +70,70 @@ export default function ProfileScreen() {
         </>
       )}
 
-      {/* Friends section rows added in Plan 01 */}
+      {/* Friends section */}
+      <Text style={styles.sectionHeader}>FRIENDS</Text>
+
+      {/* My Friends row */}
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => router.push('/friends')}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="people-outline"
+          size={20}
+          color={COLORS.textSecondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>My Friends</Text>
+        <View style={styles.rowRight}>
+          <View style={styles.countBadge}>
+            <Text style={styles.countBadgeText}>{friends.length}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.border} />
+        </View>
+      </TouchableOpacity>
+
+      {/* Friend Requests row */}
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => router.push('/friends/requests')}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="person-add-outline"
+          size={20}
+          color={COLORS.textSecondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>Friend Requests</Text>
+        <View style={styles.rowRight}>
+          <View style={[styles.countBadge, pendingCount > 0 && styles.countBadgeAlert]}>
+            <Text style={[styles.countBadgeText, pendingCount > 0 && styles.countBadgeAlertText]}>
+              {pendingCount}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.border} />
+        </View>
+      </TouchableOpacity>
+
+      {/* My QR Code row */}
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => router.push('/qr-code' as never)}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="qr-code-outline"
+          size={20}
+          color={COLORS.textSecondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>My QR Code</Text>
+        <View style={styles.rowRight}>
+          <Ionicons name="chevron-forward" size={16} color={COLORS.border} />
+        </View>
+      </TouchableOpacity>
 
       {/* Logout row per UI-SPEC: full width, 52px, destructive color */}
       <TouchableOpacity style={styles.logoutRow} onPress={handleLogout} disabled={loggingOut}>
@@ -109,6 +180,47 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginTop: 24,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 52,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  rowIcon: {
+    marginRight: 12,
+  },
+  rowLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '400',
+    color: COLORS.textPrimary,
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  countBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: COLORS.border,
+    minWidth: 20,
+    alignItems: 'center',
+  },
+  countBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  countBadgeAlert: {
+    backgroundColor: COLORS.destructive,
+  },
+  countBadgeAlertText: {
+    color: COLORS.textPrimary,
   },
   logoutRow: {
     height: 52,
