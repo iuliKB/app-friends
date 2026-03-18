@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '@/constants/colors';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 
@@ -46,11 +40,7 @@ export function RequestCard({ request, onAccept, onDecline, loading }: RequestCa
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
-        <AvatarCircle
-          size={44}
-          imageUri={profile.avatar_url}
-          displayName={profile.display_name}
-        />
+        <AvatarCircle size={44} imageUri={profile.avatar_url} displayName={profile.display_name} />
         <View style={styles.info}>
           <Text style={styles.displayName}>{profile.display_name}</Text>
           <Text style={styles.username}>@{profile.username}</Text>

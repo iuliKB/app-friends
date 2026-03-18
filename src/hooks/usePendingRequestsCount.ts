@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -20,9 +21,12 @@ export function usePendingRequestsCount(): { count: number; refetch: () => void 
     setCount(result ?? 0);
   }, [session]);
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  // Refetch every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   return { count, refetch };
 }

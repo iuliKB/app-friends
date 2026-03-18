@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '@/constants/colors';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { Profile } from '@/types/app';
@@ -33,9 +27,7 @@ export function SearchResultCard({ profile, status, onAddFriend, isSelf }: Searc
               <Text style={styles.addButtonText}>Add Friend</Text>
             </TouchableOpacity>
           )}
-          {status === 'loading' && (
-            <ActivityIndicator color={COLORS.textSecondary} />
-          )}
+          {status === 'loading' && <ActivityIndicator color={COLORS.textSecondary} />}
           {status === 'pending' && (
             <View style={styles.pendingButton}>
               <Text style={styles.pendingButtonText}>Pending</Text>

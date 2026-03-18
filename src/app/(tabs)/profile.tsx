@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -29,9 +29,12 @@ export default function ProfileScreen() {
   const { friends, fetchFriends } = useFriends();
   const { count: pendingCount } = usePendingRequestsCount();
 
-  useEffect(() => {
-    fetchFriends();
-  }, [fetchFriends]);
+  // Refetch friends count every time Profile tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchFriends();
+    }, [fetchFriends])
+  );
 
   async function handleLogout() {
     setLoggingOut(true);

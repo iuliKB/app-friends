@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 import { COLORS } from '@/constants/colors';
 import { useFriends } from '@/hooks/useFriends';
 import { RequestCard } from '@/components/friends/RequestCard';
@@ -16,10 +17,13 @@ export function FriendRequests() {
   } = useFriends();
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetchPendingRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Refetch every time this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchPendingRequests();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
 
   async function handleAccept(id: string) {
     setLoadingIds((prev) => new Set(prev).add(id));

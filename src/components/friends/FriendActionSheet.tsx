@@ -98,19 +98,38 @@ export function FriendActionSheet({
 
             {/* Actions */}
             <TouchableOpacity style={styles.actionRow} onPress={onViewProfile} activeOpacity={0.7}>
-              <Ionicons name="person-outline" size={22} color={COLORS.textSecondary} style={styles.actionIcon} />
+              <Ionicons
+                name="person-outline"
+                size={22}
+                color={COLORS.textSecondary}
+                style={styles.actionIcon}
+              />
               <Text style={styles.actionLabel}>View profile</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
 
             <TouchableOpacity style={styles.actionRow} onPress={onStartDM} activeOpacity={0.7}>
-              <Ionicons name="chatbubble-outline" size={22} color={COLORS.textSecondary} style={styles.actionIcon} />
+              <Ionicons
+                name="chatbubble-outline"
+                size={22}
+                color={COLORS.textSecondary}
+                style={styles.actionIcon}
+              />
               <Text style={styles.actionLabel}>Start DM</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
 
-            <TouchableOpacity style={styles.actionRow} onPress={handleRemovePress} activeOpacity={0.7}>
-              <Ionicons name="person-remove-outline" size={22} color={COLORS.destructive} style={styles.actionIcon} />
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={handleRemovePress}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="person-remove-outline"
+                size={22}
+                color={COLORS.destructive}
+                style={styles.actionIcon}
+              />
               <Text style={[styles.actionLabel, styles.destructiveLabel]}>Remove friend</Text>
             </TouchableOpacity>
           </>
@@ -118,10 +137,18 @@ export function FriendActionSheet({
           <View style={styles.confirmContainer}>
             <Text style={styles.confirmHeading}>Remove {friend.display_name}?</Text>
             <Text style={styles.confirmBody}>They won&apos;t be notified.</Text>
-            <TouchableOpacity style={styles.removeButton} onPress={handleConfirmRemove} activeOpacity={0.8}>
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={handleConfirmRemove}
+              activeOpacity={0.8}
+            >
               <Text style={styles.removeButtonText}>Remove</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.keepButton} onPress={handleKeepFriend} activeOpacity={0.8}>
+            <TouchableOpacity
+              style={styles.keepButton}
+              onPress={handleKeepFriend}
+              activeOpacity={0.8}
+            >
               <Text style={styles.keepButtonText}>Keep Friend</Text>
             </TouchableOpacity>
           </View>
