@@ -59,13 +59,13 @@
 
 ### Chat
 
-- [ ] **CHAT-01**: User can view chat room with chronological messages (sender avatar, name, body, timestamp)
-- [ ] **CHAT-02**: User can send text messages in a chat room
-- [ ] **CHAT-03**: Chat room updates in realtime via Supabase subscription on messages
+- [x] **CHAT-01**: User can view chat room with chronological messages (sender avatar, name, body, timestamp)
+- [x] **CHAT-02**: User can send text messages in a chat room
+- [x] **CHAT-03**: Chat room updates in realtime via Supabase subscription on messages
 - [ ] **CHAT-04**: User can view chat list showing active plan chats and DMs sorted by last message
-- [ ] **CHAT-05**: Plan chat is accessible from plan dashboard with plan_id on messages
+- [x] **CHAT-05**: Plan chat is accessible from plan dashboard with plan_id on messages
 - [ ] **CHAT-06**: DM chat opens from friend card, using get_or_create_dm_channel RPC
-- [ ] **CHAT-07**: Plan dashboard pinned card appears at top of plan chat (title, time, RSVP summary)
+- [x] **CHAT-07**: Plan dashboard pinned card appears at top of plan chat (title, time, RSVP summary)
 
 ### Notifications
 
@@ -171,13 +171,13 @@
 | PLAN-07 | Phase 4 | Complete |
 | PLAN-08 | Phase 4 | Complete |
 | PLAN-09 | Phase 4 | Complete |
-| CHAT-01 | Phase 5 | Pending |
-| CHAT-02 | Phase 5 | Pending |
-| CHAT-03 | Phase 5 | Pending |
+| CHAT-01 | Phase 5 | Complete |
+| CHAT-02 | Phase 5 | Complete |
+| CHAT-03 | Phase 5 | Complete |
 | CHAT-04 | Phase 5 | Pending |
-| CHAT-05 | Phase 5 | Pending |
+| CHAT-05 | Phase 5 | Complete |
 | CHAT-06 | Phase 5 | Pending |
-| CHAT-07 | Phase 5 | Pending |
+| CHAT-07 | Phase 5 | Complete |
 | NOTF-01 | Phase 6 | Pending |
 | NOTF-02 | Phase 6 | Pending |
 | NAV-01 | Phase 1 | Complete |

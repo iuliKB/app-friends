@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-03-18T23:28:35.897Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-18T23:53:42.466Z"
 last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 14
+  completed_plans: 13
   percent: 13
 ---
 
@@ -62,6 +62,7 @@ Progress: [██░░░░░░░░] 13%
 | Phase 04-plans P01 | 4 | 2 tasks | 11 files |
 | Phase 04-plans P02 | 4 | 2 tasks | 11 files |
 | Phase 04-plans P03 | 2 | 2 tasks | 3 files |
+| Phase 05-chat P01 | 4 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [Phase 04-plans]: RSVPButtons track savingRsvp per-button so only the pressed button shows ActivityIndicator
 - [Phase 04-plans]: LinkDumpField renders URL segments inline above TextInput; no onSaved callback needed — last-write-wins, field owns local state
 - [Phase 04-plans]: Open Chat uses router.push('/(tabs)/chat') matching existing Expo Router tab navigation pattern
+- [Phase 05-chat]: useChatRoom profiles map built from plan_members join on mount — avoids extra per-message lookups
+- [Phase 05-chat]: Realtime dedup matches optimistic entry by sender_id + body within 5 seconds — replaces optimistic with canonical
+- [Phase 05-chat]: ChatRoomScreen and components created in Task 1 to unblock TypeScript compilation for room.tsx import chain
 
 ### Pending Todos
 
@@ -120,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T23:28:35.895Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-chat/05-UI-SPEC.md
+Last session: 2026-03-18T23:53:42.463Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None
