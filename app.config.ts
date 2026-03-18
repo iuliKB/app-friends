@@ -23,7 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.campfire.app',
   },
-  plugins: ['expo-router'],
+  plugins: ['expo-router', '@react-native-community/datetimepicker'],
   experiments: {
     typedRoutes: true,
   },
