@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 UI-SPEC approved
-last_updated: "2026-03-18T16:55:35.566Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-18T17:26:25.435Z"
 last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
   percent: 13
 ---
 
@@ -59,6 +59,7 @@ Progress: [██░░░░░░░░] 13%
 | Phase 02-friends-status P02 | 3 | 2 tasks | 6 files |
 | Phase 03-home-screen P01 | 2 | 2 tasks | 5 files |
 | Phase 03-home-screen P02 | 3 | 1 tasks | 1 files |
+| Phase 04-plans P01 | 4 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Recent decisions affecting current work:
 - [Phase 03-home-screen]: setFriends action takes both friends and statusUpdatedAt in one call — avoids two-render flicker from two separate set() calls
 - [Phase 03-home-screen]: Single channel 'home-statuses' with user_id=in.() filter — not one channel per friend, stays within Supabase free-tier 200 connection limit
 - [Phase 03-home-screen]: Re-subscribe inside fetchAllFriends so filter always reflects current friend list
+- [Phase 04-plans]: DateTimePicker plugin added to app.config.ts plugins array — expo install requires this for native module config
+- [Phase 04-plans]: usePlans uses useFocusEffect to refetch on tab focus, matching usePendingRequestsCount pattern
+- [Phase 04-plans]: router.back() then router.push(/plans/planId) on create success — back dismisses modal before pushing dashboard
 
 ### Pending Todos
 
@@ -109,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T16:55:35.562Z
-Stopped at: Phase 4 UI-SPEC approved
-Resume file: .planning/phases/04-plans/04-UI-SPEC.md
+Last session: 2026-03-18T17:26:25.433Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None

@@ -47,8 +47,8 @@
 
 ### Plans
 
-- [ ] **PLAN-01**: User can create a Quick Plan with title (pre-filled "Tonight"), time picker, location, and friend selector
-- [ ] **PLAN-02**: Friend selector pre-checks friends with status "free"
+- [x] **PLAN-01**: User can create a Quick Plan with title (pre-filled "Tonight"), time picker, location, and friend selector
+- [x] **PLAN-02**: Friend selector pre-checks friends with status "free"
 - [ ] **PLAN-03**: User can view list of active plans sorted by scheduled time
 - [ ] **PLAN-04**: Plan dashboard shows event details (title, time, location) editable by creator
 - [ ] **PLAN-05**: User can RSVP to a plan: Going, Maybe, or Out
@@ -162,8 +162,8 @@
 | HOME-03 | Phase 3 | Complete |
 | HOME-04 | Phase 3 | Complete |
 | HOME-05 | Phase 3 | Complete |
-| PLAN-01 | Phase 4 | Pending |
-| PLAN-02 | Phase 4 | Pending |
+| PLAN-01 | Phase 4 | Complete |
+| PLAN-02 | Phase 4 | Complete |
 | PLAN-03 | Phase 4 | Pending |
 | PLAN-04 | Phase 4 | Pending |
 | PLAN-05 | Phase 4 | Pending |
