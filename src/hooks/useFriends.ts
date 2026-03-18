@@ -105,16 +105,21 @@ export function useFriends() {
   }> {
     if (!session?.user) return { data: null, error: new Error('Not authenticated') };
     setLoadingPending(true);
+    // eslint-disable-next-line no-console
+    console.log('[fetchPendingRequests] userId:', session.user.id);
     try {
       // Fetch pending requests where current user is the addressee.
-      // We can't join profiles directly (FK goes to auth.users, not profiles),
-      // so we fetch the friendship rows then look up requester profiles separately.
       const { data: rows, error } = await supabase
         .from('friendships')
-        .select('id, requester_id, created_at')
+        .select('id, requester_id, addressee_id, created_at, status')
         .eq('addressee_id', session.user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
+
+      // eslint-disable-next-line no-console
+      console.log('[fetchPendingRequests] rows:', rows?.length, 'error:', error?.message);
+      // eslint-disable-next-line no-console
+      if (rows) console.log('[fetchPendingRequests] raw:', JSON.stringify(rows));
 
       if (error) {
         setLoadingPending(false);
@@ -122,6 +127,14 @@ export function useFriends() {
       }
 
       if (!rows || rows.length === 0) {
+        // Also check ALL friendships for this user to debug
+        const { data: allRows } = await supabase
+          .from('friendships')
+          .select('id, requester_id, addressee_id, status')
+          .or(`requester_id.eq.${session.user.id},addressee_id.eq.${session.user.id}`);
+        // eslint-disable-next-line no-console
+        console.log('[fetchPendingRequests] ALL friendships for user:', JSON.stringify(allRows));
+
         setPendingRequests([]);
         setLoadingPending(false);
         return { data: [], error: null };
@@ -166,14 +179,33 @@ export function useFriends() {
     targetUserId: string
   ): Promise<{ data: unknown; error: Error | null }> {
     if (!session?.user) return { data: null, error: new Error('Not authenticated') };
-    const { data, error } = await supabase
-      .from('friendships')
-      .insert({ requester_id: session.user.id, addressee_id: targetUserId });
+    const myId = session.user.id;
 
-    if (error) {
-      if (error.code === '23505') {
+    // Check if a friendship row already exists (could be rejected or pending)
+    const { data: existing } = await supabase
+      .from('friendships')
+      .select('id, status, requester_id')
+      .or(
+        `and(requester_id.eq.${myId},addressee_id.eq.${targetUserId}),and(requester_id.eq.${targetUserId},addressee_id.eq.${myId})`
+      )
+      .maybeSingle();
+
+    if (existing) {
+      if (existing.status === 'accepted') {
+        return { data: null, error: new Error('Already friends!') };
+      }
+      if (existing.status === 'pending') {
         return { data: null, error: new Error('Friend request already sent.') };
       }
+      // Status is 'rejected' — delete old row and re-send
+      await supabase.from('friendships').delete().eq('id', existing.id);
+    }
+
+    const { data, error } = await supabase
+      .from('friendships')
+      .insert({ requester_id: myId, addressee_id: targetUserId });
+
+    if (error) {
       return { data: null, error };
     }
     return { data, error: null };
