@@ -105,12 +105,11 @@ Plans:
   4. User can open a 1:1 DM with any friend from their friend card
   5. Chat list tab shows all active plan chats and DMs sorted by last message time
   6. Plan chat room shows a pinned card at the top with the plan title, time, and RSVP summary
-**Plans**: 3 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Chat room screen (FlatList inverted, message row component, send bar, KeyboardAvoidingView)
-- [ ] 05-02: Supabase Realtime subscription for chat messages, chat list screen, plan chat navigation from plan dashboard
-- [ ] 05-03: DM channel (get_or_create_dm_channel RPC), DM navigation from friend card, pinned plan card in plan chat
+- [ ] 05-01-PLAN.md — Chat types, Expo Router chat stack, useChatRoom hook (Realtime + optimistic send), MessageBubble, SendBar, PinnedPlanBanner, ChatRoomScreen, plan dashboard Open Chat wiring
+- [ ] 05-02-PLAN.md — Zustand chat store, useChatList hook, ChatListRow, ChatListScreen, chat tab index, DM navigation from friend card via get_or_create_dm_channel RPC
 
 ### Phase 6: Notifications + Polish
 **Goal**: The app is production-ready — push notifications alert users to plan invites, profiles are editable, every screen handles loading and empty states gracefully
@@ -141,5 +140,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Friends + Status | 2/3 | Complete    | 2026-03-17 |
 | 3. Home Screen | 2/2 | Complete   | 2026-03-18 |
 | 4. Plans | 3/3 | Complete   | 2026-03-18 |
-| 5. Chat | 0/3 | Not started | - |
+| 5. Chat | 0/2 | Not started | - |
 | 6. Notifications + Polish | 0/3 | Not started | - |
