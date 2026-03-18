@@ -140,6 +140,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation + Auth | 4/4 | Complete    | 2026-03-17 |
 | 2. Friends + Status | 2/3 | Complete    | 2026-03-17 |
 | 3. Home Screen | 2/2 | Complete   | 2026-03-18 |
-| 4. Plans | 1/3 | In Progress|  |
+| 4. Plans | 2/3 | In Progress|  |
 | 5. Chat | 0/3 | Not started | - |
 | 6. Notifications + Polish | 0/3 | Not started | - |

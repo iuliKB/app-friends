@@ -49,10 +49,10 @@
 
 - [x] **PLAN-01**: User can create a Quick Plan with title (pre-filled "Tonight"), time picker, location, and friend selector
 - [x] **PLAN-02**: Friend selector pre-checks friends with status "free"
-- [ ] **PLAN-03**: User can view list of active plans sorted by scheduled time
-- [ ] **PLAN-04**: Plan dashboard shows event details (title, time, location) editable by creator
-- [ ] **PLAN-05**: User can RSVP to a plan: Going, Maybe, or Out
-- [ ] **PLAN-06**: Plan dashboard shows member list with RSVP status indicators
+- [x] **PLAN-03**: User can view list of active plans sorted by scheduled time
+- [x] **PLAN-04**: Plan dashboard shows event details (title, time, location) editable by creator
+- [x] **PLAN-05**: User can RSVP to a plan: Going, Maybe, or Out
+- [x] **PLAN-06**: Plan dashboard shows member list with RSVP status indicators
 - [ ] **PLAN-07**: Plan dashboard has a Link Dump text field (saves on blur, last-write-wins)
 - [ ] **PLAN-08**: Plan dashboard has IOU Notes text field (saves on blur, last-write-wins)
 - [ ] **PLAN-09**: Plan dashboard has "Open Chat" button linking to plan's chat room
@@ -164,10 +164,10 @@
 | HOME-05 | Phase 3 | Complete |
 | PLAN-01 | Phase 4 | Complete |
 | PLAN-02 | Phase 4 | Complete |
-| PLAN-03 | Phase 4 | Pending |
-| PLAN-04 | Phase 4 | Pending |
-| PLAN-05 | Phase 4 | Pending |
-| PLAN-06 | Phase 4 | Pending |
+| PLAN-03 | Phase 4 | Complete |
+| PLAN-04 | Phase 4 | Complete |
+| PLAN-05 | Phase 4 | Complete |
+| PLAN-06 | Phase 4 | Complete |
 | PLAN-07 | Phase 4 | Pending |
 | PLAN-08 | Phase 4 | Pending |
 | PLAN-09 | Phase 4 | Pending |
