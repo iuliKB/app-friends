@@ -53,9 +53,9 @@
 - [x] **PLAN-04**: Plan dashboard shows event details (title, time, location) editable by creator
 - [x] **PLAN-05**: User can RSVP to a plan: Going, Maybe, or Out
 - [x] **PLAN-06**: Plan dashboard shows member list with RSVP status indicators
-- [ ] **PLAN-07**: Plan dashboard has a Link Dump text field (saves on blur, last-write-wins)
-- [ ] **PLAN-08**: Plan dashboard has IOU Notes text field (saves on blur, last-write-wins)
-- [ ] **PLAN-09**: Plan dashboard has "Open Chat" button linking to plan's chat room
+- [x] **PLAN-07**: Plan dashboard has a Link Dump text field (saves on blur, last-write-wins)
+- [x] **PLAN-08**: Plan dashboard has IOU Notes text field (saves on blur, last-write-wins)
+- [x] **PLAN-09**: Plan dashboard has "Open Chat" button linking to plan's chat room
 
 ### Chat
 
@@ -168,9 +168,9 @@
 | PLAN-04 | Phase 4 | Complete |
 | PLAN-05 | Phase 4 | Complete |
 | PLAN-06 | Phase 4 | Complete |
-| PLAN-07 | Phase 4 | Pending |
-| PLAN-08 | Phase 4 | Pending |
-| PLAN-09 | Phase 4 | Pending |
+| PLAN-07 | Phase 4 | Complete |
+| PLAN-08 | Phase 4 | Complete |
+| PLAN-09 | Phase 4 | Complete |
 | CHAT-01 | Phase 5 | Pending |
 | CHAT-02 | Phase 5 | Pending |
 | CHAT-03 | Phase 5 | Pending |
