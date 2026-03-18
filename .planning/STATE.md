@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-03-18T01:42:49.097Z"
-last_activity: 2026-03-17 — Completed 01-03 UI components, navigation shell, Squad stub, Profile logout
+stopped_at: Completed 03-01 Home Screen - friend grid, store, hook
+last_updated: "2026-03-18T00:00:00Z"
+last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
-  percent: 10
+  total_plans: 9
+  completed_plans: 8
+  percent: 13
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation + Auth)
-Plan: 3 of 4 in current phase
+Phase: 3 of 6 (Home Screen)
+Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-03-17 — Completed 01-03 UI components, navigation shell, Squad stub, Profile logout
+Last activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 13%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [█░░░░░░░░░] 10%
 | Phase 02-friends-status P03 | 15 | 2 tasks | 7 files |
 | Phase 02-friends-status P01 | 8 | 2 tasks | 16 files |
 | Phase 02-friends-status P02 | 3 | 2 tasks | 6 files |
+| Phase 03-home-screen P01 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - [Phase 02-friends-status]: QRScanView validates UUID format client-side before calling onScanned — prevents Supabase lookup for garbage data
 - [Phase 02-friends-status]: scanState machine in AddFriend parent rather than QRScanView — keeps QRScanView a pure scanning primitive
 - [Phase 02-friends-status]: Tab switch to QR resets scanState to scanning — ensures clean state on every QR tab visit
+- [Phase 03-home-screen]: statusUpdatedAt map stored alongside friends in Zustand — required to sort freeFriends by most-recently-updated without adding updated_at to FriendWithStatus type
+- [Phase 03-home-screen]: setFriends action takes both friends and statusUpdatedAt in one call — avoids two-render flicker from two separate set() calls
 
 ### Pending Todos
 

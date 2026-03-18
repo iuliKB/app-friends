@@ -39,11 +39,11 @@
 
 ### Home Screen
 
-- [ ] **HOME-01**: Home screen shows friends with status "free", sorted by most recently updated
-- [ ] **HOME-02**: Header displays "X friends free now" count
-- [ ] **HOME-03**: Each friend card shows avatar, display name, and context tag emoji
+- [x] **HOME-01**: Home screen shows friends with status "free", sorted by most recently updated
+- [x] **HOME-02**: Header displays "X friends free now" count
+- [x] **HOME-03**: Each friend card shows avatar, display name, and context tag emoji
 - [ ] **HOME-04**: Home screen updates in realtime via Supabase subscription on statuses table
-- [ ] **HOME-05**: "Start Plan" CTA button is prominently placed
+- [x] **HOME-05**: "Start Plan" CTA button is prominently placed
 
 ### Plans
 
@@ -157,11 +157,11 @@
 | STAT-02 | Phase 2 | Complete |
 | STAT-03 | Phase 2 | Complete |
 | STAT-04 | Phase 2 | Complete |
-| HOME-01 | Phase 3 | Pending |
-| HOME-02 | Phase 3 | Pending |
-| HOME-03 | Phase 3 | Pending |
+| HOME-01 | Phase 3 | Complete |
+| HOME-02 | Phase 3 | Complete |
+| HOME-03 | Phase 3 | Complete |
 | HOME-04 | Phase 3 | Pending |
-| HOME-05 | Phase 3 | Pending |
+| HOME-05 | Phase 3 | Complete |
 | PLAN-01 | Phase 4 | Pending |
 | PLAN-02 | Phase 4 | Pending |
 | PLAN-03 | Phase 4 | Pending |
