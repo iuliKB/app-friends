@@ -251,7 +251,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       <View style={styles.chatButtonContainer}>
         <PrimaryButton
           title="Open Chat"
-          onPress={() => router.push('/(tabs)/chat')}
+          onPress={() => router.push(`/chat/room?plan_id=${planId}` as never)}
         />
       </View>
     </ScrollView>
