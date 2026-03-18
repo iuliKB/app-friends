@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useHomeStore } from '@/stores/useHomeStore';
@@ -17,6 +17,33 @@ export function useHomeScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  function subscribeRealtime(friendIds: string[]) {
+    // Tear down existing channel before re-subscribing
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+    if (friendIds.length === 0) return;
+
+    const filter = `user_id=in.(${friendIds.join(',')})`;
+    channelRef.current = supabase
+      .channel('home-statuses')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'statuses',
+          filter,
+        },
+        (_payload) => {
+          fetchAllFriends();
+        }
+      )
+      .subscribe();
+  }
 
   async function fetchAllFriends(): Promise<FriendWithStatus[]> {
     if (!session?.user) return [];
@@ -78,6 +105,8 @@ export function useHomeScreen() {
       }
 
       setFriends(allFriends, newStatusUpdatedAt);
+      const ids = allFriends.map((f) => f.friend_id);
+      subscribeRealtime(ids);
       setLoading(false);
       return allFriends;
     } catch (err) {
@@ -90,6 +119,12 @@ export function useHomeScreen() {
 
   useEffect(() => {
     fetchAllFriends();
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
   }, [session?.user?.id]);
 
   const freeFriends = friends
