@@ -105,21 +105,14 @@ export function useFriends() {
   }> {
     if (!session?.user) return { data: null, error: new Error('Not authenticated') };
     setLoadingPending(true);
-    // eslint-disable-next-line no-console
-    console.log('[fetchPendingRequests] userId:', session.user.id);
     try {
       // Fetch pending requests where current user is the addressee.
       const { data: rows, error } = await supabase
         .from('friendships')
-        .select('id, requester_id, addressee_id, created_at, status')
+        .select('id, requester_id, created_at')
         .eq('addressee_id', session.user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
-
-      // eslint-disable-next-line no-console
-      console.log('[fetchPendingRequests] rows:', rows?.length, 'error:', error?.message);
-      // eslint-disable-next-line no-console
-      if (rows) console.log('[fetchPendingRequests] raw:', JSON.stringify(rows));
 
       if (error) {
         setLoadingPending(false);
@@ -127,14 +120,6 @@ export function useFriends() {
       }
 
       if (!rows || rows.length === 0) {
-        // Also check ALL friendships for this user to debug
-        const { data: allRows } = await supabase
-          .from('friendships')
-          .select('id, requester_id, addressee_id, status')
-          .or(`requester_id.eq.${session.user.id},addressee_id.eq.${session.user.id}`);
-        // eslint-disable-next-line no-console
-        console.log('[fetchPendingRequests] ALL friendships for user:', JSON.stringify(allRows));
-
         setPendingRequests([]);
         setLoadingPending(false);
         return { data: [], error: null };
