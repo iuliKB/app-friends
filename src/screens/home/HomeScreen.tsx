@@ -147,7 +147,7 @@ export function HomeScreen() {
       {/* FAB */}
       <TouchableOpacity
         style={[styles.fab, { bottom: 24 + insets.bottom }]}
-        onPress={() => router.push('/(tabs)/plans')}
+        onPress={() => router.push('/plan-create')}
         activeOpacity={0.8}
         accessibilityLabel="Start Plan"
       >

@@ -84,6 +84,7 @@ export default function RootLayout() {
       >
         <Stack.Protected guard={!!session && !needsProfileSetup}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="plan-create" options={{ presentation: 'modal', headerShown: false }} />
         </Stack.Protected>
         <Stack.Protected guard={!!session && needsProfileSetup}>
           <Stack.Screen name="profile-setup" />
