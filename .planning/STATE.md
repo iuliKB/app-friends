@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01 Home Screen - friend grid, store, hook
-last_updated: "2026-03-18T00:00:00Z"
+stopped_at: Completed 03-02 Realtime subscription — awaiting human verify checkpoint
+last_updated: "2026-03-18T02:01:00.054Z"
 last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 13
 ---
 
@@ -58,6 +58,7 @@ Progress: [██░░░░░░░░] 13%
 | Phase 02-friends-status P01 | 8 | 2 tasks | 16 files |
 | Phase 02-friends-status P02 | 3 | 2 tasks | 6 files |
 | Phase 03-home-screen P01 | 2 | 2 tasks | 5 files |
+| Phase 03-home-screen P02 | 3 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 02-friends-status]: Tab switch to QR resets scanState to scanning — ensures clean state on every QR tab visit
 - [Phase 03-home-screen]: statusUpdatedAt map stored alongside friends in Zustand — required to sort freeFriends by most-recently-updated without adding updated_at to FriendWithStatus type
 - [Phase 03-home-screen]: setFriends action takes both friends and statusUpdatedAt in one call — avoids two-render flicker from two separate set() calls
+- [Phase 03-home-screen]: Single channel 'home-statuses' with user_id=in.() filter — not one channel per friend, stays within Supabase free-tier 200 connection limit
+- [Phase 03-home-screen]: Re-subscribe inside fetchAllFriends so filter always reflects current friend list
 
 ### Pending Todos
 
@@ -106,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T01:42:49.090Z
-Stopped at: Phase 3 UI-SPEC approved
-Resume file: .planning/phases/03-home-screen/03-UI-SPEC.md
+Last session: 2026-03-18T02:01:00.051Z
+Stopped at: Completed 03-02 Realtime subscription — awaiting human verify checkpoint
+Resume file: None
