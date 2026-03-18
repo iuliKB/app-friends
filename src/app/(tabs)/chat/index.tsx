@@ -1,11 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '@/constants/colors';
 
-export default function ChatScreen() {
+export default function ChatIndexScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Chat</Text>
-      <Text style={styles.subtitle}>Coming in Phase 5</Text>
+      <Text style={styles.subtitle}>Coming soon</Text>
     </View>
   );
 }
