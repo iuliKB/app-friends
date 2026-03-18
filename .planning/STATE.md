@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-18T23:53:42.466Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-18T23:57:53.312Z"
 last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 13
 ---
 
@@ -63,6 +63,7 @@ Progress: [██░░░░░░░░] 13%
 | Phase 04-plans P02 | 4 | 2 tasks | 11 files |
 | Phase 04-plans P03 | 2 | 2 tasks | 3 files |
 | Phase 05-chat P01 | 4 | 2 tasks | 10 files |
+| Phase 05-chat P02 | 3 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Recent decisions affecting current work:
 - [Phase 05-chat]: useChatRoom profiles map built from plan_members join on mount — avoids extra per-message lookups
 - [Phase 05-chat]: Realtime dedup matches optimistic entry by sender_id + body within 5 seconds — replaces optimistic with canonical
 - [Phase 05-chat]: ChatRoomScreen and components created in Task 1 to unblock TypeScript compilation for room.tsx import chain
+- [Phase 05-chat]: formatRelativeTime duplicated inline in ChatListRow — avoids coupling to MessageBubble internals
+- [Phase 05-chat]: useChatList 30s cache TTL; manual refresh always bypasses cache via separate handleRefresh path
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T23:53:42.463Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-18T23:57:53.309Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
