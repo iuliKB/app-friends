@@ -35,7 +35,7 @@ Declared values (must be multiples of 4):
 |-------|-------|-------|
 | xs | 4px | Emoji badge padding, inline icon gaps |
 | sm | 8px | Card internal margin, column wrapper gap between grid cells |
-| md | 16px | Screen horizontal padding, card paddingHorizontal, info section marginLeft |
+| md | 16px | Screen horizontal padding, card paddingHorizontal, card paddingVertical, FAB paddingVertical, info section marginLeft |
 | lg | 24px | Section vertical spacing, FAB right/bottom offset from screen edge |
 | xl | 32px | Major section breaks between "Free Now" and "Everyone Else" sections |
 | 2xl | 48px | Not used in this phase |
@@ -43,11 +43,9 @@ Declared values (must be multiples of 4):
 
 Exceptions:
 - Avatar size: 56px (specified in CONTEXT.md — HomeFriendCard avatar, not a spacing token)
-- FAB pill: paddingVertical 14px, paddingHorizontal 16px (closest md=16px; 14px acceptable for optical balance)
-- Card paddingVertical: 12px (between sm=8px and md=16px; used for HomeFriendCard vertical rhythm)
-- Touch target minimum: 44px height (iOS HIG) — FriendCard `minHeight: 64px` pattern already established, FAB height ≥44px
+- Touch target minimum: 44px height (iOS HIG) — FriendCard `minHeight: 64px` pattern already established, FAB height ≥44px via paddingVertical 16 + label
 
-**Source:** CONTEXT.md (avatar 56px, card background, FAB position), RESEARCH.md Pattern 5 (card paddingVertical: 12, margin: 4), RESEARCH.md Pattern 8 (FAB paddingHorizontal: 16, paddingVertical: 14, right: 24, bottom: 24 + insets).
+**Source:** CONTEXT.md (avatar 56px, card background, FAB position), RESEARCH.md Pattern 5 (card layout), RESEARCH.md Pattern 8 (FAB paddingHorizontal: 16, right: 24, bottom: 24 + insets).
 
 ---
 
@@ -55,7 +53,7 @@ Exceptions:
 
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
-| Display | 24px | 700 (bold) | 1.2 | "X friends free now" / "No friends free right now" heading — Animated.Text count display |
+| Display | 24px | 600 (semibold) | 1.2 | "X friends free now" / "No friends free right now" heading — Animated.Text count display |
 | Heading | 18px | 600 (semibold) | 1.3 | "Everyone Else" section label |
 | Body | 16px | 400 (regular) | 1.5 | Empty state body text, FAB label |
 | Label | 13px | 400 (regular) | 1.3 | HomeFriendCard display name (single line, numberOfLines={1}) |
@@ -170,6 +168,8 @@ Components reused from prior phases (no modification):
 </View>
 ```
 
+Card paddingVertical: 16px (md token). Card paddingHorizontal: 16px (md token).
+
 ### FAB Layout
 
 ```
@@ -187,7 +187,7 @@ fab: {
   flexDirection: 'row',
   alignItems: 'center',
   paddingHorizontal: 16,
-  paddingVertical: 14,
+  paddingVertical: 16,
   borderRadius: 28,
   backgroundColor: COLORS.accent,   // #f97316
   elevation: 4,
@@ -288,7 +288,7 @@ Tone: Warm, direct. No punctuation on headings. Exclamation mark permitted on em
 - Count heading: `accessibilityRole="header"` on the Animated.Text
 - Friend cards: `accessibilityLabel="{display_name}, {status}"` — screen reader context
 - Empty state button: inherits `accessibilityLabel` from PrimaryButton `title` prop
-- Minimum touch target: 44px — FAB height ≥ 44px via paddingVertical 14 + label (satisfied), card non-interactive (no target needed)
+- Minimum touch target: 44px — FAB height ≥ 44px via paddingVertical 16 + label (satisfied), card non-interactive (no target needed)
 
 ---
 
