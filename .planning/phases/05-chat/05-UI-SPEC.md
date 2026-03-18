@@ -61,7 +61,7 @@ All sizes in pt (React Native uses logical pixels, not CSS px). Derived from exi
 | Body | 16pt | 400 | 1.5 | Message bubble text, send bar TextInput, chat list last message preview |
 | Label | 14pt | 600 | 1.3 | Timestamp on message bubbles, chat list relative time, pinned banner time, RSVP summary in banner |
 | Heading | 20pt | 600 | 1.2 | Chat room header title, plan title in pinned banner, chat list plan/friend name |
-| Caption | 13pt | 400 | 1.4 | Sender display name above bubble (others' messages), chat list subtext |
+| Caption | 13pt | 400 | 1.4 | Sender display name above bubble (others' messages), chat list subtext, message timestamps |
 
 **Two weights only:** 400 (regular) and 600 (semibold). Matches existing PlanCard (title: 600, location: 400), HomeFriendCard (displayName: 400).
 
@@ -115,6 +115,10 @@ New components required for this phase. All reuse existing patterns.
 | AvatarCircle | src/components/common/AvatarCircle.tsx | Sender avatar in MessageBubble (size 32), DM row avatar in ChatListRow (size 40) |
 | PrimaryButton | src/components/common/PrimaryButton.tsx | Reference only — SendBar uses its own layout; loading pattern matches |
 
+### ChatListScreen Focal Point
+
+The chat list is a scanning surface — the user's eye travels down a single column of rows. The focal point of each row is the **plan or friend name** (20pt, weight 600, left-aligned), with the last message preview (16pt, weight 400, textSecondary) as the secondary information. The unread dot (8px, blue-500) sits at the trailing edge of the row and draws attention to unread threads without disrupting the scan path. The screen as a whole has no hero element — the list itself is the content.
+
 ### Send Bar Interaction States
 
 | State | Visual |
@@ -127,18 +131,18 @@ New components required for this phase. All reuse existing patterns.
 
 **Own message (right-aligned):**
 - Container: `alignSelf: 'flex-end'`, `maxWidth: '75%'`
-- Bubble: `backgroundColor: '#f97316'`, `borderRadius: 18`, `borderBottomRightRadius: 4`, padding 10px horizontal / 8px vertical
+- Bubble: `backgroundColor: '#f97316'`, `borderRadius: 18`, `borderBottomRightRadius: 4`, padding 8px horizontal / 8px vertical
 - Text: 16pt, weight 400, color `#1a1a1a` (dominant — dark text on orange)
-- Timestamp: 12pt, weight 400, color `rgba(26,26,26,0.6)`, below bubble, `alignSelf: 'flex-end'`
+- Timestamp: 13pt, weight 400, color `rgba(26,26,26,0.6)`, below bubble, `alignSelf: 'flex-end'`
 - Pending state: bubble opacity 0.7 (no spinner — optimistic feel)
 
 **Others' message (left-aligned):**
 - Container: `alignSelf: 'flex-start'`, `maxWidth: '75%'`, `flexDirection: 'row'`, gap 8px
 - AvatarCircle size 32 — visible only on first message in group (`showSenderInfo: true`); replaced by 32px width spacer on grouped messages
 - Name above bubble: 13pt, weight 400, color `#9ca3af`, shown only on `showSenderInfo: true`
-- Bubble: `backgroundColor: '#2a2a2a'`, `borderRadius: 18`, `borderBottomLeftRadius: 4`, padding 10px horizontal / 8px vertical
+- Bubble: `backgroundColor: '#2a2a2a'`, `borderRadius: 18`, `borderBottomLeftRadius: 4`, padding 8px horizontal / 8px vertical
 - Text: 16pt, weight 400, color `#f5f5f5`
-- Timestamp: 12pt, weight 400, color `#9ca3af`, below bubble, `alignSelf: 'flex-start'`
+- Timestamp: 13pt, weight 400, color `#9ca3af`, below bubble, `alignSelf: 'flex-start'`
 
 **Source:** CONTEXT.md locked decisions (bubble colors, alignment, avatar suppression, grouping, timestamps).
 
