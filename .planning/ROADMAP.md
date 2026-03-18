@@ -69,11 +69,11 @@ Plans:
   4. Each friend card shows avatar, display name, and context tag emoji
   5. Status changes from any friend appear on screen within seconds via Supabase Realtime (no manual refresh needed)
   6. "Start Plan" CTA button is prominently visible and tappable
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Home screen UI (FlatList friend cards, header count, Start Plan CTA), Zustand cache layer
-- [ ] 03-02: Supabase Realtime subscription on statuses table (filtered to friend IDs, cleanup on unmount)
+- [ ] 03-01-PLAN.md — Home screen UI (HomeFriendCard, two-section grid layout, count heading, Start Plan FAB), Zustand cache store, useHomeScreen hook
+- [ ] 03-02-PLAN.md — Supabase Realtime subscription on statuses table (filtered to friend IDs, cleanup on unmount), end-to-end verification
 
 ### Phase 4: Plans
 **Goal**: Users can create a plan in under 10 seconds and coordinate details on a shared plan dashboard
