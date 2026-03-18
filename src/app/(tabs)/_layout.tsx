@@ -2,9 +2,11 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/colors';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
+import { useInvitationCount } from '@/hooks/useInvitationCount';
 
 export default function TabsLayout() {
   const { count: pendingCount } = usePendingRequestsCount();
+  const { count: invitationCount } = useInvitationCount();
 
   return (
     <Tabs
@@ -34,6 +36,7 @@ export default function TabsLayout() {
         name="plans"
         options={{
           title: 'Plans',
+          tabBarBadge: invitationCount > 0 ? invitationCount : undefined,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
           ),
