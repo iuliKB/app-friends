@@ -44,7 +44,7 @@ Declared values (multiples of 4 only):
 Exceptions:
 - FAB touch area: `paddingHorizontal: 16, paddingVertical: 16` — matches existing HomeScreen FAB
 - RSVP buttons: minimum touch target 44px height (accessibility)
-- Avatar stack overlap: 10px (intentional, not on scale — matches existing AvatarStack pattern)
+- Avatar stack overlap: 8px (`marginLeft: -8` per subsequent avatar) — on-scale value, sm token
 - Plan card avatar stack avatar size: 28px (not on scale — small avatar context)
 
 **Source:** Extracted from HomeScreen.tsx, PrimaryButton.tsx, and AvatarStack pattern in RESEARCH.md
@@ -115,11 +115,11 @@ New components to create for Phase 4. All use React Native StyleSheet only.
 - Smart time label (Label/600/14px, textSecondary) — e.g. "In 2 hours • 7:00 PM"
 - Location (Body/400/16px, textSecondary) — omit if null
 - RSVP summary (Label/600/14px, textSecondary) — e.g. "3 going, 1 maybe"
-- AvatarStack (max 5 visible + "+N" overflow badge, 28px size, 10px overlap)
+- AvatarStack (max 5 visible + "+N" overflow badge, 28px size, 8px overlap)
 - Background: secondary (#2a2a2a), borderRadius 12, padding md (16px)
 
 ### AvatarStack
-- Overlapping AvatarCircle components, absolute-offset with `marginLeft: -10` per subsequent avatar
+- Overlapping AvatarCircle components, absolute-offset with `marginLeft: -8` per subsequent avatar
 - "+N" overflow badge: secondary background, accent text (#f97316), Label/600/14px, 28px circle
 - Max 5 visible avatars. Source: RESEARCH.md Pattern 11 / code example
 
@@ -135,7 +135,7 @@ New components to create for Phase 4. All use React Native StyleSheet only.
 - FlatList with section headers grouped by RSVP: "Going (N)", "Maybe (N)", "Invited (N)", "Not Going (N)"
 - Section header: Label/600/14px, textSecondary
 - Member row: AvatarCircle (32px) + display name (Body/400/16px, textPrimary) + "Creator" badge if applicable
-- "Creator" badge: Label/600/12px, accent (#f97316), no background fill — just colored text label
+- "Creator" badge: Label/600/14px, accent (#f97316), no background fill — just colored text label
 - "Not Going" members: opacity 0.5 (dimmed)
 
 ### LinkDumpField / IOUNotesField
@@ -159,7 +159,7 @@ New components to create for Phase 4. All use React Native StyleSheet only.
 ### PlanDashboardScreen
 - Navigation header: plan title (Display/600/24px) as stack header title + back arrow
 - 4 sections with section headers (Heading/600/20px): "Details", "Who's Going", "Links", "IOU Notes"
-- Edit mode toggle: "Edit" button (Label/600/14px, accent #f97316) top-right of Details section; switches to "Save" + "Cancel" pair when active
+- Edit mode toggle: "Edit" button (Label/600/14px, accent #f97316) top-right of Details section; switches to "Save Changes" + "Discard" pair when active
 - Edit mode fields: title (TextInput), time (DateTimePicker trigger), location (TextInput) — identical styling to QuickPlanModal fields
 - "Open Chat" button: PrimaryButton full-width, at bottom of scrollable content, label "Open Chat"
 - Delete plan: Ionicons "trash-outline" icon button, textSecondary color, placed in navigation header right side (creator only)
@@ -181,8 +181,8 @@ New components to create for Phase 4. All use React Native StyleSheet only.
 | Quick Plan friend selector heading | "Who's coming?" |
 | Plan dashboard primary CTA | "Open Chat" |
 | Plan dashboard edit button | "Edit" |
-| Plan dashboard save button | "Save" |
-| Plan dashboard cancel button | "Cancel" |
+| Plan dashboard save button | "Save Changes" |
+| Plan dashboard cancel button (edit mode) | "Discard" |
 | Links section header | "Links" |
 | Links field placeholder | "Drop links here…" |
 | IOU Notes section header | "IOU Notes" |
@@ -190,8 +190,8 @@ New components to create for Phase 4. All use React Native StyleSheet only.
 | Delete plan button label | "Delete Plan" |
 | Delete confirmation title | "Delete this plan?" |
 | Delete confirmation body | "This can't be undone." |
-| Delete confirmation action | "Delete" (destructive) |
-| Delete confirmation cancel | "Cancel" |
+| Delete confirmation action | "Delete Plan" (destructive) |
+| Delete confirmation cancel | "Keep Plan" |
 | RSVP buttons | "Going" / "Maybe" / "Out" |
 | Member section headers | "Going (N)" / "Maybe (N)" / "Invited (N)" / "Not Going (N)" |
 | Creator badge label | "Creator" |
@@ -223,9 +223,9 @@ New components to create for Phase 4. All use React Native StyleSheet only.
 4. On error: Alert "Couldn't update your RSVP. Try again."
 
 ### Edit Mode (Dashboard Details)
-1. User taps "Edit" button → title, time, location fields become editable; "Edit" replaced by "Save" + "Cancel" pair
-2. "Save" submits changes to Supabase; shows ActivityIndicator during save
-3. "Cancel" reverts all field values to pre-edit state without saving
+1. User taps "Edit" button → title, time, location fields become editable; "Edit" replaced by "Save Changes" + "Discard" pair
+2. "Save Changes" submits changes to Supabase; shows ActivityIndicator during save
+3. "Discard" reverts all field values to pre-edit state without saving
 4. Any member (not only creator) can enter edit mode (per Phase 1 RLS decision)
 
 ### Expandable Sections (Links / IOU Notes)
@@ -236,13 +236,21 @@ New components to create for Phase 4. All use React Native StyleSheet only.
 
 ### Delete Plan
 1. Trash icon in navigation header (creator only — hide for non-creators)
-2. Alert with "Delete this plan?" / "This can't be undone." / "Delete" (destructive) + "Cancel"
+2. Alert with "Delete this plan?" / "This can't be undone." / "Delete Plan" (destructive) + "Keep Plan"
 3. On confirm: DELETE request to Supabase; navigate back on success
 
 ### Plans Tab Badge
 1. Count = plan_members rows where user_id = current user AND rsvp = "invited"
 2. Badge updates on tab focus (useFocusEffect pattern, same as pending friend requests)
 3. Badge hidden when count = 0
+
+---
+
+## Focal Points
+
+| Screen | Focal Point |
+|--------|-------------|
+| Plans list | The plan card list is the primary focal point. Each card's title (Heading/600/20px) anchors the eye; the AvatarStack and smart time label provide supporting context below. The orange FAB in the bottom-right is the single action focal point when the list is populated. On empty state, "No active plans" (Heading/600/20px, centered) holds the focal point with the FAB as the sole call to action. |
 
 ---
 
