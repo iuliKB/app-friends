@@ -47,14 +47,14 @@ export function useFriends() {
         return { data: null, error: rpcError };
       }
 
-      const rows = (friendRows ?? []) as Array<{
+      const rows = (friendRows ?? []) as {
         friend_id: string;
         username: string;
         display_name: string;
         avatar_url: string | null;
         friendship_status: string;
         created_at: string;
-      }>;
+      }[];
 
       const friendIds = rows.map((r) => r.friend_id);
       let statusMap: Record<string, { status: StatusValue; context_tag: EmojiTag }> = {};
@@ -106,26 +106,54 @@ export function useFriends() {
     if (!session?.user) return { data: null, error: new Error('Not authenticated') };
     setLoadingPending(true);
     try {
-      const { data, error } = await supabase
+      // Fetch pending requests where current user is the addressee.
+      // We can't join profiles directly (FK goes to auth.users, not profiles),
+      // so we fetch the friendship rows then look up requester profiles separately.
+      const { data: rows, error } = await supabase
         .from('friendships')
-        .select(
-          'id, requester_id, created_at, profiles!friendships_requester_id_fkey(id, username, display_name, avatar_url)'
-        )
+        .select('id, requester_id, created_at')
         .eq('addressee_id', session.user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
+      if (error) {
+        setLoadingPending(false);
+        return { data: null, error };
+      }
+
+      if (!rows || rows.length === 0) {
+        setPendingRequests([]);
+        setLoadingPending(false);
+        return { data: [], error: null };
+      }
+
+      // Look up requester profiles
+      const requesterIds = rows.map((r) => r.requester_id);
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', requesterIds);
+
+      const profileMap = new Map(
+        (profileData ?? []).map((p) => [p.id, p])
+      );
+
+      const requests: PendingRequest[] = rows.map((row) => {
+        const profile = profileMap.get(row.requester_id);
+        return {
+          id: row.id,
+          requester_id: row.requester_id,
+          created_at: row.created_at,
+          profiles: {
+            id: profile?.id ?? row.requester_id,
+            username: profile?.username ?? '',
+            display_name: profile?.display_name ?? 'Unknown',
+            avatar_url: profile?.avatar_url ?? null,
+          },
+        };
+      });
+
       setLoadingPending(false);
-
-      if (error) return { data: null, error };
-
-      const requests = (data ?? []).map((row: any) => ({
-        id: row.id,
-        requester_id: row.requester_id,
-        created_at: row.created_at,
-        profiles: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles,
-      })) as PendingRequest[];
-
       setPendingRequests(requests);
       return { data: requests, error: null };
     } catch (err) {
@@ -179,9 +207,7 @@ export function useFriends() {
     return { data, error: null };
   }
 
-  async function removeFriend(
-    friendId: string
-  ): Promise<{ data: unknown; error: Error | null }> {
+  async function removeFriend(friendId: string): Promise<{ data: unknown; error: Error | null }> {
     if (!session?.user) return { data: null, error: new Error('Not authenticated') };
     const myId = session.user.id;
     const { data, error } = await supabase
