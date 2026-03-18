@@ -87,12 +87,12 @@ Plans:
   5. Any member can type in the Link Dump field and the text persists (last-write-wins on blur)
   6. Any member can type in the IOU Notes field and the text persists (last-write-wins on blur)
   7. Plan dashboard has an "Open Chat" button that navigates to the plan's chat room
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: Quick Plan creation flow (title pre-fill, time picker, location, friend selector pre-checking free friends)
-- [ ] 04-02: Plans list screen and plan dashboard (details, RSVP, member list)
-- [ ] 04-03: Link Dump and IOU Notes text fields (save on blur, last-write-wins), "Open Chat" button
+- [ ] 04-01-PLAN.md — Types, store, hooks, Quick Plan creation modal, Home FAB update
+- [ ] 04-02-PLAN.md — Plans list screen, PlanCard, plan dashboard with RSVP + member list, tab badge
+- [ ] 04-03-PLAN.md — LinkDumpField, IOUNotesField, Open Chat button wiring
 
 ### Phase 5: Chat
 **Goal**: Users can message each other in plan group chats and 1:1 DMs; messaging is text-only and updates in realtime
@@ -105,7 +105,7 @@ Plans:
   4. User can open a 1:1 DM with any friend from their friend card
   5. Chat list tab shows all active plan chats and DMs sorted by last message time
   6. Plan chat room shows a pinned card at the top with the plan title, time, and RSVP summary
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 05-01: Chat room screen (FlatList inverted, message row component, send bar, KeyboardAvoidingView)
@@ -123,7 +123,7 @@ Plans:
   4. Every list screen shows an informative empty state instead of a blank screen when there is no data
   5. Status colours (Free #22c55e, Busy #ef4444, Maybe #eab308) are applied consistently across all screens
   6. Every async operation shows a loading indicator; no screen blocks silently on a network call
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 06-01: expo-notifications setup, push token registration, plan invite notification trigger (Edge Function), cold-start tap handling
