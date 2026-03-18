@@ -17,6 +17,8 @@ import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { RSVPButtons } from '@/components/plans/RSVPButtons';
 import { MemberList } from '@/components/plans/MemberList';
+import { LinkDumpField } from '@/components/plans/LinkDumpField';
+import { IOUNotesField } from '@/components/plans/IOUNotesField';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { formatPlanTime } from '@/components/plans/PlanCard';
 
@@ -234,6 +236,24 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
         />
         <MemberList members={plan.members} creatorId={plan.created_by} />
       </View>
+
+      {/* Links Section */}
+      <View style={styles.section}>
+        <LinkDumpField planId={planId} initialValue={plan.link_dump} />
+      </View>
+
+      {/* IOU Notes Section */}
+      <View style={styles.section}>
+        <IOUNotesField planId={planId} initialValue={plan.iou_notes} />
+      </View>
+
+      {/* Open Chat Button */}
+      <View style={styles.chatButtonContainer}>
+        <PrimaryButton
+          title="Open Chat"
+          onPress={() => router.push('/(tabs)/chat')}
+        />
+      </View>
     </ScrollView>
   );
 }
@@ -335,5 +355,10 @@ const styles = StyleSheet.create({
   headerButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
+  },
+  chatButtonContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 16,
   },
 });
