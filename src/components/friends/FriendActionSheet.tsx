@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   BackHandler,
   Modal,
@@ -21,6 +22,7 @@ interface FriendActionSheetProps {
   onViewProfile: () => void;
   onStartDM: () => void;
   onRemoveFriend: () => void;
+  loadingDM?: boolean;
 }
 
 export function FriendActionSheet({
@@ -30,6 +32,7 @@ export function FriendActionSheet({
   onViewProfile,
   onStartDM,
   onRemoveFriend,
+  loadingDM = false,
 }: FriendActionSheetProps) {
   const translateY = useRef(new Animated.Value(300)).current;
   const [confirming, setConfirming] = useState(false);
@@ -108,13 +111,22 @@ export function FriendActionSheet({
             </TouchableOpacity>
             <View style={styles.separator} />
 
-            <TouchableOpacity style={styles.actionRow} onPress={onStartDM} activeOpacity={0.7}>
-              <Ionicons
-                name="chatbubble-outline"
-                size={22}
-                color={COLORS.textSecondary}
-                style={styles.actionIcon}
-              />
+            <TouchableOpacity
+              style={[styles.actionRow, loadingDM && styles.disabledRow]}
+              onPress={onStartDM}
+              activeOpacity={0.7}
+              disabled={loadingDM}
+            >
+              {loadingDM ? (
+                <ActivityIndicator size="small" color={COLORS.textSecondary} style={styles.actionIcon} />
+              ) : (
+                <Ionicons
+                  name="chatbubble-outline"
+                  size={22}
+                  color={COLORS.textSecondary}
+                  style={styles.actionIcon}
+                />
+              )}
               <Text style={styles.actionLabel}>Start DM</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
@@ -208,6 +220,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
+  },
+  disabledRow: {
+    opacity: 0.5,
   },
   actionIcon: {
     marginRight: 16,

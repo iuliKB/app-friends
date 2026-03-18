@@ -8,6 +8,7 @@ import { useFriends } from '@/hooks/useFriends';
 import { FriendCard } from '@/components/friends/FriendCard';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { supabase } from '@/lib/supabase';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 export function FriendsList() {
@@ -16,6 +17,7 @@ export function FriendsList() {
   const { friends, loadingFriends, fetchFriends, removeFriend } = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [loadingDM, setLoadingDM] = useState(false);
 
   useEffect(() => {
     fetchFriends();
@@ -47,9 +49,21 @@ export function FriendsList() {
     handleCloseSheet();
   }
 
-  function handleStartDM() {
-    Alert.alert('Coming soon', 'Coming in Phase 5');
+  async function handleStartDM() {
+    if (!selectedFriend) return;
+    setLoadingDM(true);
+    const { data: channelId, error: rpcError } = await supabase.rpc('get_or_create_dm_channel', {
+      other_user_id: selectedFriend.friend_id,
+    });
+    setLoadingDM(false);
+    if (rpcError || !channelId) {
+      Alert.alert('Error', "Couldn't open chat. Try again.");
+      return;
+    }
     handleCloseSheet();
+    router.push(
+      `/chat/room?dm_channel_id=${channelId}&friend_name=${encodeURIComponent(selectedFriend.display_name)}` as never
+    );
   }
 
   function renderEmpty() {
@@ -95,6 +109,7 @@ export function FriendsList() {
         onViewProfile={handleViewProfile}
         onStartDM={handleStartDM}
         onRemoveFriend={handleRemoveFriend}
+        loadingDM={loadingDM}
       />
     </View>
   );
