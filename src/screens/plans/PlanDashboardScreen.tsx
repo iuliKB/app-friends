@@ -42,6 +42,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const [editLocation, setEditLocation] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [respondingInvite, setRespondingInvite] = useState(false);
 
   // Sync navigation header
   useEffect(() => {
@@ -139,7 +140,6 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const currentUserRsvp =
     plan.members.find((m) => m.user_id === session?.user?.id)?.rsvp ?? 'invited';
   const isInvited = currentUserRsvp === 'invited';
-  const [respondingInvite, setRespondingInvite] = useState(false);
 
   async function handleAcceptInvite() {
     setRespondingInvite(true);
