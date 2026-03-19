@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Pressable,
   StyleSheet,
@@ -51,14 +52,22 @@ export function LinkDumpField({ planId, initialValue }: LinkDumpFieldProps) {
   const [localText, setLocalText] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    setLocalText(initialValue ?? '');
+  }, [initialValue]);
+
   async function handleBlur() {
     if (localText === (initialValue ?? '')) return;
     setSaving(true);
-    await supabase
+    const { error } = await supabase
       .from('plans')
       .update({ link_dump: localText || null })
       .eq('id', planId);
     setSaving(false);
+    if (error) {
+      Alert.alert('Error', "Couldn't save links. Try again.");
+      setLocalText(initialValue ?? '');
+    }
   }
 
   const segments = localText ? parseTextSegments(localText) : [];

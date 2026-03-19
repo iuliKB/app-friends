@@ -40,9 +40,9 @@ export function usePlanDetail(planId: string): {
         return;
       }
 
-      const { data: members, error: membersError } = await supabase
+      const { data: memberRows, error: membersError } = await supabase
         .from('plan_members')
-        .select('plan_id, user_id, rsvp, joined_at, profiles ( id, display_name, avatar_url )')
+        .select('plan_id, user_id, rsvp, joined_at')
         .eq('plan_id', planId);
 
       if (membersError) {
@@ -50,6 +50,31 @@ export function usePlanDetail(planId: string): {
         setLoading(false);
         return;
       }
+
+      // Fetch profiles separately to avoid PostgREST join issues
+      const memberUserIds = (memberRows ?? []).map((m) => m.user_id as string);
+      let profileMap = new Map<string, { id: string; display_name: string; avatar_url: string | null }>();
+
+      if (memberUserIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', memberUserIds);
+
+        profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+      }
+
+      const assembledMembers: PlanMember[] = (memberRows ?? []).map((m) => {
+        const userId = m.user_id as string;
+        const profile = profileMap.get(userId);
+        return {
+          plan_id: m.plan_id as string,
+          user_id: userId,
+          rsvp: m.rsvp,
+          joined_at: m.joined_at,
+          profiles: profile ?? { id: userId, display_name: 'Unknown', avatar_url: null },
+        } as PlanMember;
+      });
 
       const result: PlanWithMembers = {
         id: planRow.id as string,
@@ -61,7 +86,7 @@ export function usePlanDetail(planId: string): {
         iou_notes: planRow.iou_notes as string | null,
         created_at: planRow.created_at as string,
         updated_at: planRow.updated_at as string,
-        members: (members ?? []) as unknown as PlanMember[],
+        members: assembledMembers,
       };
 
       setPlan(result);

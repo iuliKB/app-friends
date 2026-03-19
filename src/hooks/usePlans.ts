@@ -59,8 +59,8 @@ export function usePlans(): {
         .from('plans')
         .select('*')
         .in('id', planIds)
-        .gte('scheduled_for', new Date().toISOString())
-        .order('scheduled_for', { ascending: true });
+        .or(`scheduled_for.gte.${new Date().toISOString()},scheduled_for.is.null`)
+        .order('scheduled_for', { ascending: true, nullsFirst: false });
 
       if (plansError) {
         setError(`plans query: ${plansError.message}`);
@@ -178,7 +178,7 @@ export function usePlans(): {
 
     const { error: membersError } = await supabase.from('plan_members').insert(memberRows);
 
-    if (membersError) return { planId: null, error: membersError };
+    if (membersError) return { planId, error: membersError };
 
     return { planId, error: null };
   }

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -21,14 +22,22 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
   const [localText, setLocalText] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    setLocalText(initialValue ?? '');
+  }, [initialValue]);
+
   async function handleBlur() {
     if (localText === (initialValue ?? '')) return;
     setSaving(true);
-    await supabase
+    const { error } = await supabase
       .from('plans')
       .update({ iou_notes: localText || null })
       .eq('id', planId);
     setSaving(false);
+    if (error) {
+      Alert.alert('Error', "Couldn't save notes. Try again.");
+      setLocalText(initialValue ?? '');
+    }
   }
 
   return (
