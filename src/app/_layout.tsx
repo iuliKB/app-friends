@@ -1,7 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
@@ -11,15 +11,17 @@ import { COLORS } from '@/constants/colors';
 
 SplashScreen.preventAutoHideAsync();
 
-// Show notification banner while app is in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Show notification banner while app is in foreground (native only)
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 export default function RootLayout() {
   const { session, setSession, setLoading, needsProfileSetup, setNeedsProfileSetup } =
@@ -76,6 +78,8 @@ export default function RootLayout() {
   }, [setSession, setLoading, setNeedsProfileSetup]);
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
+
     // CASE 1: App running/backgrounded — user taps notification
     const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
       const planId = response.notification.request.content.data?.planId as string;
