@@ -73,7 +73,7 @@ Source: `src/app/(tabs)/profile.tsx`, `src/components/common/PrimaryButton.tsx`,
 **Specific to Phase 6:**
 - Profile tab header: display name at 20px/600 below avatar (replaces email text at 16px/400)
 - Edit profile char count: 14px/400, `COLORS.textSecondary`
-- EmptyState heading: 18px/600, `COLORS.textPrimary` (established in RESEARCH.md Pattern 6)
+- EmptyState heading: 20px/600, `COLORS.textPrimary` (Heading role)
 - EmptyState body: 14px/400, `COLORS.textSecondary`
 - Other-user profile @username: 14px/400, `COLORS.textSecondary`
 - Other-user profile status: 16px/400 with status colour dot
@@ -121,7 +121,7 @@ Source: `src/constants/colors.ts` — all values already defined and in use acro
 ```
 icon: string          — emoji character OR Ionicons name
 iconType?: 'emoji' | 'ionicons'  — default 'emoji'
-heading: string       — 18px/600, COLORS.textPrimary
+heading: string       — 20px/600, COLORS.textPrimary
 body: string          — 14px/400, COLORS.textSecondary
 ctaLabel?: string     — renders PrimaryButton below body if provided
 onCta?: () => void
