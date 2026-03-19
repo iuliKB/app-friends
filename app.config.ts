@@ -23,11 +23,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.campfire.app',
   },
-  plugins: ['expo-router', '@react-native-community/datetimepicker'],
+  plugins: ['expo-router', '@react-native-community/datetimepicker', 'expo-notifications'],
   experiments: {
     typedRoutes: true,
   },
   extra: {
+    eas: {
+      projectId: process.env.EAS_PROJECT_ID ?? 'YOUR_EAS_PROJECT_UUID',
+    },
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   },
