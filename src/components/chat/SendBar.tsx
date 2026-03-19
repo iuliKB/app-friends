@@ -37,11 +37,7 @@ export function SendBar({ onSend }: SendBarProps) {
         activeOpacity={0.7}
         accessibilityLabel="Send message"
       >
-        <Ionicons
-          name="send"
-          size={24}
-          color={canSend ? COLORS.accent : COLORS.textSecondary}
-        />
+        <Ionicons name="send" size={24} color={canSend ? COLORS.accent : COLORS.textSecondary} />
       </TouchableOpacity>
     </View>
   );

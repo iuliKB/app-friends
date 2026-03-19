@@ -100,25 +100,21 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   }
 
   function handleDeletePress() {
-    Alert.alert(
-      'Delete this plan?',
-      "This can't be undone.",
-      [
-        { text: 'Keep Plan', style: 'cancel' },
-        {
-          text: 'Delete Plan',
-          style: 'destructive',
-          onPress: async () => {
-            const { error: deleteError } = await deletePlan();
-            if (deleteError) {
-              Alert.alert('Error', "Couldn't delete the plan. Try again.");
-              return;
-            }
-            router.back();
-          },
+    Alert.alert('Delete this plan?', "This can't be undone.", [
+      { text: 'Keep Plan', style: 'cancel' },
+      {
+        text: 'Delete Plan',
+        style: 'destructive',
+        onPress: async () => {
+          const { error: deleteError } = await deletePlan();
+          if (deleteError) {
+            Alert.alert('Error', "Couldn't delete the plan. Try again.");
+            return;
+          }
+          router.back();
         },
-      ]
-    );
+      },
+    ]);
   }
 
   if (loading && !plan) {
@@ -133,9 +129,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
     return (
       <View style={styles.centered}>
         <TouchableOpacity onPress={refetch}>
-          <Text style={styles.errorText}>
-            {"Couldn't load this plan. Tap to retry."}
-          </Text>
+          <Text style={styles.errorText}>{"Couldn't load this plan. Tap to retry."}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -220,9 +214,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
             {plan.scheduled_for ? (
               <Text style={styles.planTime}>{formatPlanTime(plan.scheduled_for)}</Text>
             ) : null}
-            {plan.location ? (
-              <Text style={styles.planLocation}>{plan.location}</Text>
-            ) : null}
+            {plan.location ? <Text style={styles.planLocation}>{plan.location}</Text> : null}
           </View>
         )}
       </View>
@@ -230,10 +222,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       {/* Who's Going Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{"Who's Going"}</Text>
-        <RSVPButtons
-          currentRsvp={currentUserRsvp}
-          onRsvp={handleRsvp}
-        />
+        <RSVPButtons currentRsvp={currentUserRsvp} onRsvp={handleRsvp} />
         <MemberList members={plan.members} creatorId={plan.created_by} />
       </View>
 

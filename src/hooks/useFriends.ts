@@ -132,9 +132,7 @@ export function useFriends() {
         .select('id, username, display_name, avatar_url')
         .in('id', requesterIds);
 
-      const profileMap = new Map(
-        (profileData ?? []).map((p) => [p.id, p])
-      );
+      const profileMap = new Map((profileData ?? []).map((p) => [p.id, p]));
 
       const requests: PendingRequest[] = rows.map((row) => {
         const profile = profileMap.get(row.requester_id);

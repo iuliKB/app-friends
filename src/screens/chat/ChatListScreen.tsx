@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { COLORS } from '@/constants/colors';
@@ -22,7 +16,10 @@ export function ChatListScreen() {
       router.push(('/chat/room?plan_id=' + item.id) as never);
     } else {
       router.push(
-        ('/chat/room?dm_channel_id=' + item.id + '&friend_name=' + encodeURIComponent(item.title)) as never
+        ('/chat/room?dm_channel_id=' +
+          item.id +
+          '&friend_name=' +
+          encodeURIComponent(item.title)) as never
       );
     }
   }
@@ -39,12 +36,8 @@ export function ChatListScreen() {
     <FlatList
       data={chatList}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <ChatListRow item={item} onPress={() => handleChatPress(item)} />
-      )}
-      ItemSeparatorComponent={() => (
-        <View style={styles.separator} />
-      )}
+      renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       contentContainerStyle={chatList.length === 0 ? styles.emptyList : undefined}
@@ -53,9 +46,7 @@ export function ChatListScreen() {
         <View style={styles.emptyContainer}>
           <Ionicons name="chatbubble-outline" size={64} color={COLORS.border} />
           <Text style={styles.emptyHeading}>No chats yet</Text>
-          <Text style={styles.emptyBody}>
-            Create a plan or message a friend to get started
-          </Text>
+          <Text style={styles.emptyBody}>Create a plan or message a friend to get started</Text>
         </View>
       }
     />

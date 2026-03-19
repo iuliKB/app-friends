@@ -45,9 +45,7 @@ export function MessageBubble({ message, isOwn, showSenderInfo }: MessageBubbleP
         <View style={styles.avatarSpacer} />
       )}
       <View style={styles.othersContent}>
-        {showSenderInfo && (
-          <Text style={styles.senderName}>{message.sender_display_name}</Text>
-        )}
+        {showSenderInfo && <Text style={styles.senderName}>{message.sender_display_name}</Text>}
         <View style={styles.othersBubble}>
           <Text style={styles.othersBody}>{message.body}</Text>
         </View>

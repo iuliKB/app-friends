@@ -61,9 +61,7 @@ export function PlanCreateModal() {
     fetchFriends().then(({ data }) => {
       if (data) {
         setFriends(data);
-        const freeFriendIds = data
-          .filter((f) => f.status === 'free')
-          .map((f) => f.friend_id);
+        const freeFriendIds = data.filter((f) => f.status === 'free').map((f) => f.friend_id);
         setSelectedFriendIds(new Set(freeFriendIds));
       }
     });

@@ -73,9 +73,7 @@ export function usePlanDetail(planId: string): {
     }
   }
 
-  async function updateRsvp(
-    newRsvp: 'going' | 'maybe' | 'out'
-  ): Promise<{ error: Error | null }> {
+  async function updateRsvp(newRsvp: 'going' | 'maybe' | 'out'): Promise<{ error: Error | null }> {
     if (!session?.user) return { error: new Error('Not authenticated') };
 
     const { error } = await supabase

@@ -51,12 +51,7 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
                 color={isActive ? COLORS.dominant : COLORS.textSecondary}
               />
             ) : (
-              <Text
-                style={[
-                  styles.label,
-                  isActive ? styles.labelActive : styles.labelInactive,
-                ]}
-              >
+              <Text style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}>
                 {label}
               </Text>
             )}

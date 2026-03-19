@@ -56,7 +56,10 @@ export function useChatList(): {
       for (const msg of planMsgs ?? []) {
         const pid = msg.plan_id as string;
         if (!planLatestMap.has(pid)) {
-          planLatestMap.set(pid, { body: msg.body as string, created_at: msg.created_at as string });
+          planLatestMap.set(pid, {
+            body: msg.body as string,
+            created_at: msg.created_at as string,
+          });
         }
       }
     }
@@ -95,9 +98,7 @@ export function useChatList(): {
     }
 
     // Step F — Fetch profiles for DM other users with messages
-    const otherUserIds = dmChannels
-      .filter((d) => dmLatestMap.has(d.id))
-      .map((d) => d.otherUserId);
+    const otherUserIds = dmChannels.filter((d) => dmLatestMap.has(d.id)).map((d) => d.otherUserId);
     const profileMap = new Map<string, { display_name: string; avatar_url: string | null }>();
     if (otherUserIds.length > 0) {
       const { data: profiles } = await supabase
@@ -167,7 +168,11 @@ export function useChatList(): {
     if (!session?.user) return;
 
     // Serve from cache if recent enough
-    if (chatList.length > 0 && lastFetchedAt !== null && Date.now() - lastFetchedAt < CACHE_TTL_MS) {
+    if (
+      chatList.length > 0 &&
+      lastFetchedAt !== null &&
+      Date.now() - lastFetchedAt < CACHE_TTL_MS
+    ) {
       return;
     }
 
@@ -179,7 +184,7 @@ export function useChatList(): {
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
   useFocusEffect(

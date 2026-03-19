@@ -15,11 +15,11 @@ export interface MessageWithProfile extends Message {
 }
 
 export interface ChatListItem {
-  id: string;               // plan_id or dm_channel_id
+  id: string; // plan_id or dm_channel_id
   type: 'plan' | 'dm';
-  title: string;            // plan title or friend name
+  title: string; // plan title or friend name
   avatarUrl?: string | null; // for DMs
-  lastMessage: string;      // truncated body
-  lastMessageAt: string;    // ISO timestamp for sorting
+  lastMessage: string; // truncated body
+  lastMessageAt: string; // ISO timestamp for sorting
   hasUnread: boolean;
 }

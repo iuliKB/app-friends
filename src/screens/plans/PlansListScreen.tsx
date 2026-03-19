@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,19 +19,12 @@ export function PlansListScreen() {
         data={plans}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <PlanCard
-            plan={item}
-            onPress={() => router.push(`/plans/${item.id}` as never)}
-          />
+          <PlanCard plan={item} onPress={() => router.push(`/plans/${item.id}` as never)} />
         )}
-        ListHeaderComponent={
-          <Text style={styles.heading}>{'Your Plans'}</Text>
-        }
+        ListHeaderComponent={<Text style={styles.heading}>{'Your Plans'}</Text>}
         ListEmptyComponent={
           error ? (
-            <Text style={styles.errorText}>
-              {"Couldn't load plans. Pull down to try again."}
-            </Text>
+            <Text style={styles.errorText}>{"Couldn't load plans. Pull down to try again."}</Text>
           ) : (
             <View style={styles.emptyState}>
               <Text style={styles.emptyHeading}>{'No active plans'}</Text>

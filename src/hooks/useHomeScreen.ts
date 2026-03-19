@@ -70,8 +70,10 @@ export function useHomeScreen() {
       }[];
 
       const friendIds = rows.map((r) => r.friend_id);
-      let statusMap: Map<string, { status: StatusValue; context_tag: EmojiTag; updated_at: string }> =
-        new Map();
+      let statusMap: Map<
+        string,
+        { status: StatusValue; context_tag: EmojiTag; updated_at: string }
+      > = new Map();
 
       if (friendIds.length > 0) {
         const { data: statuses } = await supabase

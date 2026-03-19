@@ -130,13 +130,12 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
 
     if (!planId && !dmChannelId) return;
 
-    const filter = planId
-      ? `plan_id=eq.${planId}`
-      : `dm_channel_id=eq.${dmChannelId}`;
+    const filter = planId ? `plan_id=eq.${planId}` : `dm_channel_id=eq.${dmChannelId}`;
 
     const channelName = `chat-${planId ?? dmChannelId}`;
 
-    channelRef.current = supabase.channel(channelName)
+    channelRef.current = supabase
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

@@ -24,7 +24,11 @@ interface ChatRoomScreenProps {
   friendName?: string;
 }
 
-export function ChatRoomScreen({ planId, dmChannelId, friendName: _friendName }: ChatRoomScreenProps) {
+export function ChatRoomScreen({
+  planId,
+  dmChannelId,
+  friendName: _friendName,
+}: ChatRoomScreenProps) {
   const navigation = useNavigation();
   const headerHeight = useHeaderHeight();
   const session = useAuthStore((s) => s.session);

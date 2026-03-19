@@ -16,11 +16,5 @@ export default function ChatRoomRoute() {
     }
   }, [friend_name, navigation]);
 
-  return (
-    <ChatRoomScreen
-      planId={plan_id}
-      dmChannelId={dm_channel_id}
-      friendName={friend_name}
-    />
-  );
+  return <ChatRoomScreen planId={plan_id} dmChannelId={dm_channel_id} friendName={friend_name} />;
 }

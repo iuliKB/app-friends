@@ -12,10 +12,7 @@ interface HomeFriendCardProps {
 
 export function HomeFriendCard({ friend, showStatusPill = false }: HomeFriendCardProps) {
   return (
-    <View
-      style={styles.card}
-      accessibilityLabel={`${friend.display_name}, ${friend.status}`}
-    >
+    <View style={styles.card} accessibilityLabel={`${friend.display_name}, ${friend.status}`}>
       <View style={styles.avatarWrapper}>
         <AvatarCircle size={56} imageUri={friend.avatar_url} displayName={friend.display_name} />
         {friend.context_tag !== null && (

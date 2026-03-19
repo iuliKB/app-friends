@@ -26,8 +26,7 @@ export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { status, loading: statusLoading, saving, updateStatus } = useStatus();
-  const { friends, freeFriends, otherFriends, error, refreshing, handleRefresh } =
-    useHomeScreen();
+  const { friends, freeFriends, otherFriends, error, refreshing, handleRefresh } = useHomeScreen();
 
   const countScale = useRef(new Animated.Value(1)).current;
   const prevCountRef = useRef(freeFriends.length);
@@ -56,9 +55,7 @@ export function HomeScreen() {
   }
 
   const countHeading =
-    freeFriends.length > 0
-      ? `${freeFriends.length} friends free now`
-      : 'No friends free right now';
+    freeFriends.length > 0 ? `${freeFriends.length} friends free now` : 'No friends free right now';
 
   return (
     <View style={styles.root}>
@@ -75,18 +72,12 @@ export function HomeScreen() {
       >
         {/* Status toggle */}
         <View style={styles.toggleContainer}>
-          <SegmentedControl
-            value={status}
-            onValueChange={handleStatusChange}
-            saving={saving}
-          />
+          <SegmentedControl value={status} onValueChange={handleStatusChange} saving={saving} />
         </View>
 
         {/* Error state */}
         {error !== null && (
-          <Text style={styles.errorText}>
-            {"Couldn't load friends. Pull down to try again."}
-          </Text>
+          <Text style={styles.errorText}>{"Couldn't load friends. Pull down to try again."}</Text>
         )}
 
         {/* Empty state */}
@@ -94,13 +85,8 @@ export function HomeScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>{'🔥'}</Text>
             <Text style={styles.emptyHeading}>{'No friends yet'}</Text>
-            <Text style={styles.emptyBody}>
-              {'Add your first friends to see who\'s free!'}
-            </Text>
-            <PrimaryButton
-              title="Add Friends"
-              onPress={() => router.push('/friends/add')}
-            />
+            <Text style={styles.emptyBody}>{"Add your first friends to see who's free!"}</Text>
+            <PrimaryButton title="Add Friends" onPress={() => router.push('/friends/add')} />
           </View>
         )}
 

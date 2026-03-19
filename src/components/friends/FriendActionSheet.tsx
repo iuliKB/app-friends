@@ -118,7 +118,11 @@ export function FriendActionSheet({
               disabled={loadingDM}
             >
               {loadingDM ? (
-                <ActivityIndicator size="small" color={COLORS.textSecondary} style={styles.actionIcon} />
+                <ActivityIndicator
+                  size="small"
+                  color={COLORS.textSecondary}
+                  style={styles.actionIcon}
+                />
               ) : (
                 <Ionicons
                   name="chatbubble-outline"

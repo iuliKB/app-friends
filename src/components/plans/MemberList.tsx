@@ -35,19 +35,14 @@ export function MemberList({ members, creatorId }: MemberListProps) {
               {label} ({groupMembers.length})
             </Text>
             {groupMembers.map((member) => (
-              <View
-                key={member.user_id}
-                style={[styles.memberRow, dimmed && styles.dimmed]}
-              >
+              <View key={member.user_id} style={[styles.memberRow, dimmed && styles.dimmed]}>
                 <AvatarCircle
                   size={32}
                   imageUri={member.profiles.avatar_url}
                   displayName={member.profiles.display_name}
                 />
                 <Text style={styles.memberName}>{member.profiles.display_name}</Text>
-                {member.user_id === creatorId && (
-                  <Text style={styles.creatorBadge}>Creator</Text>
-                )}
+                {member.user_id === creatorId && <Text style={styles.creatorBadge}>Creator</Text>}
               </View>
             ))}
           </View>
