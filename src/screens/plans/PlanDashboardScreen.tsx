@@ -14,6 +14,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS } from '@/constants/colors';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { usePlansStore } from '@/stores/usePlansStore';
 import { RSVPButtons } from '@/components/plans/RSVPButtons';
 import { MemberList } from '@/components/plans/MemberList';
 import { LinkDumpField } from '@/components/plans/LinkDumpField';
@@ -32,6 +33,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const session = useAuthStore((s) => s.session);
   const { plan, loading, error, refetch, updateRsvp, updatePlanDetails, deletePlan } =
     usePlanDetail(planId);
+  const removePlan = usePlansStore((s) => s.removePlan);
 
   // Edit mode state
   const [editing, setEditing] = useState(false);
@@ -111,6 +113,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
             Alert.alert('Error', "Couldn't delete the plan. Try again.");
             return;
           }
+          removePlan(planId);
           router.back();
         },
       },
