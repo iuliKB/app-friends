@@ -3,6 +3,12 @@ import { useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
+export interface InvitedMember {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+}
+
 export interface PlanInvitation {
   plan_id: string;
   title: string;
@@ -10,6 +16,8 @@ export interface PlanInvitation {
   location: string | null;
   created_by: string;
   creator_name: string;
+  creator_avatar: string | null;
+  other_members: InvitedMember[];
 }
 
 export function useInvitations(): {
@@ -57,27 +65,58 @@ export function useInvitations(): {
       return;
     }
 
-    // Step 3: get creator profiles
-    const creatorIds = [...new Set(plans.map((p) => p.created_by as string))];
-    let creatorMap = new Map<string, string>();
+    // Step 3: get all members for these plans
+    const { data: allMembers } = await supabase
+      .from('plan_members')
+      .select('plan_id, user_id')
+      .in('plan_id', planIds);
 
-    if (creatorIds.length > 0) {
+    // Step 4: get profiles for all involved users (creators + members)
+    const allUserIds = new Set<string>();
+    for (const p of plans) allUserIds.add(p.created_by as string);
+    for (const m of allMembers ?? []) allUserIds.add(m.user_id as string);
+
+    let profileMap = new Map<string, { display_name: string; avatar_url: string | null }>();
+
+    if (allUserIds.size > 0) {
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, display_name')
-        .in('id', creatorIds);
+        .select('id, display_name, avatar_url')
+        .in('id', [...allUserIds]);
 
-      creatorMap = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
+      profileMap = new Map(
+        (profiles ?? []).map((p) => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }])
+      );
     }
 
-    const result: PlanInvitation[] = plans.map((p) => ({
-      plan_id: p.id as string,
-      title: p.title as string,
-      scheduled_for: p.scheduled_for as string | null,
-      location: p.location as string | null,
-      created_by: p.created_by as string,
-      creator_name: creatorMap.get(p.created_by as string) ?? 'Someone',
-    }));
+    // Step 5: group members by plan (exclude current user)
+    const membersByPlan = new Map<string, InvitedMember[]>();
+    for (const m of allMembers ?? []) {
+      const mPlanId = m.plan_id as string;
+      const mUserId = m.user_id as string;
+      if (mUserId === session.user.id) continue;
+      if (!membersByPlan.has(mPlanId)) membersByPlan.set(mPlanId, []);
+      const profile = profileMap.get(mUserId);
+      membersByPlan.get(mPlanId)!.push({
+        user_id: mUserId,
+        display_name: profile?.display_name ?? 'Unknown',
+        avatar_url: profile?.avatar_url ?? null,
+      });
+    }
+
+    const result: PlanInvitation[] = plans.map((p) => {
+      const creatorProfile = profileMap.get(p.created_by as string);
+      return {
+        plan_id: p.id as string,
+        title: p.title as string,
+        scheduled_for: p.scheduled_for as string | null,
+        location: p.location as string | null,
+        created_by: p.created_by as string,
+        creator_name: creatorProfile?.display_name ?? 'Someone',
+        creator_avatar: creatorProfile?.avatar_url ?? null,
+        other_members: membersByPlan.get(p.id as string) ?? [],
+      };
+    });
 
     setInvitations(result);
     setLoading(false);

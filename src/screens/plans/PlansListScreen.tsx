@@ -16,6 +16,7 @@ import { COLORS } from '@/constants/colors';
 import { usePlans } from '@/hooks/usePlans';
 import { useInvitations, PlanInvitation } from '@/hooks/useInvitations';
 import { PlanCard } from '@/components/plans/PlanCard';
+import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import type { PlanWithMembers } from '@/types/plans';
 
@@ -58,30 +59,64 @@ export function PlansListScreen() {
   }
 
   function renderInvitation({ item }: { item: PlanInvitation }) {
+    const otherNames = item.other_members.map((m) => m.display_name);
+    const MAX_SHOW = 3;
+    const shownNames = otherNames.slice(0, MAX_SHOW);
+    const extraCount = otherNames.length - MAX_SHOW;
+    const alsoInvited =
+      shownNames.length > 0
+        ? `Also invited: ${shownNames.join(', ')}${extraCount > 0 ? `, +${extraCount}` : ''}`
+        : null;
+
     return (
       <View style={styles.inviteCard}>
-        <View style={styles.inviteInfo}>
-          <Text style={styles.inviteTitle}>{item.title}</Text>
-          <Text style={styles.inviteCreator}>from {item.creator_name}</Text>
-          {item.scheduled_for ? (
-            <Text style={styles.inviteTime}>{formatInviteTime(item.scheduled_for)}</Text>
-          ) : null}
-          {item.location ? (
-            <Text style={styles.inviteLocation}>{item.location}</Text>
-          ) : null}
+        {/* Creator row */}
+        <View style={styles.inviteCreatorRow}>
+          <AvatarCircle size={36} imageUri={item.creator_avatar} displayName={item.creator_name} />
+          <Text style={styles.inviteCreatorLabel}>
+            <Text style={styles.inviteCreatorName}>{item.creator_name}</Text>
+            {' invited you'}
+          </Text>
         </View>
+
+        {/* Plan details */}
+        <Text style={styles.inviteTitle}>{item.title}</Text>
+        {item.scheduled_for ? (
+          <Text style={styles.inviteTime}>{formatInviteTime(item.scheduled_for)}</Text>
+        ) : null}
+        {item.location ? (
+          <Text style={styles.inviteLocation}>{item.location}</Text>
+        ) : null}
+
+        {/* Other invited members */}
+        {alsoInvited ? (
+          <View style={styles.alsoInvitedRow}>
+            <View style={styles.alsoAvatars}>
+              {item.other_members.slice(0, MAX_SHOW).map((m) => (
+                <View key={m.user_id} style={styles.alsoAvatarWrapper}>
+                  <AvatarCircle size={24} imageUri={m.avatar_url} displayName={m.display_name} />
+                </View>
+              ))}
+            </View>
+            <Text style={styles.alsoInvitedText}>{alsoInvited}</Text>
+          </View>
+        ) : null}
+
+        {/* Accept / Decline */}
         <View style={styles.inviteActions}>
           <TouchableOpacity
             style={styles.acceptBtn}
             onPress={() => handleAccept(item.plan_id)}
+            activeOpacity={0.7}
           >
-            <Ionicons name="checkmark" size={20} color={COLORS.dominant} />
+            <Text style={styles.acceptBtnText}>{'Accept'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.declineBtn}
             onPress={() => handleDecline(item.plan_id)}
+            activeOpacity={0.7}
           >
-            <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+            <Text style={styles.declineBtnText}>{'Decline'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -271,56 +306,90 @@ const styles = StyleSheet.create({
   },
   // Invite card
   inviteCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: COLORS.secondary,
     borderRadius: 12,
     padding: 16,
+    gap: 8,
   },
-  inviteInfo: {
+  inviteCreatorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 4,
+  },
+  inviteCreatorLabel: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
     flex: 1,
-    gap: 2,
+  },
+  inviteCreatorName: {
+    fontWeight: '600',
+    color: COLORS.textPrimary,
   },
   inviteTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: COLORS.textPrimary,
   },
-  inviteCreator: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-  },
   inviteTime: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textSecondary,
-    marginTop: 4,
   },
   inviteLocation: {
     fontSize: 14,
     fontWeight: '400',
     color: COLORS.textSecondary,
   },
+  alsoInvitedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  alsoAvatars: {
+    flexDirection: 'row',
+  },
+  alsoAvatarWrapper: {
+    marginRight: -6,
+  },
+  alsoInvitedText: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
+    flex: 1,
+    marginLeft: 8,
+  },
   inviteActions: {
     flexDirection: 'row',
-    gap: 8,
-    marginLeft: 12,
+    gap: 12,
+    marginTop: 8,
   },
   acceptBtn: {
-    width: 40,
+    flex: 1,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 8,
     backgroundColor: COLORS.status.free,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  acceptBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.dominant,
+  },
   declineBtn: {
-    width: 40,
+    flex: 1,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 8,
     backgroundColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  declineBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
   },
 });
