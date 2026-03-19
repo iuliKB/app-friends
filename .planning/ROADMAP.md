@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Home Screen** - "Who's Free" screen with realtime Supabase subscription, friend cards, Start Plan CTA (completed 2026-03-18)
 - [x] **Phase 4: Plans** - Quick Plan creation (<10 seconds), plan dashboard with RSVP, link dump, IOU notes, plan chat link (completed 2026-03-18)
 - [x] **Phase 5: Chat** - Plan group chats, 1:1 DMs, realtime messaging, chat list (completed 2026-03-18)
-- [ ] **Phase 6: Notifications + Polish** - Push notifications for plan invites, profile editing, empty states, UI consistency, seed data
+- [x] **Phase 6: Notifications + Polish** - Push notifications for plan invites, profile editing, empty states, UI consistency, seed data (completed 2026-03-19)
 
 ## Phase Details
 
@@ -141,4 +141,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Home Screen | 2/2 | Complete   | 2026-03-18 |
 | 4. Plans | 3/3 | Complete   | 2026-03-18 |
 | 5. Chat | 2/2 | Complete   | 2026-03-18 |
-| 6. Notifications + Polish | 2/3 | In Progress|  |
+| 6. Notifications + Polish | 3/3 | Complete   | 2026-03-19 |

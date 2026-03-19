@@ -88,10 +88,10 @@
 
 ### UI Polish
 
-- [ ] **UIPOL-01**: Consistent spacing and styling across all screens
+- [x] **UIPOL-01**: Consistent spacing and styling across all screens
 - [x] **UIPOL-02**: Loading states on all async operations
 - [x] **UIPOL-03**: Empty states for all list screens explaining the feature inline
-- [ ] **UIPOL-04**: Status colours: Free=#22c55e, Busy=#ef4444, Maybe=#eab308 used consistently
+- [x] **UIPOL-04**: Status colours: Free=#22c55e, Busy=#ef4444, Maybe=#eab308 used consistently
 
 ## v2 Requirements
 
@@ -188,10 +188,10 @@
 | INFR-04 | Phase 1 | Complete |
 | INFR-05 | Phase 1 | Complete |
 | INFR-06 | Phase 1 | Complete |
-| UIPOL-01 | Phase 6 | Pending |
+| UIPOL-01 | Phase 6 | Complete |
 | UIPOL-02 | Phase 6 | Complete |
 | UIPOL-03 | Phase 6 | Complete |
-| UIPOL-04 | Phase 6 | Pending |
+| UIPOL-04 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 55 total

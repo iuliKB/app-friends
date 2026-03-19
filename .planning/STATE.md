@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-01 push notification infrastructure
-last_updated: "2026-03-19T01:05:51.008Z"
+stopped_at: Completed 06-03 profile redesign and UI consistency audit
+last_updated: "2026-03-19T01:13:57.240Z"
 last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
   percent: 13
 ---
 
@@ -66,6 +66,7 @@ Progress: [██░░░░░░░░] 13%
 | Phase 05-chat P02 | 3 | 2 tasks | 7 files |
 | Phase 06-notifications-polish P02 | 2 | 2 tasks | 5 files |
 | Phase 06-notifications-polish P01 | 254 | 2 tasks | 5 files |
+| Phase 06-notifications-polish P03 | 6 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -121,6 +122,9 @@ Recent decisions affecting current work:
 - [Phase 06-notifications-polish]: Stack.Screen title set inline in FriendProfileScreen component — no useEffect needed
 - [Phase 06-notifications-polish]: AsyncStorage key campfire:notifications_enabled for per-device notification toggle — default enabled (null = on)
 - [Phase 06-notifications-polish]: Cold-start deep link uses 150ms setTimeout to ensure navigation tree is mounted before router.push
+- [Phase 06-notifications-polish]: Profile tab fetches display_name+avatar_url on useFocusEffect to reflect edits from Edit Profile screen
+- [Phase 06-notifications-polish]: MemberList extended with onMemberPress callback prop — keeps component pure, navigation wired in PlanDashboardScreen
+- [Phase 06-notifications-polish]: FriendsList handleViewProfile navigates to /friends/[friend_id] replacing Coming in Phase 6 placeholder
 
 ### Pending Todos
 
@@ -134,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T01:05:51.005Z
-Stopped at: Completed 06-01 push notification infrastructure
+Last session: 2026-03-19T01:13:57.236Z
+Stopped at: Completed 06-03 profile redesign and UI consistency audit
 Resume file: None
