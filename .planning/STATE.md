@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-02 shared components + profile screens
-last_updated: "2026-03-19T01:03:24.647Z"
+stopped_at: Completed 06-01 push notification infrastructure
+last_updated: "2026-03-19T01:05:51.008Z"
 last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 17
-  completed_plans: 15
+  completed_plans: 16
   percent: 13
 ---
 
@@ -65,6 +65,7 @@ Progress: [██░░░░░░░░] 13%
 | Phase 05-chat P01 | 4 | 2 tasks | 10 files |
 | Phase 05-chat P02 | 3 | 2 tasks | 7 files |
 | Phase 06-notifications-polish P02 | 2 | 2 tasks | 5 files |
+| Phase 06-notifications-polish P01 | 254 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,8 @@ Recent decisions affecting current work:
 - [Phase 06-notifications-polish]: EditProfileScreen isDirty check on name+avatar prevents pointless server calls on Save
 - [Phase 06-notifications-polish]: FriendProfileScreen fetches profile+status in parallel with Promise.all
 - [Phase 06-notifications-polish]: Stack.Screen title set inline in FriendProfileScreen component — no useEffect needed
+- [Phase 06-notifications-polish]: AsyncStorage key campfire:notifications_enabled for per-device notification toggle — default enabled (null = on)
+- [Phase 06-notifications-polish]: Cold-start deep link uses 150ms setTimeout to ensure navigation tree is mounted before router.push
 
 ### Pending Todos
 
@@ -131,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T01:03:24.644Z
-Stopped at: Completed 06-02 shared components + profile screens
+Last session: 2026-03-19T01:05:51.005Z
+Stopped at: Completed 06-01 push notification infrastructure
 Resume file: None

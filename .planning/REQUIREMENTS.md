@@ -69,8 +69,8 @@
 
 ### Notifications
 
-- [ ] **NOTF-01**: User receives push notifications for plan invites via expo-notifications
-- [ ] **NOTF-02**: Push notification setup uses expo-notifications (Expo Go compatible for local, EAS build for remote)
+- [x] **NOTF-01**: User receives push notifications for plan invites via expo-notifications
+- [x] **NOTF-02**: Push notification setup uses expo-notifications (Expo Go compatible for local, EAS build for remote)
 
 ### Navigation
 
@@ -178,8 +178,8 @@
 | CHAT-05 | Phase 5 | Complete |
 | CHAT-06 | Phase 5 | Complete |
 | CHAT-07 | Phase 5 | Complete |
-| NOTF-01 | Phase 6 | Pending |
-| NOTF-02 | Phase 6 | Pending |
+| NOTF-01 | Phase 6 | Complete |
+| NOTF-02 | Phase 6 | Complete |
 | NAV-01 | Phase 1 | Complete |
 | NAV-02 | Phase 1 | Complete |
 | INFR-01 | Phase 1 | Complete |
