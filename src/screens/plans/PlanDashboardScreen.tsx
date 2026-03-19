@@ -82,7 +82,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
     const { error: saveError } = await updatePlanDetails({
       title: editTitle,
       scheduled_for: editDate.toISOString(),
-      location: editLocation || undefined,
+      location: editLocation || null,
     });
     setSaving(false);
     if (saveError) {

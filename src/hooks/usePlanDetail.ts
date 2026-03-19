@@ -12,7 +12,7 @@ export function usePlanDetail(planId: string): {
   updatePlanDetails: (updates: {
     title?: string;
     scheduled_for?: string;
-    location?: string;
+    location?: string | null;
   }) => Promise<{ error: Error | null }>;
   deletePlan: () => Promise<{ error: Error | null }>;
 } {
@@ -114,13 +114,18 @@ export function usePlanDetail(planId: string): {
   async function updatePlanDetails(updates: {
     title?: string;
     scheduled_for?: string;
-    location?: string;
+    location?: string | null;
   }): Promise<{ error: Error | null }> {
     if (!session?.user) return { error: new Error('Not authenticated') };
 
-    const { error } = await supabase.from('plans').update(updates).eq('id', planId);
+    const { error, count } = await supabase
+      .from('plans')
+      .update(updates)
+      .eq('id', planId)
+      .select();
 
     if (error) return { error };
+    if (count === 0) return { error: new Error('Update blocked — check RLS policies') };
     return { error: null };
   }
 
