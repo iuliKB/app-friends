@@ -3,6 +3,7 @@ import {
   Alert,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -18,6 +19,12 @@ import { useFriends } from '@/hooks/useFriends';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { SegmentedControl } from '@/components/status/SegmentedControl';
 import { EmojiTagPicker } from '@/components/status/EmojiTagPicker';
+import { AvatarCircle } from '@/components/common/AvatarCircle';
+import {
+  registerForPushNotifications,
+  getNotificationsEnabled,
+  setNotificationsEnabled,
+} from '@/hooks/usePushNotifications';
 import type { EmojiTag, StatusValue } from '@/types/app';
 
 export default function ProfileScreen() {
@@ -28,13 +35,43 @@ export default function ProfileScreen() {
   const [savingTag, setSavingTag] = useState<EmojiTag>(null);
   const { friends, fetchFriends } = useFriends();
   const { count: pendingCount } = usePendingRequestsCount();
+  const [profile, setProfile] = useState<{
+    display_name: string;
+    avatar_url: string | null;
+  } | null>(null);
+  const [notificationsEnabled, setNotificationsEnabledState] = useState(true);
 
-  // Refetch friends count every time Profile tab comes into focus
+  // Refetch friends count and profile every time Profile tab comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchFriends();
+      fetchProfile();
+      loadNotificationsEnabled();
     }, [fetchFriends])
   );
+
+  async function fetchProfile() {
+    if (!session?.user?.id) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('display_name, avatar_url')
+      .eq('id', session.user.id)
+      .single();
+    if (data) setProfile(data);
+  }
+
+  async function loadNotificationsEnabled() {
+    const enabled = await getNotificationsEnabled();
+    setNotificationsEnabledState(enabled);
+  }
+
+  async function handleToggleNotifications(value: boolean) {
+    await setNotificationsEnabled(value);
+    setNotificationsEnabledState(value);
+    if (value && session?.user?.id) {
+      await registerForPushNotifications(session.user.id);
+    }
+  }
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -57,8 +94,24 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Profile</Text>
-      <Text style={styles.email}>{session?.user.email}</Text>
+      {/* Avatar header */}
+      <TouchableOpacity
+        style={styles.avatarHeader}
+        onPress={() => router.push('/profile/edit' as never)}
+        activeOpacity={0.8}
+      >
+        <View style={{ position: 'relative' }}>
+          <AvatarCircle
+            size={80}
+            imageUri={profile?.avatar_url}
+            displayName={profile?.display_name || 'U'}
+          />
+          <View style={styles.pencilOverlay}>
+            <Ionicons name="pencil-outline" size={16} color={COLORS.accent} />
+          </View>
+        </View>
+        <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
+      </TouchableOpacity>
 
       {/* Your Status section */}
       <Text style={styles.sectionHeader}>YOUR STATUS</Text>
@@ -142,6 +195,25 @@ export default function ProfileScreen() {
         </View>
       </TouchableOpacity>
 
+      {/* Notifications section */}
+      <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
+
+      <View style={styles.row}>
+        <Ionicons
+          name="notifications-outline"
+          size={20}
+          color={COLORS.textSecondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>Plan invites</Text>
+        <Switch
+          value={notificationsEnabled}
+          onValueChange={handleToggleNotifications}
+          trackColor={{ false: COLORS.border, true: COLORS.accent + '40' }}
+          thumbColor={notificationsEnabled ? COLORS.accent : COLORS.border}
+        />
+      </View>
+
       {/* Logout row per UI-SPEC: full width, 52px, destructive color */}
       <TouchableOpacity style={styles.logoutRow} onPress={handleLogout} disabled={loggingOut}>
         {loggingOut ? (
@@ -163,19 +235,28 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingBottom: 32,
   },
-  heading: {
+  avatarHeader: {
+    alignItems: 'center',
+    paddingBottom: 24,
+    paddingHorizontal: 16,
+  },
+  pencilOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  displayName: {
     fontSize: 20,
     fontWeight: '600',
     color: COLORS.textPrimary,
-    marginBottom: 8,
-    paddingHorizontal: 16,
-  },
-  email: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginBottom: 32,
-    paddingHorizontal: 16,
+    marginTop: 12,
+    textAlign: 'center',
   },
   sectionHeader: {
     fontSize: 14,
