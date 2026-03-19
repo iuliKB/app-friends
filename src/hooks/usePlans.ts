@@ -34,12 +34,12 @@ export function usePlans(): {
     setError(null);
 
     try {
-      // Step 1: get plan_ids the user is a member of (exclude declined)
+      // Step 1: get plan_ids the user has accepted (going/maybe only — not invited or out)
       const { data: memberRows, error: memberError } = await supabase
         .from('plan_members')
         .select('plan_id, rsvp')
         .eq('user_id', session.user.id)
-        .neq('rsvp', 'out');
+        .in('rsvp', ['going', 'maybe']);
 
       if (memberError) {
         setError(`plan_members query: ${memberError.message}`);
