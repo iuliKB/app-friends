@@ -34,11 +34,12 @@ export function usePlans(): {
     setError(null);
 
     try {
-      // Step 1: get plan_ids the user is a member of
+      // Step 1: get plan_ids the user is a member of (exclude declined)
       const { data: memberRows, error: memberError } = await supabase
         .from('plan_members')
-        .select('plan_id')
-        .eq('user_id', session.user.id);
+        .select('plan_id, rsvp')
+        .eq('user_id', session.user.id)
+        .neq('rsvp', 'out');
 
       if (memberError) {
         setError(`plan_members query: ${memberError.message}`);

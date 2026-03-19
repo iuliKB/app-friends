@@ -135,6 +135,30 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
 
   const currentUserRsvp =
     plan.members.find((m) => m.user_id === session?.user?.id)?.rsvp ?? 'invited';
+  const isInvited = currentUserRsvp === 'invited';
+  const [respondingInvite, setRespondingInvite] = useState(false);
+
+  async function handleAcceptInvite() {
+    setRespondingInvite(true);
+    const { error: rsvpError } = await updateRsvp('going');
+    setRespondingInvite(false);
+    if (rsvpError) {
+      Alert.alert('Error', "Couldn't accept invite. Try again.");
+      return;
+    }
+    await refetch();
+  }
+
+  async function handleDeclineInvite() {
+    setRespondingInvite(true);
+    const { error: rsvpError } = await updateRsvp('out');
+    setRespondingInvite(false);
+    if (rsvpError) {
+      Alert.alert('Error', "Couldn't decline invite. Try again.");
+      return;
+    }
+    router.back();
+  }
 
   return (
     <ScrollView
@@ -142,6 +166,29 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
     >
+      {/* Invitation Banner */}
+      {isInvited && (
+        <View style={styles.inviteBanner}>
+          <Text style={styles.inviteText}>{"You've been invited to this plan"}</Text>
+          <View style={styles.inviteActions}>
+            <TouchableOpacity
+              style={styles.acceptButton}
+              onPress={handleAcceptInvite}
+              disabled={respondingInvite}
+            >
+              <Text style={styles.acceptText}>{'Accept'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.declineButton}
+              onPress={handleDeclineInvite}
+              disabled={respondingInvite}
+            >
+              <Text style={styles.declineText}>{'Decline'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       {/* Details Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
@@ -218,7 +265,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       {/* Who's Going Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{"Who's Going"}</Text>
-        <RSVPButtons currentRsvp={currentUserRsvp} onRsvp={handleRsvp} />
+        {!isInvited && <RSVPButtons currentRsvp={currentUserRsvp} onRsvp={handleRsvp} />}
         <MemberList
           members={plan.members}
           creatorId={plan.created_by}
@@ -353,5 +400,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 16,
+  },
+  inviteBanner: {
+    backgroundColor: COLORS.secondary,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+  },
+  inviteText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+  },
+  inviteActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  acceptButton: {
+    flex: 1,
+    backgroundColor: COLORS.status.free,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  acceptText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.dominant,
+  },
+  declineButton: {
+    flex: 1,
+    backgroundColor: COLORS.border,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  declineText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
   },
 });
