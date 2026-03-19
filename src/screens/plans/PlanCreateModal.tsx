@@ -101,7 +101,7 @@ export function PlanCreateModal() {
     setCreating(false);
 
     if (error || !planId) {
-      Alert.alert('Error', "Couldn't create plan. Try again.");
+      Alert.alert('Error', `Couldn't create plan. ${error?.message ?? 'Unknown error'}`);
       return;
     }
 
