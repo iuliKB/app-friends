@@ -17,8 +17,8 @@
 
 - [x] **PROF-01**: User can create profile with username, display name, and avatar
 - [x] **PROF-02**: User can upload avatar image to Supabase Storage
-- [ ] **PROF-03**: User can edit display name and change avatar
-- [ ] **PROF-04**: User can view other users' profiles
+- [x] **PROF-03**: User can edit display name and change avatar
+- [x] **PROF-04**: User can view other users' profiles
 
 ### Friends
 
@@ -89,8 +89,8 @@
 ### UI Polish
 
 - [ ] **UIPOL-01**: Consistent spacing and styling across all screens
-- [ ] **UIPOL-02**: Loading states on all async operations
-- [ ] **UIPOL-03**: Empty states for all list screens explaining the feature inline
+- [x] **UIPOL-02**: Loading states on all async operations
+- [x] **UIPOL-03**: Empty states for all list screens explaining the feature inline
 - [ ] **UIPOL-04**: Status colours: Free=#22c55e, Busy=#ef4444, Maybe=#eab308 used consistently
 
 ## v2 Requirements
@@ -144,8 +144,8 @@
 | AUTH-05 | Phase 1 | Complete |
 | PROF-01 | Phase 1 | Complete |
 | PROF-02 | Phase 1 | Complete |
-| PROF-03 | Phase 6 | Pending |
-| PROF-04 | Phase 6 | Pending |
+| PROF-03 | Phase 6 | Complete |
+| PROF-04 | Phase 6 | Complete |
 | FRND-01 | Phase 2 | Complete |
 | FRND-02 | Phase 2 | Complete |
 | FRND-03 | Phase 2 | Complete |
@@ -189,8 +189,8 @@
 | INFR-05 | Phase 1 | Complete |
 | INFR-06 | Phase 1 | Complete |
 | UIPOL-01 | Phase 6 | Pending |
-| UIPOL-02 | Phase 6 | Pending |
-| UIPOL-03 | Phase 6 | Pending |
+| UIPOL-02 | Phase 6 | Complete |
+| UIPOL-03 | Phase 6 | Complete |
 | UIPOL-04 | Phase 6 | Pending |
 
 **Coverage:**

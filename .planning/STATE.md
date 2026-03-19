@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 6 UI-SPEC approved
-last_updated: "2026-03-19T00:43:57.884Z"
+stopped_at: Completed 06-02 shared components + profile screens
+last_updated: "2026-03-19T01:03:24.647Z"
 last_activity: 2026-03-18 — Completed 03-01 Home Screen friend grid with Zustand cache, HomeFriendCard, FAB
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 17
+  completed_plans: 15
   percent: 13
 ---
 
@@ -64,6 +64,7 @@ Progress: [██░░░░░░░░] 13%
 | Phase 04-plans P03 | 2 | 2 tasks | 3 files |
 | Phase 05-chat P01 | 4 | 2 tasks | 10 files |
 | Phase 05-chat P02 | 3 | 2 tasks | 7 files |
+| Phase 06-notifications-polish P02 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,9 @@ Recent decisions affecting current work:
 - [Phase 05-chat]: ChatRoomScreen and components created in Task 1 to unblock TypeScript compilation for room.tsx import chain
 - [Phase 05-chat]: formatRelativeTime duplicated inline in ChatListRow — avoids coupling to MessageBubble internals
 - [Phase 05-chat]: useChatList 30s cache TTL; manual refresh always bypasses cache via separate handleRefresh path
+- [Phase 06-notifications-polish]: EditProfileScreen isDirty check on name+avatar prevents pointless server calls on Save
+- [Phase 06-notifications-polish]: FriendProfileScreen fetches profile+status in parallel with Promise.all
+- [Phase 06-notifications-polish]: Stack.Screen title set inline in FriendProfileScreen component — no useEffect needed
 
 ### Pending Todos
 
@@ -127,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T00:43:57.879Z
-Stopped at: Phase 6 UI-SPEC approved
-Resume file: .planning/phases/06-notifications-polish/06-UI-SPEC.md
+Last session: 2026-03-19T01:03:24.644Z
+Stopped at: Completed 06-02 shared components + profile screens
+Resume file: None

@@ -141,4 +141,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Home Screen | 2/2 | Complete   | 2026-03-18 |
 | 4. Plans | 3/3 | Complete   | 2026-03-18 |
 | 5. Chat | 2/2 | Complete   | 2026-03-18 |
-| 6. Notifications + Polish | 0/3 | Not started | - |
+| 6. Notifications + Polish | 1/3 | In Progress|  |

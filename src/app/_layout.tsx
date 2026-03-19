@@ -1,8 +1,9 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
@@ -10,10 +11,20 @@ import { COLORS } from '@/constants/colors';
 
 SplashScreen.preventAutoHideAsync();
 
+// Show notification banner while app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 export default function RootLayout() {
   const { session, setSession, setLoading, needsProfileSetup, setNeedsProfileSetup } =
     useAuthStore();
   const [ready, setReady] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
@@ -63,6 +74,26 @@ export default function RootLayout() {
     return () => subscription.unsubscribe();
   }, [setSession, setLoading, setNeedsProfileSetup]);
 
+  useEffect(() => {
+    // CASE 1: App running/backgrounded — user taps notification
+    const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const planId = response.notification.request.content.data?.planId as string;
+      if (planId) router.push(`/plans/${planId}` as never);
+    });
+
+    // CASE 2: Cold start — app was killed, launched by tapping notification
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (!response) return;
+      const planId = response.notification.request.content.data?.planId as string;
+      if (planId) {
+        // Delay to ensure navigation tree is mounted
+        setTimeout(() => router.push(`/plans/${planId}` as never), 150);
+      }
+    });
+
+    return () => responseSub.remove();
+  }, [router]);
+
   if (!ready) {
     return (
       <LinearGradient
@@ -84,7 +115,10 @@ export default function RootLayout() {
       >
         <Stack.Protected guard={!!session && !needsProfileSetup}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="plan-create" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen
+            name="plan-create"
+            options={{ presentation: 'modal', headerShown: false }}
+          />
           <Stack.Screen name="plans" options={{ headerShown: false }} />
         </Stack.Protected>
         <Stack.Protected guard={!!session && needsProfileSetup}>
