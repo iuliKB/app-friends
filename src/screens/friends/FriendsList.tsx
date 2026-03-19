@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,7 +7,7 @@ import { COLORS } from '@/constants/colors';
 import { useFriends } from '@/hooks/useFriends';
 import { FriendCard } from '@/components/friends/FriendCard';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
-import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { EmptyState } from '@/components/common/EmptyState';
 import { supabase } from '@/lib/supabase';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
@@ -45,7 +45,8 @@ export function FriendsList() {
   }
 
   function handleViewProfile() {
-    Alert.alert('Coming soon', 'Coming in Phase 6');
+    if (!selectedFriend) return;
+    router.push(`/friends/${selectedFriend.friend_id}` as never);
     handleCloseSheet();
   }
 
@@ -66,17 +67,6 @@ export function FriendsList() {
     );
   }
 
-  function renderEmpty() {
-    return (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="people-outline" size={64} color={COLORS.border} />
-        <Text style={styles.emptyHeading}>No friends yet</Text>
-        <Text style={styles.emptyBody}>Add friends by username or QR code to see them here.</Text>
-        <PrimaryButton title="Add Friend" onPress={() => router.push('/friends/add')} />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -86,7 +76,17 @@ export function FriendsList() {
           <FriendCard friend={item} onPress={() => handleFriendPress(item)} />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={loadingFriends ? null : renderEmpty()}
+        ListEmptyComponent={
+          loadingFriends ? null : (
+            <EmptyState
+              icon="👥"
+              heading="No friends yet"
+              body="Add friends by username or share your QR code — tap the + button to get started."
+              ctaLabel="Add Friend"
+              onCta={() => router.push('/friends/add')}
+            />
+          )
+        }
         onRefresh={fetchFriends}
         refreshing={loadingFriends}
         contentContainerStyle={friends.length === 0 ? styles.emptyList : undefined}
@@ -126,26 +126,6 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 16,
-  },
-  emptyBody: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 24,
   },
   fab: {
     position: 'absolute',

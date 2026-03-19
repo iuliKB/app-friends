@@ -1,14 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
@@ -18,6 +9,7 @@ import { SearchResultCard } from '@/components/friends/SearchResultCard';
 import { QRScanView } from '@/components/friends/QRScanView';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import type { Profile } from '@/types/app';
 
 type SearchStatus = 'idle' | 'loading' | 'pending';
@@ -212,11 +204,7 @@ export function AddFriend() {
         <View style={styles.qrContainer}>
           {scanState === 'scanning' && <QRScanView onScanned={handleScanned} />}
 
-          {scanState === 'loading' && (
-            <View style={styles.qrLoadingContainer}>
-              <ActivityIndicator color={COLORS.textPrimary} size="large" />
-            </View>
-          )}
+          {scanState === 'loading' && <LoadingIndicator color={COLORS.textPrimary} />}
 
           {scanState === 'error' && (
             <View style={styles.qrErrorContainer}>
@@ -358,11 +346,6 @@ const styles = StyleSheet.create({
   },
   qrContainer: {
     flex: 1,
-  },
-  qrLoadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   qrErrorContainer: {
     flex: 1,

@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { COLORS } from '@/constants/colors';
 import { useFriends } from '@/hooks/useFriends';
 import { RequestCard } from '@/components/friends/RequestCard';
+import { EmptyState } from '@/components/common/EmptyState';
 
 export function FriendRequests() {
   const {
@@ -56,16 +56,6 @@ export function FriendRequests() {
     }
   }
 
-  function renderEmpty() {
-    return (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="checkmark-circle-outline" size={64} color={COLORS.border} />
-        <Text style={styles.emptyHeading}>All caught up</Text>
-        <Text style={styles.emptyBody}>No pending friend requests.</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -80,7 +70,16 @@ export function FriendRequests() {
           />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={loadingPending ? null : renderEmpty()}
+        ListEmptyComponent={
+          loadingPending ? null : (
+            <EmptyState
+              icon="person-add-outline"
+              iconType="ionicons"
+              heading="No pending requests"
+              body="Friend requests you receive will show up here."
+            />
+          )
+        }
         onRefresh={fetchPendingRequests}
         refreshing={loadingPending}
         contentContainerStyle={pendingRequests.length === 0 ? styles.emptyList : undefined}
@@ -100,24 +99,5 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 16,
-  },
-  emptyBody: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 8,
-    textAlign: 'center',
   },
 });

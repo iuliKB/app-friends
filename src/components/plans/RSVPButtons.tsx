@@ -11,9 +11,9 @@ interface RSVPButtonsProps {
 }
 
 const RSVP_OPTIONS: { value: RsvpValue; label: string; activeColor: string }[] = [
-  { value: 'going', label: 'Going', activeColor: '#22c55e' },
-  { value: 'maybe', label: 'Maybe', activeColor: '#eab308' },
-  { value: 'out', label: 'Out', activeColor: '#ef4444' },
+  { value: 'going', label: 'Going', activeColor: COLORS.status.free },
+  { value: 'maybe', label: 'Maybe', activeColor: COLORS.status.maybe },
+  { value: 'out', label: 'Out', activeColor: COLORS.status.busy },
 ];
 
 export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButtonsProps) {
@@ -75,9 +75,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonInactive: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: COLORS.secondary,
     borderWidth: 1,
-    borderColor: '#3f3f46',
+    borderColor: COLORS.border,
   },
   label: {
     fontSize: 14,

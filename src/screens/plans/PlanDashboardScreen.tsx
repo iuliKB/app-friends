@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -20,6 +19,7 @@ import { MemberList } from '@/components/plans/MemberList';
 import { LinkDumpField } from '@/components/plans/LinkDumpField';
 import { IOUNotesField } from '@/components/plans/IOUNotesField';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { formatPlanTime } from '@/components/plans/PlanCard';
 
 interface PlanDashboardScreenProps {
@@ -118,11 +118,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   }
 
   if (loading && !plan) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={COLORS.accent} />
-      </View>
-    );
+    return <LoadingIndicator />;
   }
 
   if (error && !plan) {
@@ -223,7 +219,15 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{"Who's Going"}</Text>
         <RSVPButtons currentRsvp={currentUserRsvp} onRsvp={handleRsvp} />
-        <MemberList members={plan.members} creatorId={plan.created_by} />
+        <MemberList
+          members={plan.members}
+          creatorId={plan.created_by}
+          onMemberPress={(userId) => {
+            if (userId !== session?.user?.id) {
+              router.push(`/friends/${userId}` as never);
+            }
+          }}
+        />
       </View>
 
       {/* Links Section */}

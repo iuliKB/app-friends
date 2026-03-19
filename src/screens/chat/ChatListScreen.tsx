@@ -1,10 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '@/constants/colors';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
+import { EmptyState } from '@/components/common/EmptyState';
+import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import type { ChatListItem } from '@/types/chat';
 
 export function ChatListScreen() {
@@ -25,11 +26,7 @@ export function ChatListScreen() {
   }
 
   if (loading && chatList.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.accent} />
-      </View>
-    );
+    return <LoadingIndicator />;
   }
 
   return (
@@ -43,11 +40,11 @@ export function ChatListScreen() {
       contentContainerStyle={chatList.length === 0 ? styles.emptyList : undefined}
       style={styles.list}
       ListEmptyComponent={
-        <View style={styles.emptyContainer}>
-          <Ionicons name="chatbubble-outline" size={64} color={COLORS.border} />
-          <Text style={styles.emptyHeading}>No chats yet</Text>
-          <Text style={styles.emptyBody}>Create a plan or message a friend to get started</Text>
-        </View>
+        <EmptyState
+          icon="💬"
+          heading="No conversations yet"
+          body="Start a DM from a friend's card, or create a plan to get a group chat going."
+        />
       }
     />
   );
@@ -58,12 +55,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.dominant,
   },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: COLORS.dominant,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   separator: {
     height: 1,
     backgroundColor: COLORS.border,
@@ -71,24 +62,5 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 16,
-  },
-  emptyBody: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
   },
 });

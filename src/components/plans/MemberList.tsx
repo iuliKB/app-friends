@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { COLORS } from '@/constants/colors';
 import type { PlanMember } from '@/types/plans';
@@ -7,6 +7,7 @@ import type { PlanMember } from '@/types/plans';
 interface MemberListProps {
   members: PlanMember[];
   creatorId: string;
+  onMemberPress?: (userId: string) => void;
 }
 
 type RsvpGroup = {
@@ -22,7 +23,7 @@ const GROUPS: RsvpGroup[] = [
   { label: 'Not Going', rsvpValue: 'out', dimmed: true },
 ];
 
-export function MemberList({ members, creatorId }: MemberListProps) {
+export function MemberList({ members, creatorId, onMemberPress }: MemberListProps) {
   return (
     <View>
       {GROUPS.map(({ label, rsvpValue, dimmed }) => {
@@ -35,7 +36,13 @@ export function MemberList({ members, creatorId }: MemberListProps) {
               {label} ({groupMembers.length})
             </Text>
             {groupMembers.map((member) => (
-              <View key={member.user_id} style={[styles.memberRow, dimmed && styles.dimmed]}>
+              <TouchableOpacity
+                key={member.user_id}
+                style={[styles.memberRow, dimmed && styles.dimmed]}
+                onPress={() => onMemberPress?.(member.user_id)}
+                activeOpacity={onMemberPress ? 0.7 : 1}
+                disabled={!onMemberPress}
+              >
                 <AvatarCircle
                   size={32}
                   imageUri={member.profiles.avatar_url}
@@ -43,7 +50,7 @@ export function MemberList({ members, creatorId }: MemberListProps) {
                 />
                 <Text style={styles.memberName}>{member.profiles.display_name}</Text>
                 {member.user_id === creatorId && <Text style={styles.creatorBadge}>Creator</Text>}
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         );

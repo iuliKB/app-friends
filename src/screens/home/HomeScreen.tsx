@@ -18,7 +18,7 @@ import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { useStatus } from '@/hooks/useStatus';
 import { SegmentedControl } from '@/components/status/SegmentedControl';
 import { HomeFriendCard } from '@/components/home/HomeFriendCard';
-import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { EmptyState } from '@/components/common/EmptyState';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 import type { StatusValue } from '@/types/app';
 
@@ -82,12 +82,11 @@ export function HomeScreen() {
 
         {/* Empty state */}
         {friends.length === 0 && !statusLoading && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>{'🔥'}</Text>
-            <Text style={styles.emptyHeading}>{'No friends yet'}</Text>
-            <Text style={styles.emptyBody}>{"Add your first friends to see who's free!"}</Text>
-            <PrimaryButton title="Add Friends" onPress={() => router.push('/friends/add')} />
-          </View>
+          <EmptyState
+            icon="🔥"
+            heading="Nobody's free right now"
+            body="When friends set their status to Free, they'll show up here."
+          />
         )}
 
         {/* Count heading */}
@@ -163,29 +162,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     paddingHorizontal: 16,
     paddingBottom: 8,
-  },
-  emptyState: {
-    paddingHorizontal: 32,
-    alignItems: 'center',
-    paddingTop: 48,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    textAlign: 'center',
-  },
-  emptyHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptyBody: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 24,
   },
   countHeading: {
     fontSize: 24,

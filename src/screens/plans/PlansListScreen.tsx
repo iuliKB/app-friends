@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/colors';
 import { usePlans } from '@/hooks/usePlans';
 import { PlanCard } from '@/components/plans/PlanCard';
+import { EmptyState } from '@/components/common/EmptyState';
 import type { PlanWithMembers } from '@/types/plans';
 
 export function PlansListScreen() {
@@ -26,9 +27,11 @@ export function PlansListScreen() {
           error ? (
             <Text style={styles.errorText}>{"Couldn't load plans. Pull down to try again."}</Text>
           ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyHeading}>{'No active plans'}</Text>
-            </View>
+            <EmptyState
+              icon="📅"
+              heading="No plans yet"
+              body="Tap the + button to create a quick plan and invite your free friends."
+            />
           )
         }
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -76,16 +79,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     paddingHorizontal: 0,
     paddingTop: 8,
-  },
-  emptyState: {
-    paddingTop: 48,
-    alignItems: 'center',
-  },
-  emptyHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    textAlign: 'center',
   },
   separator: {
     height: 12,
