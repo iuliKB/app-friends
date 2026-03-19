@@ -41,7 +41,7 @@ export function usePlans(): {
         .eq('user_id', session.user.id);
 
       if (memberError) {
-        setError(memberError.message);
+        setError(`plan_members query: ${memberError.message}`);
         setLoading(false);
         return;
       }
@@ -63,7 +63,7 @@ export function usePlans(): {
         .order('scheduled_for', { ascending: true });
 
       if (plansError) {
-        setError(plansError.message);
+        setError(`plans query: ${plansError.message}`);
         setLoading(false);
         return;
       }
@@ -76,24 +76,51 @@ export function usePlans(): {
         return;
       }
 
-      // Step 3: get all members for those plans with profiles
+      // Step 3: get all members for those plans
       const { data: allMembers, error: membersError } = await supabase
         .from('plan_members')
-        .select('plan_id, user_id, rsvp, joined_at, profiles ( id, display_name, avatar_url )')
+        .select('plan_id, user_id, rsvp, joined_at')
         .in('plan_id', fetchedPlanIds);
 
       if (membersError) {
-        setError(membersError.message);
+        setError(`members query: ${membersError.message}`);
         setLoading(false);
         return;
+      }
+
+      // Step 3b: get profiles for all member user_ids
+      const memberUserIds = [...new Set((allMembers ?? []).map((m) => m.user_id as string))];
+      let profileMap = new Map<string, { id: string; display_name: string; avatar_url: string | null }>();
+
+      if (memberUserIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', memberUserIds);
+
+        if (profilesError) {
+          setError(`profiles query: ${profilesError.message}`);
+          setLoading(false);
+          return;
+        }
+
+        profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
       }
 
       // Step 4: assemble PlanWithMembers[]
       const membersMap = new Map<string, PlanMember[]>();
       for (const m of allMembers ?? []) {
         const planId = m.plan_id as string;
+        const userId = m.user_id as string;
+        const profile = profileMap.get(userId);
         if (!membersMap.has(planId)) membersMap.set(planId, []);
-        membersMap.get(planId)!.push(m as unknown as PlanMember);
+        membersMap.get(planId)!.push({
+          plan_id: planId,
+          user_id: userId,
+          rsvp: m.rsvp,
+          joined_at: m.joined_at,
+          profiles: profile ?? { id: userId, display_name: 'Unknown', avatar_url: null },
+        } as PlanMember);
       }
 
       const result: PlanWithMembers[] = (planRows ?? []).map((p) => ({

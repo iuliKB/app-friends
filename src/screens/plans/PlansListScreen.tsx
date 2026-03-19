@@ -25,7 +25,7 @@ export function PlansListScreen() {
         ListHeaderComponent={<Text style={styles.heading}>{'Your Plans'}</Text>}
         ListEmptyComponent={
           error ? (
-            <Text style={styles.errorText}>{"Couldn't load plans. Pull down to try again."}</Text>
+            <Text style={styles.errorText}>{error ?? "Couldn't load plans. Pull down to try again."}</Text>
           ) : (
             <EmptyState
               icon="📅"
