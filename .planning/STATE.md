@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07-design-tokens P01 | 2 | 2 tasks | 6 files |
 | Phase 08-shared-components P03 | 2m | 2 tasks | 5 files |
 | Phase 08-shared-components P02 | 2min | 2 tasks | 3 files |
+| Phase 08-shared-components P01 | 2min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ Full v1.0 decision log in PROJECT.md Key Decisions table.
 - [Phase 08-shared-components]: Use COLORS as THEME alias from @/theme to avoid collision with legacy @/constants/colors import during Phase 8 RefreshControl standardization
 - [Phase 08-shared-components]: FlatList shorthand onRefresh/refreshing replaced by explicit refreshControl prop on Friends+Chat screens to enable tintColor override
 - [Phase 08-shared-components]: ErrorDisplay uses useEffect for console.error to avoid render-time side effects; ScreenHeader rightAction slot renders ReactNode unwrapped for maximum caller flexibility
+- [Phase 08-01]: FAB uses RADII.full for both circle and pill shape; auth/FormField.tsx converted to re-export stub for Phase 9 deletion; actual auth screen filenames are AuthScreen.tsx and ProfileSetup.tsx
 
 ### UI Audit Findings (carried from v1.0)
 
@@ -85,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T22:00:00.435Z
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-03-24T21:59:37Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None

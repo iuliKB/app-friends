@@ -18,8 +18,8 @@ Requirements for UI/UX Design System milestone. Each maps to roadmap phases.
 
 ### Shared Components
 
-- [ ] **COMP-01**: Unified FAB component supports icon-only, icon+label, and centered variants via props
-- [ ] **COMP-02**: FormField component moved from auth/ to common/ with consistent styling using design tokens
+- [x] **COMP-01**: Unified FAB component supports icon-only, icon+label, and centered variants via props
+- [x] **COMP-02**: FormField component moved from auth/ to common/ with consistent styling using design tokens
 - [x] **COMP-03**: ErrorDisplay component for inline form errors and screen-level error states
 - [x] **COMP-04**: ScreenHeader component with consistent title treatment matching Plans view pattern
 - [x] **COMP-05**: Pull-to-refresh (RefreshControl) added to Home, Plans, and Friends list views
@@ -70,8 +70,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOKN-04 | Phase 7 | Complete |
 | TOKN-05 | Phase 7 | Complete |
 | TOKN-06 | Phase 7 | Complete |
-| COMP-01 | Phase 8 | Pending |
-| COMP-02 | Phase 8 | Pending |
+| COMP-01 | Phase 8 | Complete |
+| COMP-02 | Phase 8 | Complete |
 | COMP-03 | Phase 8 | Complete |
 | COMP-04 | Phase 8 | Complete |
 | COMP-05 | Phase 8 | Complete |

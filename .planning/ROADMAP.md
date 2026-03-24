@@ -24,7 +24,7 @@
 **Milestone Goal:** Extract a design system from the best v1.0 screens and apply it consistently across the entire app, eliminating all hardcoded style values and creating a foundation for future views.
 
 - [x] **Phase 7: Design Tokens** — Define all token constants (color, spacing, typography, radii, shadows) and install the lint rule that enforces their use (completed 2026-03-24)
-- [ ] **Phase 8: Shared Components** — Build the common component library (FAB, FormField, ErrorDisplay, ScreenHeader, pull-to-refresh) on top of design tokens
+- [x] **Phase 8: Shared Components** — Build the common component library (FAB, FormField, ErrorDisplay, ScreenHeader, pull-to-refresh) on top of design tokens (completed 2026-03-24)
 - [ ] **Phase 9: Screen Consistency Sweep** — Migrate all 11 screens to use tokens and shared components; lint rule passes across all files
 
 ## Phase Details
@@ -90,5 +90,5 @@ Phases execute in numeric order: 7 → 8 → 9
 | 5. Chat | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 6. Notifications + Polish | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 7. Design Tokens | v1.1 | 2/2 | Complete | 2026-03-24 |
-| 8. Shared Components | 2/3 | In Progress|  | - |
+| 8. Shared Components | 3/3 | Complete   | 2026-03-24 | - |
 | 9. Screen Consistency Sweep | v1.1 | 0/TBD | Not started | - |
