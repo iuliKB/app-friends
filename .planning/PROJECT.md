@@ -31,7 +31,25 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Active
 
-(None — define for next milestone via `/gsd:new-milestone`)
+<!-- v1.1 — UI/UX Design System & Consistency -->
+
+- [ ] Design system extracted from reference views (Plans, Chats)
+- [ ] Color constants used consistently across all screens
+- [ ] Spacing scale applied uniformly (screen padding, sections, components)
+- [ ] Typography scale standardized
+- [ ] Reusable shared components (FAB, form inputs, error displays, loading/empty states)
+- [ ] Pull-to-refresh pattern on all list views
+- [ ] Consistent view title treatment across all screens
+
+## Current Milestone: v1.1 UI/UX Design System
+
+**Goal:** Extract a design system from the best v1.0 screens and apply it consistently across the entire app, creating a solid foundation for future views.
+
+**Target features:**
+- Design tokens (colors, spacing, typography, radii) extracted from Plans and Chats reference views
+- Shared component library (FAB, inputs, errors, loading, empty states)
+- All screens refactored to use design system
+- Pull-to-refresh standardized on list views
 
 ### Out of Scope
 
@@ -90,4 +108,4 @@ Known technical considerations:
 | AsyncStorage notification toggle | Per-device preference, default enabled | ✓ Good |
 
 ---
-*Last updated: 2026-03-24 after v1.0 milestone*
+*Last updated: 2026-03-24 after v1.1 milestone started*
