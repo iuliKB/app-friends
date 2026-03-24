@@ -10,7 +10,7 @@ export default function ProfileLayout() {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="edit" options={{ title: 'Edit Profile' }} />
+      <Stack.Screen name="edit" options={{ headerShown: false }} />
     </Stack>
   );
 }

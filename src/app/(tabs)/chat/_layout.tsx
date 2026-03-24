@@ -9,6 +9,8 @@ export default function ChatStackLayout() {
         headerTintColor: COLORS.text.primary,
         headerShadowVisible: false,
       }}
-    />
+    >
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+    </Stack>
   );
 }

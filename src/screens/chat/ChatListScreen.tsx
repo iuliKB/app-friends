@@ -1,8 +1,9 @@
 import React from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { COLORS } from '@/theme';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -37,7 +38,9 @@ export function ChatListScreen() {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
       ListHeaderComponent={
-        <Text style={[styles.heading, { paddingTop: insets.top + SPACING.sm }]}>{'Chats'}</Text>
+        <View style={{ paddingTop: insets.top }}>
+          <ScreenHeader title="Chats" />
+        </View>
       }
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       refreshControl={
@@ -64,13 +67,6 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
     backgroundColor: COLORS.surface.base,
-  },
-  heading: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
   },
   separator: {
     height: 1,

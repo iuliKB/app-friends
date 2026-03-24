@@ -16,6 +16,7 @@ import {
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { APP_CONFIG } from '@/constants/config';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
@@ -150,6 +151,8 @@ export default function EditProfileScreen() {
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
     >
+      <ScreenHeader title="Edit Profile" />
+
       {/* Avatar section */}
       <View style={styles.avatarSection}>
         <View style={styles.avatarWrapper}>
