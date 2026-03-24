@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/colors';
-import { COLORS as THEME } from '@/theme';
+import { COLORS, SPACING } from '@/theme';
 import { useFriends } from '@/hooks/useFriends';
 import { FriendCard } from '@/components/friends/FriendCard';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
 import { EmptyState } from '@/components/common/EmptyState';
+import { FAB } from '@/components/common/FAB';
 import { supabase } from '@/lib/supabase';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 export function FriendsList() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { friends, loadingFriends, fetchFriends, removeFriend } = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -92,21 +90,17 @@ export function FriendsList() {
           <RefreshControl
             refreshing={loadingFriends}
             onRefresh={fetchFriends}
-            tintColor={THEME.interactive.accent}
+            tintColor={COLORS.interactive.accent}
           />
         }
         contentContainerStyle={friends.length === 0 ? styles.emptyList : undefined}
       />
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={[styles.fab, { bottom: 24 + insets.bottom }]}
+      <FAB
+        icon={<Ionicons name="person-add-outline" size={24} color={COLORS.surface.base} />}
         onPress={() => router.push('/friends/add')}
-        activeOpacity={0.8}
-        accessibilityLabel="Add friend"
-      >
-        <Ionicons name="person-add-outline" size={24} color={COLORS.dominant} />
-      </TouchableOpacity>
+        accessibilityLabel="Add a friend"
+      />
 
       <FriendActionSheet
         visible={sheetVisible}
@@ -124,7 +118,7 @@ export function FriendsList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   separator: {
     height: 1,
@@ -132,20 +126,5 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  fab: {
-    position: 'absolute',
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
   },
 });

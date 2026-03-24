@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -162,13 +162,13 @@ export function AddFriend() {
             <Ionicons
               name="search-outline"
               size={20}
-              color={COLORS.textSecondary}
+              color={COLORS.text.secondary}
               style={styles.searchIcon}
             />
             <TextInput
               style={styles.searchInput}
               placeholder="Search by username..."
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={COLORS.text.secondary}
               value={query}
               onChangeText={setQuery}
               autoCapitalize="none"
@@ -204,7 +204,7 @@ export function AddFriend() {
         <View style={styles.qrContainer}>
           {scanState === 'scanning' && <QRScanView onScanned={handleScanned} />}
 
-          {scanState === 'loading' && <LoadingIndicator color={COLORS.textPrimary} />}
+          {scanState === 'loading' && <LoadingIndicator color={COLORS.text.primary} />}
 
           {scanState === 'error' && (
             <View style={styles.qrErrorContainer}>
@@ -272,20 +272,20 @@ export function AddFriend() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   tabSwitcher: {
     flexDirection: 'row',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    padding: 4,
-    marginHorizontal: 16,
-    marginTop: 16,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
+    padding: SPACING.xs,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
   },
   tab: {
     flex: 1,
     height: 40,
-    borderRadius: 8,
+    borderRadius: RADII.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -293,56 +293,56 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.border,
   },
   tabText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   activeTabText: {
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
     height: 52,
-    marginTop: 16,
-    marginHorizontal: 16,
-    paddingLeft: 12,
+    marginTop: SPACING.lg,
+    marginHorizontal: SPACING.lg,
+    paddingLeft: SPACING.md,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: SPACING.sm,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
     height: '100%',
   },
   placeholderContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 32,
+    paddingTop: SPACING.xxl,
   },
   placeholderText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 16,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.lg,
     textAlign: 'center',
   },
   noResultsText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    paddingTop: 32,
-    paddingHorizontal: 16,
+    paddingTop: SPACING.xxl,
+    paddingHorizontal: SPACING.lg,
   },
   qrContainer: {
     flex: 1,
@@ -351,78 +351,78 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: SPACING.xl,
   },
   qrErrorText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.destructive,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.destructive,
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: SPACING.lg,
   },
   scannedCardContainer: {
-    padding: 16,
+    padding: SPACING.lg,
     alignItems: 'stretch',
   },
   scannedCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.xl,
+    padding: SPACING.lg,
   },
   scannedInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: SPACING.md,
   },
   scannedDisplayName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   scannedUsername: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
   },
   selfScanText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: SPACING.lg,
   },
   addFriendButton: {
-    marginTop: 12,
+    marginTop: SPACING.md,
   },
   pendingButton: {
-    marginTop: 12,
+    marginTop: SPACING.md,
     height: 52,
-    borderRadius: 12,
-    backgroundColor: COLORS.secondary,
+    borderRadius: RADII.lg,
+    backgroundColor: COLORS.surface.card,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pendingButtonText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   scanAgainButton: {
-    marginTop: 8,
+    marginTop: SPACING.sm,
     height: 52,
-    borderRadius: 12,
+    borderRadius: RADII.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   scanAgainText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
 });

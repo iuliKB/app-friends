@@ -1,8 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { COLORS } from '@/constants/colors';
-import { COLORS as THEME } from '@/theme';
+import { COLORS } from '@/theme';
 import { useFriends } from '@/hooks/useFriends';
 import { RequestCard } from '@/components/friends/RequestCard';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -85,7 +84,7 @@ export function FriendRequests() {
           <RefreshControl
             refreshing={loadingPending}
             onRefresh={fetchPendingRequests}
-            tintColor={THEME.interactive.accent}
+            tintColor={COLORS.interactive.accent}
           />
         }
         contentContainerStyle={pendingRequests.length === 0 ? styles.emptyList : undefined}
@@ -97,7 +96,7 @@ export function FriendRequests() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   separator: {
     height: 1,

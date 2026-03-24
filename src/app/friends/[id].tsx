@@ -5,7 +5,7 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -145,63 +145,64 @@ export default function FriendProfileScreen() {
 const styles = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 32,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xxl,
+    paddingBottom: SPACING.xxl,
   },
   topSection: {
     alignItems: 'center',
   },
   displayName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 16,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginTop: SPACING.lg,
     textAlign: 'center',
   },
   username: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
     textAlign: 'center',
   },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: SPACING.sm,
   },
   statusDot: {
     width: 10,
     height: 10,
-    borderRadius: 5,
-    marginRight: 6,
+    borderRadius: RADII.xs,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    marginRight: 6, // no exact token
   },
   statusText: {
-    fontSize: 16,
-    fontWeight: '400',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
   },
   contextTag: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   actionsSection: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
   },
   removeFriendButton: {
     height: 52,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: SPACING.sm,
   },
   removeFriendText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.destructive,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.destructive,
   },
 });

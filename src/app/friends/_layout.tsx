@@ -1,12 +1,12 @@
 import { Stack } from 'expo-router';
-import { COLORS } from '@/constants/colors';
+import { COLORS } from '@/theme';
 
 export default function FriendsLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: COLORS.dominant },
-        headerTintColor: COLORS.textPrimary,
+        headerStyle: { backgroundColor: COLORS.surface.base },
+        headerTintColor: COLORS.text.primary,
         headerShadowVisible: false,
       }}
     />
