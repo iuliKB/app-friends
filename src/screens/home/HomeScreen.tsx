@@ -6,15 +6,15 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
-import { COLORS as THEME } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { FAB } from '@/components/common/FAB';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { useStatus } from '@/hooks/useStatus';
 import { SegmentedControl } from '@/components/status/SegmentedControl';
@@ -62,15 +62,20 @@ export function HomeScreen() {
     <View style={styles.root}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 8 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + SPACING.sm }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={THEME.interactive.accent}
+            tintColor={COLORS.interactive.accent}
           />
         }
       >
+        {/* Screen title */}
+        <View style={styles.headerContainer}>
+          <ScreenHeader title="Campfire" />
+        </View>
+
         {/* Status toggle */}
         <View style={styles.toggleContainer}>
           <SegmentedControl value={status} onValueChange={handleStatusChange} saving={saving} />
@@ -131,15 +136,12 @@ export function HomeScreen() {
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity
-        style={[styles.fab, { bottom: 24 + insets.bottom }]}
+      <FAB
+        icon={<Ionicons name="add" size={20} color={COLORS.surface.base} />}
+        label="Start Plan"
         onPress={() => router.push('/plan-create')}
-        activeOpacity={0.8}
-        accessibilityLabel="Start Plan"
-      >
-        <Ionicons name="add" size={20} color={COLORS.dominant} />
-        <Text style={styles.fabLabel}>{'Start Plan'}</Text>
-      </TouchableOpacity>
+        accessibilityLabel="Create a new plan"
+      />
     </View>
   );
 }
@@ -147,63 +149,48 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingBottom: 100, // no exact token
+  },
+  headerContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
   toggleContainer: {
     paddingTop: 0,
-    paddingBottom: 16,
+    paddingBottom: SPACING.lg,
   },
   errorText: {
-    color: COLORS.textSecondary,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    color: COLORS.text.secondary,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
   countHeading: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
   columnWrapper: {
-    paddingHorizontal: 8,
+    paddingHorizontal: SPACING.sm,
   },
   gridContent: {
-    paddingHorizontal: 8,
+    paddingHorizontal: SPACING.sm,
   },
   sectionLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    paddingHorizontal: 16,
-    paddingTop: 32,
-    paddingBottom: 16,
-  },
-  fab: {
-    position: 'absolute',
-    right: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 28,
-    backgroundColor: COLORS.accent,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  fabLabel: {
-    color: COLORS.dominant,
-    fontWeight: '600',
-    fontSize: 15,
-    marginLeft: 6,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    fontSize: 18, // no exact token
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xxl,
+    paddingBottom: SPACING.lg,
   },
 });
