@@ -25,7 +25,7 @@
 
 - [x] **Phase 7: Design Tokens** — Define all token constants (color, spacing, typography, radii, shadows) and install the lint rule that enforces their use (completed 2026-03-24)
 - [x] **Phase 8: Shared Components** — Build the common component library (FAB, FormField, ErrorDisplay, ScreenHeader, pull-to-refresh) on top of design tokens (completed 2026-03-24)
-- [ ] **Phase 9: Screen Consistency Sweep** — Migrate all 11 screens to use tokens and shared components; lint rule passes across all files
+- [x] **Phase 9: Screen Consistency Sweep** — Migrate all 11 screens to use tokens and shared components; lint rule passes across all files (completed 2026-03-24)
 
 ## Phase Details
 
@@ -96,4 +96,4 @@ Phases execute in numeric order: 7 → 8 → 9
 | 6. Notifications + Polish | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 7. Design Tokens | v1.1 | 2/2 | Complete | 2026-03-24 |
 | 8. Shared Components | v1.1 | 3/3 | Complete | 2026-03-24 |
-| 9. Screen Consistency Sweep | 5/6 | In Progress|  | - |
+| 9. Screen Consistency Sweep | 6/6 | Complete   | 2026-03-24 | - |

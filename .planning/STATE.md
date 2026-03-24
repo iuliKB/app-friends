@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UI/UX Design System
 status: planning
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-03-24T23:21:56.390Z"
+stopped_at: Completed 09-06-PLAN.md
+last_updated: "2026-03-24T23:27:46.178Z"
 last_activity: 2026-03-24 — Roadmap created for v1.1 (Phases 7-9)
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-screen-consistency-sweep P02 | 5m | 2 tasks | 4 files |
 | Phase 09-screen-consistency-sweep P05 | 5m | 2 tasks | 13 files |
 | Phase 09-screen-consistency-sweep P03 | 5m | 2 tasks | 9 files |
+| Phase 09-screen-consistency-sweep P06 | 4m | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Full v1.0 decision log in PROJECT.md Key Decisions table.
 - [Phase 09-screen-consistency-sweep]: THEME alias from Phase 8 removed; all home/status files now use single direct COLORS import from @/theme
 - [Phase 09-screen-consistency-sweep]: Modal scrim rgba(0,0,0,0.6) kept with eslint-disable in FriendActionSheet — no exact token for backdrop opacity
 - [Phase 09-screen-consistency-sweep]: Plans domain token migration: eslint-disable-next-line campfire/no-hardcoded-styles for 6 genuinely unmapped values; #2a2a2a mapped to COLORS.surface.card in PlanCard and AvatarStack
+- [Phase 09-screen-consistency-sweep]: src/constants/colors.ts deleted — fully replaced by src/theme/colors.ts as single source of truth for design tokens
+- [Phase 09-screen-consistency-sweep]: Profile tab adopts ScreenHeader component; profile edit screen title managed by stack navigator header
 
 ### UI Audit Findings (carried from v1.0)
 
@@ -98,6 +101,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T23:21:56.387Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-03-24T23:27:46.175Z
+Stopped at: Completed 09-06-PLAN.md
 Resume file: None
