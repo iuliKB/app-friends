@@ -57,12 +57,12 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Create FAB component and move FormField to common/ with token migration
-- [ ] 08-02-PLAN.md — Create ErrorDisplay, ScreenHeader, and SectionHeader components
-- [ ] 08-03-PLAN.md — Standardize pull-to-refresh tintColor across all list screens
+- [x] 08-01-PLAN.md — Create FAB component and move FormField to common/ with token migration
+- [x] 08-02-PLAN.md — Create ErrorDisplay, ScreenHeader, and SectionHeader components
+- [x] 08-03-PLAN.md — Standardize pull-to-refresh tintColor across all list screens
 
 ### Phase 9: Screen Consistency Sweep
-**Goal**: Every screen and component in the app uses only design tokens and shared components — no raw style values remain and the lint rule passes across all 221 files
+**Goal**: Every screen and component in the app uses only design tokens and shared components — no raw style values remain and the lint rule passes across all files
 **Depends on**: Phase 7, Phase 8
 **Requirements**: SCRN-01, SCRN-02, SCRN-03, SCRN-04, SCRN-05, SCRN-06, SCRN-07
 **Success Criteria** (what must be TRUE):
@@ -71,10 +71,15 @@ Plans:
   3. Every screen title uses `<ScreenHeader>` and looks consistent across the app
   4. Every form input uses `<FormField>` with token-based styling
   5. `tsc --noEmit` passes with `"strict": true` and `"noUncheckedIndexedAccess": true` after all migrations
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 09-01: TBD
+- [ ] 09-01-PLAN.md — Flip ESLint severity warn->error, migrate common components and auth domain
+- [ ] 09-02-PLAN.md — Migrate Home domain (HomeScreen, HomeFriendCard, status components) with FAB + ScreenHeader
+- [ ] 09-03-PLAN.md — Migrate Plans domain (3 screens + 6 components) with FAB + ScreenHeader
+- [ ] 09-04-PLAN.md — Migrate Chat domain (2 screens + 4 components), resolve #3b82f6 with COLORS.feedback.info
+- [ ] 09-05-PLAN.md — Migrate Friends domain (3 screens + 7 components + route files) with FAB
+- [ ] 09-06-PLAN.md — Migrate Profile/Navigation, delete old files, verify full codebase zero violations
 
 ## Progress
 
@@ -90,5 +95,5 @@ Phases execute in numeric order: 7 → 8 → 9
 | 5. Chat | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 6. Notifications + Polish | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 7. Design Tokens | v1.1 | 2/2 | Complete | 2026-03-24 |
-| 8. Shared Components | 3/3 | Complete    | 2026-03-24 | - |
-| 9. Screen Consistency Sweep | v1.1 | 0/TBD | Not started | - |
+| 8. Shared Components | v1.1 | 3/3 | Complete | 2026-03-24 |
+| 9. Screen Consistency Sweep | v1.1 | 0/6 | Not started | - |
