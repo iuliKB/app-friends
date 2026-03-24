@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 
 interface EmptyStateProps {
@@ -44,28 +44,29 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: SPACING.xxl,
   },
   emoji: {
-    fontSize: 48,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    fontSize: 48, // no exact token — emoji display size
     textAlign: 'center',
   },
   heading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 16,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginTop: SPACING.lg,
     textAlign: 'center',
   },
   body: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: SPACING.sm,
   },
   ctaWrapper: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
     width: '100%',
   },
 });

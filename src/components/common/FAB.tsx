@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, FONT_WEIGHT, RADII, SHADOWS, SPACING } from '@/theme';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SHADOWS, SPACING } from '@/theme';
 
 export interface FABProps {
   icon: React.ReactNode;
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   label: {
     color: COLORS.surface.base,
     fontWeight: FONT_WEIGHT.semibold,
-    fontSize: 15,
+    fontSize: FONT_SIZE.lg,
     marginLeft: SPACING.sm,
   },
 });

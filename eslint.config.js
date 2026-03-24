@@ -19,7 +19,7 @@ module.exports = defineConfig([
       },
     },
     rules: {
-      'campfire/no-hardcoded-styles': 'warn',
+      'campfire/no-hardcoded-styles': 'error',
     },
   },
   {

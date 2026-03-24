@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View, ViewStyle } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS } from '@/theme';
 
 interface LoadingIndicatorProps {
   color?: string;
@@ -9,7 +9,7 @@ interface LoadingIndicatorProps {
 }
 
 export function LoadingIndicator({
-  color = COLORS.textSecondary,
+  color = COLORS.text.secondary,
   size = 'large',
   style,
 }: LoadingIndicatorProps) {

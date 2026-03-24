@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 export function OfflineBanner() {
@@ -24,15 +24,15 @@ export function OfflineBanner() {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: COLORS.offlineBg,
+    backgroundColor: COLORS.offline.bg,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.offlineText,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.offline.text,
     textAlign: 'center',
   },
 });

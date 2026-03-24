@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 
 interface PrimaryButtonProps {
   title: string;
@@ -23,7 +23,7 @@ export function PrimaryButton({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.dominant} />
+        <ActivityIndicator color={COLORS.surface.base} />
       ) : (
         <Text style={styles.text}>{title}</Text>
       )}
@@ -33,9 +33,9 @@ export function PrimaryButton({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: COLORS.interactive.accent,
     height: 52,
-    borderRadius: 12,
+    borderRadius: RADII.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.dominant,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
 });

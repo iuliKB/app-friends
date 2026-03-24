@@ -88,7 +88,8 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.primary,
-    paddingVertical: 14,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingVertical: 14, // no exact token — intentional per Phase 8 decision
   },
   errorText: {
     fontSize: FONT_SIZE.md,

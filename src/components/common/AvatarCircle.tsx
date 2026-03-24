@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 
 interface AvatarCircleProps {
   size?: number;
@@ -48,7 +48,7 @@ export function AvatarCircle({ size = 80, imageUri, displayName, onPress }: Avat
 
 const styles = StyleSheet.create({
   circle: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.surface.card,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -59,8 +59,8 @@ const styles = StyleSheet.create({
     left: 0,
   },
   initials: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.accent,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.interactive.accent,
   },
 });
