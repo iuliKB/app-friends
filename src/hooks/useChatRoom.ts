@@ -56,22 +56,50 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
     setError(null);
 
     try {
-      // Build profiles map for plan chats
+      // Build profiles map — fetch member user_ids then profiles separately
       if (planId) {
         const { data: members } = await supabase
           .from('plan_members')
-          .select('user_id, profiles ( id, display_name, avatar_url )')
+          .select('user_id')
           .eq('plan_id', planId);
 
-        if (members) {
-          for (const m of members) {
-            const profile = m.profiles as unknown as ProfileInfo | null;
-            if (profile && m.user_id) {
-              profilesMapRef.current.set(m.user_id, {
-                display_name: profile.display_name,
-                avatar_url: profile.avatar_url,
-              });
-            }
+        const userIds = (members ?? []).map((m) => m.user_id as string);
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url')
+            .in('id', userIds);
+
+          for (const p of profiles ?? []) {
+            profilesMapRef.current.set(p.id, {
+              display_name: p.display_name,
+              avatar_url: p.avatar_url,
+            });
+          }
+        }
+      } else if (dmChannelId) {
+        // For DMs, fetch the other user's profile
+        const { data: channel } = await supabase
+          .from('dm_channels')
+          .select('user_a, user_b')
+          .eq('id', dmChannelId)
+          .single();
+
+        if (channel) {
+          const otherUserId =
+            (channel.user_a as string) === currentUserId
+              ? (channel.user_b as string)
+              : (channel.user_a as string);
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url')
+            .in('id', [otherUserId, currentUserId]);
+
+          for (const p of profiles ?? []) {
+            profilesMapRef.current.set(p.id, {
+              display_name: p.display_name,
+              avatar_url: p.avatar_url,
+            });
           }
         }
       }
