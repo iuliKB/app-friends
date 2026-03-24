@@ -13,7 +13,11 @@ import { useNavigation } from 'expo-router';
 import { COLORS } from '@/constants/colors';
 import { useChatRoom } from '@/hooks/useChatRoom';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { MessageBubble } from '@/components/chat/MessageBubble';
+import {
+  MessageBubble,
+  formatTimeSeparator,
+  shouldShowTimeSeparator,
+} from '@/components/chat/MessageBubble';
 import { SendBar } from '@/components/chat/SendBar';
 import { PinnedPlanBanner } from '@/components/chat/PinnedPlanBanner';
 import type { MessageWithProfile } from '@/types/chat';
@@ -70,13 +74,26 @@ export function ChatRoomScreen({
           inverted
           data={messages}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <MessageBubble
-              message={item}
-              isOwn={item.sender_id === currentUserId}
-              showSenderInfo={isFirstInGroup(messages, index)}
-            />
-          )}
+          renderItem={({ item, index }) => {
+            // In inverted list, index+1 is the visually "above" (older) message
+            const olderMsg = index < messages.length - 1 ? messages[index + 1] : undefined;
+            const showSeparator = shouldShowTimeSeparator(item, olderMsg);
+
+            return (
+              <View>
+                {showSeparator && (
+                  <Text style={styles.timeSeparator}>
+                    {formatTimeSeparator(item.created_at)}
+                  </Text>
+                )}
+                <MessageBubble
+                  message={item}
+                  isOwn={item.sender_id === currentUserId}
+                  showSenderInfo={isFirstInGroup(messages, index)}
+                />
+              </View>
+            );
+          }}
           contentContainerStyle={styles.listContent}
         />
       )}
@@ -98,5 +115,12 @@ const styles = StyleSheet.create({
   listContent: {
     paddingTop: 16,
     paddingBottom: 8,
+  },
+  timeSeparator: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginVertical: 12,
   },
 });
