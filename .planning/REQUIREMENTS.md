@@ -64,30 +64,30 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKN-01 | — | Pending |
-| TOKN-02 | — | Pending |
-| TOKN-03 | — | Pending |
-| TOKN-04 | — | Pending |
-| TOKN-05 | — | Pending |
-| TOKN-06 | — | Pending |
-| COMP-01 | — | Pending |
-| COMP-02 | — | Pending |
-| COMP-03 | — | Pending |
-| COMP-04 | — | Pending |
-| COMP-05 | — | Pending |
-| SCRN-01 | — | Pending |
-| SCRN-02 | — | Pending |
-| SCRN-03 | — | Pending |
-| SCRN-04 | — | Pending |
-| SCRN-05 | — | Pending |
-| SCRN-06 | — | Pending |
-| SCRN-07 | — | Pending |
+| TOKN-01 | Phase 7 | Pending |
+| TOKN-02 | Phase 7 | Pending |
+| TOKN-03 | Phase 7 | Pending |
+| TOKN-04 | Phase 7 | Pending |
+| TOKN-05 | Phase 7 | Pending |
+| TOKN-06 | Phase 7 | Pending |
+| COMP-01 | Phase 8 | Pending |
+| COMP-02 | Phase 8 | Pending |
+| COMP-03 | Phase 8 | Pending |
+| COMP-04 | Phase 8 | Pending |
+| COMP-05 | Phase 8 | Pending |
+| SCRN-01 | Phase 9 | Pending |
+| SCRN-02 | Phase 9 | Pending |
+| SCRN-03 | Phase 9 | Pending |
+| SCRN-04 | Phase 9 | Pending |
+| SCRN-05 | Phase 9 | Pending |
+| SCRN-06 | Phase 9 | Pending |
+| SCRN-07 | Phase 9 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after initial definition*
+*Last updated: 2026-03-24 after roadmap creation*
