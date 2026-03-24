@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It replaces the fragmentation of duct-taping WhatsApp + Splitwise + Apple Notes + Instagram together with a single app that combines availability status, event planning, group chat, and lightweight expense tracking. Built as a React Native + Expo mobile app backed by Supabase.
+Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1 shipped with auth, friends, realtime status, quick plans, chat, and push notifications.
 
 ## Core Value
 
@@ -12,26 +12,26 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Auth flow with email/password, Google OAuth, and Apple Sign-In — v1.0
+- ✓ Profile creation (username, display name, avatar) — v1.0
+- ✓ Session persistence across app restarts — v1.0
+- ✓ Friend system (add by username, QR code, accept/reject requests) — v1.0
+- ✓ Daily status toggle (Free/Busy/Maybe) with emoji context tags — v1.0
+- ✓ "Who's Free" home screen with realtime updates — v1.0
+- ✓ Quick Plan creation (title, time, location, invite friends) — v1.0
+- ✓ Plan dashboard with RSVP, link dump, IOU notes — v1.0
+- ✓ Chat system (plan group chats + DMs) with realtime messaging — v1.0
+- ✓ Profile editing and settings — v1.0
+- ✓ Push notifications for plan invites — v1.0
+- ✓ Squad Goals "Coming soon" stub tab — v1.0
+- ✓ Seed data for development — v1.0
+- ✓ 5-tab navigation (Home, Plans, Chat, Squad, Profile) — v1.0
+- ✓ Supabase RLS on every table — v1.0
+- ✓ Empty states and loading indicators on all screens — v1.0
 
 ### Active
 
-- [ ] Auth flow with email/password and Google OAuth
-- [ ] Profile creation (username, display name, avatar)
-- [ ] Session persistence across app restarts
-- [ ] Friend system (add by username, accept/reject requests)
-- [ ] Daily status toggle (Free/Busy/Maybe) with emoji context tags
-- [ ] "Who's Free" home screen with realtime updates
-- [ ] Nudge friends via in-app DM message
-- [ ] Quick Plan creation (title, time, location, invite friends)
-- [ ] Plan dashboard with RSVP, link dump, IOU notes
-- [ ] Chat system (plan group chats + DMs)
-- [ ] Realtime messaging
-- [ ] Profile editing and settings
-- [ ] QR code for adding friends
-- [ ] Push notifications for nudges
-- [ ] Squad Goals "Coming soon" stub tab
-- [ ] Seed data for development
+(None — define for next milestone via `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -43,49 +43,51 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - Media/image sharing in chat — V2
 - Read receipts, message reactions — V2
 - Public profiles or discoverability — friends-only by design
-- Web app / PWA — mobile only for V1
-- Real-time chat (beyond basic nudge) push notifications — V2
+- Web app / PWA — mobile only
 - Group size pagination — unnecessary for 3–15 person groups
 
 ## Context
 
-- **Target users:** Close friend groups of 3–15 people. Not a public social network.
-- **Retention hook:** Low-friction daily availability status drives daily active use. Event planning tools activate when needed.
-- **Design aesthetic:** Warm, social, emoji-forward. Cozy, not corporate. Campfire emoji in header.
-- **Status colours:** Free = #22c55e, Busy = #ef4444, Maybe = #eab308 — used consistently.
-- **Home screen is king:** Must feel instant. Render from Zustand cache immediately, revalidate from Supabase in background.
-- **Quick Plan < 10 seconds:** Title auto-filled, time pre-set, free friends pre-selected.
-- **No onboarding tour:** UI is self-explanatory. Empty states explain features inline.
-- **Supabase project:** Needs to be created from scratch (free tier).
-- **Seed data:** Include pre-loaded test users, friendships, and sample plans for dev iteration.
+Shipped v1.0 MVP with 9,322 LOC TypeScript across 6 phases in 7 days.
+Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage), Zustand.
+All 55 v1 requirements delivered. 145 commits, 221 files.
+
+Known technical considerations:
+- Apple Sign-In works in Expo Go but needs validation on EAS builds
+- Supabase free-tier Realtime limited to 200 concurrent connections
+- Push notifications require EAS development build for remote push on Android
+- Nudge mechanic deferred to v2 (DM infrastructure covers the use case)
 
 ## Constraints
 
 - **Tech stack:** React Native + Expo (managed workflow), TypeScript strict, Supabase, Zustand — non-negotiable
-- **Expo Go:** Every library must work in Expo Go managed workflow without custom native modules. No `expo prebuild` or native linking.
-- **No backend server:** All server logic via Supabase RPC functions (Postgres). No Express, Node.js server, MongoDB, Firebase.
-- **No UI libraries:** No NativeBase, Tamagui, Gluestack. React Native StyleSheet only.
-- **No Redux, React Query:** Zustand for state. Direct Supabase queries in hooks.
-- **TypeScript strict:** `"strict": true`, `"noUncheckedIndexedAccess": true`. No `any`. No `as unknown as X`.
-- **RLS is security:** Never rely on client-side filtering. Every table has RLS.
-- **UUIDs everywhere:** No sequential integer IDs exposed.
-- **Free tier budget:** 500MB DB, 1GB Storage, 50K MAU, 2M Realtime messages/month. Filter Realtime to friend IDs. No `SELECT *`.
-- **Realtime on statuses only in V1:** Only home screen gets live updates until Phase 6.
-- **Link dump / IOU notes:** Plain text, last-write-wins. No CRDT/locking.
-- **Chat text-only in V1:** No images, files, reactions, read receipts.
-- **FlatList for all lists:** No ScrollView + map.
+- **Expo Go:** Every library must work in Expo Go managed workflow without custom native modules
+- **No backend server:** All server logic via Supabase RPC functions (Postgres)
+- **No UI libraries:** React Native StyleSheet only
+- **No Redux, React Query:** Zustand for state. Direct Supabase queries in hooks
+- **TypeScript strict:** `"strict": true`, `"noUncheckedIndexedAccess": true`. No `any`
+- **RLS is security:** Never rely on client-side filtering
+- **UUIDs everywhere:** No sequential integer IDs exposed
+- **Free tier budget:** 500MB DB, 1GB Storage, 50K MAU, 2M Realtime messages/month
+- **Chat text-only in V1:** No images, files, reactions, read receipts
+- **FlatList for all lists:** No ScrollView + map
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Supabase over Firebase | Single SDK for Postgres, Auth, Realtime, Storage. Free tier generous. | — Pending |
-| Zustand over Redux | Lightweight, no boilerplate. Only for ephemeral UI state. | — Pending |
-| Expo managed workflow | Expo Go testing without dev accounts. Platform-agnostic. | — Pending |
-| Email + Google OAuth from Phase 1 | User wants both auth methods available from day one | — Pending |
-| Status defaults to "maybe" | Ambiguous enough to prompt curiosity, prevents false "free" signals | — Pending |
-| least()/greatest() for symmetric relationships | Prevents duplicate friendship/DM pairs regardless of direction | — Pending |
-| Seed data included | Pre-loaded test users and sample data for faster dev iteration | — Pending |
+| Supabase over Firebase | Single SDK for Postgres, Auth, Realtime, Storage. Free tier generous. | ✓ Good |
+| Zustand over Redux | Lightweight, no boilerplate. Only for ephemeral UI state. | ✓ Good |
+| Expo managed workflow | Expo Go testing without dev accounts. Platform-agnostic. | ✓ Good |
+| Email + Google + Apple OAuth from Phase 1 | All auth methods available from day one | ✓ Good |
+| Status defaults to "Maybe" | Prevents false "free" signals, prompts curiosity | ✓ Good |
+| least()/greatest() for symmetric relationships | Prevents duplicate friendship/DM pairs | ✓ Good |
+| Seed data in seed.sql | Pre-loaded test users for faster dev iteration | ✓ Good |
+| Stack.Protected session guards | Clean route-level auth without manual redirects | ✓ Good |
+| Server confirmation for status updates | Wait for Supabase response before updating local state | ✓ Good |
+| Single Realtime channel with user_id filter | Stays within 200 connection limit vs. per-friend channels | ✓ Good |
+| Optimistic send with 5s dedup for chat | Instant UX while preventing duplicate messages | ✓ Good |
+| AsyncStorage notification toggle | Per-device preference, default enabled | ✓ Good |
 
 ---
-*Last updated: 2026-03-17 after initialization*
+*Last updated: 2026-03-24 after v1.0 milestone*
