@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import type { StatusValue } from '@/types/app';
 
 interface StatusPillProps {
@@ -24,14 +24,14 @@ export function StatusPill({ status }: StatusPillProps) {
 const styles = StyleSheet.create({
   pill: {
     height: 24,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: RADII.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.dominant,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
 });

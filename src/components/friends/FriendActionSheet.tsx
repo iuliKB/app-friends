@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
@@ -104,7 +104,7 @@ export function FriendActionSheet({
               <Ionicons
                 name="person-outline"
                 size={22}
-                color={COLORS.textSecondary}
+                color={COLORS.text.secondary}
                 style={styles.actionIcon}
               />
               <Text style={styles.actionLabel}>View profile</Text>
@@ -120,14 +120,14 @@ export function FriendActionSheet({
               {loadingDM ? (
                 <ActivityIndicator
                   size="small"
-                  color={COLORS.textSecondary}
+                  color={COLORS.text.secondary}
                   style={styles.actionIcon}
                 />
               ) : (
                 <Ionicons
                   name="chatbubble-outline"
                   size={22}
-                  color={COLORS.textSecondary}
+                  color={COLORS.text.secondary}
                   style={styles.actionIcon}
                 />
               )}
@@ -143,7 +143,7 @@ export function FriendActionSheet({
               <Ionicons
                 name="person-remove-outline"
                 size={22}
-                color={COLORS.destructive}
+                color={COLORS.interactive.destructive}
                 style={styles.actionIcon}
               />
               <Text style={[styles.actionLabel, styles.destructiveLabel]}>Remove friend</Text>
@@ -177,119 +177,120 @@ export function FriendActionSheet({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(0,0,0,0.6)', // no exact token — modal scrim
   },
   sheet: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.secondary,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingTop: 8,
-    paddingBottom: 32,
+    backgroundColor: COLORS.surface.card,
+    borderTopLeftRadius: RADII.xl,
+    borderTopRightRadius: RADII.xl,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.xxl,
   },
   dragHandle: {
     width: 40,
     height: 4,
-    borderRadius: 2,
+    borderRadius: RADII.xs,
     backgroundColor: COLORS.border,
     alignSelf: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   friendHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   friendHeaderInfo: {
-    marginLeft: 16,
+    marginLeft: SPACING.lg,
   },
   friendDisplayName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   friendUsername: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   actionRow: {
     height: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.lg,
   },
   disabledRow: {
     opacity: 0.5,
   },
   actionIcon: {
-    marginRight: 16,
+    marginRight: SPACING.lg,
   },
   actionLabel: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
   destructiveLabel: {
-    color: COLORS.destructive,
+    color: COLORS.interactive.destructive,
   },
   separator: {
     height: 1,
     backgroundColor: COLORS.border,
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.lg,
   },
   confirmContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
     alignItems: 'center',
   },
   confirmHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
     textAlign: 'center',
   },
   confirmBody: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 24,
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.xl,
   },
   removeButton: {
     width: '100%',
     height: 52,
-    backgroundColor: COLORS.destructive,
-    borderRadius: 12,
+    backgroundColor: COLORS.interactive.destructive,
+    borderRadius: RADII.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   removeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   keepButton: {
     width: '100%',
     height: 52,
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   keepButtonText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
 });

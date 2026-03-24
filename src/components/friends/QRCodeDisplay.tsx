@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -37,13 +37,13 @@ export function QRCodeDisplay() {
     <View style={styles.container}>
       <View style={styles.card}>
         {loading ? (
-          <ActivityIndicator color={COLORS.textPrimary} size="large" />
+          <ActivityIndicator color={COLORS.text.primary} size="large" />
         ) : (
           <QRCode
             value={session.user.id}
             size={240}
-            color={COLORS.textPrimary}
-            backgroundColor={COLORS.dominant}
+            color={COLORS.text.primary}
+            backgroundColor={COLORS.surface.base}
             ecl="M"
           />
         )}
@@ -62,36 +62,36 @@ export function QRCodeDisplay() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
     alignItems: 'center',
     justifyContent: 'center',
   },
   card: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.xl,
+    padding: SPACING.xl,
     alignItems: 'center',
   },
   displayName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: SPACING.lg,
   },
   username: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
   hint: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    paddingHorizontal: 32,
-    marginTop: 24,
+    paddingHorizontal: SPACING.xxl,
+    marginTop: SPACING.xl,
   },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { StatusPill } from '@/components/friends/StatusPill';
 import type { FriendWithStatus } from '@/hooks/useFriends';
@@ -30,22 +30,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 64,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
   },
   info: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: SPACING.lg,
   },
   displayName: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
   username: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
   },
 });

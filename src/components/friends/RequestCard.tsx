@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 
 export interface PendingRequest {
@@ -50,7 +50,7 @@ export function RequestCard({ request, onAccept, onDecline, loading }: RequestCa
 
       <View style={styles.buttonRow}>
         {loading ? (
-          <ActivityIndicator color={COLORS.textSecondary} />
+          <ActivityIndicator color={COLORS.text.secondary} />
         ) : (
           <>
             <TouchableOpacity style={styles.acceptButton} onPress={onAccept} activeOpacity={0.8}>
@@ -68,8 +68,8 @@ export function RequestCard({ request, onAccept, onDecline, loading }: RequestCa
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
   },
   topRow: {
     flexDirection: 'row',
@@ -77,46 +77,46 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: SPACING.lg,
   },
   displayName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   username: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
   },
   timestamp: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
+    gap: SPACING.sm,
+    marginTop: SPACING.sm,
   },
   acceptButton: {
     height: 36,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: COLORS.accent,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.interactive.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   acceptText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.dominant,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
   declineButton: {
     height: 36,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADII.md,
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -124,8 +124,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   declineText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
 });

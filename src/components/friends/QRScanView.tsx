@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   cameraContainer: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH,
-    borderRadius: 12,
+    borderRadius: RADII.lg,
     overflow: 'hidden',
   },
   camera: {
@@ -109,67 +109,67 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderWidth: 2,
-    borderColor: COLORS.accent,
-    borderRadius: 8,
+    borderColor: COLORS.interactive.accent,
+    borderRadius: RADII.md,
   },
   hint: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    paddingHorizontal: 24,
-    marginTop: 16,
+    paddingHorizontal: SPACING.xl,
+    marginTop: SPACING.lg,
   },
   permissionContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: SPACING.xl,
   },
   permissionHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: SPACING.lg,
   },
   permissionBody: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: SPACING.sm,
   },
   permissionButton: {
     alignSelf: 'stretch',
-    marginTop: 24,
-    marginHorizontal: 24,
+    marginTop: SPACING.xl,
+    marginHorizontal: SPACING.xl,
   },
   errorContainer: {
     alignItems: 'center',
-    paddingTop: 32,
-    paddingHorizontal: 24,
+    paddingTop: SPACING.xxl,
+    paddingHorizontal: SPACING.xl,
   },
   errorText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.destructive,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.destructive,
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: SPACING.lg,
   },
   scanAgainButton: {
-    marginTop: 16,
+    marginTop: SPACING.lg,
     height: 44,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: RADII.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   scanAgainText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
 });

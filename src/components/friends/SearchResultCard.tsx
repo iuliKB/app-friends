@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { Profile } from '@/types/app';
 
@@ -27,7 +27,7 @@ export function SearchResultCard({ profile, status, onAddFriend, isSelf }: Searc
               <Text style={styles.addButtonText}>Add Friend</Text>
             </TouchableOpacity>
           )}
-          {status === 'loading' && <ActivityIndicator color={COLORS.textSecondary} />}
+          {status === 'loading' && <ActivityIndicator color={COLORS.text.secondary} />}
           {status === 'pending' && (
             <View style={styles.pendingButton}>
               <Text style={styles.pendingButtonText}>Pending</Text>
@@ -43,50 +43,50 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   info: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: SPACING.lg,
   },
   displayName: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
   username: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
   },
   addButton: {
     height: 36,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: COLORS.accent,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.interactive.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.dominant,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
   pendingButton: {
     height: 36,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: COLORS.secondary,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.surface.card,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pendingButtonText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
 });
