@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UI/UX Design System
 status: planning
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-24T21:14:12.541Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-24T22:00:00.437Z"
 last_activity: 2026-03-24 — Roadmap created for v1.1 (Phases 7-9)
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 5
+  completed_plans: 4
   percent: 0
 ---
 
@@ -48,6 +48,8 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 07-design-tokens P02 | 2m | 2 tasks | 2 files |
 | Phase 07-design-tokens P01 | 2 | 2 tasks | 6 files |
+| Phase 08-shared-components P03 | 2m | 2 tasks | 5 files |
+| Phase 08-shared-components P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -62,6 +64,9 @@ Full v1.0 decision log in PROJECT.md Key Decisions table.
 - [Phase 07-design-tokens]: COLORS restructured into semantic nested groups (text, surface, interactive, feedback) — positions for dark mode readiness
 - [Phase 07-design-tokens]: Undeclared #3b82f6 captured as COLORS.feedback.info — generic info/indicator color, not unread-specific
 - [Phase 07-design-tokens]: SPACING.md = 12 explicitly included (Pitfall 4 prevention — all codebase spacing values covered)
+- [Phase 08-shared-components]: Use COLORS as THEME alias from @/theme to avoid collision with legacy @/constants/colors import during Phase 8 RefreshControl standardization
+- [Phase 08-shared-components]: FlatList shorthand onRefresh/refreshing replaced by explicit refreshControl prop on Friends+Chat screens to enable tintColor override
+- [Phase 08-shared-components]: ErrorDisplay uses useEffect for console.error to avoid render-time side effects; ScreenHeader rightAction slot renders ReactNode unwrapped for maximum caller flexibility
 
 ### UI Audit Findings (carried from v1.0)
 
@@ -80,6 +85,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:14:12.539Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-shared-components/08-CONTEXT.md
+Last session: 2026-03-24T22:00:00.435Z
+Stopped at: Completed 08-02-PLAN.md
+Resume file: None
