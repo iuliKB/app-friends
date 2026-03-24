@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation } from 'expo-router';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import {
@@ -60,7 +60,7 @@ export function ChatRoomScreen({
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.dominant }}
+      style={{ flex: 1, backgroundColor: COLORS.surface.base }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={headerHeight}
     >
@@ -109,18 +109,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.secondary,
   },
   listContent: {
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
   timeSeparator: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 12,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    marginVertical: 12,
+    marginVertical: SPACING.md,
   },
 });

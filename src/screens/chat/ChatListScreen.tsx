@@ -2,8 +2,7 @@ import React from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/colors';
-import { COLORS as THEME } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -38,14 +37,14 @@ export function ChatListScreen() {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
       ListHeaderComponent={
-        <Text style={[styles.heading, { paddingTop: insets.top + 8 }]}>{'Chats'}</Text>
+        <Text style={[styles.heading, { paddingTop: insets.top + SPACING.sm }]}>{'Chats'}</Text>
       }
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          tintColor={THEME.interactive.accent}
+          tintColor={COLORS.interactive.accent}
         />
       }
       contentContainerStyle={chatList.length === 0 ? styles.emptyList : undefined}
@@ -64,18 +63,19 @@ export function ChatListScreen() {
 const styles = StyleSheet.create({
   list: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   heading: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.md,
   },
   separator: {
     height: 1,
     backgroundColor: COLORS.border,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     marginLeft: 68,
   },
   emptyList: {
