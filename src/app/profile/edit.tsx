@@ -66,7 +66,8 @@ export default function EditProfileScreen() {
         data: { publicUrl },
       } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
-      setAvatarUrl(publicUrl);
+      // Append cache-buster so React Native reloads the image
+      setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
     } catch {
       Alert.alert(
         'Error',
