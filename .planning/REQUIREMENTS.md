@@ -9,11 +9,11 @@ Requirements for UI/UX Design System milestone. Each maps to roadmap phases.
 
 ### Design Tokens
 
-- [ ] **TOKN-01**: Color constants reorganized into semantic groups (text, surface, interactive, feedback) with all hardcoded hex literals replaced
-- [ ] **TOKN-02**: Spacing scale defined (4/8/12/16/24/32) and exported as named constants
-- [ ] **TOKN-03**: Typography scale defined (caption/bodyMedium/bodyLarge/sectionTitle/screenTitle) with size + weight pairs
-- [ ] **TOKN-04**: Border radius tokens defined from audited values and exported as named constants
-- [ ] **TOKN-05**: Shadow tokens defined for card and elevated surface styles
+- [x] **TOKN-01**: Color constants reorganized into semantic groups (text, surface, interactive, feedback) with all hardcoded hex literals replaced
+- [x] **TOKN-02**: Spacing scale defined (4/8/12/16/24/32) and exported as named constants
+- [x] **TOKN-03**: Typography scale defined (caption/bodyMedium/bodyLarge/sectionTitle/screenTitle) with size + weight pairs
+- [x] **TOKN-04**: Border radius tokens defined from audited values and exported as named constants
+- [x] **TOKN-05**: Shadow tokens defined for card and elevated surface styles
 - [x] **TOKN-06**: ESLint rule rejects hardcoded hex color literals and raw numeric fontSize/padding values in StyleSheet
 
 ### Shared Components
@@ -64,11 +64,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKN-01 | Phase 7 | Pending |
-| TOKN-02 | Phase 7 | Pending |
-| TOKN-03 | Phase 7 | Pending |
-| TOKN-04 | Phase 7 | Pending |
-| TOKN-05 | Phase 7 | Pending |
+| TOKN-01 | Phase 7 | Complete |
+| TOKN-02 | Phase 7 | Complete |
+| TOKN-03 | Phase 7 | Complete |
+| TOKN-04 | Phase 7 | Complete |
+| TOKN-05 | Phase 7 | Complete |
 | TOKN-06 | Phase 7 | Complete |
 | COMP-01 | Phase 8 | Pending |
 | COMP-02 | Phase 8 | Pending |
