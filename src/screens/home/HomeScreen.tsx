@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/colors';
+import { COLORS as THEME } from '@/theme';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { useStatus } from '@/hooks/useStatus';
 import { SegmentedControl } from '@/components/status/SegmentedControl';
@@ -66,7 +67,7 @@ export function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={COLORS.textSecondary}
+            tintColor={THEME.interactive.accent}
           />
         }
       >
