@@ -14,7 +14,7 @@ Requirements for UI/UX Design System milestone. Each maps to roadmap phases.
 - [ ] **TOKN-03**: Typography scale defined (caption/bodyMedium/bodyLarge/sectionTitle/screenTitle) with size + weight pairs
 - [ ] **TOKN-04**: Border radius tokens defined from audited values and exported as named constants
 - [ ] **TOKN-05**: Shadow tokens defined for card and elevated surface styles
-- [ ] **TOKN-06**: ESLint rule rejects hardcoded hex color literals and raw numeric fontSize/padding values in StyleSheet
+- [x] **TOKN-06**: ESLint rule rejects hardcoded hex color literals and raw numeric fontSize/padding values in StyleSheet
 
 ### Shared Components
 
@@ -69,7 +69,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOKN-03 | Phase 7 | Pending |
 | TOKN-04 | Phase 7 | Pending |
 | TOKN-05 | Phase 7 | Pending |
-| TOKN-06 | Phase 7 | Pending |
+| TOKN-06 | Phase 7 | Complete |
 | COMP-01 | Phase 8 | Pending |
 | COMP-02 | Phase 8 | Pending |
 | COMP-03 | Phase 8 | Pending |

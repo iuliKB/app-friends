@@ -87,6 +87,6 @@ Phases execute in numeric order: 7 → 8 → 9
 | 4. Plans | v1.0 | 3/3 | Complete | 2026-03-18 |
 | 5. Chat | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 6. Notifications + Polish | v1.0 | 3/3 | Complete | 2026-03-19 |
-| 7. Design Tokens | v1.1 | 0/2 | Planning | - |
+| 7. Design Tokens | 1/2 | In Progress|  | - |
 | 8. Shared Components | v1.1 | 0/TBD | Not started | - |
 | 9. Screen Consistency Sweep | v1.1 | 0/TBD | Not started | - |
