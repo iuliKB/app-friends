@@ -7,7 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -102,21 +102,21 @@ export default function RootLayout() {
   if (!ready) {
     return (
       <LinearGradient
-        colors={[COLORS.splashGradientStart, COLORS.splashGradientEnd]}
+        colors={[COLORS.splash.gradientStart, COLORS.splash.gradientEnd]}
         style={styles.splash}
       >
         <Text style={styles.splashEmoji}>🔥</Text>
         <Text style={styles.splashTitle}>Campfire</Text>
-        <ActivityIndicator color={COLORS.splashText} style={styles.splashLoader} />
+        <ActivityIndicator color={COLORS.splash.text} style={styles.splashLoader} />
       </LinearGradient>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.dominant }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.surface.base }}>
       <OfflineBanner />
       <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.dominant } }}
+        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.surface.base } }}
       >
         <Stack.Protected guard={!!session && !needsProfileSetup}>
           <Stack.Screen name="(tabs)" />
@@ -144,14 +144,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   splashEmoji: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 64,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   splashTitle: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 28,
-    fontWeight: '600',
-    color: COLORS.splashText,
-    marginBottom: 48,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.splash.text,
+    marginBottom: SPACING.xxl,
   },
   splashLoader: {
     marginTop: 0,

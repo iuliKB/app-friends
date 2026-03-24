@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE } from '@/theme';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useInvitationCount } from '@/hooks/useInvitationCount';
 
@@ -13,16 +13,16 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.accent,
-        tabBarInactiveTintColor: COLORS.textSecondary,
+        tabBarActiveTintColor: COLORS.interactive.accent,
+        tabBarInactiveTintColor: COLORS.text.secondary,
         tabBarStyle: {
-          backgroundColor: COLORS.secondary,
+          backgroundColor: COLORS.surface.card,
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
           height: 56 + insets.bottom,
           paddingBottom: insets.bottom,
         },
-        tabBarLabelStyle: { fontSize: 11 },
+        tabBarLabelStyle: { fontSize: FONT_SIZE.xs },
         headerShown: false,
       }}
     >

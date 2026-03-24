@@ -14,10 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useStatus } from '@/hooks/useStatus';
 import { useFriends } from '@/hooks/useFriends';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { SegmentedControl } from '@/components/status/SegmentedControl';
 import { EmojiTagPicker } from '@/components/status/EmojiTagPicker';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -95,7 +96,12 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.lg }]}>
+      {/* Screen title */}
+      <View style={styles.headerWrapper}>
+        <ScreenHeader title="Profile" />
+      </View>
+
       {/* Avatar header */}
       <TouchableOpacity
         style={styles.avatarHeader}
@@ -109,7 +115,7 @@ export default function ProfileScreen() {
             displayName={profile?.display_name || 'U'}
           />
           <View style={styles.pencilOverlay}>
-            <Ionicons name="pencil-outline" size={16} color={COLORS.accent} />
+            <Ionicons name="pencil-outline" size={SPACING.lg} color={COLORS.interactive.accent} />
           </View>
         </View>
         <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
@@ -118,7 +124,7 @@ export default function ProfileScreen() {
       {/* Your Status section */}
       <Text style={styles.sectionHeader}>YOUR STATUS</Text>
       {loading ? (
-        <ActivityIndicator color={COLORS.textSecondary} style={styles.loader} />
+        <ActivityIndicator color={COLORS.text.secondary} style={styles.loader} />
       ) : (
         <>
           <SegmentedControl value={status} onValueChange={handleStatusChange} saving={saving} />
@@ -143,8 +149,8 @@ export default function ProfileScreen() {
       >
         <Ionicons
           name="people-outline"
-          size={20}
-          color={COLORS.textSecondary}
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>My Friends</Text>
@@ -152,7 +158,7 @@ export default function ProfileScreen() {
           <View style={styles.countBadge}>
             <Text style={styles.countBadgeText}>{friends.length}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.border} />
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
         </View>
       </TouchableOpacity>
 
@@ -164,8 +170,8 @@ export default function ProfileScreen() {
       >
         <Ionicons
           name="person-add-outline"
-          size={20}
-          color={COLORS.textSecondary}
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>Friend Requests</Text>
@@ -175,7 +181,7 @@ export default function ProfileScreen() {
               {pendingCount}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.border} />
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
         </View>
       </TouchableOpacity>
 
@@ -187,13 +193,13 @@ export default function ProfileScreen() {
       >
         <Ionicons
           name="qr-code-outline"
-          size={20}
-          color={COLORS.textSecondary}
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>My QR Code</Text>
         <View style={styles.rowRight}>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.border} />
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
         </View>
       </TouchableOpacity>
 
@@ -203,23 +209,23 @@ export default function ProfileScreen() {
       <View style={styles.row}>
         <Ionicons
           name="notifications-outline"
-          size={20}
-          color={COLORS.textSecondary}
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>Plan invites</Text>
         <Switch
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
-          trackColor={{ false: COLORS.border, true: COLORS.accent + '40' }}
-          thumbColor={notificationsEnabled ? COLORS.accent : COLORS.border}
+          trackColor={{ false: COLORS.border, true: COLORS.interactive.accent + '40' }}
+          thumbColor={notificationsEnabled ? COLORS.interactive.accent : COLORS.border}
         />
       </View>
 
       {/* Logout row per UI-SPEC: full width, 52px, destructive color */}
       <TouchableOpacity style={styles.logoutRow} onPress={handleLogout} disabled={loggingOut}>
         {loggingOut ? (
-          <ActivityIndicator color={COLORS.destructive} />
+          <ActivityIndicator color={COLORS.interactive.destructive} />
         ) : (
           <Text style={styles.logoutText}>Log out</Text>
         )}
@@ -231,95 +237,100 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   content: {
-    paddingBottom: 32,
+    paddingBottom: SPACING.xxl,
+  },
+  headerWrapper: {
+    paddingHorizontal: SPACING.lg,
   },
   avatarHeader: {
     alignItems: 'center',
-    paddingBottom: 24,
-    paddingHorizontal: 16,
+    paddingBottom: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
   },
   pencilOverlay: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: COLORS.secondary,
+    width: SPACING.xl,
+    height: SPACING.xl,
+    borderRadius: RADII.full,
+    backgroundColor: COLORS.surface.card,
     alignItems: 'center',
     justifyContent: 'center',
   },
   displayName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 12,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginTop: SPACING.md,
     textAlign: 'center',
   },
   sectionHeader: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 24,
-    marginBottom: 12,
-    paddingHorizontal: 16,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
   },
   loader: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 52,
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   rowIcon: {
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   rowLabel: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: SPACING.sm,
   },
   countBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs / 2,
+    borderRadius: RADII.full,
     backgroundColor: COLORS.border,
-    minWidth: 20,
+    minWidth: FONT_SIZE.xl,
     alignItems: 'center',
   },
   countBadgeText: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
   },
   countBadgeAlert: {
-    backgroundColor: COLORS.destructive,
+    backgroundColor: COLORS.interactive.destructive,
   },
   countBadgeAlertText: {
-    color: COLORS.textPrimary,
+    color: COLORS.text.primary,
   },
   logoutRow: {
     height: 52,
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.lg,
     justifyContent: 'center',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 48,
   },
   logoutText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.destructive,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.destructive,
   },
 });

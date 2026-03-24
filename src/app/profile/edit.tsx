@@ -17,7 +17,7 @@ import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { APP_CONFIG } from '@/constants/config';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -161,7 +161,7 @@ export default function EditProfileScreen() {
           />
           {avatarLoading && (
             <View style={styles.avatarOverlay}>
-              <ActivityIndicator color={COLORS.textPrimary} size="small" />
+              <ActivityIndicator color={COLORS.text.primary} size="small" />
             </View>
           )}
         </View>
@@ -182,7 +182,7 @@ export default function EditProfileScreen() {
         value={displayName}
         onChangeText={setDisplayName}
         placeholder="Display name"
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor={COLORS.text.secondary}
         maxLength={APP_CONFIG.displayNameMaxLength}
         editable={!saving}
       />
@@ -206,16 +206,16 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 32,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xxl,
+    paddingBottom: SPACING.xxl,
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: SPACING.xxl,
   },
   avatarWrapper: {
     position: 'relative',
@@ -227,40 +227,42 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderRadius: 40,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(0,0,0,0.5)', // no exact token for avatar upload scrim
     alignItems: 'center',
     justifyContent: 'center',
   },
   changePhotoButton: {
-    marginTop: 8,
-    minHeight: 32,
+    marginTop: SPACING.sm,
+    minHeight: SPACING.xxl,
     alignItems: 'center',
     justifyContent: 'center',
   },
   changePhotoText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.accent,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.accent,
   },
   textInput: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
     height: 52,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    paddingHorizontal: SPACING.lg,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.primary,
   },
   inputDisabled: {
     opacity: 0.5,
   },
   charCount: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 12,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
   buttonWrapper: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
   },
 });

@@ -1,11 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 
 export default function SquadScreen() {
   return (
     <View style={styles.container}>
-      <Ionicons name="lock-closed-outline" size={48} color={COLORS.textSecondary} />
+      <Ionicons name="lock-closed-outline" size={48} color={COLORS.text.secondary} />
       <Text style={styles.heading}>Squad Goals</Text>
       <Text style={styles.body}>Group challenges and streaks — coming soon.</Text>
     </View>
@@ -15,22 +15,22 @@ export default function SquadScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
     alignItems: 'center',
     justifyContent: 'center',
   },
   heading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 16,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginTop: SPACING.lg,
   },
   body: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 8,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.sm,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: SPACING.xxl,
   },
 });
