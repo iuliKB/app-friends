@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 
 interface IOUNotesFieldProps {
@@ -52,11 +52,11 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
           <Ionicons
             name={expanded ? 'chevron-down' : 'chevron-forward'}
             size={20}
-            color={COLORS.textSecondary}
+            color={COLORS.text.secondary}
           />
           <Text style={styles.headerTitle}>{'IOU Notes'}</Text>
         </View>
-        {saving && <ActivityIndicator size="small" color={COLORS.textSecondary} />}
+        {saving && <ActivityIndicator size="small" color={COLORS.text.secondary} />}
       </TouchableOpacity>
 
       {expanded && (
@@ -68,7 +68,7 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
             onChangeText={setLocalText}
             onBlur={handleBlur}
             placeholder="Who owes who?"
-            placeholderTextColor={COLORS.textSecondary}
+            placeholderTextColor={COLORS.text.secondary}
             textAlignVertical="top"
           />
         </View>
@@ -82,25 +82,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: SPACING.md,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginLeft: 8,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginLeft: SPACING.sm,
   },
   textInput: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
-    backgroundColor: COLORS.secondary,
-    borderRadius: 8,
-    padding: 16,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.md,
+    padding: SPACING.lg,
     minHeight: 80,
     textAlignVertical: 'top',
   },

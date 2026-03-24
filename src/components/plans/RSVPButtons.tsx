@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 
 type RsvpValue = 'going' | 'maybe' | 'out';
 
@@ -48,7 +48,7 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
             {isSaving ? (
               <ActivityIndicator
                 size="small"
-                color={isActive ? COLORS.dominant : COLORS.textSecondary}
+                color={isActive ? COLORS.surface.base : COLORS.text.secondary}
               />
             ) : (
               <Text style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}>
@@ -65,28 +65,28 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 8,
+    gap: SPACING.sm,
   },
   button: {
     flex: 1,
     height: 44,
-    borderRadius: 8,
+    borderRadius: RADII.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonInactive: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.surface.card,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
   },
   labelActive: {
-    color: COLORS.dominant,
+    color: COLORS.surface.base,
   },
   labelInactive: {
-    color: COLORS.textSecondary,
+    color: COLORS.text.secondary,
   },
 });

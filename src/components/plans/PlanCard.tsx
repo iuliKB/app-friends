@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarStack } from '@/components/plans/AvatarStack';
 import type { PlanWithMembers } from '@/types/plans';
 
@@ -63,35 +63,35 @@ export function PlanCard({ plan, onPress }: PlanCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
+    padding: SPACING.lg,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 4,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.xs,
   },
   timeLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
   },
   location: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginBottom: 4,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
   },
   rsvpSummary: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.sm,
   },
   avatarStackContainer: {
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
 });

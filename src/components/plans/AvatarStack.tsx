@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import type { PlanMember } from '@/types/plans';
 
 interface AvatarStackProps {
@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
     // zIndex set inline per avatar
   },
   overflowBadge: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: COLORS.surface.card,
     alignItems: 'center',
     justifyContent: 'center',
   },
   overflowText: {
-    color: COLORS.accent,
-    fontSize: 14,
-    fontWeight: '600',
+    color: COLORS.interactive.accent,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

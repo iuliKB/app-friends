@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import type { PlanMember } from '@/types/plans';
 
 interface MemberListProps {
@@ -61,31 +61,31 @@ export function MemberList({ members, creatorId, onMemberPress }: MemberListProp
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   memberRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 8,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
   },
   dimmed: {
     opacity: 0.5,
   },
   memberName: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
-    marginLeft: 12,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
+    marginLeft: SPACING.md,
   },
   creatorBadge: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.accent,
-    marginLeft: 8,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.interactive.accent,
+    marginLeft: SPACING.sm,
   },
 });
