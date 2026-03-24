@@ -12,13 +12,14 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
-import { COLORS as THEME } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
 import { useInvitations, PlanInvitation } from '@/hooks/useInvitations';
 import { PlanCard } from '@/components/plans/PlanCard';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
+import { FAB } from '@/components/common/FAB';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
 import type { PlanWithMembers } from '@/types/plans';
 
 function formatInviteTime(scheduledFor: string | null): string {
@@ -133,8 +134,8 @@ export function PlansListScreen() {
           <PlanCard plan={item} onPress={() => router.push(`/plans/${item.id}` as never)} />
         )}
         ListHeaderComponent={
-          <View style={{ paddingTop: insets.top + 8 }}>
-            <Text style={styles.heading}>{'Your Plans'}</Text>
+          <View style={{ paddingTop: insets.top + SPACING.sm }}>
+            <ScreenHeader title="Your Plans" />
             {inviteCount > 0 && (
               <TouchableOpacity
                 style={styles.inviteBanner}
@@ -142,14 +143,14 @@ export function PlansListScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.inviteBannerLeft}>
-                  <Ionicons name="mail-outline" size={20} color={COLORS.accent} />
+                  <Ionicons name="mail-outline" size={20} color={COLORS.interactive.accent} />
                   <Text style={styles.inviteBannerText}>
                     {inviteCount === 1
                       ? 'You have 1 invitation'
                       : `You have ${inviteCount} invitations`}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={COLORS.textSecondary} />
+                <Ionicons name="chevron-forward" size={16} color={COLORS.text.secondary} />
               </TouchableOpacity>
             )}
           </View>
@@ -171,20 +172,16 @@ export function PlansListScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={THEME.interactive.accent}
+            tintColor={COLORS.interactive.accent}
           />
         }
       />
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={[styles.fab, { bottom: 24 + insets.bottom }]}
+      <FAB
+        icon={<Ionicons name="add" size={24} color={COLORS.surface.base} />}
         onPress={() => router.push('/plan-create')}
-        activeOpacity={0.8}
-        accessibilityLabel="New Plan"
-      >
-        <Ionicons name="add" size={24} color={COLORS.dominant} />
-      </TouchableOpacity>
+        accessibilityLabel="Create a new plan"
+      />
 
       {/* Invitations Modal */}
       <Modal
@@ -197,7 +194,7 @@ export function PlansListScreen() {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{'Invitations'}</Text>
             <TouchableOpacity onPress={() => setModalVisible(false)} hitSlop={12}>
-              <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+              <Ionicons name="close" size={24} color={COLORS.text.secondary} />
             </TouchableOpacity>
           </View>
           <FlatList<PlanInvitation>
@@ -219,177 +216,161 @@ export function PlansListScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    paddingBottom: 16,
+    paddingHorizontal: SPACING.lg,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingBottom: 100, // no exact token — intentional large FAB clearance
   },
   errorText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.secondary,
     paddingHorizontal: 0,
-    paddingTop: 8,
+    paddingTop: SPACING.sm,
   },
   separator: {
-    height: 12,
-  },
-  fab: {
-    position: 'absolute',
-    right: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 28,
-    backgroundColor: COLORS.accent,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    height: SPACING.md,
   },
   // Invite banner
   inviteBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 16,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
+    paddingHorizontal: SPACING.lg,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingVertical: 14, // no exact token — between md(12) and lg(16)
+    marginBottom: SPACING.lg,
   },
   inviteBannerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: SPACING.sm,
   },
   inviteBannerText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   // Modal
   modalRoot: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   modalList: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xxl,
   },
   noInvitesText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    paddingTop: 32,
+    paddingTop: SPACING.xxl,
   },
   // Invite card
   inviteCard: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
+    padding: SPACING.lg,
+    gap: SPACING.sm,
   },
   inviteCreatorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 4,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    gap: 10, // no exact token — between sm(8) and md(12)
+    marginBottom: SPACING.xs,
   },
   inviteCreatorLabel: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     flex: 1,
   },
   inviteCreatorName: {
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   inviteTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    fontSize: 18, // no exact token — between lg(16) and xl(20)
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   inviteTime: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
   },
   inviteLocation: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   alsoInvitedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
+    gap: SPACING.sm,
+    marginTop: SPACING.xs,
   },
   alsoAvatars: {
     flexDirection: 'row',
   },
   alsoAvatarWrapper: {
-    marginRight: -6,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    marginRight: -6, // no exact token — negative overlap for avatar stack
   },
   alsoInvitedText: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     flex: 1,
-    marginLeft: 8,
+    marginLeft: SPACING.sm,
   },
   inviteActions: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    gap: SPACING.md,
+    marginTop: SPACING.sm,
   },
   acceptBtn: {
     flex: 1,
     height: 40,
-    borderRadius: 8,
+    borderRadius: RADII.md,
     backgroundColor: COLORS.status.free,
     alignItems: 'center',
     justifyContent: 'center',
   },
   acceptBtnText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.dominant,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
   declineBtn: {
     flex: 1,
     height: 40,
-    borderRadius: 8,
+    borderRadius: RADII.md,
     backgroundColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   declineBtnText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
   },
 });

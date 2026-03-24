@@ -11,7 +11,7 @@ import {
 import { useNavigation, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { usePlansStore } from '@/stores/usePlansStore';
@@ -57,7 +57,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
               style={styles.headerButton}
               accessibilityLabel="Delete plan"
             >
-              <Ionicons name="trash-outline" size={22} color={COLORS.textSecondary} />
+              <Ionicons name="trash-outline" size={22} color={COLORS.text.secondary} />
             </TouchableOpacity>
           )
         : undefined,
@@ -210,7 +210,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
               value={editTitle}
               onChangeText={setEditTitle}
               placeholder="Plan title"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={COLORS.text.secondary}
             />
 
             <TouchableOpacity
@@ -244,7 +244,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
               value={editLocation}
               onChangeText={setEditLocation}
               placeholder="Location"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={COLORS.text.secondary}
             />
 
             <View style={styles.editActions}>
@@ -304,146 +304,147 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   scrollContent: {
-    paddingBottom: 100,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingBottom: 100, // no exact token — intentional large bottom clearance
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   errorText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: SPACING.xxl,
   },
   section: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   editButton: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.accent,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.interactive.accent,
   },
   planTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 4,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.xs,
   },
   planTime: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
   },
   planLocation: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   textInput: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 8,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.md,
     borderWidth: 1,
     borderColor: COLORS.border,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: COLORS.textPrimary,
-    marginBottom: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.md,
   },
   datePickerButton: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 8,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.md,
     borderWidth: 1,
     borderColor: COLORS.border,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    marginBottom: SPACING.md,
   },
   datePickerText: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.primary,
   },
   editActions: {
-    marginTop: 8,
-    gap: 12,
+    marginTop: SPACING.sm,
+    gap: SPACING.md,
   },
   discardButton: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: SPACING.sm,
   },
   discardText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   headerButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
   },
   chatButtonContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
   inviteBanner: {
-    backgroundColor: COLORS.secondary,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
+    backgroundColor: COLORS.surface.card,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
+    borderRadius: RADII.lg,
+    padding: SPACING.lg,
+    gap: SPACING.md,
   },
   inviteText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
     textAlign: 'center',
   },
   inviteActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: SPACING.md,
   },
   acceptButton: {
     flex: 1,
     backgroundColor: COLORS.status.free,
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: RADII.md,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   acceptText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.dominant,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
   declineButton: {
     flex: 1,
     backgroundColor: COLORS.border,
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: RADII.md,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   declineText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
   },
 });

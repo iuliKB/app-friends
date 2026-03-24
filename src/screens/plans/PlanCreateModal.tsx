@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
 import { useFriends } from '@/hooks/useFriends';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -125,7 +125,7 @@ export function PlanCreateModal() {
         <Ionicons
           name={isSelected ? 'checkbox' : 'square-outline'}
           size={24}
-          color={isSelected ? COLORS.accent : COLORS.textSecondary}
+          color={isSelected ? COLORS.interactive.accent : COLORS.text.secondary}
           style={styles.checkbox}
         />
       </TouchableOpacity>
@@ -143,7 +143,7 @@ export function PlanCreateModal() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>New Plan</Text>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-            <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+            <Ionicons name="close" size={24} color={COLORS.text.secondary} />
           </TouchableOpacity>
         </View>
 
@@ -155,7 +155,7 @@ export function PlanCreateModal() {
             value={title}
             onChangeText={setTitle}
             placeholder="Tonight"
-            placeholderTextColor={COLORS.textSecondary}
+            placeholderTextColor={COLORS.text.secondary}
             autoCapitalize="words"
           />
         </View>
@@ -168,12 +168,12 @@ export function PlanCreateModal() {
             onPress={() => setShowTimePicker((v) => !v)}
             activeOpacity={0.7}
           >
-            <Ionicons name="time-outline" size={18} color={COLORS.textSecondary} />
+            <Ionicons name="time-outline" size={18} color={COLORS.text.secondary} />
             <Text style={styles.timeText}>{formatTime(scheduledFor)}</Text>
             <Ionicons
               name={showTimePicker ? 'chevron-up' : 'chevron-down'}
               size={16}
-              color={COLORS.textSecondary}
+              color={COLORS.text.secondary}
             />
           </TouchableOpacity>
           {showTimePicker && (
@@ -196,7 +196,7 @@ export function PlanCreateModal() {
             value={location}
             onChangeText={setLocation}
             placeholder="My place, a park, TBD..."
-            placeholderTextColor={COLORS.textSecondary}
+            placeholderTextColor={COLORS.text.secondary}
             autoCapitalize="words"
           />
         </View>
@@ -233,91 +233,92 @@ export function PlanCreateModal() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingBottom: 40, // no exact token — between xxl(32) and 48
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   fieldGroup: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.sm,
   },
   textInput: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
-    backgroundColor: COLORS.secondary,
-    borderRadius: 8,
-    padding: 16,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.md,
+    padding: SPACING.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.md,
+    padding: SPACING.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    gap: 8,
+    gap: SPACING.sm,
   },
   timeText: {
     flex: 1,
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.primary,
   },
   friendSection: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   friendSectionHeading: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 16,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.lg,
   },
   noFriendsText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.secondary,
   },
   friendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    gap: 12,
+    paddingVertical: SPACING.md,
+    gap: SPACING.md,
   },
   friendName: {
     flex: 1,
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.primary,
   },
   checkbox: {
-    marginLeft: 4,
+    marginLeft: SPACING.xs,
   },
   createButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.lg,
   },
 });
