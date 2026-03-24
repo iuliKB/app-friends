@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
 import { APP_CONFIG } from '@/constants/config';
 import { supabase } from '@/lib/supabase';
-import { FormField } from './FormField';
+import { FormField } from '@/components/common/FormField';
 
 type AvailabilityState = 'idle' | 'checking' | 'available' | 'taken';
 
@@ -63,9 +63,9 @@ export function UsernameField({
 
   const availabilityMessage = {
     idle: null,
-    checking: { text: 'Checking...', color: COLORS.textSecondary },
+    checking: { text: 'Checking...', color: COLORS.text.secondary },
     available: { text: 'Available', color: COLORS.status.free },
-    taken: { text: 'Taken — try another', color: COLORS.destructive },
+    taken: { text: 'Taken — try another', color: COLORS.interactive.destructive },
   }[availability];
 
   return (
@@ -90,8 +90,8 @@ export function UsernameField({
 
 const styles = StyleSheet.create({
   availability: {
-    fontSize: 14,
-    fontWeight: '400',
-    marginTop: 4,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    marginTop: SPACING.xs,
   },
 });

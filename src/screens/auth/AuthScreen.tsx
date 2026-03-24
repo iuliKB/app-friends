@@ -9,7 +9,7 @@ import { FormField } from '@/components/common/FormField';
 import { OAuthButton } from '@/components/auth/OAuthButton';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { APP_CONFIG } from '@/constants/config';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
 
 // Required at module level for expo-web-browser OAuth redirect completion
@@ -303,55 +303,57 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xxl,
   },
   header: {
-    paddingTop: 64,
-    paddingBottom: 32,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingTop: 64, // no exact token
+    paddingBottom: SPACING.xxl,
     alignItems: 'center',
   },
   headerEmoji: {
-    fontSize: 32,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    fontSize: 32, // no exact token
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginTop: 4,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginTop: SPACING.xs,
   },
   headerTagline: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: 8,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.sm,
   },
   form: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
   },
   fieldGap: {
-    height: 16,
+    height: SPACING.lg,
   },
   buttonTop: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
   },
   generalError: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.destructive,
-    marginTop: 8,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.destructive,
+    marginTop: SPACING.sm,
     textAlign: 'center',
   },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
+    marginVertical: SPACING.xl,
   },
   dividerLine: {
     flex: 1,
@@ -359,28 +361,28 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.border,
   },
   dividerText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginHorizontal: 12,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginHorizontal: SPACING.md,
   },
   oauthButtons: {
-    gap: 8,
+    gap: SPACING.sm,
   },
   oauthGap: {
-    height: 8,
+    height: SPACING.sm,
   },
   bottomLink: {
-    marginTop: 16,
+    marginTop: SPACING.lg,
     alignItems: 'center',
   },
   bottomLinkText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
     textAlign: 'center',
   },
   bottomLinkAction: {
-    color: COLORS.accent,
+    color: COLORS.interactive.accent,
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
 
 interface OAuthButtonProps {
   provider: 'google' | 'apple';
@@ -31,10 +31,10 @@ export function OAuthButton({ provider, onPress, loading = false }: OAuthButtonP
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.textPrimary} />
+        <ActivityIndicator color={COLORS.text.primary} />
       ) : (
         <View style={styles.content}>
-          <Ionicons name={config.icon} size={20} color={COLORS.textPrimary} />
+          <Ionicons name={config.icon} size={20} color={COLORS.text.primary} />
           <Text style={styles.text}>{config.label}</Text>
         </View>
       )}
@@ -44,11 +44,11 @@ export function OAuthButton({ provider, onPress, loading = false }: OAuthButtonP
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.surface.card,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
-    height: 52,
+    borderRadius: RADII.lg,
+    height: 52, // no exact token — matches FormField minHeight
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -56,11 +56,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: SPACING.sm,
   },
   text: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
 });

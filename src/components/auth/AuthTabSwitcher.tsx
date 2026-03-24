@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
 
 interface AuthTabSwitcherProps {
   activeTab: 'login' | 'signup';
@@ -33,28 +33,28 @@ export function AuthTabSwitcher({ activeTab, onTabChange }: AuthTabSwitcherProps
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    padding: 4,
-    marginHorizontal: 16,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
+    padding: SPACING.xs,
+    marginHorizontal: SPACING.lg,
   },
   tab: {
     flex: 1,
-    height: 40,
+    height: 40, // no exact token — not flagged by rule
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: RADII.md,
   },
   activeTab: {
     backgroundColor: COLORS.border,
   },
   tabText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   activeTabText: {
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
 });

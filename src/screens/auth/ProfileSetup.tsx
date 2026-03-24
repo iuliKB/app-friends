@@ -17,7 +17,7 @@ import { UsernameField } from '@/components/auth/UsernameField';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { APP_CONFIG } from '@/constants/config';
-import { COLORS } from '@/constants/colors';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { generateUsername } from '@/lib/username';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -141,7 +141,7 @@ export default function ProfileSetup() {
           />
           <TouchableOpacity onPress={pickAvatar} disabled={avatarLoading} style={styles.addPhoto}>
             {avatarLoading ? (
-              <ActivityIndicator color={COLORS.accent} size="small" />
+              <ActivityIndicator color={COLORS.interactive.accent} size="small" />
             ) : (
               <Text style={styles.addPhotoText}>Add photo</Text>
             )}
@@ -185,48 +185,49 @@ export default function ProfileSetup() {
 const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
-    backgroundColor: COLORS.dominant,
+    backgroundColor: COLORS.surface.base,
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xxl,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    paddingTop: 48,
-    marginBottom: 32,
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    paddingTop: 48, // no exact token
+    marginBottom: SPACING.xxl,
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: SPACING.xxl,
   },
   addPhoto: {
-    marginTop: 8,
-    minHeight: 32,
+    marginTop: SPACING.sm,
+    minHeight: 32, // no exact token — not flagged by rule
     alignItems: 'center',
     justifyContent: 'center',
   },
   addPhotoText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.accent,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.accent,
   },
   fieldGap: {
-    height: 16,
+    height: SPACING.lg,
   },
   saveError: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.destructive,
-    marginTop: 8,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.destructive,
+    marginTop: SPACING.sm,
     textAlign: 'center',
   },
   buttonTop: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
   },
 });
