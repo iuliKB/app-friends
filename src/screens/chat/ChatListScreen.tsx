@@ -1,8 +1,9 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/colors';
+import { COLORS as THEME } from '@/theme';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -40,8 +41,13 @@ export function ChatListScreen() {
         <Text style={[styles.heading, { paddingTop: insets.top + 8 }]}>{'Chats'}</Text>
       }
       ItemSeparatorComponent={() => <View style={styles.separator} />}
-      onRefresh={handleRefresh}
-      refreshing={refreshing}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor={THEME.interactive.accent}
+        />
+      }
       contentContainerStyle={chatList.length === 0 ? styles.emptyList : undefined}
       style={styles.list}
       ListEmptyComponent={

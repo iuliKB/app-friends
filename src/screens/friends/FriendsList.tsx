@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/colors';
+import { COLORS as THEME } from '@/theme';
 import { useFriends } from '@/hooks/useFriends';
 import { FriendCard } from '@/components/friends/FriendCard';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
@@ -87,8 +88,13 @@ export function FriendsList() {
             />
           )
         }
-        onRefresh={fetchFriends}
-        refreshing={loadingFriends}
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingFriends}
+            onRefresh={fetchFriends}
+            tintColor={THEME.interactive.accent}
+          />
+        }
         contentContainerStyle={friends.length === 0 ? styles.emptyList : undefined}
       />
 
