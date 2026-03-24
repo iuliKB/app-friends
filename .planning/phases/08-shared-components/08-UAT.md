@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 08-shared-components
 source: 08-01-SUMMARY.md, 08-02-SUMMARY.md, 08-03-SUMMARY.md
 started: 2026-03-24T22:15:00Z
@@ -73,7 +73,12 @@ skipped: 0
   reason: "User reported: it doens't bounce, but it chages the background color do a darker tint"
   severity: minor
   test: 3
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "Not a bug — FAB.tsx correctly implements Animated.spring scale bounce (lines 18-34). Screens still use old inline FAB implementations with only TouchableOpacity activeOpacity. Phase 9 screen sweep will replace inline FABs with <FAB> component, at which point bounce animation will be visible."
+  artifacts:
+    - path: "src/components/common/FAB.tsx"
+      issue: "Component is correct — animation works when component is used"
+    - path: "src/screens/home/HomeScreen.tsx"
+      issue: "Still uses inline FAB, not shared <FAB> component"
+  missing:
+    - "Phase 9 will adopt <FAB> across all screens — no fix needed in Phase 8"
   debug_session: ""
