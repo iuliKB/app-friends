@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UI/UX Design System
 status: planning
-stopped_at: Completed 09-02-PLAN.md
-last_updated: "2026-03-24T23:20:01.973Z"
+stopped_at: Completed 09-03-PLAN.md
+last_updated: "2026-03-24T23:21:56.390Z"
 last_activity: 2026-03-24 — Roadmap created for v1.1 (Phases 7-9)
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 10
   percent: 0
 ---
 
@@ -54,6 +54,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-screen-consistency-sweep P01 | 5m | 2 tasks | 13 files |
 | Phase 09-screen-consistency-sweep P04 | 3m | 2 tasks | 6 files |
 | Phase 09-screen-consistency-sweep P02 | 5m | 2 tasks | 4 files |
+| Phase 09-screen-consistency-sweep P05 | 5m | 2 tasks | 13 files |
+| Phase 09-screen-consistency-sweep P03 | 5m | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -76,6 +78,8 @@ Full v1.0 decision log in PROJECT.md Key Decisions table.
 - [Phase 09-screen-consistency-sweep]: fontSize:12 (timeSeparator, ownTimestamp, othersTimestamp) suppressed with eslint-disable — falls between xs=11 and sm=13 tokens
 - [Phase 09-screen-consistency-sweep]: fontSize:18 (sectionLabel HomeScreen) and paddingBottom:100 kept with eslint-disable + no-exact-token comment — no FONT_SIZE/SPACING match
 - [Phase 09-screen-consistency-sweep]: THEME alias from Phase 8 removed; all home/status files now use single direct COLORS import from @/theme
+- [Phase 09-screen-consistency-sweep]: Modal scrim rgba(0,0,0,0.6) kept with eslint-disable in FriendActionSheet — no exact token for backdrop opacity
+- [Phase 09-screen-consistency-sweep]: Plans domain token migration: eslint-disable-next-line campfire/no-hardcoded-styles for 6 genuinely unmapped values; #2a2a2a mapped to COLORS.surface.card in PlanCard and AvatarStack
 
 ### UI Audit Findings (carried from v1.0)
 
@@ -94,6 +98,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T23:20:01.971Z
-Stopped at: Completed 09-02-PLAN.md
+Last session: 2026-03-24T23:21:56.387Z
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None
