@@ -1,596 +1,446 @@
 # Architecture Research
 
-**Domain:** Social coordination mobile app (React Native + Expo + Supabase)
-**Researched:** 2026-03-17
-**Confidence:** HIGH (Expo Router auth patterns from official docs, Supabase patterns from official docs + verified examples)
+**Domain:** Design system integration — React Native StyleSheet-only codebase
+**Researched:** 2026-03-24
+**Confidence:** HIGH — based on direct inspection of the full 9,322 LOC, 221-file codebase
+
+> This file supersedes the v1.0 architecture research. It focuses exclusively on how design tokens and shared components integrate with the existing React Native + StyleSheet codebase for the v1.1 milestone.
 
 ---
 
 ## Standard Architecture
 
-Campfire is a serverless mobile app. There is no backend server. All logic lives in Postgres (RLS + RPC functions) or Supabase Edge Functions for external integrations (push notifications). The client is a React Native Expo app using Expo Router for file-based navigation.
+### System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Campfire (Expo Go)                       │
-│                                                              │
-│  ┌──────────────┐   ┌──────────────┐   ┌─────────────────┐  │
-│  │  Expo Router │   │    Zustand   │   │  Supabase SDK   │  │
-│  │  (navigation)│   │  (UI state)  │   │  (data layer)   │  │
-│  └──────┬───────┘   └──────┬───────┘   └────────┬────────┘  │
-│         │                  │                     │           │
-│  ┌──────▼───────────────────────────────────────▼────────┐  │
-│  │              Custom Hooks Layer                        │  │
-│  │  useStatuses │ useFriends │ useChats │ usePlans │ ...  │  │
-│  └──────────────────────────────┬─────────────────────────┘  │
-└─────────────────────────────────┼───────────────────────────┘
-                                  │ HTTPS / WebSocket
-┌─────────────────────────────────▼───────────────────────────┐
-│                         Supabase                             │
-│                                                              │
-│  ┌────────────┐  ┌──────────────┐  ┌──────────────────────┐ │
-│  │    Auth    │  │   Postgres   │  │      Realtime        │ │
-│  │ (GoTrue)   │  │  + RLS + RPC │  │  (statuses table     │ │
-│  └────────────┘  └──────────────┘  │   V1 only)           │ │
-│                                    └──────────────────────┘ │
-│  ┌────────────┐  ┌──────────────┐                           │
-│  │  Storage   │  │ Edge Functions│                          │
-│  │ (avatars)  │  │ (push notifs) │                          │
-│  └────────────┘  └──────────────┘                           │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                          Screens Layer                             │
+│  src/screens/{domain}/ScreenName.tsx                              │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐  │
+│  │  Home    │ │  Plans   │ │  Chat    │ │ Friends  │ │ Auth   │  │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └───┬────┘  │
+│       │             │            │             │            │       │
+├───────┴─────────────┴────────────┴─────────────┴────────────┴──────┤
+│                        Components Layer                             │
+│  src/components/{domain}/                                          │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  common/  (cross-domain shared UI)                           │  │
+│  │  FAB  ScreenHeader  FormField  ErrorDisplay  EmptyState  ... │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
+│  │  plans/  │ │  chat/   │ │ friends/ │ │  home/   │  ...         │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘              │
+│       │             │            │             │                    │
+├───────┴─────────────┴────────────┴─────────────┴───────────────────┤
+│                      Design Tokens Layer  ← NEW                     │
+│  src/constants/                                                     │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────────┐   │
+│  │  colors.ts   │ │  spacing.ts  │ │      typography.ts        │   │
+│  │  (EXISTING)  │ │  (NEW)       │ │      (NEW)                │   │
+│  └──────────────┘ └──────────────┘ └──────────────────────────┘   │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| Expo Router | File-based navigation, protected route guards, tab/stack layout | React components, Zustand (auth state) |
-| Zustand stores | Ephemeral UI state only: modals, loading flags, optimistic status toggle, draft text | Expo Router (auth guard), components |
-| Custom hooks | Data fetching, subscription lifecycle, error handling, loading state | Supabase SDK, Zustand (write UI flags) |
-| Supabase SDK | Auth sessions, database queries, realtime channels, storage URLs | Supabase backend |
-| Supabase Auth (GoTrue) | JWT issuance, OAuth (Google), session refresh, `auth.uid()` in RLS | Supabase Postgres, Edge Functions |
-| Supabase Postgres + RLS | All persistent data; policies enforce friend-only visibility | Supabase Auth |
-| Supabase RPC functions | Complex atomic operations: send_friend_request, accept_request, create_plan | Postgres internals |
-| Supabase Realtime | Push status change events to subscribed clients (statuses table, V1) | Postgres WAL |
-| Supabase Storage | Avatar images (public read, owner write) | Supabase Auth for upload policy |
-| Edge Functions (Deno) | Expo push notification delivery (requires external HTTP calls) | Expo Push API |
+| Component | Responsibility | Current State |
+|-----------|---------------|---------------|
+| `src/constants/colors.ts` | Brand color palette (17 tokens) | EXISTS — well-structured, used everywhere |
+| `src/constants/spacing.ts` | Numeric spacing scale | MISSING — all spacing hardcoded in StyleSheets |
+| `src/constants/typography.ts` | Font size + weight pairs | MISSING — all text styles hardcoded in StyleSheets |
+| `src/components/common/PrimaryButton.tsx` | Primary CTA button | EXISTS — clean, uses COLORS |
+| `src/components/common/EmptyState.tsx` | Empty list placeholder | EXISTS — minor hardcoded spacing to fix |
+| `src/components/common/LoadingIndicator.tsx` | Full-screen loading spinner | EXISTS — clean |
+| `src/components/common/AvatarCircle.tsx` | User avatar image/initials | EXISTS — clean |
+| `src/components/common/OfflineBanner.tsx` | Network status banner | EXISTS — clean |
+| `src/components/common/FAB.tsx` | Floating action button | MISSING — duplicated inline in HomeScreen + PlansListScreen |
+| `src/components/common/ScreenHeader.tsx` | Consistent view title treatment | MISSING — each screen implements its own heading |
+| `src/components/common/ErrorDisplay.tsx` | Inline error + retry | MISSING — each screen implements its own error text |
+| `src/components/common/FormField.tsx` | Labeled text input with error | EXISTS at `auth/FormField.tsx` — needs relocation to `common/` |
 
 ---
 
 ## Recommended Project Structure
 
-Based on official Expo guidance (src directory, routes-only in app/, components outside):
+Only files that change for this milestone are annotated. All other directories remain as-is.
 
 ```
-campfire/
-├── app.json
-├── eas.json
-├── package.json
-├── tsconfig.json
-├── supabase/
-│   ├── migrations/          # Postgres schema migrations
-│   │   ├── 0001_init.sql
-│   │   ├── 0002_rls.sql
-│   │   └── ...
-│   ├── functions/           # Edge Functions (push notifs)
-│   │   └── notify/
-│   │       └── index.ts
-│   └── seed.sql             # Dev seed data
-├── src/
-│   ├── app/                 # ROUTES ONLY — no components here
-│   │   ├── _layout.tsx      # Root layout: SessionProvider, font loading
-│   │   ├── (auth)/          # Route group: unauthenticated screens
-│   │   │   ├── _layout.tsx  # Stack navigator, redirects if session exists
-│   │   │   ├── sign-in.tsx
-│   │   │   └── sign-up.tsx
-│   │   └── (tabs)/          # Route group: authenticated screens
-│   │       ├── _layout.tsx  # Tab navigator, redirects if no session
-│   │       ├── index.tsx    # Home: "Who's Free" status feed
-│   │       ├── plans.tsx    # Plans list
-│   │       ├── chat.tsx     # Chat list (DMs + group chats)
-│   │       ├── squad.tsx    # Squad Goals (stub)
-│   │       └── profile.tsx  # Own profile + settings
-│   ├── screens/             # Heavy screen components (routes import these)
-│   │   ├── home/
-│   │   │   ├── index.tsx    # StatusFeed component
-│   │   │   └── StatusCard.tsx
-│   │   ├── plans/
-│   │   │   ├── PlanList.tsx
-│   │   │   ├── PlanDetail.tsx
-│   │   │   └── CreatePlan.tsx
-│   │   ├── chat/
-│   │   │   ├── ChatList.tsx
-│   │   │   ├── ChatRoom.tsx
-│   │   │   └── MessageBubble.tsx
-│   │   ├── friends/
-│   │   │   ├── FriendList.tsx
-│   │   │   └── AddFriend.tsx
-│   │   └── profile/
-│   │       ├── ProfileView.tsx
-│   │       └── EditProfile.tsx
-│   ├── components/          # Reusable UI atoms/molecules
-│   │   ├── StatusBadge.tsx  # Free/Busy/Maybe badge
-│   │   ├── Avatar.tsx
-│   │   ├── Button.tsx
-│   │   └── EmptyState.tsx
-│   ├── hooks/               # Data-fetching and realtime hooks
-│   │   ├── useSession.ts    # Auth session from Supabase
-│   │   ├── useStatuses.ts   # Friend statuses + realtime sub
-│   │   ├── useFriends.ts    # Friend list, requests
-│   │   ├── usePlans.ts      # Plans CRUD
-│   │   ├── useChat.ts       # Messages (DM or group)
-│   │   └── useProfile.ts    # Own profile read/write
-│   ├── stores/              # Zustand stores — ephemeral UI state only
-│   │   ├── useAuthStore.ts  # session object, loading flag
-│   │   ├── useStatusStore.ts # optimistic status toggle, local cache
-│   │   └── useUIStore.ts    # modal visibility, bottom sheet state
-│   ├── lib/
-│   │   ├── supabase.ts      # Supabase client singleton
-│   │   └── notifications.ts # Expo push token registration
-│   ├── types/
-│   │   ├── database.ts      # Generated Supabase types (supabase gen types)
-│   │   └── app.ts           # App-level types (Status, Plan, Friend, etc.)
-│   └── constants/
-│       ├── colors.ts        # Status colors + brand palette
-│       └── config.ts        # App-wide constants
-└── assets/
-    ├── fonts/
-    └── images/
+src/
+├── constants/
+│   ├── colors.ts         # MODIFY — add COLORS.unreadDot token (currently '#3b82f6' inline in ChatListRow)
+│   ├── spacing.ts        # NEW — SPACING object with named scale
+│   ├── typography.ts     # NEW — TEXT object with named text style pairs
+│   └── config.ts         # no change
+│
+├── components/
+│   ├── common/
+│   │   ├── AvatarCircle.tsx      # no change
+│   │   ├── EmptyState.tsx        # MODIFY — swap hardcoded spacing for SPACING tokens
+│   │   ├── LoadingIndicator.tsx  # no change
+│   │   ├── OfflineBanner.tsx     # no change
+│   │   ├── PrimaryButton.tsx     # no change
+│   │   ├── FAB.tsx               # NEW — extracted from HomeScreen + PlansListScreen
+│   │   ├── FormField.tsx         # MOVE from auth/FormField.tsx (same code, new path)
+│   │   ├── ScreenHeader.tsx      # NEW — standard screen title with optional right slot
+│   │   └── ErrorDisplay.tsx      # NEW — error text + optional retry handler
+│   │
+│   ├── auth/
+│   │   ├── AuthTabSwitcher.tsx   # no change
+│   │   ├── FormField.tsx         # DELETE after moving to common/
+│   │   ├── OAuthButton.tsx       # no change
+│   │   └── UsernameField.tsx     # no change
+│   │
+│   ├── chat/
+│   │   ├── ChatListRow.tsx       # MODIFY — '#3b82f6' → COLORS.unreadDot
+│   │   ├── MessageBubble.tsx     # MODIFY — '#f97316' → COLORS.accent, '#2a2a2a' → COLORS.secondary
+│   │   ├── PinnedPlanBanner.tsx  # MODIFY — token sweep
+│   │   └── SendBar.tsx           # MODIFY — token sweep
+│   │
+│   ├── friends/
+│   │   ├── FriendCard.tsx        # MODIFY — token sweep
+│   │   ├── QRCodeDisplay.tsx     # MODIFY — '#2a2a2a' → COLORS.secondary
+│   │   └── ...                   # token sweep as needed
+│   │
+│   ├── home/
+│   │   └── HomeFriendCard.tsx    # MODIFY — token sweep
+│   │
+│   └── plans/
+│       ├── AvatarStack.tsx       # MODIFY — '#2a2a2a' → COLORS.secondary
+│       ├── PlanCard.tsx          # MODIFY — '#2a2a2a' → COLORS.secondary
+│       └── ...                   # token sweep as needed
+│
+└── screens/
+    ├── auth/
+    │   ├── AuthScreen.tsx        # MODIFY — tokens, update FormField import path
+    │   └── ProfileSetup.tsx      # MODIFY — token sweep
+    ├── chat/
+    │   ├── ChatListScreen.tsx    # MODIFY — token sweep
+    │   └── ChatRoomScreen.tsx    # MODIFY — token sweep
+    ├── friends/
+    │   ├── AddFriend.tsx         # MODIFY — token sweep
+    │   ├── FriendRequests.tsx    # MODIFY — token sweep
+    │   └── FriendsList.tsx       # MODIFY — token sweep
+    ├── home/
+    │   └── HomeScreen.tsx        # MODIFY — tokens + replace inline FAB → <FAB />
+    └── plans/
+        ├── PlanCreateModal.tsx   # MODIFY — token sweep
+        ├── PlanDashboardScreen.tsx # MODIFY — token sweep
+        └── PlansListScreen.tsx   # MODIFY — tokens + replace inline FAB → <FAB />
 ```
 
-### Key Structural Rules
+### Structure Rationale
 
-- `src/app/` contains only route files (`_layout.tsx`, page files). No component logic.
-- `src/screens/` holds the actual component trees that route files import. This keeps routes thin.
-- `src/hooks/` are the data layer: each hook manages loading state, error state, and calls Supabase directly (no React Query).
-- `src/stores/` hold only what cannot be derived from a Supabase query: UI toggles, optimistic updates, draft state.
-- `src/lib/supabase.ts` exports a single Supabase client instance — never instantiate it elsewhere.
-- `supabase/` lives at the project root alongside `src/`, not inside it.
+- **`src/constants/` for tokens:** `colors.ts` already lives here and is imported across the entire codebase with `@/constants/colors`. Adding `spacing.ts` and `typography.ts` alongside it requires zero changes to any existing import and follows the established pattern.
+- **`src/components/common/` for shared components:** Already established as the cross-domain shared UI directory. All existing components there (PrimaryButton, EmptyState) confirm this intent. New shared components (FAB, ScreenHeader, ErrorDisplay) belong here.
+- **FormField relocation (auth/ → common/):** FormField is already generic enough to use on profile setup and potentially other screens. Moving it now prevents future duplication. Update all import sites atomically.
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: Expo Router Protected Routes with Supabase Session
+### Pattern 1: Token Import at StyleSheet Definition
 
-The root `_layout.tsx` bootstraps the session and gates the two route groups:
+**What:** Import token objects at the top of the file. Reference them inside `StyleSheet.create()`. Never construct style objects inline during render.
+**When to use:** Every component and screen — both new files and refactored files.
+**Trade-offs:** Tokens are evaluated once at module registration. Zero runtime overhead. No dynamic theming (Campfire is dark-only by explicit constraint — acceptable).
 
-```tsx
-// src/app/_layout.tsx
-import { Stack } from 'expo-router';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+**Example:**
+```typescript
+import { COLORS } from '@/constants/colors';
+import { SPACING } from '@/constants/spacing';
+import { TEXT } from '@/constants/typography';
 
-export default function RootLayout() {
-  const { session, setSession } = useAuthStore();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setSession(session)
-    );
-    return () => subscription.unsubscribe();
-  }, []);
-
-  return (
-    <Stack>
-      <Stack.Protected guard={session !== null}>
-        <Stack.Screen name="(tabs)" />
-      </Stack.Protected>
-      <Stack.Protected guard={session === null}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
-    </Stack>
-  );
-}
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: 12,
+    padding: SPACING.lg,          // 16
+    gap: SPACING.sm,              // 8
+  },
+  title: {
+    ...TEXT.bodyLarge,            // { fontSize: 16, fontWeight: '600' }
+    color: COLORS.textPrimary,
+  },
+  subtitle: {
+    ...TEXT.bodyMedium,           // { fontSize: 14, fontWeight: '400' }
+    color: COLORS.textSecondary,
+  },
+});
 ```
 
-When `session` changes (login/logout), Expo Router automatically navigates to the correct group. No manual `router.push()` needed.
+### Pattern 2: Typography Tokens as Spread Objects
 
-### Pattern 2: Data-Fetching Hook (no React Query)
+**What:** Typography tokens are plain objects with `fontSize` and `fontWeight`. Spread them into `StyleSheet.create()` entries. TypeScript infers the type when the object is typed with `as const`.
+**When to use:** All text style definitions across the codebase.
+**Trade-offs:** One level of indirection. Worth it: removes the single largest source of inconsistency (fontSize values appear 145+ times hardcoded across screens and components).
 
-Each hook owns its loading state, executes on mount, and exposes a refetch function. This pattern is the substitute for React Query in this codebase:
-
-```tsx
-// src/hooks/useStatuses.ts
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { FriendStatus } from '@/types/app';
-
-export function useStatuses(userId: string) {
-  const [statuses, setStatuses] = useState<FriendStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('statuses')
-      .select('user_id, status, emoji_tag, updated_at, profiles(username, avatar_url)')
-      .in('user_id', [userId, ...friendIds]);  // friendIds from RLS-filtered query
-
-    if (error) setError(new Error(error.message));
-    else setStatuses(data ?? []);
-    setLoading(false);
-  }, [userId]);
-
-  useEffect(() => { fetch(); }, [fetch]);
-
-  return { statuses, loading, error, refetch: fetch };
-}
+**Token definition:**
+```typescript
+// src/constants/typography.ts
+export const TEXT = {
+  // Screen-level headings (Plans, Chat, Home count heading)
+  screenTitle:  { fontSize: 24, fontWeight: '600' as const },
+  // Section headings within a screen (Details, Who's Going)
+  sectionTitle: { fontSize: 20, fontWeight: '600' as const },
+  // Primary body text in cards and rows
+  bodyLarge:    { fontSize: 16, fontWeight: '600' as const },
+  // Secondary body text, form labels, descriptions
+  bodyMedium:   { fontSize: 14, fontWeight: '400' as const },
+  // Timestamps, captions, small labels
+  caption:      { fontSize: 13, fontWeight: '400' as const },
+} as const;
 ```
 
-### Pattern 3: Realtime Subscription with Cleanup
+**Token consumption (audit-derived scale):**
 
-Only the home screen subscribes to realtime in V1. The channel filters to friend IDs to respect the free-tier 2M message budget.
+| Token | fontSize | fontWeight | Derived From |
+|-------|----------|------------|-------------|
+| `screenTitle` | 24 | 600 | Plans heading, Chat heading (55 occurrences of 24) |
+| `sectionTitle` | 20 | 600 | Plan Dashboard section titles (15 occurrences of 20) |
+| `bodyLarge` | 16 | 600 | Card titles, button labels, invite text |
+| `bodyMedium` | 14 | 400 | Form labels, secondary info (50 occurrences of 14) |
+| `caption` | 13 | 400 | Timestamps in ChatListRow (4 occurrences of 13) |
 
-```tsx
-// src/hooks/useStatuses.ts (realtime addition)
-useEffect(() => {
-  if (friendIds.length === 0) return;
+### Pattern 3: Spacing as Named Constants
 
-  const channel = supabase
-    .channel('friend-statuses')
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'statuses',
-        filter: `user_id=in.(${friendIds.join(',')})`,
-      },
-      (payload) => {
-        setStatuses((prev) =>
-          prev.map((s) =>
-            s.user_id === payload.new.user_id ? { ...s, ...payload.new } : s
-          )
-        );
-      }
-    )
-    .subscribe();
+**What:** A single numeric scale exported as `SPACING`. All padding, margin, and gap values reference this.
+**When to use:** All layout values in all StyleSheet definitions.
+**Trade-offs:** Naming takes discipline. Designers and developers must agree on the meaning of each step. The existing codebase reveals a clear de-facto scale: 4/8/12/16/24/32 — formalize these exact values.
 
-  return () => { supabase.removeChannel(channel); };
-}, [friendIds]);
+**Token definition:**
+```typescript
+// src/constants/spacing.ts
+export const SPACING = {
+  xs:   4,   // AvatarStack overlap offset, tight gaps
+  sm:   8,   // separator height, inline gaps, icon + label gap
+  md:   12,  // borderRadius(sm), card section gaps, separator marginLeft
+  lg:   16,  // standard screen padding, card padding, section padding
+  xl:   24,  // large section spacing, FAB bottom offset
+  xxl:  32,  // screen header top, auth header padding
+} as const;
 ```
 
-Important: The `in` filter accepts up to 100 values. For Campfire's 3–15 person groups, this is safe.
+**Audit-derived usage counts (existing codebase):**
 
-Note: The filter column (`user_id`) must exist in the table's replica identity for filters to work. Use `ALTER TABLE statuses REPLICA IDENTITY FULL;` during migration.
+| Value | Count | Role |
+|-------|-------|------|
+| 16 | 44 | Standard horizontal screen padding, card padding |
+| 8 | 10 | Inline gaps, separators |
+| 24 | 5 | Large vertical spacing, FAB offset |
+| 32 | 4 | Header top padding, auth content padding |
+| 12 | borderRadius | Card radius appears 20 times |
 
-### Pattern 4: Optimistic Status Toggle with Zustand
+### Pattern 4: Incremental Screen-by-Screen Migration
 
-The status toggle must feel instant (home screen is king). Write to Zustand immediately; let the Supabase write confirm asynchronously. Realtime will reconcile if it fails.
-
-```tsx
-// src/stores/useStatusStore.ts
-import { create } from 'zustand';
-import type { Status } from '@/types/app';
-
-interface StatusStore {
-  localStatus: Status | null;
-  setLocalStatus: (s: Status) => void;
-  clearLocalStatus: () => void;
-}
-
-export const useStatusStore = create<StatusStore>((set) => ({
-  localStatus: null,
-  setLocalStatus: (s) => set({ localStatus: s }),
-  clearLocalStatus: () => set({ localStatus: null }),
-}));
-```
-
-Component reads: `localStatus ?? serverStatus` — local override wins until cleared on confirmed write or error rollback.
-
-### Pattern 5: Supabase RPC for Atomic Operations
-
-Use Postgres functions (RPC) for multi-table writes that must be atomic. Friend requests touch both `friend_requests` and potentially `friendships`:
-
-```tsx
-// src/hooks/useFriends.ts
-async function sendFriendRequest(targetUsername: string) {
-  const { error } = await supabase.rpc('send_friend_request', {
-    target_username: targetUsername,
-  });
-  if (error) throw new Error(error.message);
-}
-```
-
-The Postgres function handles: lookup by username, duplicate check, insert into friend_requests, all within a single transaction.
-
-### Pattern 6: RLS Friend-Visibility Pattern
-
-Every table that contains friend-scoped data uses a policy that checks the friendships table:
-
-```sql
--- Allow users to read their friends' statuses
-create policy "read_friend_statuses"
-on statuses for select
-to authenticated
-using (
-  user_id = (select auth.uid())
-  or user_id in (
-    select case
-      when user_a = (select auth.uid()) then user_b
-      else user_a
-    end
-    from friendships
-    where user_a = (select auth.uid()) or user_b = (select auth.uid())
-      and status = 'accepted'
-  )
-);
-```
-
-The `(select auth.uid())` wrapping is a Supabase performance recommendation — it caches per-statement rather than calling the function on every row.
-
-### Pattern 7: Supabase Client Singleton
-
-```tsx
-// src/lib/supabase.ts
-import { createClient } from '@supabase/supabase-js';
-import * as SecureStore from 'expo-secure-store';
-import type { Database } from '@/types/database';
-
-const ExpoSecureStoreAdapter = {
-  getItem: (key: string) => SecureStore.getItemAsync(key),
-  setItem: (key: string, value: string) => SecureStore.setItemAsync(key, value),
-  removeItem: (key: string) => SecureStore.deleteItemAsync(key),
-};
-
-export const supabase = createClient<Database>(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    auth: {
-      storage: ExpoSecureStoreAdapter,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false,
-    },
-  }
-);
-```
-
-`expo-secure-store` is the correct storage adapter for Expo managed workflow. It works in Expo Go without native modules.
+**What:** Refactor one screen at a time. Token files ship first. Then new shared components. Then screens one by one. Never a single PR that rewrites all 11 screens simultaneously.
+**When to use:** Any existing codebase with StyleSheet. This is the only safe migration strategy when screens are in active development.
+**Trade-offs:** During migration, some screens use tokens and some do not. This is fine — StyleSheet scopes are isolated per file. The app functions correctly throughout.
 
 ---
 
 ## Data Flow
 
-### Auth Flow
+### Token Consumption Flow
 
 ```
-App launch
-  → RootLayout mounts
-  → supabase.auth.getSession() (async)
-  → setSession() in useAuthStore
-  → Expo Router Stack.Protected evaluates guard
-  → Routes to (tabs) if session, (auth) if null
-  → onAuthStateChange subscription keeps session live for token refresh
+src/constants/colors.ts      (EXISTING — 17 tokens)
+src/constants/spacing.ts     (NEW — 6 named values)
+src/constants/typography.ts  (NEW — 5 named text pairs)
+        │
+        │  import { COLORS } from '@/constants/colors'
+        │  import { SPACING } from '@/constants/spacing'
+        │  import { TEXT } from '@/constants/typography'
+        ↓
+StyleSheet.create({ ... })   evaluated once at module load
+        │
+        │  style prop on View / Text / TouchableOpacity
+        ↓
+React Native layout and rendering
 ```
 
-### Status Update Flow (Home Screen)
+No component library, no theme context, no runtime lookup. Tokens are compile-time constants.
+
+### Component Extraction Flow
 
 ```
-User taps status toggle
-  → setLocalStatus(newStatus) in useStatusStore [immediate, renders instantly]
-  → supabase.from('statuses').upsert({...}) [background write]
-  → On success: clearLocalStatus() [server state now canonical]
-  → On error: rollback localStatus, show toast
+HomeScreen / PlansListScreen
+  → contain duplicate inline FAB JSX + styles
+  → extract to src/components/common/FAB.tsx
+  → screens import <FAB onPress={...} label="..." />
+  → screen StyleSheet loses the duplicated fab/fabLabel style rules
 
-Friends see update:
-  → Supabase WAL detects UPDATE on statuses
-  → Realtime broadcasts to channel 'friend-statuses'
-  → Each subscribed friend's useStatuses hook receives payload
-  → setStatuses() with merged update
-  → FlatList re-renders StatusCard
+src/components/auth/FormField.tsx
+  → move to src/components/common/FormField.tsx
+  → update import in AuthScreen from '@/components/auth/FormField'
+                                 to '@/components/common/FormField'
+  → zero changes to FormField implementation
 ```
 
-### Chat Message Flow
+### Pull-to-Refresh State Flow
 
 ```
-User sends message
-  → supabase.from('messages').insert({chat_id, sender_id, content})
-  → RLS verifies sender is chat participant
-  → Other participants: useChat hook polls OR (Phase 6) realtime sub
-  → FlatList appends message at bottom
-
-V1 note: Chat does NOT use realtime (realtime budget reserved for statuses).
-         Users see new messages on screen focus or manual pull-to-refresh.
+Screen mounts → hook sets refreshing = false
+User pulls down → RefreshControl calls onRefresh
+  → hook sets refreshing = true
+  → hook re-fetches from Supabase
+  → hook sets refreshing = false
+  → RefreshControl hides spinner
 ```
 
-### Friend Request Flow
+Screens without pull-to-refresh today (ChatRoomScreen, FriendsList, AddFriend, ProfileSetup, PlanDashboardScreen) need `onRefresh` wired from their existing hooks. All hooks already expose `handleRefresh` or a refetch function.
+
+---
+
+## Build Order (Dependency Graph)
+
+Build phases must complete in this sequence. Each phase's output is consumed by the next.
 
 ```
-User enters username → taps Add
-  → supabase.rpc('send_friend_request', { target_username })
-  → Postgres function: looks up user, checks no existing request/friendship, inserts
-  → RLS on friend_requests: both parties can read their own requests
-  → Target user: sees pending request in FriendList on next load
-  → Accept: supabase.rpc('accept_friend_request', { request_id })
-  → Postgres function: inserts into friendships, deletes from friend_requests
+Phase 1 — Token files (no dependencies, ship independently)
+  ├── src/constants/spacing.ts        NEW
+  ├── src/constants/typography.ts     NEW
+  └── src/constants/colors.ts         ADD: unreadDot token
+
+Phase 2 — New shared components (depends on Phase 1 tokens)
+  ├── src/components/common/FAB.tsx          NEW (uses COLORS, SPACING)
+  ├── src/components/common/ScreenHeader.tsx NEW (uses TEXT, COLORS, SPACING)
+  ├── src/components/common/ErrorDisplay.tsx NEW (uses TEXT, COLORS)
+  └── src/components/common/FormField.tsx    MOVE from auth/ (import path update)
+
+Phase 3 — Hardcoded color sweep in existing components
+        (depends on Phase 1 tokens; independent of Phase 2)
+  ├── src/components/plans/PlanCard.tsx      '#2a2a2a' → COLORS.secondary
+  ├── src/components/plans/AvatarStack.tsx   '#2a2a2a' → COLORS.secondary
+  ├── src/components/chat/ChatListRow.tsx    '#3b82f6' → COLORS.unreadDot
+  ├── src/components/chat/MessageBubble.tsx  '#f97316' → COLORS.accent
+  │                                          '#2a2a2a' → COLORS.secondary
+  └── src/components/friends/QRCodeDisplay.tsx '#2a2a2a' → COLORS.secondary
+
+Phase 4 — Screen refactors (depends on Phases 1–3)
+  ├── HomeScreen          swap inline FAB → <FAB />, tokens
+  ├── PlansListScreen     swap inline FAB → <FAB />, tokens
+  ├── ChatListScreen      tokens
+  ├── ChatRoomScreen      tokens
+  ├── PlanDashboardScreen tokens
+  ├── PlanCreateModal     tokens
+  ├── FriendsList         tokens, add pull-to-refresh if missing
+  ├── FriendRequests      tokens
+  ├── AddFriend           tokens
+  ├── AuthScreen          tokens, update FormField import path
+  └── ProfileSetup        tokens
 ```
 
-### State Management Summary
+Within Phase 4, screens can be refactored in any order — they are fully isolated by StyleSheet scope.
 
-| Data type | Where it lives | Rationale |
-|-----------|---------------|-----------|
-| Auth session (JWT) | Zustand + SecureStore | Must persist across restarts; Supabase SDK manages refresh |
-| Friend statuses | React component state (from useStatuses hook) | Server-sourced; Zustand only for optimistic override |
-| Chat messages | React component state (from useChat hook) | Server-sourced, no client cache needed |
-| Plans list | React component state (from usePlans hook) | Server-sourced |
-| Own status (optimistic) | Zustand (useStatusStore) | Instant UI feedback before server confirms |
-| Modal / sheet visibility | Zustand (useUIStore) | Pure UI, no server data |
-| Unsent message draft | Zustand or local useState | Ephemeral; lost on navigation is acceptable |
+---
+
+## Integration Points: New vs Modified Files
+
+### New Files
+
+| File | What It Contains | Consumes |
+|------|-----------------|---------|
+| `src/constants/spacing.ts` | `SPACING` object: xs=4 sm=8 md=12 lg=16 xl=24 xxl=32 | nothing |
+| `src/constants/typography.ts` | `TEXT` object: screenTitle, sectionTitle, bodyLarge, bodyMedium, caption | nothing |
+| `src/components/common/FAB.tsx` | Pressable floating button with icon + optional label | COLORS, SPACING |
+| `src/components/common/ScreenHeader.tsx` | View with title Text + optional right-slot | TEXT, COLORS, SPACING |
+| `src/components/common/ErrorDisplay.tsx` | Error text + optional retry TouchableOpacity | TEXT, COLORS |
+
+### Moved Files
+
+| From | To | Change |
+|------|----|--------|
+| `src/components/auth/FormField.tsx` | `src/components/common/FormField.tsx` | Path only — no implementation changes |
+
+### Modified Files
+
+| File | Change Type | Specific Change |
+|------|------------|----------------|
+| `src/constants/colors.ts` | Additive | Add `unreadDot: '#3b82f6'` token |
+| `src/screens/home/HomeScreen.tsx` | Refactor | Replace inline FAB JSX → `<FAB />`, swap hardcoded values for SPACING/TEXT tokens |
+| `src/screens/plans/PlansListScreen.tsx` | Refactor | Replace inline FAB JSX → `<FAB />`, swap tokens |
+| `src/screens/chat/ChatListScreen.tsx` | Refactor | Swap tokens |
+| `src/screens/chat/ChatRoomScreen.tsx` | Refactor | Swap tokens |
+| `src/screens/plans/PlanDashboardScreen.tsx` | Refactor | Swap tokens |
+| `src/screens/plans/PlanCreateModal.tsx` | Refactor | Swap tokens |
+| `src/screens/friends/FriendsList.tsx` | Refactor | Swap tokens |
+| `src/screens/friends/FriendRequests.tsx` | Refactor | Swap tokens |
+| `src/screens/friends/AddFriend.tsx` | Refactor | Swap tokens |
+| `src/screens/auth/AuthScreen.tsx` | Refactor | Swap tokens, update FormField import path |
+| `src/screens/auth/ProfileSetup.tsx` | Refactor | Swap tokens |
+| `src/components/plans/PlanCard.tsx` | Fix | `'#2a2a2a'` → `COLORS.secondary` |
+| `src/components/plans/AvatarStack.tsx` | Fix | `'#2a2a2a'` → `COLORS.secondary` |
+| `src/components/chat/ChatListRow.tsx` | Fix | `'#3b82f6'` → `COLORS.unreadDot` |
+| `src/components/chat/MessageBubble.tsx` | Fix | `'#f97316'` → `COLORS.accent`, `'#2a2a2a'` → `COLORS.secondary` |
+| `src/components/friends/QRCodeDisplay.tsx` | Fix | `'#2a2a2a'` → `COLORS.secondary` |
+
+### Untouched Files
+
+All files in `src/hooks/`, `src/stores/`, `src/types/`, `src/lib/`, and `src/app/` are untouched. The design system has zero effect on data fetching, state management, routing, or Supabase integration.
 
 ---
 
 ## Scaling Considerations
 
-| Concern | At launch (3–15 users/group) | At 1K groups | At 10K groups |
-|---------|------------------------------|--------------|---------------|
-| Realtime connections | 1 channel per active user. Supabase free tier: 200 concurrent connections. Fine. | Approach free tier limit. Add `filter: in.(...)` to narrow broadcasts. | Migrate statuses realtime to Broadcast (lower overhead than postgres_changes) |
-| Realtime message volume | Each status update = 1 message/group × ~10 friends. Well within 2M/month free tier. | Monitor in Supabase dashboard. Set budget alerts. | Switch to Broadcast + server-side fan-out via Edge Function |
-| Database reads | `SELECT *` avoided by design. Indexed by user_id, friend pairs. | Add read replicas if needed (Supabase Pro). | Partition statuses by created_at if table grows large |
-| RLS policy cost | Friend lookup subquery on every read. For small friend lists this is negligible. | Index friendships(user_a, user_b) covers the subquery. | Consider materializing friend_ids in a denormalized column for hot tables |
-| Storage | Avatars: 1 upload per user. 1GB free tier easily covers thousands of users. | Implement image resize via Edge Function on upload. | Storage Pro tier |
-| Push notifications | Edge Function calls Expo Push API synchronously on nudge. Fine. | Queue notifications (pg_cron or Supabase Queues) to avoid Edge Function timeouts. | Background worker |
+This milestone is internal refactoring with no user-facing architectural change. Token files are compile-time constants — no runtime cost at any scale.
+
+| Concern | Now | Future |
+|---------|-----|--------|
+| Token divergence | Single source per token type | No risk — one file per domain |
+| Dark/light mode | Not supported (Campfire is dark-only by constraint) | Would require `useColorScheme()` hook wrapping COLORS — deferrable to V3 |
+| New screens | Import from tokens, use shared components — no migration needed | Tokens pay forward immediately |
+| Design iteration | Change one value in spacing.ts → all consumers update | High leverage, low cost |
 
 ---
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Zustand as a Server Cache
+### Anti-Pattern 1: Big-Bang Migration
 
-**What goes wrong:** Storing fetched Supabase data in Zustand (e.g., `useStatusStore.statuses = [...]`) and updating it manually.
-**Why bad:** Two sources of truth. Race conditions between optimistic updates and realtime events. Cache invalidation becomes a full-time job.
-**Instead:** Keep server data in React component state via custom hooks. Zustand holds only: the optimistic delta (localStatus), UI flags (modalOpen), and the auth session.
+**What people do:** Refactor all 11 screens in a single PR before shipping tokens.
+**Why it's wrong:** Merge conflicts across 11 files. Partial failures break the whole app. No ability to review incrementally.
+**Do this instead:** Tokens first (ship independently, zero risk). Shared components next (each independently testable). Screens last, one or two at a time.
 
-### Anti-Pattern 2: Multiple Supabase Client Instances
+### Anti-Pattern 2: New `theme/` Directory
 
-**What goes wrong:** Calling `createClient()` inside a component or hook renders multiple instances with separate connection pools and auth state.
-**Why bad:** Multiple WebSocket connections, session desync, duplicate realtime events.
-**Instead:** Single singleton in `src/lib/supabase.ts`, imported everywhere.
+**What people do:** Create `src/theme/colors.ts`, `src/theme/spacing.ts` parallel to the existing `src/constants/colors.ts`.
+**Why it's wrong:** `COLORS` is imported from `@/constants/colors` in 40+ files already. A parallel structure creates two import patterns and confuses contributors.
+**Do this instead:** Add `spacing.ts` and `typography.ts` alongside `colors.ts` in `src/constants/`. One import path convention, zero churn on existing files.
 
-### Anti-Pattern 3: Client-Side Friendship Filtering
+### Anti-Pattern 3: Dynamic Theme Functions at Render Time
 
-**What goes wrong:** Fetching all statuses and filtering in JavaScript to only show friends.
-**Why bad:** Exposes all users' data to the client. Violates the RLS-as-security principle.
-**Instead:** RLS policies enforce friend-only visibility at the database layer. The client never sees data it shouldn't.
+**What people do:** `const styles = makeStyles(theme)` called inside component body, or wrapping StyleSheet.create in a function.
+**Why it's wrong:** Campfire is dark-only. Dynamic theming has no current use. It defeats StyleSheet.create optimization (StyleSheet resolves style IDs at registration time, not render time) and adds complexity with no benefit.
+**Do this instead:** Module-level `StyleSheet.create()` with static token references. This is what every existing file already does — stay consistent.
 
-### Anti-Pattern 4: Realtime on Every Table
+### Anti-Pattern 4: Leaving Two FormField Copies
 
-**What goes wrong:** Adding Supabase Realtime subscriptions to messages, plans, and statuses from day one.
-**Why bad:** Exhausts free-tier 2M message budget. Complex subscription lifecycle management. Premature optimization.
-**Instead:** V1 realtime only on statuses. Chat uses fetch-on-focus. Plans use pull-to-refresh. Add realtime per table only when UX explicitly requires it.
+**What people do:** Copy FormField to `common/` and leave the original in `auth/` "just in case."
+**Why it's wrong:** Two sources of truth. Bug fixes in one do not propagate to the other. Import paths diverge.
+**Do this instead:** Move the single file. Update all import sites in the same commit. Delete the original. One file, one import path.
 
-### Anti-Pattern 5: ScrollView + .map() for Lists
+### Anti-Pattern 5: Type-Only Token Files
 
-**What goes wrong:** Using `<ScrollView>{items.map(...)}</ScrollView>` for any list that could grow.
-**Why bad:** All items render immediately, no virtualization, memory bloat on long chat histories.
-**Instead:** FlatList with `keyExtractor`, `getItemLayout` (when item height is fixed), and `removeClippedSubviews`.
+**What people do:** Export `export type SpacingKey = 'sm' | 'md' | 'lg'` without actual values.
+**Why it's wrong:** StyleSheet requires numeric values. Type-only exports force every consumer to maintain a runtime lookup.
+**Do this instead:** `export const SPACING = { sm: 8, md: 12, lg: 16 } as const`. TypeScript infers the union type automatically. Values and types are co-located.
 
-### Anti-Pattern 6: Business Logic in Components
+### Anti-Pattern 6: Applying Tokens Inconsistently Across the Codebase
 
-**What goes wrong:** RPC calls, permission checks, and data transformations embedded in component JSX.
-**Why bad:** Untestable, duplicated across screens, hard to change.
-**Instead:** Custom hooks own data-fetching logic. RPC calls via named functions in hooks. Components receive data and call handlers.
-
-### Anti-Pattern 7: Raw `SELECT *` Queries
-
-**What goes wrong:** `supabase.from('profiles').select('*')` fetches all columns.
-**Why bad:** Over-fetches on free-tier bandwidth. Reveals schema to client. Slow on wide tables.
-**Instead:** Always specify column names: `.select('id, username, avatar_url, status')`.
-
-### Anti-Pattern 8: Sequential Auth State Check + Router Push
-
-**What goes wrong:** Checking `if (!session) router.push('/sign-in')` in every protected screen's `useEffect`.
-**Why bad:** Flash of unprotected content, duplicated logic, navigation state pollution.
-**Instead:** Single `Stack.Protected` guard in the root layout handles all routing. No per-screen redirect logic needed.
-
----
-
-## Integration Points
-
-### Internal Boundaries
-
-```
-src/app/         → imports from src/screens/ (route files are thin shells)
-src/screens/     → imports from src/hooks/, src/components/, src/stores/
-src/hooks/       → imports from src/lib/supabase.ts, src/types/, src/stores/
-src/stores/      → imports from src/types/ only (no circular dependencies)
-src/lib/         → imports from src/types/ only
-```
-
-No component should import from another component's screen folder. Shared UI goes to `src/components/`.
-
-### External Services
-
-| Service | Integration Point | Auth Method | Notes |
-|---------|------------------|-------------|-------|
-| Supabase Auth | `src/lib/supabase.ts`, `useSession` hook | Anon key + JWT | Google OAuth requires Supabase OAuth config + Expo AuthSession |
-| Supabase DB | All data hooks via Supabase SDK | JWT (auto from session) | RLS policies enforce all access |
-| Supabase Realtime | `useStatuses` hook, statuses table only (V1) | JWT (auto) | Channel: `friend-statuses`, filter: `user_id=in.(...)` |
-| Supabase Storage | `useProfile` hook (avatar upload/read) | JWT for upload, public URL for read | Bucket: `avatars`, public read |
-| Supabase Edge Functions | `src/lib/notifications.ts` | Service role key (server-side only) | Expo Push API call for nudges |
-| Expo Push API | Via Supabase Edge Function | Expo push token (stored in profiles table) | Edge Function: `supabase/functions/notify/` |
-| Google OAuth | Via Expo AuthSession + Supabase OAuth | OAuth2 flow | Redirect URI must be configured in both Supabase and Google Cloud Console |
-
-### Supabase RPC vs Edge Function Decision Rule
-
-| Logic type | Use |
-|------------|-----|
-| Multi-table atomic write (friend request, plan create with invites) | RPC (Postgres function) |
-| Data transformation on read (aggregates, joins) | RPC |
-| External HTTP call (Expo Push API, email) | Edge Function |
-| Background/scheduled job | Edge Function + pg_cron |
-| Simple CRUD | Direct SDK query from hook |
-
----
-
-## Suggested Build Order
-
-Dependencies drive this order. Each layer must exist before the layer above it can be built.
-
-```
-1. Foundation
-   ├── Supabase project creation + env vars
-   ├── supabase client singleton (src/lib/supabase.ts)
-   └── TypeScript types generation (supabase gen types typescript)
-
-2. Database Schema + RLS
-   ├── profiles, friendships, friend_requests tables
-   ├── statuses table (with realtime enabled)
-   ├── plans, plan_invites, messages, chats tables
-   └── All RLS policies (friend visibility pattern)
-
-3. Auth Layer
-   ├── Root _layout.tsx with session bootstrapping
-   ├── (auth) route group: sign-in, sign-up screens
-   ├── useAuthStore (Zustand: session, loading)
-   └── Google OAuth configuration
-
-4. Profile + Friends
-   ├── useProfile hook (read/update own profile)
-   ├── useFriends hook (list, add, accept, reject)
-   ├── Avatar upload to Supabase Storage
-   └── QR code generation for friend add
-
-5. Statuses (Core Feature)
-   ├── useStatuses hook (fetch + realtime subscription)
-   ├── useStatusStore (optimistic toggle)
-   ├── Home screen StatusFeed with FlatList
-   └── StatusBadge component (Free/Busy/Maybe colors)
-
-6. Plans
-   ├── usePlans hook (CRUD + RSVP)
-   ├── create_plan RPC (atomic plan + invites)
-   └── Plan detail: link dump, IOU notes (last-write-wins upsert)
-
-7. Chat
-   ├── useChat hook (DMs + group chats)
-   ├── ChatRoom screen with FlatList (inverted)
-   └── Nudge action (triggers Edge Function → Expo Push)
-
-8. Polish
-   ├── Push notification token registration
-   ├── Edge Function: notify
-   ├── Seed data (supabase/seed.sql)
-   └── Squad Goals stub tab
-```
+**What people do:** Refactor HomeScreen to use SPACING but leave FriendsList with hardcoded values.
+**Why it's wrong:** Creates a two-tier codebase where some files use the system and some don't. Future developers cannot trust the convention.
+**Do this instead:** Once token files exist, complete the sweep across all screens and components. The Phase 3 + Phase 4 build order ensures this.
 
 ---
 
 ## Sources
 
-- [Expo Router Authentication Docs](https://docs.expo.dev/router/advanced/authentication/) — Protected routes pattern, Stack.Protected guard
-- [Expo App Folder Structure Best Practices](https://expo.dev/blog/expo-app-folder-structure-best-practices) — Official Expo blog on directory organization
-- [Expo Router Core Concepts](https://docs.expo.dev/router/basics/core-concepts/) — File-based routing, route groups, layouts
-- [Supabase Realtime: Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes) — Filter syntax (eq, in), replica identity, channel cleanup
-- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — Policy patterns, auth.uid() optimization
-- [Supabase with Expo React Native (Official Quickstart)](https://supabase.com/docs/guides/getting-started/quickstarts/expo-react-native) — Client setup, SecureStore adapter
-- [Supabase Edge Functions vs RPC](https://www.closefuture.io/blogs/supabase-database-vs-edge-functions) — Decision guide for server logic placement
-- [FlatList Optimization Guide](https://www.obytes.com/blog/a-guide-to-optimizing-flatlists-in-react-native) — keyExtractor, getItemLayout, removeClippedSubviews
-- [Zustand in React Native](https://blog.peslostudios.com/blog/zustand-state-management-in-react-native/) — Store slices, ephemeral state patterns
+- Direct inspection of `/Users/iulian/Develop/campfire/src/` — all 221 files, 9,322 LOC — HIGH confidence
+- Empirical audit of fontSize values (145 hardcoded instances), borderRadius values (57 instances), paddingHorizontal values (64 instances) — HIGH confidence
+- Hardcoded hex color audit: 6 files with colors bypassing COLORS constant — HIGH confidence
+- React Native StyleSheet documentation (stable API) — HIGH confidence
+
+---
+
+*Architecture research for: Campfire v1.1 UI/UX Design System*
+*Researched: 2026-03-24*
