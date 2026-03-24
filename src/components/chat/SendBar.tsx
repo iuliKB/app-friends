@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE } from '@/theme';
 
 interface SendBarProps {
   onSend: (body: string) => void;
@@ -26,7 +26,7 @@ export function SendBar({ onSend }: SendBarProps) {
         value={text}
         onChangeText={setText}
         placeholder="Message..."
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor={COLORS.text.secondary}
         returnKeyType="send"
         onSubmitEditing={handleSend}
         multiline={false}
@@ -37,7 +37,11 @@ export function SendBar({ onSend }: SendBarProps) {
         activeOpacity={0.7}
         accessibilityLabel="Send message"
       >
-        <Ionicons name="send" size={24} color={canSend ? COLORS.accent : COLORS.textSecondary} />
+        <Ionicons
+          name="send"
+          size={24}
+          color={canSend ? COLORS.interactive.accent : COLORS.text.secondary}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -48,16 +52,16 @@ const styles = StyleSheet.create({
     height: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: SPACING.sm,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.surface.card,
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    color: COLORS.textPrimary,
-    paddingHorizontal: 8,
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.primary,
+    paddingHorizontal: SPACING.sm,
     backgroundColor: 'transparent',
   },
 });

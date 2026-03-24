@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { ChatListItem } from '@/types/chat';
 
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
     height: 72,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.dominant,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: COLORS.surface.base,
   },
   iconContainer: {
     width: 40,
@@ -65,36 +65,39 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emoji: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 28,
   },
   content: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: SPACING.md,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
   preview: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 2,
   },
   rightSide: {
     alignItems: 'flex-end',
   },
   time: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   unreadDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
-    backgroundColor: '#3b82f6',
+    borderRadius: RADII.xs,
+    backgroundColor: COLORS.feedback.info,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 6,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { MessageWithProfile } from '@/types/chat';
 
@@ -131,36 +131,39 @@ const styles = StyleSheet.create({
   ownContainer: {
     alignSelf: 'flex-end',
     maxWidth: '75%',
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
     alignItems: 'flex-end',
   },
   ownBubble: {
-    backgroundColor: '#f97316',
-    borderRadius: 18,
-    borderBottomRightRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    backgroundColor: COLORS.interactive.accent,
+    borderRadius: RADII.pill,
+    borderBottomRightRadius: RADII.xs,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
   },
   pendingOpacity: {
     opacity: 0.7,
   },
   ownBody: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#1a1a1a',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.surface.base,
   },
   ownTimestamp: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 12,
-    fontWeight: '400',
+    fontWeight: FONT_WEIGHT.regular,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     color: 'rgba(245,245,245,0.5)',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 2,
   },
   othersContainer: {
     alignSelf: 'flex-start',
     maxWidth: '75%',
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 4,
+    gap: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   avatarSpacer: {
     width: 32,
@@ -169,27 +172,30 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   senderName: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     marginBottom: 2,
   },
   othersBubble: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 18,
-    borderBottomLeftRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.pill,
+    borderBottomLeftRadius: RADII.xs,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
   },
   othersBody: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#f5f5f5',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
   othersTimestamp: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 12,
-    fontWeight: '400',
-    color: '#9ca3af',
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 2,
   },
 });
