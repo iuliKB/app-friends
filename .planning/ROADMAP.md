@@ -41,8 +41,8 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Create all design token files in src/theme/ (colors, spacing, typography, radii, shadows, barrel export)
-- [ ] 07-02-PLAN.md — Create ESLint rule enforcing token usage (block hardcoded hex + raw spacing/typography values)
+- [x] 07-01-PLAN.md — Create all design token files in src/theme/ (colors, spacing, typography, radii, shadows, barrel export)
+- [x] 07-02-PLAN.md — Create ESLint rule enforcing token usage (block hardcoded hex + raw spacing/typography values)
 
 ### Phase 8: Shared Components
 **Goal**: A small shared component library exists in `src/components/common/` that covers every repeated UI pattern across screens, all built with Phase 7 tokens
@@ -54,10 +54,12 @@ Plans:
   3. `<ErrorDisplay>` renders inline form errors and screen-level error states with consistent styling
   4. `<ScreenHeader>` renders a screen title matching the Plans view treatment, with an optional right-action slot
   5. Pull-to-refresh (RefreshControl) works on Home, Plans, and Friends list views — dragging down triggers a data reload
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Create FAB component and move FormField to common/ with token migration
+- [ ] 08-02-PLAN.md — Create ErrorDisplay, ScreenHeader, and SectionHeader components
+- [ ] 08-03-PLAN.md — Standardize pull-to-refresh tintColor across all list screens
 
 ### Phase 9: Screen Consistency Sweep
 **Goal**: Every screen and component in the app uses only design tokens and shared components — no raw style values remain and the lint rule passes across all 221 files
@@ -87,6 +89,6 @@ Phases execute in numeric order: 7 → 8 → 9
 | 4. Plans | v1.0 | 3/3 | Complete | 2026-03-18 |
 | 5. Chat | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 6. Notifications + Polish | v1.0 | 3/3 | Complete | 2026-03-19 |
-| 7. Design Tokens | 2/2 | Complete    | 2026-03-24 | - |
-| 8. Shared Components | v1.1 | 0/TBD | Not started | - |
+| 7. Design Tokens | v1.1 | 2/2 | Complete | 2026-03-24 |
+| 8. Shared Components | v1.1 | 0/3 | Not started | - |
 | 9. Screen Consistency Sweep | v1.1 | 0/TBD | Not started | - |
