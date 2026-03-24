@@ -11,6 +11,7 @@ import {
 import { useCallback, useState } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { COLORS } from '@/constants/colors';
@@ -30,6 +31,7 @@ import type { EmojiTag, StatusValue } from '@/types/app';
 export default function ProfileScreen() {
   const session = useAuthStore((s) => s.session);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [loggingOut, setLoggingOut] = useState(false);
   const { status, contextTag, loading, saving, updateStatus, updateContextTag } = useStatus();
   const [savingTag, setSavingTag] = useState<EmojiTag>(null);
@@ -93,7 +95,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}>
       {/* Avatar header */}
       <TouchableOpacity
         style={styles.avatarHeader}
@@ -232,7 +234,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.dominant,
   },
   content: {
-    paddingTop: 64,
     paddingBottom: 32,
   },
   avatarHeader: {

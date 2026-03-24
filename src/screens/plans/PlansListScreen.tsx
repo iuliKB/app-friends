@@ -132,7 +132,7 @@ export function PlansListScreen() {
           <PlanCard plan={item} onPress={() => router.push(`/plans/${item.id}` as never)} />
         )}
         ListHeaderComponent={
-          <View>
+          <View style={{ paddingTop: insets.top + 8 }}>
             <Text style={styles.heading}>{'Your Plans'}</Text>
             {inviteCount > 0 && (
               <TouchableOpacity
@@ -228,7 +228,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     color: COLORS.textPrimary,
-    paddingTop: 24,
     paddingBottom: 16,
   },
   errorText: {

@@ -1,6 +1,7 @@
 import React from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/colors';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
@@ -10,6 +11,7 @@ import type { ChatListItem } from '@/types/chat';
 
 export function ChatListScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { chatList, loading, refreshing, handleRefresh } = useChatList();
 
   function handleChatPress(item: ChatListItem) {
@@ -34,6 +36,9 @@ export function ChatListScreen() {
       data={chatList}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
+      ListHeaderComponent={
+        <Text style={[styles.heading, { paddingTop: insets.top + 8 }]}>{'Chats'}</Text>
+      }
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       onRefresh={handleRefresh}
       refreshing={refreshing}
@@ -54,6 +59,13 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
     backgroundColor: COLORS.dominant,
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
   separator: {
     height: 1,

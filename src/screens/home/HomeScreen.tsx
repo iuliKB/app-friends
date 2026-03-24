@@ -61,7 +61,7 @@ export function HomeScreen() {
     <View style={styles.root}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 8 }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   toggleContainer: {
-    paddingTop: 24,
+    paddingTop: 0,
     paddingBottom: 16,
   },
   errorText: {

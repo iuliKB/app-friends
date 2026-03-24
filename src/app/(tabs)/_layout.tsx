@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/colors';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useInvitationCount } from '@/hooks/useInvitationCount';
@@ -7,6 +8,7 @@ import { useInvitationCount } from '@/hooks/useInvitationCount';
 export default function TabsLayout() {
   const { count: pendingCount } = usePendingRequestsCount();
   const { count: invitationCount } = useInvitationCount();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -17,7 +19,8 @@ export default function TabsLayout() {
           backgroundColor: COLORS.secondary,
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
-          height: 56,
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom,
         },
         tabBarLabelStyle: { fontSize: 11 },
         headerShown: false,
