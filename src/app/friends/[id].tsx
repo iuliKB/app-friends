@@ -76,11 +76,13 @@ export default function FriendProfileScreen() {
           text: 'Remove',
           style: 'destructive',
           onPress: async () => {
-            const sortedIds = [session.user.id, id].sort();
+            const myId = session.user.id;
             const { error } = await supabase
               .from('friendships')
               .delete()
-              .or(`and(user_a.eq.${sortedIds[0]},user_b.eq.${sortedIds[1]})`);
+              .or(
+                `and(requester_id.eq.${myId},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${myId})`
+              );
 
             if (error) {
               Alert.alert('Error', "Couldn't remove friend. Try again.");
