@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import type { StatusValue } from '@/types/app';
 
 interface SegmentProps {
@@ -34,7 +34,7 @@ export function SegmentedControl({ value, onValueChange, saving }: SegmentProps)
             activeOpacity={0.8}
           >
             {saving && isActive ? (
-              <ActivityIndicator size="small" color={COLORS.dominant} />
+              <ActivityIndicator size="small" color={COLORS.surface.base} />
             ) : (
               <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
             )}
@@ -48,25 +48,25 @@ export function SegmentedControl({ value, onValueChange, saving }: SegmentProps)
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: COLORS.secondary,
-    borderRadius: 8,
-    padding: 4,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.md,
+    padding: SPACING.xs,
     height: 44,
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.lg,
   },
   segment: {
     flex: 1,
-    borderRadius: 6,
+    borderRadius: RADII.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   activeLabel: {
-    fontWeight: '600',
-    color: COLORS.dominant,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
 });

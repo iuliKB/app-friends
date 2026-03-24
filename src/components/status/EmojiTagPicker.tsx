@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import type { EmojiTag, StatusValue } from '@/types/app';
 
 interface EmojiTagPickerProps {
@@ -15,13 +15,13 @@ const EMOJI_PRESETS: EmojiTag[] = ['☕️', '🎮', '🏋️', '🍕', '🎵', 
 function getStatusActiveBackground(status: StatusValue | null): string {
   switch (status) {
     case 'free':
-      return 'rgba(34,197,94,0.2)';
+      return 'rgba(34,197,94,0.2)'; // no exact token
     case 'busy':
-      return 'rgba(239,68,68,0.2)';
+      return 'rgba(239,68,68,0.2)'; // no exact token
     case 'maybe':
-      return 'rgba(234,179,8,0.2)';
+      return 'rgba(234,179,8,0.2)'; // no exact token
     default:
-      return 'rgba(234,179,8,0.2)';
+      return 'rgba(234,179,8,0.2)'; // no exact token
   }
 }
 
@@ -71,7 +71,7 @@ export function EmojiTagPicker({
               activeOpacity={0.7}
             >
               {isSaving ? (
-                <ActivityIndicator size="small" color={COLORS.textSecondary} />
+                <ActivityIndicator size="small" color={COLORS.text.secondary} />
               ) : (
                 <Text style={styles.emoji}>{emoji}</Text>
               )}
@@ -85,30 +85,30 @@ export function EmojiTagPicker({
 
 const styles = StyleSheet.create({
   sectionLabel: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-    paddingHorizontal: 16,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
   },
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    paddingHorizontal: 16,
-    marginTop: 24,
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.xl,
   },
   button: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 22, // no exact token — circular with equal width/height
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.surface.card,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   emoji: {
-    fontSize: 24,
+    fontSize: FONT_SIZE.xxl,
   },
 });
