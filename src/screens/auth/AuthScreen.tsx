@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AuthTabSwitcher } from '@/components/auth/AuthTabSwitcher';
-import { FormField } from '@/components/auth/FormField';
+import { FormField } from '@/components/common/FormField';
 import { OAuthButton } from '@/components/auth/OAuthButton';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { APP_CONFIG } from '@/constants/config';

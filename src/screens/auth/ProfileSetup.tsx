@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 
-import { FormField } from '@/components/auth/FormField';
+import { FormField } from '@/components/common/FormField';
 import { UsernameField } from '@/components/auth/UsernameField';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
