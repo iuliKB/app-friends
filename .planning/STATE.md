@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UI/UX Design System
 status: planning
-stopped_at: Completed 09-04-PLAN.md
-last_updated: "2026-03-24T23:19:35.775Z"
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-03-24T23:20:01.973Z"
 last_activity: 2026-03-24 — Roadmap created for v1.1 (Phases 7-9)
 progress:
   total_phases: 3
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-shared-components P01 | 2min | 2 tasks | 5 files |
 | Phase 09-screen-consistency-sweep P01 | 5m | 2 tasks | 13 files |
 | Phase 09-screen-consistency-sweep P04 | 3m | 2 tasks | 6 files |
+| Phase 09-screen-consistency-sweep P02 | 5m | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Full v1.0 decision log in PROJECT.md Key Decisions table.
 - [Phase 08-01]: FAB uses RADII.full for both circle and pill shape; auth/FormField.tsx converted to re-export stub for Phase 9 deletion; actual auth screen filenames are AuthScreen.tsx and ProfileSetup.tsx
 - [Phase 09-screen-consistency-sweep]: no-hardcoded-styles severity upgraded to error in Phase 9; height/minHeight exempt from rule (not in SPACING_PROPS); eslint-disable-next-line used for genuinely unmapped values (paddingVertical:14, paddingTop:48, fontSize:48)
 - [Phase 09-screen-consistency-sweep]: fontSize:12 (timeSeparator, ownTimestamp, othersTimestamp) suppressed with eslint-disable — falls between xs=11 and sm=13 tokens
+- [Phase 09-screen-consistency-sweep]: fontSize:18 (sectionLabel HomeScreen) and paddingBottom:100 kept with eslint-disable + no-exact-token comment — no FONT_SIZE/SPACING match
+- [Phase 09-screen-consistency-sweep]: THEME alias from Phase 8 removed; all home/status files now use single direct COLORS import from @/theme
 
 ### UI Audit Findings (carried from v1.0)
 
@@ -91,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T23:19:35.773Z
-Stopped at: Completed 09-04-PLAN.md
+Last session: 2026-03-24T23:20:01.971Z
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None
