@@ -26,12 +26,12 @@ Requirements for UI/UX Design System milestone. Each maps to roadmap phases.
 
 ### Screen Consistency
 
-- [ ] **SCRN-01**: All 11 screens use spacing tokens instead of raw numeric padding/margin values
-- [ ] **SCRN-02**: All screens use typography tokens instead of raw fontSize/fontWeight values
+- [x] **SCRN-01**: All 11 screens use spacing tokens instead of raw numeric padding/margin values
+- [x] **SCRN-02**: All screens use typography tokens instead of raw fontSize/fontWeight values
 - [ ] **SCRN-03**: All screens use border radius and shadow tokens instead of raw values
-- [ ] **SCRN-04**: Undeclared color #3b82f6 resolved with semantic token name
+- [x] **SCRN-04**: Undeclared color #3b82f6 resolved with semantic token name
 - [ ] **SCRN-05**: All FAB instances replaced with unified FAB component
-- [ ] **SCRN-06**: All form inputs use shared FormField component
+- [x] **SCRN-06**: All form inputs use shared FormField component
 - [ ] **SCRN-07**: All view titles use shared ScreenHeader component
 
 ## Future Requirements
@@ -75,12 +75,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMP-03 | Phase 8 | Complete |
 | COMP-04 | Phase 8 | Complete |
 | COMP-05 | Phase 8 | Complete |
-| SCRN-01 | Phase 9 | Pending |
-| SCRN-02 | Phase 9 | Pending |
+| SCRN-01 | Phase 9 | Complete |
+| SCRN-02 | Phase 9 | Complete |
 | SCRN-03 | Phase 9 | Pending |
-| SCRN-04 | Phase 9 | Pending |
+| SCRN-04 | Phase 9 | Complete |
 | SCRN-05 | Phase 9 | Pending |
-| SCRN-06 | Phase 9 | Pending |
+| SCRN-06 | Phase 9 | Complete |
 | SCRN-07 | Phase 9 | Pending |
 
 **Coverage:**
