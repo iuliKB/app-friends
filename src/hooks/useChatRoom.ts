@@ -93,9 +93,8 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
         return;
       }
 
-      // Reverse so oldest is first (FlatList inverted handles visual flip)
-      const reversed = [...(rows ?? [])].reverse();
-      const enriched = reversed.map((row) =>
+      // Keep newest-first order — inverted FlatList renders index 0 at the bottom
+      const enriched = (rows ?? []).map((row) =>
         enrichMessage({
           id: row.id as string,
           plan_id: row.plan_id as string | null,
@@ -172,8 +171,8 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
               return prev;
             }
 
-            // Append new message at the end (newest)
-            return [...prev, enrichMessage(incoming)];
+            // Prepend new message at index 0 (bottom of inverted FlatList)
+            return [enrichMessage(incoming), ...prev];
           });
         }
       )
@@ -210,7 +209,7 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
       sender_avatar_url: currentUserAvatarUrl,
     };
 
-    setMessages((prev) => [...prev, optimistic]);
+    setMessages((prev) => [optimistic, ...prev]);
 
     const { error: insertError } = await supabase.from('messages').insert({
       plan_id: planId ?? null,
