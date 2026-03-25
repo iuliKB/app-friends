@@ -2,7 +2,7 @@ import React from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS } from '@/theme';
+import { COLORS, SPACING } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
@@ -38,7 +38,7 @@ export function ChatListScreen() {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
       ListHeaderComponent={
-        <View style={{ paddingTop: insets.top }}>
+        <View style={{ paddingTop: insets.top, paddingHorizontal: SPACING.lg }}>
           <ScreenHeader title="Chats" />
         </View>
       }
