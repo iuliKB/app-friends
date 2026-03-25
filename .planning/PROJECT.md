@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1 shipped with auth, friends, realtime status, quick plans, chat, and push notifications.
+Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1.1 shipped with a full design system, shared component library, and consistent UI across all screens.
 
 ## Core Value
 
@@ -28,28 +28,17 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ 5-tab navigation (Home, Plans, Chat, Squad, Profile) — v1.0
 - ✓ Supabase RLS on every table — v1.0
 - ✓ Empty states and loading indicators on all screens — v1.0
+- ✓ Design system with color/spacing/typography/radii/shadow tokens — v1.1
+- ✓ ESLint enforcement of design token usage (zero raw values) — v1.1
+- ✓ Shared component library (FAB, ScreenHeader, SectionHeader, ErrorDisplay, FormField) — v1.1
+- ✓ Pull-to-refresh standardized across all list views — v1.1
+- ✓ Consistent screen title treatment via ScreenHeader — v1.1
+- ✓ All screens migrated to design tokens — v1.1
+- ✓ Playwright visual regression test suite — v1.1
 
 ### Active
 
-<!-- v1.1 — UI/UX Design System & Consistency -->
-
-- [ ] Design system extracted from reference views (Plans, Chats)
-- [ ] Color constants used consistently across all screens
-- [ ] Spacing scale applied uniformly (screen padding, sections, components)
-- [ ] Typography scale standardized
-- [ ] Reusable shared components (FAB, form inputs, error displays, loading/empty states)
-- [ ] Pull-to-refresh pattern on all list views
-- [ ] Consistent view title treatment across all screens
-
-## Current Milestone: v1.1 UI/UX Design System
-
-**Goal:** Extract a design system from the best v1.0 screens and apply it consistently across the entire app, creating a solid foundation for future views.
-
-**Target features:**
-- Design tokens (colors, spacing, typography, radii) extracted from Plans and Chats reference views
-- Shared component library (FAB, inputs, errors, loading, empty states)
-- All screens refactored to use design system
-- Pull-to-refresh standardized on list views
+(None — define for next milestone via `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -63,18 +52,23 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - Public profiles or discoverability — friends-only by design
 - Web app / PWA — mobile only
 - Group size pagination — unnecessary for 3–15 person groups
+- Dark mode / theming — v1.2+ (semantic color naming positions for it)
 
 ## Context
 
-Shipped v1.0 MVP with 9,322 LOC TypeScript across 6 phases in 7 days.
+Shipped v1.1 UI/UX Design System with 9,535 LOC TypeScript across 9 phases total (6 v1.0 + 3 v1.1).
 Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage), Zustand.
-All 55 v1 requirements delivered. 145 commits, 221 files.
+All 73 requirements delivered (55 v1.0 + 18 v1.1). 178 commits, 94 files modified in v1.1.
+
+Design system: `src/theme/` (6 token files), `src/components/common/` (10 shared components), ESLint `no-hardcoded-styles` at error severity.
+Playwright visual regression baselines for all 7 screens (auth login, auth signup, home, plans, chat, friends, profile).
 
 Known technical considerations:
 - Apple Sign-In works in Expo Go but needs validation on EAS builds
 - Supabase free-tier Realtime limited to 200 concurrent connections
 - Push notifications require EAS development build for remote push on Android
 - Nudge mechanic deferred to v2 (DM infrastructure covers the use case)
+- 35 `eslint-disable-next-line` suppressions for values with no exact token match (e.g., fontSize: 48 emoji, paddingVertical: 14)
 
 ## Constraints
 
@@ -89,6 +83,7 @@ Known technical considerations:
 - **Free tier budget:** 500MB DB, 1GB Storage, 50K MAU, 2M Realtime messages/month
 - **Chat text-only in V1:** No images, files, reactions, read receipts
 - **FlatList for all lists:** No ScrollView + map
+- **Design tokens:** All styling via `@/theme` tokens. ESLint enforces — no raw hex/fontSize/padding values.
 
 ## Key Decisions
 
@@ -106,6 +101,12 @@ Known technical considerations:
 | Single Realtime channel with user_id filter | Stays within 200 connection limit vs. per-friend channels | ✓ Good |
 | Optimistic send with 5s dedup for chat | Instant UX while preventing duplicate messages | ✓ Good |
 | AsyncStorage notification toggle | Per-device preference, default enabled | ✓ Good |
+| src/theme/ with barrel export for tokens | Single import path, TypeScript autocomplete, `as const` pattern | ✓ Good |
+| Semantic COLORS groups (text/surface/interactive/feedback) | Positions for dark mode without requiring it now | ✓ Good |
+| ESLint custom rule over external library | Zero dependencies, exactly the enforcement needed | ✓ Good |
+| ScreenHeader/SectionHeader as separate components | Two-tier title hierarchy, screens handle safe area | ✓ Good |
+| FAB with Animated.spring scale bounce | Polished press feedback, fixed bottom-right positioning | ✓ Good |
+| Playwright + Expo Web for visual regression | CLI-friendly, no simulators needed, close approximation for StyleSheet-only app | ✓ Good |
 
 ---
-*Last updated: 2026-03-24 after v1.1 milestone started*
+*Last updated: 2026-03-25 after v1.1 milestone*

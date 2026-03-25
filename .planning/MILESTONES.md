@@ -1,5 +1,20 @@
 # Milestones
 
+## v1.1 UI/UX Design System (Shipped: 2026-03-25)
+
+**Phases completed:** 3 phases, 11 plans | 33 commits | 9,535 LOC TypeScript
+**Timeline:** 2026-03-24 → 2026-03-25 (1 day)
+
+**Key accomplishments:**
+- Design token system: 6 TypeScript `as const` files in src/theme/ (colors, spacing, typography, radii, shadows) with barrel export
+- ESLint `no-hardcoded-styles` rule enforcing zero raw hex/fontSize/padding values across entire codebase
+- Shared component library: FAB (bounce animation), ScreenHeader, SectionHeader, ErrorDisplay, FormField
+- Campfire-orange pull-to-refresh standardized across all 5 list screens
+- Full 51-file migration from @/constants/colors to @/theme with old color file deleted
+- Playwright visual regression test suite with baselines for all screens
+
+---
+
 ## v1.0 MVP (Shipped: 2026-03-24)
 
 **Phases completed:** 6 phases, 17 plans | 145 commits | 9,322 LOC TypeScript
