@@ -62,6 +62,7 @@ export default function TabsLayout() {
         name="squad"
         options={{
           title: 'Squad',
+          tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
           ),
@@ -71,7 +72,6 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
           ),
