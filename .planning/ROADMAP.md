@@ -49,12 +49,11 @@
   3. User can tap the FAB in the Friends tab to navigate to the Add Friend screen
   4. User can see a "Friend Requests (N)" row in the Friends tab when requests exist, and tap it to open the requests screen
   5. User can see a "Coming soon" placeholder in the Goals tab; the pending requests badge appears on the Squad tab icon (not Profile)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 10-01: Install dependencies and convert squad.tsx to squad/ nested layout
-- [ ] 10-02: Build Friends sub-tab with FriendsList, FAB, and requests row
-- [ ] 10-03: Build Goals sub-tab placeholder and wire badge to Squad tab
+- [ ] 10-01-PLAN.md — Build SquadTabSwitcher, rewrite squad.tsx with Friends/Goals tabs, migrate badge to Squad
+- [ ] 10-02-PLAN.md — Visual and functional verification checkpoint
 
 ### Phase 11: Navigation Restructure
 **Goal**: Bottom navigation reflects the correct order and naming; all existing routes work; Playwright baselines are updated
@@ -97,6 +96,6 @@ Plans:
 | 7. Design Tokens | v1.1 | 2/2 | Complete | 2026-03-24 |
 | 8. Shared Components | v1.1 | 3/3 | Complete | 2026-03-24 |
 | 9. Screen Consistency Sweep | v1.1 | 6/6 | Complete | 2026-03-25 |
-| 10. Squad Tab | v1.2 | 0/3 | Not started | - |
+| 10. Squad Tab | v1.2 | 0/2 | Not started | - |
 | 11. Navigation Restructure | v1.2 | 0/2 | Not started | - |
 | 12. Profile Simplification | v1.2 | 0/1 | Not started | - |
