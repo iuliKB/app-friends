@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Squad & Navigation
 status: planning
-stopped_at: Phase 10 UI-SPEC approved
-last_updated: "2026-04-03T23:21:58.851Z"
+stopped_at: Completed 10-squad-tab 10-01-PLAN.md
+last_updated: "2026-04-03T23:36:18.416Z"
 last_activity: 2026-04-04 — Roadmap created, 16 requirements mapped across 3 phases
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -41,6 +41,8 @@ Progress: [░░░░░░░░░░] 0%
 - [v1.2 Research]: Install all three packages together: material-top-tabs, react-native-tab-view, react-native-pager-view via `npx expo install`
 - [v1.2 Research]: `src/app/friends/` root-level Stack stays in place — only FriendsList view moves into Squad; sub-screens remain at root so tab bar hides during full-screen nav
 - [v1.2 Research]: Single `usePendingRequestsCount` hook call stays in `_layout.tsx` — never call twice; pass count via Zustand if needed downstream
+- [Phase 10-squad-tab]: Squad tab uses useState toggle for Friends/Goals (not navigator) — FriendsList only mounted on friends tab so FAB hides automatically
+- [Phase 10-squad-tab]: Pending request badge moved from Profile to Squad tab in _layout.tsx
 
 ### Pending Todos
 
@@ -55,6 +57,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T23:21:58.849Z
-Stopped at: Phase 10 UI-SPEC approved
-Resume file: .planning/phases/10-squad-tab/10-UI-SPEC.md
+Last session: 2026-04-03T23:36:18.413Z
+Stopped at: Completed 10-squad-tab 10-01-PLAN.md
+Resume file: None

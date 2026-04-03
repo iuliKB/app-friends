@@ -9,15 +9,15 @@ Requirements for v1.2 Squad & Navigation milestone. Each maps to roadmap phases.
 
 ### Squad Tab
 
-- [ ] **SQAD-01**: User can see a segmented control (Friends / Goals) at the top of the Squad screen
-- [ ] **SQAD-02**: User lands on Friends tab by default when opening Squad
-- [ ] **SQAD-03**: User can switch between Friends and Goals tabs via segmented control
-- [ ] **SQAD-04**: User sees their friend list with status indicators in the Friends tab
-- [ ] **SQAD-05**: User can tap FAB to add a new friend from the Friends tab
-- [ ] **SQAD-06**: User sees a "Friend Requests (N)" tappable row when pending requests exist
-- [ ] **SQAD-07**: User can tap the requests row to navigate to the Friend Requests screen
-- [ ] **SQAD-08**: User sees a "Coming soon" placeholder in the Goals tab
-- [ ] **SQAD-09**: User sees pending request count badge on the Squad tab icon in bottom nav
+- [x] **SQAD-01**: User can see a segmented control (Friends / Goals) at the top of the Squad screen
+- [x] **SQAD-02**: User lands on Friends tab by default when opening Squad
+- [x] **SQAD-03**: User can switch between Friends and Goals tabs via segmented control
+- [x] **SQAD-04**: User sees their friend list with status indicators in the Friends tab
+- [x] **SQAD-05**: User can tap FAB to add a new friend from the Friends tab
+- [x] **SQAD-06**: User sees a "Friend Requests (N)" tappable row when pending requests exist
+- [x] **SQAD-07**: User can tap the requests row to navigate to the Friend Requests screen
+- [x] **SQAD-08**: User sees a "Coming soon" placeholder in the Goals tab
+- [x] **SQAD-09**: User sees pending request count badge on the Squad tab icon in bottom nav
 
 ### Navigation
 
@@ -66,15 +66,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SQAD-01 | Phase 10 | Pending |
-| SQAD-02 | Phase 10 | Pending |
-| SQAD-03 | Phase 10 | Pending |
-| SQAD-04 | Phase 10 | Pending |
-| SQAD-05 | Phase 10 | Pending |
-| SQAD-06 | Phase 10 | Pending |
-| SQAD-07 | Phase 10 | Pending |
-| SQAD-08 | Phase 10 | Pending |
-| SQAD-09 | Phase 10 | Pending |
+| SQAD-01 | Phase 10 | Complete |
+| SQAD-02 | Phase 10 | Complete |
+| SQAD-03 | Phase 10 | Complete |
+| SQAD-04 | Phase 10 | Complete |
+| SQAD-05 | Phase 10 | Complete |
+| SQAD-06 | Phase 10 | Complete |
+| SQAD-07 | Phase 10 | Complete |
+| SQAD-08 | Phase 10 | Complete |
+| SQAD-09 | Phase 10 | Complete |
 | NAV-01 | Phase 11 | Pending |
 | NAV-02 | Phase 11 | Pending |
 | NAV-03 | Phase 11 | Pending |
