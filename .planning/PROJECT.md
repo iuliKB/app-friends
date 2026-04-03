@@ -38,7 +38,17 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Active
 
-(None — define for next milestone via `/gsd:new-milestone`)
+<!-- v1.2 Squad & Navigation -->
+
+- [ ] Squad tab with top tabs (Friends / Goals)
+- [ ] Friend list relocated from Profile to Squad → Friends tab
+- [ ] Add Friend relocated from Profile to Squad → Friends tab
+- [ ] Friend Requests (tappable row → separate screen) in Squad → Friends tab
+- [ ] Goals tab with "Coming soon" placeholder
+- [ ] Bottom nav reordered: Home | Squad | Explore | Chats | Profile
+- [ ] Plans tab renamed to Explore (same functionality)
+- [ ] Chat tab renamed to Chats
+- [ ] Profile tab simplified (friend-related features removed)
 
 ### Out of Scope
 
@@ -109,4 +119,15 @@ Known technical considerations:
 | Playwright + Expo Web for visual regression | CLI-friendly, no simulators needed, close approximation for StyleSheet-only app | ✓ Good |
 
 ---
-*Last updated: 2026-03-25 after v1.1 milestone*
+## Current Milestone: v1.2 Squad & Navigation
+
+**Goal:** Relocate friend management into the Squad tab and reorganize bottom navigation for better information architecture.
+
+**Target features:**
+- Squad screen with top tabs (Friends / Goals)
+- Friend list, add friend, friend requests moved from Profile to Squad
+- Bottom nav reorder and rename (Plans→Explore, Chat→Chats)
+- Profile tab simplified
+
+---
+*Last updated: 2026-04-04 after v1.2 milestone start*

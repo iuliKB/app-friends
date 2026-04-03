@@ -1,53 +1,37 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: UI/UX Design System
-status: completed
-stopped_at: v1.1 milestone completed
-last_updated: "2026-03-25"
-last_activity: 2026-03-25 — Completed v1.1 UI/UX Design System milestone
+milestone: v1.2
+milestone_name: Squad & Navigation
+status: active
+stopped_at: defining requirements
+last_updated: "2026-04-04"
+last_activity: 2026-04-04 — Milestone v1.2 started
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-25)
+See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** v1.1 shipped — planning next milestone
+**Current focus:** v1.2 Squad & Navigation
 
 ## Current Position
 
-Milestone: v1.1 UI/UX Design System — SHIPPED 2026-03-25
-Phases: 3 of 3 complete (11/11 plans)
-Status: Complete
+Milestone: v1.2 Squad & Navigation
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-04 — Milestone v1.2 started
 
-Progress: [██████████] 100%
-
-## Performance Metrics
-
-**By Phase:**
-
-| Phase | Plan | Duration | Tasks | Files |
-|-------|------|----------|-------|-------|
-| 07-design-tokens P01 | 2 min | 2 tasks | 6 files |
-| 07-design-tokens P02 | 2 min | 2 tasks | 2 files |
-| 08-shared-components P01 | 2 min | 2 tasks | 5 files |
-| 08-shared-components P02 | 2 min | 2 tasks | 3 files |
-| 08-shared-components P03 | 2 min | 2 tasks | 5 files |
-| 09-screen-consistency-sweep P01 | 5 min | 2 tasks | 13 files |
-| 09-screen-consistency-sweep P02 | 5 min | 2 tasks | 4 files |
-| 09-screen-consistency-sweep P03 | 5 min | 2 tasks | 9 files |
-| 09-screen-consistency-sweep P04 | 3 min | 2 tasks | 6 files |
-| 09-screen-consistency-sweep P05 | 5 min | 2 tasks | 13 files |
-| 09-screen-consistency-sweep P06 | 4 min | 2 tasks | 11 files |
+Progress: [░░░░░░░░░░] 0%
 
 ## Accumulated Context
 
@@ -61,10 +45,10 @@ None.
 
 ### Blockers/Concerns
 
-None — v1.1 shipped.
+None.
 
 ## Session Continuity
 
-Last session: 2026-03-25
-Stopped at: v1.1 milestone completed
+Last session: 2026-04-04
+Stopped at: Defining requirements for v1.2
 Resume file: None
