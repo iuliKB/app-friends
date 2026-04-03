@@ -1,200 +1,197 @@
 # Project Research Summary
 
-**Project:** Campfire — v1.1 Design System Milestone
-**Domain:** React Native design system retrofit (StyleSheet-only, existing codebase)
-**Researched:** 2026-03-24
+**Project:** Campfire v1.2 — Squad & Navigation
+**Domain:** React Native top-tab navigation within Expo Router; bottom-nav restructuring; social screen migration
+**Researched:** 2026-04-04
 **Confidence:** HIGH
 
----
-
-> **Note:** This file supersedes the v1.0 summary (researched 2026-03-17). The v1.0 summary covered the full social app stack and feature set. This summary covers the v1.1 milestone only: extracting a design system from the existing 9,322-LOC, 221-file codebase. No new user-facing features are built in v1.1.
-
----
+> **Note:** This file supersedes the v1.1 summary (researched 2026-03-24). The v1.1 summary covered the design system extraction milestone. This summary covers v1.2 only: Squad tab with top tabs, friend management relocation from Profile to Squad, and bottom-nav restructuring.
 
 ## Executive Summary
 
-Campfire v1.1 is a design system extraction and retrofit on a shipped React Native codebase, not a greenfield feature build. The existing app has a well-structured `COLORS` constant (`src/constants/colors.ts`, 17 tokens), but no spacing, typography, border radius, or shadow tokens — every other style value is hardcoded in 46 `StyleSheet.create` blocks across 11 screens and 15 shared components. The v1.1 goal is to extract design tokens as plain TypeScript `const` objects, build a small set of missing shared components (FAB, ScreenHeader, ErrorDisplay, FormField relocation), and sweep all files to replace raw style values with token references.
+The v1.2 milestone is a navigation and information architecture migration, not a feature build. The goal is to move an existing, working friend management system from the Profile tab into a dedicated Squad tab — and to restructure the bottom navigation to reflect the app's actual social-first priorities. All underlying data, hooks, and screen components already exist and work correctly; no new product logic needs to be invented. The work is purely structural: converting `squad.tsx` into a nested top-tab layout, relocating screen components, reordering tab entries in `_layout.tsx`, and removing the now-redundant friend rows from Profile.
 
-The stack constraint that shapes every decision: Expo Go managed workflow with `StyleSheet.create` only. No NativeWind, no Tamagui, no theme context provider, no build-time compiler. The correct pattern is module-level `StyleSheet.create` referencing imported token constants — this is what all existing files already do, and v1.1 extends that convention with named, consistent values. The entire design system is zero-dependency: pure TypeScript `as const` objects provide the same autocomplete and type safety as any styling library without adding a single package.
+The recommended approach for top-tab navigation is `@react-navigation/material-top-tabs` with the `withLayoutContext` wrapper, integrated as a proper Expo Router layout (`squad/_layout.tsx`). This is the only approach that correctly fires `useFocusEffect` per sub-tab, preserves per-tab scroll position, and integrates with Expo Router's file-based route tree. A custom `useState` toggle (the "fake tabs" pattern used in `AddFriend`) is explicitly wrong for a screen-level navigation structure and must not be used here, even though it avoids a new dependency.
 
-The primary failure mode is a half-finished migration: token files ship, a few screens are updated, then attention moves elsewhere and the codebase ends up with two parallel styling conventions. Prevention requires a CI lint rule rejecting hardcoded hex literals from the moment tokens are defined, plus treating the milestone as complete only when that lint rule passes on all `.tsx` files. Build order is strict: token files first (no dependencies), new shared components second (depend on tokens), hardcoded color sweep in existing components third (independent of new components), screen refactors last (depend on all prior phases).
+The dominant risks are all in the migration path rather than the implementation: stale `router.push` strings that break silently after route renames, Playwright tests tightly coupled to old tab labels, duplicate Supabase Realtime subscriptions if the badge hook is called in multiple places, and the conflicting file state if `squad.tsx` is not deleted when `squad/` is created. All of these are preventable with explicit grep audits, atomic commits, and a strict "one hook call at layout level" rule. None require novel solutions — they require discipline.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The entire v1.1 design system adds zero new dependencies. All patterns use `React.createContext`, `useContext`, `StyleSheet.create`, `as const`, and TypeScript interfaces already present in the project. The `src/constants/` directory is the correct location — `colors.ts` already lives there and is imported from `@/constants/colors` in 40+ files. Adding `spacing.ts` and `typography.ts` alongside it requires zero changes to any existing import and follows the established convention.
+The existing stack requires three new dependencies. Everything else is a config change or file migration. Install: `@react-navigation/material-top-tabs ^7.4.23`, `react-native-tab-view ^4.0.6`, and `react-native-pager-view ^6.x` (use `npx expo install react-native-pager-view` for the SDK-55-pinned version; use `npm install` for the react-navigation packages). `react-native-pager-view` is a native module, but it is pre-bundled in Expo Go SDK 55 — no custom dev build is required.
 
-The broader app stack (Expo SDK 55, React Native 0.83, React 19.2, Expo Router v7, Supabase `^2.99.x`, Zustand `^5.0.12`) is unchanged from v1.0. Legacy Architecture is dropped in SDK 55 — New Architecture only. No practical impact since the design system is pure JS.
-
-**Core technologies for v1.1:**
-- `src/constants/colors.ts` (extend existing): add semantic grouping and `unreadDot` token — enables future dark mode without touching any component
-- `src/constants/spacing.ts` (new): 8-point grid scale (4, 8, 12, 16, 24, 32) — eliminates 44+ hardcoded `16` padding values and 10+ hardcoded `8` values
-- `src/constants/typography.ts` (new): 5 named text role objects (`TEXT.screenTitle`, `TEXT.sectionTitle`, `TEXT.bodyLarge`, `TEXT.bodyMedium`, `TEXT.caption`) — eliminates 145+ hardcoded `fontSize` values
-- `StyleSheet.create` at module level: zero runtime overhead, consistent with every existing file in the codebase
-- `React.memo` on new shared components: prevents FlatList row re-renders when design system components wrap list content
-
-**What not to add:** NativeWind (Babel transform, incompatible with StyleSheet constraint), Tamagui (requires build-time compiler), react-native-unistyles (adds dependency where pure TypeScript achieves the same result), global `StyleSheet.create` at module level with light/dark baked in (defeats theme-awareness if dark mode is added in v2).
+**Core technologies:**
+- `@react-navigation/material-top-tabs`: top-tab navigator for Squad (Friends / Goals) — aligns with existing `@react-navigation/native ^7.x`; no version conflict
+- `react-native-tab-view`: underlying pager for material-top-tabs — compatible with `react-native-reanimated` 4.2.1 already installed
+- `react-native-pager-view`: native ViewPager backing react-native-tab-view — included in Expo Go SDK 55 binary; install via `npx expo install` for correct version pin
+- `withLayoutContext` (ships with `expo-router`): required bridge between React Navigation navigators and Expo Router's file-based route tree — not optional
 
 ### Expected Features
 
-All v1.1 features are internal engineering improvements. No user-visible features are added. The value is consistency, maintainability, and a foundation that makes all future screens fast to build correctly.
+All features in this milestone are P1. There are no P2 or P3 items for v1.2 — everything on the list is required for the milestone to achieve its stated goal.
 
-**Must have (P1 — milestone fails without these):**
-- Token file: `COLORS` extended with `unreadDot: '#3b82f6'` and optional semantic grouping restructure
-- Token file: `SPACING` (8pt grid: xs=4, sm=8, md=12, lg=16, xl=24, xxl=32) — `12` must be included; omitting it causes mapping gaps
-- Token file: `TYPOGRAPHY` / `TEXT` (5 named role objects, derived from codebase audit)
-- Token file: `RADII` (sm=8, md=12, lg=16, pill=28)
-- Token file: `SHADOWS` (none, subtle, card, modal — iOS + Android platform variants)
-- Component: `FAB` (floating action button — replaces inline duplicates in HomeScreen and PlansListScreen; must support all three existing variants)
-- Component: `FormField` moved from `src/components/auth/` to `src/components/common/` (zero implementation changes, import path update only)
-- Component: `ScreenHeader` (standard screen title + optional right action slot)
-- Component: `ErrorDisplay` (inline error text + optional retry handler)
-- Pattern: pull-to-refresh on all list screens (Home, Plans, Friends) with `tintColor={COLORS.accent}` on every `RefreshControl`
-- Refactor: all 11 screens and 15 component files updated to use tokens — zero raw hex literals or magic spacing numbers remaining
+**Must have (table stakes):**
+- Squad tab with Friends / Goals top tabs — makes Squad usable; current stub is effectively a blank screen
+- Friends sub-tab renders existing `FriendsList` component with FAB — core relocation, zero new logic
+- Pending request count row in Friends sub-tab — navigates to `/friends/requests`; pattern extracted from Profile
+- Badge (pending count) moved from Profile tab to Squad tab — one property change in `_layout.tsx`
+- Bottom nav reordered: Home | Squad | Explore | Chats | Profile — information architecture fix
+- Plans → Explore rename — file rename + title update + route audit
+- Chat → Chats rename — directory rename + title update + route audit
+- Profile tab simplified — remove 3 friend rows and 2 hook imports; must be last step
+- Goals sub-tab placeholder — "coming soon" content ported from current `squad.tsx`
 
-**Should have (P2 — milestone succeeds without these):**
-- Auth screens refactored to use the relocated `FormField` component
-- `EmptyState` existing component updated to use spacing tokens
+**Should have (competitive differentiators):**
+- Pending requests styled as actionable inline row (not just badge) — pattern from Snapchat/Instagram; low complexity; extract from existing Profile implementation
+- Friend status (Free/Busy/Maybe) visible immediately in Squad Friends tab — reinforces the app's core daily-habit value; `FriendCard` already renders it; benefit is positional, not additive
 
-**Defer to v2+:**
-- Dark mode light theme (semantic grouping now positions for it; build only when product warrants it)
-- Animation tokens + Reanimated (zero animations in v1; adding tokens now is premature abstraction)
-- Storybook or other component documentation tooling (overhead exceeds benefit at this team size)
-- Responsive breakpoints or tablet layout (phone-only app; flex handles it natively)
-- `SecondaryButton` / `GhostButton` variants (add only when a second button style is needed in product)
-- Toast / Snackbar component (add only when a success/failure feedback pattern is needed beyond loading states)
+**Defer (v2+):**
+- Goals tab real content (group challenges, streaks)
+- Friends list search/filter (relevant only if group size grows past 15)
+- QR code accessible from Squad tab (defer pending user research on whether Profile is wrong home)
+- Swipe gesture between top tabs (anti-feature: conflicts with pull-to-refresh on Friends list; avoid even though `@react-navigation/material-top-tabs` supports it)
 
 ### Architecture Approach
 
-The architecture is a direct extension of the existing `src/constants/` pattern — not a new parallel directory. Token files live alongside `colors.ts` in `src/constants/`. New shared components join the existing five in `src/components/common/`. The build follows a four-phase dependency graph in strict sequence; each phase is fully complete before the next begins.
-
-The data flow for tokens is: `const` objects in `src/constants/` → imported at file top → referenced in module-level `StyleSheet.create` → evaluated once at module load with zero runtime overhead. No theme context, no Provider, no runtime lookup. This is compile-time token resolution, identical to what every existing file already does.
+The migration converts `squad.tsx` from a single flat file into a directory with a proper Expo Router nested layout. The `src/app/friends/` root-level Stack is deliberately left in place — friends sub-screens (add, requests, [id]) must remain at root scope so the bottom tab bar correctly hides during full-screen navigation. Only the friends list view moves, embedded inline via `<FriendsList />` in `squad/friends.tsx`. The pending count badge moves by reassigning its `tabBarBadge` prop in `_layout.tsx` — the hook call stays at layout level.
 
 **Major components:**
-
-1. **`src/constants/{spacing,typography,radii,shadows}.ts`** — new token files; compile-time constants; zero runtime cost; consumed via `import` at module top
-2. **`src/constants/colors.ts`** — existing file extended with one new token (`unreadDot`); all other color tokens unchanged
-3. **`src/components/common/`** — four new/moved components: `FAB`, `ScreenHeader`, `ErrorDisplay`, `FormField` (relocated); five existing components untouched
-4. **`src/screens/{domain}/` + `src/components/{domain}/`** — 11 screens and ~15 components refactored to replace hardcoded values with token references; hooks, stores, routing, and Supabase integration untouched
+1. `(tabs)/_layout.tsx` — MODIFIED: reorder tabs, rename titles, move badge from Profile to Squad
+2. `(tabs)/squad/_layout.tsx` — NEW: `withLayoutContext(createMaterialTopTabNavigator())` with design-token `screenOptions`; handles `paddingTop: insets.top` once (not repeated in child screens)
+3. `(tabs)/squad/friends.tsx` — NEW: renders `<FriendsList />`; FAB navigates to `/friends/add`; pending request row navigates to `/friends/requests`
+4. `(tabs)/squad/goals.tsx` — NEW: "coming soon" placeholder ported from old `squad.tsx`
+5. `(tabs)/explore.tsx` — NEW: identical content to current `plans.tsx` (file rename)
+6. `(tabs)/profile.tsx` — MODIFIED: FRIENDS section and its 2 hook imports removed (last step)
+7. `src/screens/friends/FriendsList.tsx` — MODIFIED (recommended): swap `useEffect([], fetchFriends)` for `useFocusEffect(fetchFriends)` to prevent stale data in persistent top-tab mount
 
 ### Critical Pitfalls
 
-1. **Half-migration state** — Token files exist but not all screens use them; the codebase ends up with two parallel styling conventions. Prevention: install a CI lint rule rejecting hardcoded hex literals (`/['"]#[0-9a-fA-F]{3,8}['"]/`) at the start of Phase 1, before any screen migration. The lint rule makes completion binary.
+1. **Stale `router.push` paths after route moves** — Six specific call sites (`profile.tsx` lines 147/168, `friends/index.tsx` line 19, `FriendsList.tsx` lines 64/85/101, `PlanDashboardScreen.tsx` line 277) silently point to dead routes if not updated atomically. Run `grep -rn "'/friends" src/` before touching any file; update all call sites in the same commit as the deletion.
 
-2. **Spacing scale omits `12`** — The codebase uses 4, 8, 12, 16, 24, and 32 as de-facto spacing values. A scale that maps `sm=8` and `md=16` leaves `12` unmapped. Developers either skip it (layout regressions) or introduce it as a raw number (lint failure). Prevention: include `md=12` explicitly, accept that the naming feels awkward, move on.
+2. **Missing `react-native-pager-view` peer dependency** — Installing `@react-navigation/material-top-tabs` without `react-native-pager-view` causes a runtime module error in the Squad layout. Install all three packages together as the absolute first task; use `npx expo install` (not `npm install`) for `react-native-pager-view`.
 
-3. **FAB consolidation silently breaks screen-specific behavior** — Three existing FAB implementations have structural differences (icon+label row vs icon-only circle vs fixed 56×56). A shared component built against only one variant drops the others silently. Prevention: document all three variants before building the component; support all via props (`variant`, `label?`); do a side-by-side visual comparison on both iOS and Android for each screen.
+3. **Old `squad.tsx` left alongside new `squad/` directory** — Metro bundler ambiguity causes inconsistent behavior between hot reloads and cold starts. Delete `squad.tsx` in the same commit that creates `squad/_layout.tsx` — never allow both to exist simultaneously.
 
-4. **Parallel `@/theme` directory creates import fragmentation** — If `src/theme/colors.ts` is created alongside `src/constants/colors.ts`, both paths are valid TypeScript imports. There is no import error — the bug only appears as a behavior difference if the two files diverge. Prevention: add `spacing.ts` and `typography.ts` inside `src/constants/`, not a new directory.
+4. **Playwright tests coupled to old tab labels** — `page.getByText("Plans")`, `page.getByText("Chat")`, and `page.getByText("Squad")` all break after renames and Squad restructure. Update locators and regenerate snapshots in the same phase that makes the rename; run `npx playwright test --update-snapshots` and rename stale baseline `.png` files.
 
-5. **`#3b82f6` — undeclared color with no semantic name** — `ChatListRow.tsx` contains the only blue in the codebase, which does not appear in `COLORS`. Its semantic purpose is unknown until the pre-migration audit. Prevention: audit all hardcoded colors and document their semantic intent before Phase 1 begins; add `COLORS.unreadDot` before the screen migration touches that file.
-
-6. **Performance regression from non-memoized shared components** — If `StyleSheet.create` is called inside a component function body (not at module level), or if shared components are not wrapped in `React.memo`, FlatList rows re-render on every parent state change. Chat list scrolls at 60fps only if `LoadingIndicator` and `EmptyState` are memoized and their styles are defined at module level.
+5. **Duplicate Supabase Realtime subscription from badge hook** — `usePendingRequestsCount` opens a Realtime channel. Calling it in two places doubles subscriptions against the 2M/month free-tier limit. Keep the single call in `_layout.tsx`; pass the count as a prop or via Zustand if needed in Squad screen body — never call the hook a second time.
 
 ## Implications for Roadmap
 
-Four sequential phases. Each must be fully complete before the next begins — not "started," not "mostly done."
+The dependency graph dictates a strict ordering. Profile cleanup is destructive (removes friend entry points) and must be last. Squad tab must be verified working before profile simplification begins. Navigation renames are independent but must trigger Playwright updates in the same phase.
 
-### Phase 1: Token Extraction
+### Phase 1: Install Dependencies and Convert Squad Tab
 
-**Rationale:** All other work depends on tokens. Components cannot be extracted without knowing the token values they will use. Screens cannot be refactored without tokens to reference. This phase has the lowest risk (no existing files modified, except adding one token to `colors.ts`) and the highest leverage (establishes the foundation all subsequent work uses). The lint rule that enforces completion goes in here, before any screens are touched.
+**Rationale:** Install the three required packages before writing any layout code (avoids mid-feature "module not found" errors). Convert `squad.tsx` to the `squad/` directory with top-tab layout, Friends tab, and Goals stub. This is the highest-value deliverable and the structural foundation everything else depends on.
 
-**Delivers:** `src/constants/spacing.ts`, `src/constants/typography.ts`, `src/constants/radii.ts`, `src/constants/shadows.ts`; `unreadDot` added to `colors.ts`; CI lint rule rejecting hardcoded hex literals in `.tsx` files.
+**Delivers:** Working Squad tab with Friends / Goals top tabs; FriendsList accessible from Squad; Goals placeholder visible; `useFocusEffect` added to FriendsList for stale-data prevention.
 
-**Addresses:** SPACING, TYPOGRAPHY, RADII, SHADOWS token features from FEATURES.md.
+**Addresses:** Squad top tabs, Friends tab content, Goals stub (all P1 table-stakes features)
 
-**Avoids:** Spacing scale omission pitfall (audit existing values first — the audit is done; all six values must be in the scale), import path fragmentation (decide `@/constants/` as the only path before writing a single screen), half-migration pitfall (lint rule at the start, not the end).
+**Avoids:** Pitfall 2 (missing pager dep), Pitfall 3 (squad.tsx ambiguity), Anti-Pattern 3 (custom tab switcher instead of `withLayoutContext`)
 
-### Phase 2: Shared Component Build
+**Key tasks:**
+- `npx expo install @react-navigation/material-top-tabs react-native-tab-view react-native-pager-view`
+- Create `squad/_layout.tsx` using `withLayoutContext(createMaterialTopTabNavigator())` with design-token `screenOptions`
+- Create `squad/friends.tsx` rendering `<FriendsList />`
+- Create `squad/goals.tsx` with coming-soon content from old `squad.tsx`
+- Delete `squad.tsx` in the same commit
+- Swap `useEffect([], fetchFriends)` for `useFocusEffect(fetchFriends)` in `FriendsList.tsx`
+- Verify top tabs work in Expo Go on device before proceeding to Phase 2
 
-**Rationale:** New shared components depend on Phase 1 tokens. Building them before tokens would require hardcoding values that need changing later. Components must ship before screen refactors so screens can reference them. Phase 2 and Phase 3 are independent of each other and can proceed in parallel if two people are working.
+### Phase 2: Bottom Nav Restructure and Tab Renames
 
-**Delivers:** `FAB.tsx` (new, supports icon-only and icon+label variants), `ScreenHeader.tsx` (new), `ErrorDisplay.tsx` (new), `FormField.tsx` (moved from `auth/` to `common/` — zero implementation changes, import path update in `AuthScreen` only).
+**Rationale:** Navigation renames are independent of Squad content but require a route audit and Playwright update. Bundling them together avoids two separate rounds of snapshot regeneration. Renaming and reordering without updating tests creates a broken CI state. Do both in the same phase.
 
-**Addresses:** FAB, ScreenHeader, ErrorDisplay, FormField features from FEATURES.md.
+**Delivers:** Correct nav order (Home | Squad | Explore | Chats | Profile); Plans tab becomes Explore; Chat tab label becomes Chats; Squad tab badge shows pending count instead of Profile badge.
 
-**Avoids:** FAB consolidation pitfall (audit all three existing FAB implementations before building; support all variants via props; visual comparison screenshots on both platforms), performance pitfall (wrap shared components in `React.memo`; keep `StyleSheet.create` at module level, not inside component body).
+**Addresses:** Bottom nav reorder, Plans → Explore rename, Chat → Chats rename, badge migration (all P1)
 
-### Phase 3: Hardcoded Color Sweep in Existing Components
+**Avoids:** Pitfall 1 (stale router.push paths), Pitfall 3 (cached navigation state), Pitfall 4 (Playwright test breakage), Pitfall 5 (double badge hook subscription)
 
-**Rationale:** Component-level hex values (`#2a2a2a` in PlanCard/AvatarStack/QRCodeDisplay, `#f97316` + `#2a2a2a` in MessageBubble, `#3b82f6` in ChatListRow) must be resolved before screen refactors reference those components, or the screen migration inherits undeclared colors. This phase is purely mechanical and independent of Phase 2.
+**Key tasks:**
+- Grep audit: `grep -rn "'/plans\|'/chat" src/` — document all call sites before any file rename
+- Create `explore.tsx` (identical content to `plans.tsx`), delete `plans.tsx`
+- Update `chat/` tab title to "Chats" in `_layout.tsx` (folder stays as `chat/`; only the tab display title changes)
+- Reorder `<Tabs.Screen>` declarations in `_layout.tsx`: index → squad → explore → chat → profile
+- Move `tabBarBadge` from Profile `<Tabs.Screen>` to Squad `<Tabs.Screen>`; remove badge from Profile
+- Update all Playwright locators (`getByText("Plans")` → `getByText("Explore")`, etc.)
+- Run `npx playwright test --update-snapshots`; rename stale snapshot files to match new tab names
+- Add new Squad snapshot tests: Squad → Friends sub-tab, Squad → Goals sub-tab
 
-**Delivers:** All 5 component files with hardcoded hex values updated to `COLORS.*` tokens. `#3b82f6` resolved as `COLORS.unreadDot`. Lint rule passes for all files in `src/components/`.
+### Phase 3: Profile Simplification
 
-**Addresses:** The undeclared color pitfall — the anomalous blue is the only color in the codebase without a token name.
+**Rationale:** This phase removes the existing friend entry points from Profile. It must not run until Phase 1 has been verified working — removing friend access from Profile before Squad serves it leaves users with no path to friend management. Last step, not a cleanup.
 
-**Avoids:** The hex lint rule installed in Phase 1 confirms completion immediately; no manual verification required.
+**Delivers:** Clean Profile screen (status editing, QR code, notifications, logout only); no redundant friend rows; no orphaned imports.
 
-### Phase 4: Screen Refactors
+**Addresses:** Profile tab simplification (P1 — final step)
 
-**Rationale:** Screens are last because they depend on all prior phases — tokens (Phase 1), new shared components (Phase 2), and cleaned component dependencies (Phase 3). Within this phase, the 11 screens are fully isolated by StyleSheet scope and can be migrated in any order.
+**Avoids:** Removing the only friend access path before the replacement is confirmed working
 
-**Delivers:** All 11 screens updated to use tokens and shared components. Inline FAB JSX replaced with `<FAB />` in HomeScreen and PlansListScreen. Pull-to-refresh added to all list screens (Home, Plans, Friends) with `tintColor={COLORS.accent}`. Every FlatList screen with a FAB receives `contentContainerStyle={{ paddingBottom: FAB_HEIGHT + insets.bottom + SPACING.lg }}` to prevent content occlusion. `tsc --noEmit` passes with `"strict": true` and `"noUncheckedIndexedAccess": true`. Lint rule passes for all 221 files.
-
-**Addresses:** All P1 features. Pull-to-refresh pattern on all list screens.
-
-**Avoids:** Half-migration pitfall (lint rule is the completion gate), FAB safe-area pitfall (contentContainerStyle on all FAB screens), typography regression pitfall (test on iPhone SE simulator after each screen migration), performance regression (verify chat list scrolls at 60fps with memoized shared components).
+**Key tasks:**
+- Remove FRIENDS section header and three rows (My Friends, Friend Requests, My QR Code) from `profile.tsx`
+- Remove `useFriends` and `usePendingRequestsCount` imports from `profile.tsx`
+- Remove `useFocusEffect(fetchFriends)` dependency from `profile.tsx`
+- Verify with `grep -rn "router.push.*'/friends" src/app/(tabs)/profile.tsx` returns zero results
+- Full regression test: confirm all friend management flows work exclusively from Squad tab
 
 ### Phase Ordering Rationale
 
-- Tokens before components before screens: pure dependency graph, no circular dependencies, each phase verifiable in isolation
-- Phase 3 (component color sweep) and Phase 2 (new shared components) are independent after Phase 1 and can proceed in parallel
-- Screen refactors carry the highest regression risk (most files, most opportunity for layout regressions) — completing Phases 1–3 first means all tooling (lint rule, tokens, shared components) is in place before the riskiest work begins
-- Completion criterion is binary: the hex lint rule either passes across all `.tsx` files or it does not
+- Squad tab first: Profile cleanup depends on Squad working — never remove the existing entry point before the replacement is verified
+- Navigation renames second: independent of Squad content but produce Playwright churn; batching minimizes test-update overhead; must happen before Profile cleanup so the nav order is correct when Profile is simplified
+- Profile cleanup last: most destructive change (deletes working feature access); requires Phase 1 verification as a hard precondition
+- This order ensures users always have a working path to friend management even if development is interrupted mid-milestone
 
 ### Research Flags
 
-All four phases use standard, well-documented patterns. No additional research passes are needed.
+No phases require `/gsd:research-phase` during planning. All implementation details are resolved in the research files.
 
-- **Phase 1 (Token Extraction):** Pure TypeScript constants. The spacing scale is derived from direct codebase audit. No design decisions remain open.
-- **Phase 2 (Shared Components):** Standard React Native component patterns. The only design decision (FAB variant support) is documented in PITFALLS.md.
-- **Phase 3 (Color Sweep):** Mechanical replacement guided by Phase 1 tokens. No design decisions.
-- **Phase 4 (Screen Refactors):** Mechanical after Phases 1–3. The only non-mechanical element is safe-area FAB padding, which is documented.
-
-One gap to monitor (see below): Android `elevation` + `borderRadius` bug in RN 0.77+. This may affect shadow token usage on rounded cards and should be tested on Android during Phase 4.
+Phases with standard patterns (skip research):
+- **Phase 1 (Squad tab):** `withLayoutContext` + `createMaterialTopTabNavigator` is fully documented in Expo official docs and confirmed working via GitHub issue #41111. Implementation pattern is concrete and complete in STACK.md and ARCHITECTURE.md including exact TypeScript generics.
+- **Phase 2 (Nav renames):** Pure config change (reorder `<Tabs.Screen>` declarations) + file renames + Playwright updates. All mechanics well-understood; no novel patterns.
+- **Phase 3 (Profile cleanup):** Deletion-only change. Zero novel patterns.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Design system is zero-dependency pure TypeScript. Core app stack verified against official release notes (Expo SDK 55, Supabase 2.99.x). All patterns use stable React Native APIs. |
-| Features | HIGH | Features derived from direct codebase audit of 221 files, 9,322 LOC. Token counts (145 `fontSize` usages, 44 hardcoded `16` padding values, 6 files with undeclared hex) are empirical, not estimated. |
-| Architecture | HIGH | Based on direct inspection of all existing files. Build order reflects actual dependency graph. The four-phase sequence is derived from the codebase, not from theory. |
-| Pitfalls | HIGH | Grounded in direct codebase observation (e.g., `#3b82f6` is a live finding, not a hypothetical), Shopify engineering posts, design token literature, and a verified React Native GitHub issue (Android elevation bug #48874). |
+| Stack | HIGH | Official Expo docs + GitHub issue #41111 confirming `withLayoutContext` requirement; SDK 55 compatibility verified via Expo Go binary contents; `package.json` directly inspected for existing versions |
+| Features | HIGH | Direct codebase audit of all relevant files; all features touch existing working code; scope is relocation not invention; no user-facing logic to design |
+| Architecture | HIGH | Direct codebase inspection of all files in `src/app/`, `src/screens/`, `src/hooks/`; file-by-file change list derived from actual code with exact line numbers |
+| Pitfalls | HIGH | Grounded in direct codebase audit including exact line numbers for stale router.push call sites; Playwright test file directly inspected; Supabase subscription pattern confirmed |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Android `elevation` + `borderRadius` bug (RN #48874):** The `SHADOWS` token for cards should avoid `elevation` on rounded surfaces (Android). Use backdrop surfaces instead. Verify this on a physical Android device during Phase 4 before shipping.
+- **Navigation state cache on upgrade path:** Tab reorder and renames will invalidate persisted `AsyncStorage` navigation state for users upgrading from v1.1. Recovery is a one-frame cosmetic glitch (wrong tab shown briefly on cold start), not a crash. Accept as a known cosmetic issue for the v1.1→v1.2 upgrade path; document in release notes. No code mitigation planned unless testing on a v1.1 device reveals a worse failure mode than a brief flash.
 
-- **Pull-to-refresh screens inventory:** ARCHITECTURE.md confirms ChatListScreen already has pull-to-refresh. Home, Plans, and Friends need it added in Phase 4. FriendRequests, AddFriend, ChatRoomScreen, and PlanDashboardScreen should be confirmed against the codebase before Phase 4 execution to ensure no screen is missed.
+- **FAB visibility on Goals tab:** The Add Friend FAB should not appear on the Goals placeholder screen. Research identifies `useSegments` as the correct conditional render mechanism. Confirm this detail is addressed during Phase 1 Squad tab implementation — it is easy to miss since both tabs share the same Squad layout context.
 
-- **`RADII` exact values:** The codebase audit identified sm=8, md=12, lg=16, pill=28 as the dominant values. The few outliers (2, 4, 22) should be reviewed and collapsed before Phase 1 finalizes the scale — values not in the scale should be removed or mapped to the nearest token, not left inline.
-
-- **FAB safe-area calculation:** `useSafeAreaInsets()` must be used in screens (not inside the `FAB` component itself) to calculate the correct `bottom` offset. The `SafeAreaProvider` is already present via Expo Router; screens need to call the hook and pass the result to `contentContainerStyle`.
+- **`usePendingRequestsCount` cleanup verification:** Research flags a potential missing `supabase.removeChannel` in the hook's unmount cleanup. Verify during Phase 2 when the badge hook assignment is being touched. If cleanup is missing, add it in the same commit.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct codebase audit — all 221 files, 9,322 LOC, March 2026. Empirical counts of `fontSize` (145 instances), `borderRadius` (57 instances), `paddingHorizontal` (64 instances), undeclared hex colors (8 files)
-- [React Native StyleSheet Docs](https://reactnative.dev/docs/stylesheet) — module-level StyleSheet behavior, style ID registration
-- [React Native RefreshControl Docs](https://reactnative.dev/docs/refreshcontrol) — pull-to-refresh implementation pattern
-- [Expo Color Themes Docs](https://docs.expo.dev/develop/user-interface/color-themes/) — `useColorScheme` and `userInterfaceStyle: automatic`
-- [expo-barcode-scanner deprecation](https://github.com/expo/fyi/blob/main/barcode-scanner-to-expo-camera.md) — use `expo-camera` instead (referenced for stack validation)
-- [React Native elevation + borderRadius bug #48874](https://github.com/facebook/react-native/issues/48874) — Android shadow limitation on rounded cards
+- Direct codebase audit: `src/app/(tabs)/_layout.tsx`, `src/app/(tabs)/profile.tsx`, `src/app/(tabs)/squad.tsx`, `src/app/friends/`, `src/screens/friends/FriendsList.tsx`, `tests/visual/design-system.spec.ts`, `package.json` — April 2026
+- Expo Router — Custom Tab Layouts: https://docs.expo.dev/router/advanced/custom-tabs/
+- Expo Router — Nesting Navigators: https://docs.expo.dev/router/advanced/nesting-navigators/
+- GitHub expo/expo issue #41111 — `withLayoutContext` requirement (marked COMPLETED by Expo team)
+- GitHub expo/expo issue #33096 — SDK 52 material-top-tabs bug (resolved upstream in React Navigation v7 patch)
+- `expo-router/build/layouts/withLayoutContext.js` — confirms `createMaterialTopTabNavigator` integration
+- Expo SDK 55 managed workflow modules list — confirms `react-native-pager-view` in Expo Go binary
+- EvanBacon expo-router-layouts-example — canonical `withLayoutContext` pattern
 
 ### Secondary (MEDIUM confidence)
-- [Shopify: 5 Ways to Improve RN Styling Workflow](https://shopify.engineering/5-ways-to-improve-your-react-native-styling-workflow) — styling anti-patterns, memoization
-- [DEV: Design System for React Native Projects](https://dev.to/msaadullah/how-i-set-up-design-system-for-my-react-native-projects-for-10x-faster-development-1k8g) — token structure and ThemeProvider pattern
-- [Prototypr: The 8pt Grid](https://blog.prototypr.io/the-8pt-grid-consistent-spacing-in-ui-design-with-sketch-577e4f0fd520) — spacing scale rationale
-- [Thoughtbot: Structure for Styling in React Native](https://thoughtbot.com/blog/structure-for-styling-in-react-native) — file organization patterns
-- [Strangler Fig Pattern for Incremental Refactoring](https://www.gocodeo.com/post/how-the-strangler-fig-pattern-enables-safe-and-gradual-refactoring) — migration strategy
+- React Navigation — Material Top Tabs Navigator docs (current v7): https://reactnavigation.org/docs/material-top-tab-navigator/
+- Established mobile UX convention (Instagram, Snapchat, LinkedIn) — top tabs for social sub-sections; pending requests as inline actionable rows
+- WebSearch — `@react-navigation/material-top-tabs` v7.4.23 as latest version (not verified against npm registry directly)
 
 ### Tertiary (LOW confidence)
-- [Naming Tokens in Design Systems — Nathan Curtis, EightShapes](https://medium.com/eightshapes-llc/naming-tokens-in-design-systems-9e86c7444676) — token naming guidance (designed for large multi-brand teams; simplified for Campfire's single dark theme)
+- None — all relevant findings are grounded in primary or secondary sources
 
 ---
-*Research completed: 2026-03-24*
+*Research completed: 2026-04-04*
 *Ready for roadmap: yes*

@@ -1,446 +1,356 @@
 # Architecture Research
 
-**Domain:** Design system integration — React Native StyleSheet-only codebase
-**Researched:** 2026-03-24
-**Confidence:** HIGH — based on direct inspection of the full 9,322 LOC, 221-file codebase
+**Domain:** Squad tab integration and navigation restructuring — Expo Router file-based navigation
+**Researched:** 2026-04-04
+**Confidence:** HIGH — based on direct codebase inspection
 
-> This file supersedes the v1.0 architecture research. It focuses exclusively on how design tokens and shared components integrate with the existing React Native + StyleSheet codebase for the v1.1 milestone.
-
----
-
-## Standard Architecture
-
-### System Overview
-
-```
-┌───────────────────────────────────────────────────────────────────┐
-│                          Screens Layer                             │
-│  src/screens/{domain}/ScreenName.tsx                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐  │
-│  │  Home    │ │  Plans   │ │  Chat    │ │ Friends  │ │ Auth   │  │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └───┬────┘  │
-│       │             │            │             │            │       │
-├───────┴─────────────┴────────────┴─────────────┴────────────┴──────┤
-│                        Components Layer                             │
-│  src/components/{domain}/                                          │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  common/  (cross-domain shared UI)                           │  │
-│  │  FAB  ScreenHeader  FormField  ErrorDisplay  EmptyState  ... │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
-│  │  plans/  │ │  chat/   │ │ friends/ │ │  home/   │  ...         │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘              │
-│       │             │            │             │                    │
-├───────┴─────────────┴────────────┴─────────────┴───────────────────┤
-│                      Design Tokens Layer  ← NEW                     │
-│  src/constants/                                                     │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────────┐   │
-│  │  colors.ts   │ │  spacing.ts  │ │      typography.ts        │   │
-│  │  (EXISTING)  │ │  (NEW)       │ │      (NEW)                │   │
-│  └──────────────┘ └──────────────┘ └──────────────────────────┘   │
-└───────────────────────────────────────────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component | Responsibility | Current State |
-|-----------|---------------|---------------|
-| `src/constants/colors.ts` | Brand color palette (17 tokens) | EXISTS — well-structured, used everywhere |
-| `src/constants/spacing.ts` | Numeric spacing scale | MISSING — all spacing hardcoded in StyleSheets |
-| `src/constants/typography.ts` | Font size + weight pairs | MISSING — all text styles hardcoded in StyleSheets |
-| `src/components/common/PrimaryButton.tsx` | Primary CTA button | EXISTS — clean, uses COLORS |
-| `src/components/common/EmptyState.tsx` | Empty list placeholder | EXISTS — minor hardcoded spacing to fix |
-| `src/components/common/LoadingIndicator.tsx` | Full-screen loading spinner | EXISTS — clean |
-| `src/components/common/AvatarCircle.tsx` | User avatar image/initials | EXISTS — clean |
-| `src/components/common/OfflineBanner.tsx` | Network status banner | EXISTS — clean |
-| `src/components/common/FAB.tsx` | Floating action button | MISSING — duplicated inline in HomeScreen + PlansListScreen |
-| `src/components/common/ScreenHeader.tsx` | Consistent view title treatment | MISSING — each screen implements its own heading |
-| `src/components/common/ErrorDisplay.tsx` | Inline error + retry | MISSING — each screen implements its own error text |
-| `src/components/common/FormField.tsx` | Labeled text input with error | EXISTS at `auth/FormField.tsx` — needs relocation to `common/` |
+> This file covers v1.2 Squad & Navigation milestone only. It supersedes the v1.1 design system architecture file.
 
 ---
 
-## Recommended Project Structure
-
-Only files that change for this milestone are annotated. All other directories remain as-is.
+## Current State
 
 ```
-src/
-├── constants/
-│   ├── colors.ts         # MODIFY — add COLORS.unreadDot token (currently '#3b82f6' inline in ChatListRow)
-│   ├── spacing.ts        # NEW — SPACING object with named scale
-│   ├── typography.ts     # NEW — TEXT object with named text style pairs
-│   └── config.ts         # no change
-│
-├── components/
-│   ├── common/
-│   │   ├── AvatarCircle.tsx      # no change
-│   │   ├── EmptyState.tsx        # MODIFY — swap hardcoded spacing for SPACING tokens
-│   │   ├── LoadingIndicator.tsx  # no change
-│   │   ├── OfflineBanner.tsx     # no change
-│   │   ├── PrimaryButton.tsx     # no change
-│   │   ├── FAB.tsx               # NEW — extracted from HomeScreen + PlansListScreen
-│   │   ├── FormField.tsx         # MOVE from auth/FormField.tsx (same code, new path)
-│   │   ├── ScreenHeader.tsx      # NEW — standard screen title with optional right slot
-│   │   └── ErrorDisplay.tsx      # NEW — error text + optional retry handler
-│   │
-│   ├── auth/
-│   │   ├── AuthTabSwitcher.tsx   # no change
-│   │   ├── FormField.tsx         # DELETE after moving to common/
-│   │   ├── OAuthButton.tsx       # no change
-│   │   └── UsernameField.tsx     # no change
-│   │
-│   ├── chat/
-│   │   ├── ChatListRow.tsx       # MODIFY — '#3b82f6' → COLORS.unreadDot
-│   │   ├── MessageBubble.tsx     # MODIFY — '#f97316' → COLORS.accent, '#2a2a2a' → COLORS.secondary
-│   │   ├── PinnedPlanBanner.tsx  # MODIFY — token sweep
-│   │   └── SendBar.tsx           # MODIFY — token sweep
-│   │
-│   ├── friends/
-│   │   ├── FriendCard.tsx        # MODIFY — token sweep
-│   │   ├── QRCodeDisplay.tsx     # MODIFY — '#2a2a2a' → COLORS.secondary
-│   │   └── ...                   # token sweep as needed
-│   │
-│   ├── home/
-│   │   └── HomeFriendCard.tsx    # MODIFY — token sweep
-│   │
-│   └── plans/
-│       ├── AvatarStack.tsx       # MODIFY — '#2a2a2a' → COLORS.secondary
-│       ├── PlanCard.tsx          # MODIFY — '#2a2a2a' → COLORS.secondary
-│       └── ...                   # token sweep as needed
-│
-└── screens/
-    ├── auth/
-    │   ├── AuthScreen.tsx        # MODIFY — tokens, update FormField import path
-    │   └── ProfileSetup.tsx      # MODIFY — token sweep
-    ├── chat/
-    │   ├── ChatListScreen.tsx    # MODIFY — token sweep
-    │   └── ChatRoomScreen.tsx    # MODIFY — token sweep
-    ├── friends/
-    │   ├── AddFriend.tsx         # MODIFY — token sweep
-    │   ├── FriendRequests.tsx    # MODIFY — token sweep
-    │   └── FriendsList.tsx       # MODIFY — token sweep
-    ├── home/
-    │   └── HomeScreen.tsx        # MODIFY — tokens + replace inline FAB → <FAB />
-    └── plans/
-        ├── PlanCreateModal.tsx   # MODIFY — token sweep
-        ├── PlanDashboardScreen.tsx # MODIFY — token sweep
-        └── PlansListScreen.tsx   # MODIFY — tokens + replace inline FAB → <FAB />
+src/app/
+├── _layout.tsx               ← Root Stack (session guard + notification routing)
+├── (auth)/                   ← Auth screens
+├── (tabs)/                   ← Bottom tab navigator (5 tabs)
+│   ├── _layout.tsx           ← Tabs order: Home | Plans | Chat | Squad | Profile
+│   ├── index.tsx             ← Home
+│   ├── plans.tsx             ← Plans (single file, no nested Stack)
+│   ├── chat/                 ← Chat (nested Stack with room.tsx)
+│   │   ├── _layout.tsx
+│   │   ├── index.tsx
+│   │   └── room.tsx
+│   ├── squad.tsx             ← Squad (coming-soon stub, single flat file)
+│   └── profile.tsx           ← Profile (status + friend entry points + settings)
+├── friends/                  ← Friends section (root-level Stack, pushed from profile)
+│   ├── _layout.tsx
+│   ├── index.tsx             ← FriendsList screen
+│   ├── add.tsx               ← AddFriend screen
+│   ├── requests.tsx          ← FriendRequests screen
+│   └── [id].tsx              ← Friend profile detail
+├── plans/                    ← Plan detail (root-level Stack, push target)
+├── profile/                  ← Profile edit (root-level Stack)
+├── plan-create.tsx           ← Modal
+└── qr-code.tsx               ← QR modal
 ```
 
-### Structure Rationale
+### Key observations from inspection
 
-- **`src/constants/` for tokens:** `colors.ts` already lives here and is imported across the entire codebase with `@/constants/colors`. Adding `spacing.ts` and `typography.ts` alongside it requires zero changes to any existing import and follows the established pattern.
-- **`src/components/common/` for shared components:** Already established as the cross-domain shared UI directory. All existing components there (PrimaryButton, EmptyState) confirm this intent. New shared components (FAB, ScreenHeader, ErrorDisplay) belong here.
-- **FormField relocation (auth/ → common/):** FormField is already generic enough to use on profile setup and potentially other screens. Moving it now prevents future duplication. Update all import sites atomically.
+- `src/app/friends/` is a **root-level Stack**, not nested inside `(tabs)/`. It is pushed via `router.push('/friends')` from `profile.tsx`. Screens within it (`/friends/add`, `/friends/requests`, `/friends/[id]`) hide the bottom tab bar during navigation, which is correct behavior.
+- `squad.tsx` is a **single flat file** with a coming-soon stub. It needs to become a directory to support top-tab children.
+- `profile.tsx` owns: status editing, "My Friends" row (→ `/friends`), "Friend Requests" row (→ `/friends/requests`), "My QR Code" row, notifications toggle, logout. It imports `useFriends` and `usePendingRequestsCount`.
+- `usePendingRequestsCount` is consumed in **two places**: `(tabs)/_layout.tsx` (drives Profile `tabBarBadge`) and `friends/index.tsx` (drives the requests header button). After restructure, the layout-level consumption moves to the Squad tab badge.
+- `@react-navigation/material-top-tabs` is **NOT installed**. Only `bottom-tabs`, `native`, `elements`, `native-stack` are present in `node_modules/@react-navigation/`.
+- `expo-router` v55's `withLayoutContext` explicitly supports `createMaterialTopTabNavigator` — documented in its `withLayoutContext.js` build file. The package must be installed separately.
+- `react-native-pager-view` (required peer dependency of `react-native-tab-view`) is included in the Expo Go SDK 55 binary — safe in managed workflow without a custom dev build.
 
 ---
 
-## Architectural Patterns
+## Target State
 
-### Pattern 1: Token Import at StyleSheet Definition
+```
+src/app/(tabs)/
+├── _layout.tsx               ← MODIFIED: reorder + rename tabs, move badge
+├── index.tsx                 ← unchanged (Home)
+├── explore.tsx               ← NEW: Plans tab renamed (identical content)
+├── chat/                     ← MODIFIED: title label only ("Chats")
+│   └── ...                   ← unchanged internally
+├── squad/                    ← CONVERTED: squad.tsx → squad/ directory
+│   ├── _layout.tsx           ← NEW: top-tab layout (Friends | Goals)
+│   ├── friends.tsx           ← NEW: Friends tab (renders <FriendsList />)
+│   └── goals.tsx             ← NEW: Goals tab (coming-soon stub)
+└── profile.tsx               ← MODIFIED: Friends section removed
+```
 
-**What:** Import token objects at the top of the file. Reference them inside `StyleSheet.create()`. Never construct style objects inline during render.
-**When to use:** Every component and screen — both new files and refactored files.
-**Trade-offs:** Tokens are evaluated once at module registration. Zero runtime overhead. No dynamic theming (Campfire is dark-only by explicit constraint — acceptable).
+The `src/app/friends/` root-level Stack is **unchanged**. Friend sub-screens (add, requests, [id]) remain at root level and are still pushed from the new `squad/friends.tsx` via the same URL paths.
 
-**Example:**
+---
+
+## Component Boundaries
+
+| Component | Status | Change Summary |
+|-----------|--------|----------------|
+| `src/app/(tabs)/_layout.tsx` | MODIFIED | Reorder tabs, rename titles, move pending badge to Squad |
+| `src/app/(tabs)/plans.tsx` | DELETED | Replaced by `explore.tsx` (same content, file rename only) |
+| `src/app/(tabs)/explore.tsx` | NEW | Identical to current `plans.tsx` |
+| `src/app/(tabs)/squad.tsx` | DELETED | Replaced by `squad/` directory |
+| `src/app/(tabs)/squad/_layout.tsx` | NEW | Top-tab navigator using `withLayoutContext` |
+| `src/app/(tabs)/squad/friends.tsx` | NEW | Renders `<FriendsList />`, hosts header FAB for requests |
+| `src/app/(tabs)/squad/goals.tsx` | NEW | Coming-soon placeholder (ported from `squad.tsx`) |
+| `src/app/(tabs)/profile.tsx` | MODIFIED | Remove FRIENDS section (3 rows + 2 hook calls) |
+| `src/app/friends/` (all files) | UNCHANGED | Root Stack stays at root level |
+| `src/screens/friends/FriendsList.tsx` | RECOMMENDED CHANGE | Add `useFocusEffect` for stale data prevention |
+| `src/hooks/usePendingRequestsCount.ts` | UNCHANGED | Hook already uses `useFocusEffect` internally |
+
+---
+
+## Top-Tab Navigator: Implementation Pattern
+
+`@react-navigation/material-top-tabs` + `withLayoutContext` is the idiomatic Expo Router approach. The project does not have material-top-tabs installed yet.
+
+**Install:**
+```bash
+npx expo install @react-navigation/material-top-tabs react-native-tab-view react-native-pager-view
+```
+
+`react-native-pager-view` is a native module, but it is pre-bundled in Expo Go SDK 55 — no dev build required. `react-native-tab-view` and `@react-navigation/material-top-tabs` are pure JS.
+
+**Pattern for `src/app/(tabs)/squad/_layout.tsx`:**
+
 ```typescript
-import { COLORS } from '@/constants/colors';
-import { SPACING } from '@/constants/spacing';
-import { TEXT } from '@/constants/typography';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { withLayoutContext } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    padding: SPACING.lg,          // 16
-    gap: SPACING.sm,              // 8
-  },
-  title: {
-    ...TEXT.bodyLarge,            // { fontSize: 16, fontWeight: '600' }
-    color: COLORS.textPrimary,
-  },
-  subtitle: {
-    ...TEXT.bodyMedium,           // { fontSize: 14, fontWeight: '400' }
-    color: COLORS.textSecondary,
-  },
-});
+const { Navigator } = createMaterialTopTabNavigator();
+const TopTabs = withLayoutContext(Navigator);
+
+export default function SquadLayout() {
+  const insets = useSafeAreaInsets();
+  return (
+    <TopTabs
+      screenOptions={{
+        tabBarActiveTintColor: COLORS.interactive.accent,
+        tabBarInactiveTintColor: COLORS.text.secondary,
+        tabBarStyle: {
+          backgroundColor: COLORS.surface.base,
+          paddingTop: insets.top,
+        },
+        tabBarIndicatorStyle: { backgroundColor: COLORS.interactive.accent },
+        tabBarLabelStyle: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.semibold,
+          textTransform: 'none',
+        },
+        tabBarPressColor: 'transparent',
+      }}
+    >
+      <TopTabs.Screen name="friends" options={{ title: 'Friends' }} />
+      <TopTabs.Screen name="goals" options={{ title: 'Goals' }} />
+    </TopTabs>
+  );
+}
 ```
 
-### Pattern 2: Typography Tokens as Spread Objects
+Note: `paddingTop: insets.top` on `tabBarStyle` handles safe area at the Squad screen level. The tab bar is the topmost element on this screen — it must consume the top inset here rather than in each child screen.
 
-**What:** Typography tokens are plain objects with `fontSize` and `fontWeight`. Spread them into `StyleSheet.create()` entries. TypeScript infers the type when the object is typed with `as const`.
-**When to use:** All text style definitions across the codebase.
-**Trade-offs:** One level of indirection. Worth it: removes the single largest source of inconsistency (fontSize values appear 145+ times hardcoded across screens and components).
+**Alternative considered — Custom tab switcher (no new dependency):** `AddFriend.tsx` uses a hand-rolled `activeTab` state + conditional render pattern. This works for a two-option UI within a form but is wrong for screen-level navigation: it would not fire `useFocusEffect` per tab, would not preserve scroll position per tab, and has no swipe. Reject this approach for the Squad layout.
 
-**Token definition:**
+---
+
+## Data Flow Changes
+
+### Pending requests badge: Profile → Squad
+
+**Current:** `usePendingRequestsCount()` is called in `(tabs)/_layout.tsx` and assigned to the Profile `tabBarBadge`.
+
+**After:** Same hook call in `(tabs)/_layout.tsx`, reassigned to the Squad `tabBarBadge`. No changes to the hook.
+
+```
+usePendingRequestsCount() in _layout.tsx
+    ↓ (refires on every focus via hook's internal useFocusEffect)
+Squad tabBarBadge  (was: Profile tabBarBadge)
+```
+
+### FriendsList mount lifecycle change
+
+**Current:** `FriendsList` is a pushed screen — it always mounts fresh from a `router.push('/friends')` call. Its `useEffect([], fetchFriends)` fires on every navigation to the screen.
+
+**After:** `squad/friends.tsx` renders `<FriendsList />` as a persistent top-tab child. The component mounts once and stays mounted. `useEffect([])` fires once on first tab visit, but after returning from Add Friend or navigating to another tab and back, data may be stale.
+
+**Recommended fix:** Add `useFocusEffect` to `FriendsList.tsx`:
+
 ```typescript
-// src/constants/typography.ts
-export const TEXT = {
-  // Screen-level headings (Plans, Chat, Home count heading)
-  screenTitle:  { fontSize: 24, fontWeight: '600' as const },
-  // Section headings within a screen (Details, Who's Going)
-  sectionTitle: { fontSize: 20, fontWeight: '600' as const },
-  // Primary body text in cards and rows
-  bodyLarge:    { fontSize: 16, fontWeight: '600' as const },
-  // Secondary body text, form labels, descriptions
-  bodyMedium:   { fontSize: 14, fontWeight: '400' as const },
-  // Timestamps, captions, small labels
-  caption:      { fontSize: 13, fontWeight: '400' as const },
-} as const;
+useFocusEffect(
+  useCallback(() => {
+    fetchFriends();
+  }, [fetchFriends])
+);
 ```
 
-**Token consumption (audit-derived scale):**
+The `useFocusEffect` hook fires whenever the enclosing screen (or tab) receives focus. This is the established pattern in `profile.tsx` and `home/HomeScreen.tsx` for the same reason.
 
-| Token | fontSize | fontWeight | Derived From |
-|-------|----------|------------|-------------|
-| `screenTitle` | 24 | 600 | Plans heading, Chat heading (55 occurrences of 24) |
-| `sectionTitle` | 20 | 600 | Plan Dashboard section titles (15 occurrences of 20) |
-| `bodyLarge` | 16 | 600 | Card titles, button labels, invite text |
-| `bodyMedium` | 14 | 400 | Form labels, secondary info (50 occurrences of 14) |
-| `caption` | 13 | 400 | Timestamps in ChatListRow (4 occurrences of 13) |
+### Navigation paths that change
 
-### Pattern 3: Spacing as Named Constants
-
-**What:** A single numeric scale exported as `SPACING`. All padding, margin, and gap values reference this.
-**When to use:** All layout values in all StyleSheet definitions.
-**Trade-offs:** Naming takes discipline. Designers and developers must agree on the meaning of each step. The existing codebase reveals a clear de-facto scale: 4/8/12/16/24/32 — formalize these exact values.
-
-**Token definition:**
-```typescript
-// src/constants/spacing.ts
-export const SPACING = {
-  xs:   4,   // AvatarStack overlap offset, tight gaps
-  sm:   8,   // separator height, inline gaps, icon + label gap
-  md:   12,  // borderRadius(sm), card section gaps, separator marginLeft
-  lg:   16,  // standard screen padding, card padding, section padding
-  xl:   24,  // large section spacing, FAB bottom offset
-  xxl:  32,  // screen header top, auth header padding
-} as const;
-```
-
-**Audit-derived usage counts (existing codebase):**
-
-| Value | Count | Role |
-|-------|-------|------|
-| 16 | 44 | Standard horizontal screen padding, card padding |
-| 8 | 10 | Inline gaps, separators |
-| 24 | 5 | Large vertical spacing, FAB offset |
-| 32 | 4 | Header top padding, auth content padding |
-| 12 | borderRadius | Card radius appears 20 times |
-
-### Pattern 4: Incremental Screen-by-Screen Migration
-
-**What:** Refactor one screen at a time. Token files ship first. Then new shared components. Then screens one by one. Never a single PR that rewrites all 11 screens simultaneously.
-**When to use:** Any existing codebase with StyleSheet. This is the only safe migration strategy when screens are in active development.
-**Trade-offs:** During migration, some screens use tokens and some do not. This is fine — StyleSheet scopes are isolated per file. The app functions correctly throughout.
+| Action | Old path | Old caller | New caller | Change? |
+|--------|----------|------------|------------|---------|
+| View friends list | push `/friends` | `profile.tsx` | not needed — tab is the list | path removed |
+| View friend requests | push `/friends/requests` | `profile.tsx`, `friends/index.tsx` | `squad/friends.tsx` header | path unchanged |
+| Add friend | push `/friends/add` | `FriendsList` FAB | same | unchanged |
+| View friend profile | push `/friends/${id}` | `FriendsList` action sheet | same | unchanged |
+| View QR code | push `/qr-code` | `profile.tsx` | stays in `profile.tsx` | unchanged |
 
 ---
 
-## Data Flow
+## File-by-File Change List
 
-### Token Consumption Flow
-
-```
-src/constants/colors.ts      (EXISTING — 17 tokens)
-src/constants/spacing.ts     (NEW — 6 named values)
-src/constants/typography.ts  (NEW — 5 named text pairs)
-        │
-        │  import { COLORS } from '@/constants/colors'
-        │  import { SPACING } from '@/constants/spacing'
-        │  import { TEXT } from '@/constants/typography'
-        ↓
-StyleSheet.create({ ... })   evaluated once at module load
-        │
-        │  style prop on View / Text / TouchableOpacity
-        ↓
-React Native layout and rendering
-```
-
-No component library, no theme context, no runtime lookup. Tokens are compile-time constants.
-
-### Component Extraction Flow
+### New files
 
 ```
-HomeScreen / PlansListScreen
-  → contain duplicate inline FAB JSX + styles
-  → extract to src/components/common/FAB.tsx
-  → screens import <FAB onPress={...} label="..." />
-  → screen StyleSheet loses the duplicated fab/fabLabel style rules
-
-src/components/auth/FormField.tsx
-  → move to src/components/common/FormField.tsx
-  → update import in AuthScreen from '@/components/auth/FormField'
-                                 to '@/components/common/FormField'
-  → zero changes to FormField implementation
+src/app/(tabs)/squad/_layout.tsx    ← Top-tab navigator (Friends / Goals)
+src/app/(tabs)/squad/friends.tsx    ← Friends tab (renders <FriendsList />)
+src/app/(tabs)/squad/goals.tsx      ← Goals tab (coming-soon stub)
+src/app/(tabs)/explore.tsx          ← Plans tab content, renamed
 ```
 
-### Pull-to-Refresh State Flow
+### Modified files
 
 ```
-Screen mounts → hook sets refreshing = false
-User pulls down → RefreshControl calls onRefresh
-  → hook sets refreshing = true
-  → hook re-fetches from Supabase
-  → hook sets refreshing = false
-  → RefreshControl hides spinner
+src/app/(tabs)/_layout.tsx
+  - Change Tabs.Screen order: index → squad → explore → chat → profile
+  - Remove: name="plans", add: name="explore", title "Explore"
+  - Chat title: "Chat" → "Chats"
+  - Move tabBarBadge from "profile" to "squad" (pendingCount)
+  - Remove tabBarBadge from "profile"
+
+src/app/(tabs)/profile.tsx
+  - Remove: import useFriends
+  - Remove: import usePendingRequestsCount
+  - Remove: const { friends } call
+  - Remove: const { count: pendingCount } call
+  - Remove: useFocusEffect(fetchFriends) dependency
+  - Remove: FRIENDS sectionHeader View/Text
+  - Remove: "My Friends" TouchableOpacity row
+  - Remove: "Friend Requests" TouchableOpacity row
+  - Keep: YOUR STATUS section (SegmentedControl + EmojiTagPicker)
+  - Keep: "My QR Code" row
+  - Keep: NOTIFICATIONS section
+  - Keep: Logout row
+  - Keep: Avatar header + profile fetch
+
+src/screens/friends/FriendsList.tsx  (recommended)
+  - Add: useFocusEffect wrapper around fetchFriends call
+  - Remove: useEffect([], fetchFriends) (replace, don't add both)
 ```
 
-Screens without pull-to-refresh today (ChatRoomScreen, FriendsList, AddFriend, ProfileSetup, PlanDashboardScreen) need `onRefresh` wired from their existing hooks. All hooks already expose `handleRefresh` or a refetch function.
+### Deleted files
+
+```
+src/app/(tabs)/squad.tsx            ← Replaced by squad/ directory
+src/app/(tabs)/plans.tsx            ← Replaced by explore.tsx
+```
+
+### Unchanged files
+
+```
+src/app/friends/_layout.tsx         ← Root Stack unchanged
+src/app/friends/index.tsx           ← Unchanged (header button pattern preserved)
+src/app/friends/add.tsx             ← Unchanged
+src/app/friends/requests.tsx        ← Unchanged
+src/app/friends/[id].tsx            ← Unchanged
+src/screens/friends/AddFriend.tsx   ← Unchanged
+src/screens/friends/FriendRequests.tsx ← Unchanged
+src/hooks/usePendingRequestsCount.ts ← Unchanged
+src/hooks/useFriends.ts             ← Unchanged
+src/app/_layout.tsx                 ← Unchanged (no new protected routes needed)
+```
 
 ---
 
-## Build Order (Dependency Graph)
+## Suggested Build Order
 
-Build phases must complete in this sequence. Each phase's output is consumed by the next.
+The order is dictated by two dependency constraints: (1) the file Expo Router resolves must exist before the tab layout references it, and (2) profile cleanup should happen after the Squad tab is verified working to avoid temporarily removing friend entry points.
 
-```
-Phase 1 — Token files (no dependencies, ship independently)
-  ├── src/constants/spacing.ts        NEW
-  ├── src/constants/typography.ts     NEW
-  └── src/constants/colors.ts         ADD: unreadDot token
+**Step 1 — Install dependency**
 
-Phase 2 — New shared components (depends on Phase 1 tokens)
-  ├── src/components/common/FAB.tsx          NEW (uses COLORS, SPACING)
-  ├── src/components/common/ScreenHeader.tsx NEW (uses TEXT, COLORS, SPACING)
-  ├── src/components/common/ErrorDisplay.tsx NEW (uses TEXT, COLORS)
-  └── src/components/common/FormField.tsx    MOVE from auth/ (import path update)
-
-Phase 3 — Hardcoded color sweep in existing components
-        (depends on Phase 1 tokens; independent of Phase 2)
-  ├── src/components/plans/PlanCard.tsx      '#2a2a2a' → COLORS.secondary
-  ├── src/components/plans/AvatarStack.tsx   '#2a2a2a' → COLORS.secondary
-  ├── src/components/chat/ChatListRow.tsx    '#3b82f6' → COLORS.unreadDot
-  ├── src/components/chat/MessageBubble.tsx  '#f97316' → COLORS.accent
-  │                                          '#2a2a2a' → COLORS.secondary
-  └── src/components/friends/QRCodeDisplay.tsx '#2a2a2a' → COLORS.secondary
-
-Phase 4 — Screen refactors (depends on Phases 1–3)
-  ├── HomeScreen          swap inline FAB → <FAB />, tokens
-  ├── PlansListScreen     swap inline FAB → <FAB />, tokens
-  ├── ChatListScreen      tokens
-  ├── ChatRoomScreen      tokens
-  ├── PlanDashboardScreen tokens
-  ├── PlanCreateModal     tokens
-  ├── FriendsList         tokens, add pull-to-refresh if missing
-  ├── FriendRequests      tokens
-  ├── AddFriend           tokens
-  ├── AuthScreen          tokens, update FormField import path
-  └── ProfileSetup        tokens
+```bash
+npx expo install @react-navigation/material-top-tabs react-native-tab-view react-native-pager-view
 ```
 
-Within Phase 4, screens can be refactored in any order — they are fully isolated by StyleSheet scope.
+Verify `react-native-pager-view` is not already in `node_modules` before running (it may be a transitive dep of `react-native-screens` or `reanimated`).
+
+**Step 2 — Create Squad directory and top-tab layout**
+
+Create `squad/_layout.tsx`, `squad/goals.tsx` (port coming-soon content from `squad.tsx`), and `squad/friends.tsx` (render `<FriendsList />`).
+
+Delete `squad.tsx`. Expo Router will now resolve the `squad` segment to the `squad/` directory.
+
+**Step 3 — Verify Squad tab before touching anything else**
+
+Run the app. Confirm Friends and Goals tabs render, swipe works, FriendsList loads, FAB pushes to `/friends/add`, requests button pushes to `/friends/requests`.
+
+**Step 4 — Rename Plans → Explore**
+
+Create `explore.tsx` with identical content to `plans.tsx`. Delete `plans.tsx`.
+
+**Step 5 — Update tab layout**
+
+Modify `(tabs)/_layout.tsx`: reorder screens, update titles, move badge from profile to squad.
+
+**Step 6 — Simplify Profile tab**
+
+Remove the FRIENDS section from `profile.tsx`. This is the last step because it is the most destructive — removing the existing friend entry points is only safe after Step 3 confirms the Squad tab serves them.
+
+**Step 7 — Add useFocusEffect to FriendsList (recommended)**
+
+Swap `useEffect([], fetchFriends)` for `useFocusEffect(fetchFriends)` in `FriendsList.tsx`.
 
 ---
 
-## Integration Points: New vs Modified Files
+## Anti-Patterns to Avoid
 
-### New Files
+### Anti-Pattern 1: Moving friends/ screens inside squad/
 
-| File | What It Contains | Consumes |
-|------|-----------------|---------|
-| `src/constants/spacing.ts` | `SPACING` object: xs=4 sm=8 md=12 lg=16 xl=24 xxl=32 | nothing |
-| `src/constants/typography.ts` | `TEXT` object: screenTitle, sectionTitle, bodyLarge, bodyMedium, caption | nothing |
-| `src/components/common/FAB.tsx` | Pressable floating button with icon + optional label | COLORS, SPACING |
-| `src/components/common/ScreenHeader.tsx` | View with title Text + optional right-slot | TEXT, COLORS, SPACING |
-| `src/components/common/ErrorDisplay.tsx` | Error text + optional retry TouchableOpacity | TEXT, COLORS |
+**What people do:** Relocate `friends/add.tsx`, `friends/requests.tsx`, `friends/[id].tsx` into `squad/friends/` sub-directory.
 
-### Moved Files
+**Why it's wrong:** Friends sub-screens are full-screen Stack pushes. If they live inside the Squad tab's top-tab Stack, the bottom tab bar remains visible during sub-screen navigation (wrong). The existing pattern — root-level Stack with `router.push('/friends/add')` — correctly hides the tab bar and provides a native back button.
 
-| From | To | Change |
-|------|----|--------|
-| `src/components/auth/FormField.tsx` | `src/components/common/FormField.tsx` | Path only — no implementation changes |
+**Do this instead:** Keep `src/app/friends/` at the root level. The Squad Friends tab only embeds `<FriendsList />` inline. Sub-screens are still pushed as root Stack routes.
 
-### Modified Files
+### Anti-Pattern 2: Moving the pending badge hook call out of _layout.tsx
 
-| File | Change Type | Specific Change |
-|------|------------|----------------|
-| `src/constants/colors.ts` | Additive | Add `unreadDot: '#3b82f6'` token |
-| `src/screens/home/HomeScreen.tsx` | Refactor | Replace inline FAB JSX → `<FAB />`, swap hardcoded values for SPACING/TEXT tokens |
-| `src/screens/plans/PlansListScreen.tsx` | Refactor | Replace inline FAB JSX → `<FAB />`, swap tokens |
-| `src/screens/chat/ChatListScreen.tsx` | Refactor | Swap tokens |
-| `src/screens/chat/ChatRoomScreen.tsx` | Refactor | Swap tokens |
-| `src/screens/plans/PlanDashboardScreen.tsx` | Refactor | Swap tokens |
-| `src/screens/plans/PlanCreateModal.tsx` | Refactor | Swap tokens |
-| `src/screens/friends/FriendsList.tsx` | Refactor | Swap tokens |
-| `src/screens/friends/FriendRequests.tsx` | Refactor | Swap tokens |
-| `src/screens/friends/AddFriend.tsx` | Refactor | Swap tokens |
-| `src/screens/auth/AuthScreen.tsx` | Refactor | Swap tokens, update FormField import path |
-| `src/screens/auth/ProfileSetup.tsx` | Refactor | Swap tokens |
-| `src/components/plans/PlanCard.tsx` | Fix | `'#2a2a2a'` → `COLORS.secondary` |
-| `src/components/plans/AvatarStack.tsx` | Fix | `'#2a2a2a'` → `COLORS.secondary` |
-| `src/components/chat/ChatListRow.tsx` | Fix | `'#3b82f6'` → `COLORS.unreadDot` |
-| `src/components/chat/MessageBubble.tsx` | Fix | `'#f97316'` → `COLORS.accent`, `'#2a2a2a'` → `COLORS.secondary` |
-| `src/components/friends/QRCodeDisplay.tsx` | Fix | `'#2a2a2a'` → `COLORS.secondary` |
+**What people do:** Move `usePendingRequestsCount` into `squad/friends.tsx` or `squad/_layout.tsx`, then pass the count up via a Zustand store or context to drive the tab bar badge.
 
-### Untouched Files
+**Why it's wrong:** `tabBarBadge` is a prop on `<Tabs.Screen>` in `(tabs)/_layout.tsx`. The value must be available in that component. The existing pattern — call the hook in `_layout.tsx` — is the direct, zero-abstraction solution.
 
-All files in `src/hooks/`, `src/stores/`, `src/types/`, `src/lib/`, and `src/app/` are untouched. The design system has zero effect on data fetching, state management, routing, or Supabase integration.
+**Do this instead:** Keep `usePendingRequestsCount()` in `(tabs)/_layout.tsx`. Change only which tab's `tabBarBadge` it drives.
+
+### Anti-Pattern 3: Custom tab switcher component instead of withLayoutContext
+
+**What people do:** Build `squad.tsx` as a single screen with a stateful `View + TouchableOpacity` tab bar, conditional rendering, and manual scroll reset — matching the pattern in `AddFriend.tsx`.
+
+**Why it's wrong:** `useFocusEffect` will not fire per logical tab (it fires for the whole Squad screen). Scroll position is not preserved per tab. Swipe gesture between tabs is absent. This is appropriate for sub-form navigation (AddFriend's Search/QR), not for a screen-level navigation structure.
+
+**Do this instead:** Use `withLayoutContext(createMaterialTopTabNavigator())` with file-based screens, which integrates correctly with Expo Router's focus/blur lifecycle.
+
+### Anti-Pattern 4: Applying safe-area insets in both _layout and child screens
+
+**What people do:** Apply `paddingTop: insets.top` in both `squad/_layout.tsx` (on `tabBarStyle`) and again in `squad/friends.tsx` (on the container View).
+
+**Why it's wrong:** Double inset. The tab bar in `_layout.tsx` already accounts for the top safe area. Child screens start below the tab bar — they should not add additional top inset.
+
+**Do this instead:** Apply `insets.top` once, on the `tabBarStyle` in `squad/_layout.tsx`. Child screens use only their content-level padding (equivalent to other tab screens that start below the bottom tab bar).
 
 ---
 
-## Scaling Considerations
+## Integration Points
 
-This milestone is internal refactoring with no user-facing architectural change. Token files are compile-time constants — no runtime cost at any scale.
+### Internal Boundaries
 
-| Concern | Now | Future |
-|---------|-----|--------|
-| Token divergence | Single source per token type | No risk — one file per domain |
-| Dark/light mode | Not supported (Campfire is dark-only by constraint) | Would require `useColorScheme()` hook wrapping COLORS — deferrable to V3 |
-| New screens | Import from tokens, use shared components — no migration needed | Tokens pay forward immediately |
-| Design iteration | Change one value in spacing.ts → all consumers update | High leverage, low cost |
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| `squad/friends.tsx` → `<FriendsList />` | Direct component render (no props needed) | FriendsList is self-contained; manages its own state via useFriends hook |
+| `squad/friends.tsx` → `friends/` root Stack | `router.push('/friends/add')`, `router.push('/friends/requests')` | Identical URL paths as before |
+| `(tabs)/_layout.tsx` → `usePendingRequestsCount` | Hook call at layout level | Move badge assignment only; hook unchanged |
+| `profile.tsx` → `useStatus` | Unchanged | Status editing stays on Profile tab |
 
----
+### External Services
 
-## Anti-Patterns
-
-### Anti-Pattern 1: Big-Bang Migration
-
-**What people do:** Refactor all 11 screens in a single PR before shipping tokens.
-**Why it's wrong:** Merge conflicts across 11 files. Partial failures break the whole app. No ability to review incrementally.
-**Do this instead:** Tokens first (ship independently, zero risk). Shared components next (each independently testable). Screens last, one or two at a time.
-
-### Anti-Pattern 2: New `theme/` Directory
-
-**What people do:** Create `src/theme/colors.ts`, `src/theme/spacing.ts` parallel to the existing `src/constants/colors.ts`.
-**Why it's wrong:** `COLORS` is imported from `@/constants/colors` in 40+ files already. A parallel structure creates two import patterns and confuses contributors.
-**Do this instead:** Add `spacing.ts` and `typography.ts` alongside `colors.ts` in `src/constants/`. One import path convention, zero churn on existing files.
-
-### Anti-Pattern 3: Dynamic Theme Functions at Render Time
-
-**What people do:** `const styles = makeStyles(theme)` called inside component body, or wrapping StyleSheet.create in a function.
-**Why it's wrong:** Campfire is dark-only. Dynamic theming has no current use. It defeats StyleSheet.create optimization (StyleSheet resolves style IDs at registration time, not render time) and adds complexity with no benefit.
-**Do this instead:** Module-level `StyleSheet.create()` with static token references. This is what every existing file already does — stay consistent.
-
-### Anti-Pattern 4: Leaving Two FormField Copies
-
-**What people do:** Copy FormField to `common/` and leave the original in `auth/` "just in case."
-**Why it's wrong:** Two sources of truth. Bug fixes in one do not propagate to the other. Import paths diverge.
-**Do this instead:** Move the single file. Update all import sites in the same commit. Delete the original. One file, one import path.
-
-### Anti-Pattern 5: Type-Only Token Files
-
-**What people do:** Export `export type SpacingKey = 'sm' | 'md' | 'lg'` without actual values.
-**Why it's wrong:** StyleSheet requires numeric values. Type-only exports force every consumer to maintain a runtime lookup.
-**Do this instead:** `export const SPACING = { sm: 8, md: 12, lg: 16 } as const`. TypeScript infers the union type automatically. Values and types are co-located.
-
-### Anti-Pattern 6: Applying Tokens Inconsistently Across the Codebase
-
-**What people do:** Refactor HomeScreen to use SPACING but leave FriendsList with hardcoded values.
-**Why it's wrong:** Creates a two-tier codebase where some files use the system and some don't. Future developers cannot trust the convention.
-**Do this instead:** Once token files exist, complete the sweep across all screens and components. The Phase 3 + Phase 4 build order ensures this.
+No changes to Supabase queries, RPC calls, or Realtime subscriptions. The data layer for friends is entirely in `useFriends.ts` and `usePendingRequestsCount.ts`, neither of which requires modification.
 
 ---
 
 ## Sources
 
-- Direct inspection of `/Users/iulian/Develop/campfire/src/` — all 221 files, 9,322 LOC — HIGH confidence
-- Empirical audit of fontSize values (145 hardcoded instances), borderRadius values (57 instances), paddingHorizontal values (64 instances) — HIGH confidence
-- Hardcoded hex color audit: 6 files with colors bypassing COLORS constant — HIGH confidence
-- React Native StyleSheet documentation (stable API) — HIGH confidence
+- Direct codebase inspection: all files in `src/app/`, `src/screens/`, `src/hooks/` — HIGH confidence
+- `expo-router/build/layouts/withLayoutContext.js` — confirms `createMaterialTopTabNavigator` integration pattern — HIGH confidence
+- `package.json` — confirms SDK 55 (expo ~55.0.6), installed navigation packages — HIGH confidence
+- Expo SDK 55 managed workflow modules list — `react-native-pager-view` included in Expo Go binary — HIGH confidence
 
 ---
 
-*Architecture research for: Campfire v1.1 UI/UX Design System*
-*Researched: 2026-03-24*
+*Architecture research for: Campfire v1.2 Squad tab integration and navigation restructuring*
+*Researched: 2026-04-04*
