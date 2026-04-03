@@ -66,28 +66,28 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SQAD-01 | — | Pending |
-| SQAD-02 | — | Pending |
-| SQAD-03 | — | Pending |
-| SQAD-04 | — | Pending |
-| SQAD-05 | — | Pending |
-| SQAD-06 | — | Pending |
-| SQAD-07 | — | Pending |
-| SQAD-08 | — | Pending |
-| SQAD-09 | — | Pending |
-| NAV-01 | — | Pending |
-| NAV-02 | — | Pending |
-| NAV-03 | — | Pending |
-| NAV-04 | — | Pending |
-| PROF-01 | — | Pending |
-| PROF-02 | — | Pending |
-| PROF-03 | — | Pending |
+| SQAD-01 | Phase 10 | Pending |
+| SQAD-02 | Phase 10 | Pending |
+| SQAD-03 | Phase 10 | Pending |
+| SQAD-04 | Phase 10 | Pending |
+| SQAD-05 | Phase 10 | Pending |
+| SQAD-06 | Phase 10 | Pending |
+| SQAD-07 | Phase 10 | Pending |
+| SQAD-08 | Phase 10 | Pending |
+| SQAD-09 | Phase 10 | Pending |
+| NAV-01 | Phase 11 | Pending |
+| NAV-02 | Phase 11 | Pending |
+| NAV-03 | Phase 11 | Pending |
+| NAV-04 | Phase 11 | Pending |
+| PROF-01 | Phase 12 | Pending |
+| PROF-02 | Phase 12 | Pending |
+| PROF-03 | Phase 12 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16
+- Mapped to phases: 16
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-04*
-*Last updated: 2026-04-04 after initial definition*
+*Last updated: 2026-04-04 after roadmap creation — 16/16 requirements mapped*
