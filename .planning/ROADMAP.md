@@ -64,11 +64,11 @@ Plans:
   2. Tapping Explore shows the Plans screen with all existing functionality intact
   3. Tapping Chats shows the Chat screen with all existing functionality intact
   4. All deep links and router.push calls that previously pointed to /plans or /chat resolve correctly after rename
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: Audit and update all route references, rename files, reorder tab declarations
-- [ ] 11-02: Update Playwright locators and regenerate visual regression baselines
+- [ ] 11-01-PLAN.md — Reorder tabs, rename Plans to Explore and Chat to Chats with new icons in _layout.tsx
+- [ ] 11-02-PLAN.md — Update Playwright locators, regenerate snapshots, visual device verification
 
 ### Phase 12: Profile Simplification
 **Goal**: Profile tab is clean — shows only account/settings content; all friend entry points have been removed
@@ -97,5 +97,5 @@ Plans:
 | 8. Shared Components | v1.1 | 3/3 | Complete | 2026-03-24 |
 | 9. Screen Consistency Sweep | v1.1 | 6/6 | Complete | 2026-03-25 |
 | 10. Squad Tab | 2/2 | Complete    | 2026-04-04 | - |
-| 11. Navigation Restructure | v1.2 | 0/2 | Not started | - |
+| 11. Navigation Restructure | v1.2 | 0/2 | Planning | - |
 | 12. Profile Simplification | v1.2 | 0/1 | Not started | - |
