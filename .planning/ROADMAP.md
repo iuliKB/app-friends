@@ -67,8 +67,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Reorder tabs, rename Plans to Explore and Chat to Chats with new icons in _layout.tsx
-- [ ] 11-02-PLAN.md — Update Playwright locators, regenerate snapshots, visual device verification
+- [x] 11-01-PLAN.md — Reorder tabs, rename Plans to Explore and Chat to Chats with new icons in _layout.tsx
+- [x] 11-02-PLAN.md — Update Playwright locators, regenerate snapshots, visual device verification
 
 ### Phase 12: Profile Simplification
 **Goal**: Profile tab is clean — shows only account/settings content; all friend entry points have been removed

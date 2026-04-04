@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Squad & Navigation
-status: planning
-stopped_at: Completed 11-02-PLAN.md (awaiting human-verify checkpoint)
-last_updated: "2026-04-04T08:05:38.867Z"
-last_activity: 2026-04-04 — Roadmap created, 16 requirements mapped across 3 phases
+status: complete
+stopped_at: Completed 11-02-PLAN.md — Phase 11 and v1.2 milestone fully done
+last_updated: "2026-04-04T08:35:00.000Z"
+last_activity: 2026-04-04 — Phase 11 complete, user approved device verification, v1.2 milestone done
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 4
   completed_plans: 4
-  percent: 0
+  percent: 100
 ---
 
 # Project State
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Milestone: v1.2 Squad & Navigation
-Phase: 10 of 12 (Squad Tab)
-Plan: — (ready to plan)
-Status: Ready to plan
-Last activity: 2026-04-04 — Roadmap created, 16 requirements mapped across 3 phases
+Phase: 11 of 11 (Navigation Restructure) — COMPLETE
+Plan: 02 of 02 — COMPLETE
+Status: Milestone complete
+Last activity: 2026-04-04 — Phase 11 plan 02 complete, user approved device verification
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Accumulated Context
 
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase Phase 10-squad-tab]: User approved all 5 verification steps for Squad tab — visual and functional correctness confirmed on device
 - [Phase 11-navigation-restructure]: Title-only rename: change title/icon props only, no file/directory renames — keeps route segments stable and zero push call site changes
 - [Phase 11-navigation-restructure]: Playwright snapshot flakiness fix: increase waitForTimeout to 2000ms on data-heavy screens (Explore/Chats/Squad/Profile) to prevent loading-spinner captures as baselines
+- [Phase 11-navigation-restructure]: User approved all 8 device verification steps — Home|Squad|Explore|Chats|Profile tab order, icons, deep nav, and badges all confirmed correct on device
 
 ### Pending Todos
 
@@ -55,11 +56,11 @@ None.
 
 - [Phase 10]: Delete `squad.tsx` in the same commit that creates `squad/_layout.tsx` — Metro bundler ambiguity if both exist simultaneously
 - [Phase 10]: FAB must be hidden on Goals sub-tab; use `useSegments` for conditional render — easy to miss
-- [Phase 11]: Playwright tests coupled to old tab labels (Plans, Chat, Squad) — update locators and regenerate snapshots in the same phase as renames
-- [Phase 11]: Verify `usePendingRequestsCount` has `supabase.removeChannel` cleanup when touching badge hook
+- [Phase 11 RESOLVED]: Playwright tests updated with new locators and all 7 baselines regenerated — 7/7 passing
+- [Phase 11 RESOLVED]: Navigation restructure confirmed on device by user — all 8 verification steps approved
 
 ## Session Continuity
 
-Last session: 2026-04-04T08:05:38.865Z
-Stopped at: Completed 11-02-PLAN.md (awaiting human-verify checkpoint)
+Last session: 2026-04-04T08:35:00.000Z
+Stopped at: Completed 11-02-PLAN.md — v1.2 milestone fully done
 Resume file: None
