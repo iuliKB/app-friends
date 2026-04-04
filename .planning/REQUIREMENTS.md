@@ -28,9 +28,9 @@ Requirements for v1.2 Squad & Navigation milestone. Each maps to roadmap phases.
 
 ### Profile
 
-- [ ] **PROF-01**: Profile tab no longer shows friend list section
-- [ ] **PROF-02**: Profile tab no longer shows friend requests row
-- [ ] **PROF-03**: Profile tab no longer shows pending request badge on tab icon
+- [x] **PROF-01**: Profile tab no longer shows friend list section
+- [x] **PROF-02**: Profile tab no longer shows friend requests row
+- [x] **PROF-03**: Profile tab no longer shows pending request badge on tab icon
 
 ## Future Requirements
 
@@ -79,9 +79,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAV-02 | Phase 11 | Complete |
 | NAV-03 | Phase 11 | Complete |
 | NAV-04 | Phase 11 | Complete |
-| PROF-01 | Phase 12 | Pending |
-| PROF-02 | Phase 12 | Pending |
-| PROF-03 | Phase 12 | Pending |
+| PROF-01 | Phase 12 | Complete |
+| PROF-02 | Phase 12 | Complete |
+| PROF-03 | Phase 12 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 16 total

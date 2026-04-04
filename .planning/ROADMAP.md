@@ -35,7 +35,7 @@
 
 - [x] **Phase 10: Squad Tab** - Convert Squad screen into a top-tab layout with Friends and Goals sub-tabs; relocate friend management from Profile (completed 2026-04-04)
 - [x] **Phase 11: Navigation Restructure** - Reorder bottom nav, rename Plans to Explore and Chat to Chats, move pending badge to Squad tab; update Playwright tests (completed 2026-04-04)
-- [ ] **Phase 12: Profile Simplification** - Remove friend-related sections from Profile tab now that Squad is the canonical home
+- [x] **Phase 12: Profile Simplification** - Remove friend-related sections from Profile tab now that Squad is the canonical home (completed 2026-04-04)
 
 ## Phase Details
 
@@ -98,4 +98,4 @@ Plans:
 | 9. Screen Consistency Sweep | v1.1 | 6/6 | Complete | 2026-03-25 |
 | 10. Squad Tab | 2/2 | Complete    | 2026-04-04 | - |
 | 11. Navigation Restructure | 2/2 | Complete    | 2026-04-04 | - |
-| 12. Profile Simplification | v1.2 | 0/1 | Not started | - |
+| 12. Profile Simplification | 1/1 | Complete   | 2026-04-04 | - |

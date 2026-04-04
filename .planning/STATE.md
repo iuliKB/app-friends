@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Squad & Navigation
 status: completed
-stopped_at: Phase 12 context gathered
-last_updated: "2026-04-04T14:22:46.470Z"
-last_activity: 2026-04-04 — Phase 11 plan 02 complete, user approved device verification
+stopped_at: Completed 12-01-PLAN.md — Phase 12 plan 01 complete
+last_updated: "2026-04-04T15:00:00.000Z"
+last_activity: 2026-04-04 — Phase 12 plan 01 complete, user approved device verification
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
   percent: 100
 ---
 
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 10 — Squad Tab
+**Current focus:** Phase 12 — Profile Simplification (COMPLETE)
 
 ## Current Position
 
 Milestone: v1.2 Squad & Navigation
-Phase: 11 of 11 (Navigation Restructure) — COMPLETE
-Plan: 02 of 02 — COMPLETE
-Status: Milestone complete
-Last activity: 2026-04-04 — Phase 11 plan 02 complete, user approved device verification
+Phase: 12 of 12 (Profile Simplification) — COMPLETE
+Plan: 01 of 01 — COMPLETE
+Status: Milestone complete — v1.2 capstone delivered (app version 1.2.0)
+Last activity: 2026-04-04 — Phase 12 plan 01 complete, user approved device verification
 
 Progress: [██████████] 100%
 
@@ -47,6 +47,8 @@ Progress: [██████████] 100%
 - [Phase 11-navigation-restructure]: Title-only rename: change title/icon props only, no file/directory renames — keeps route segments stable and zero push call site changes
 - [Phase 11-navigation-restructure]: Playwright snapshot flakiness fix: increase waitForTimeout to 2000ms on data-heavy screens (Explore/Chats/Squad/Profile) to prevent loading-spinner captures as baselines
 - [Phase 11-navigation-restructure]: User approved all 8 device verification steps — Home|Squad|Explore|Chats|Profile tab order, icons, deep nav, and badges all confirmed correct on device
+- [Phase 12-profile-simplification]: Profile screen is now purely self-focused — all friend management delegated to Squad tab; app version read from Constants.expoConfig?.version single-sourced in app.config.ts 1.2.0
+- [Phase 12-profile-simplification]: User approved device verification — no FRIENDS section, @username visible, QR Code row present, ACCOUNT section shows email + member since, SETTINGS header, version text at bottom
 
 ### Pending Todos
 
@@ -61,6 +63,5 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T14:22:46.467Z
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/12-profile-simplification/12-CONTEXT.md
+Last session: 2026-04-04T15:00:00.000Z
+Stopped at: Completed 12-01-PLAN.md — v1.2 milestone capstone delivered
