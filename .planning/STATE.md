@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Squad & Navigation
 status: planning
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-04-04T07:58:53.743Z"
+stopped_at: Completed 11-02-PLAN.md (awaiting human-verify checkpoint)
+last_updated: "2026-04-04T08:05:38.867Z"
 last_activity: 2026-04-04 — Roadmap created, 16 requirements mapped across 3 phases
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -45,6 +45,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 10-squad-tab]: Pending request badge moved from Profile to Squad tab in _layout.tsx
 - [Phase Phase 10-squad-tab]: User approved all 5 verification steps for Squad tab — visual and functional correctness confirmed on device
 - [Phase 11-navigation-restructure]: Title-only rename: change title/icon props only, no file/directory renames — keeps route segments stable and zero push call site changes
+- [Phase 11-navigation-restructure]: Playwright snapshot flakiness fix: increase waitForTimeout to 2000ms on data-heavy screens (Explore/Chats/Squad/Profile) to prevent loading-spinner captures as baselines
 
 ### Pending Todos
 
@@ -59,6 +60,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T07:58:53.741Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-04-04T08:05:38.865Z
+Stopped at: Completed 11-02-PLAN.md (awaiting human-verify checkpoint)
 Resume file: None
