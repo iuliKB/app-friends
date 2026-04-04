@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1.1 shipped with a full design system, shared component library, and consistent UI across all screens.
+Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1.2 shipped with a dedicated Squad tab for friend management, restructured navigation (Home|Squad|Explore|Chats|Profile), and a simplified Profile screen with account details.
 
 ## Core Value
 
@@ -35,20 +35,20 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ Consistent screen title treatment via ScreenHeader — v1.1
 - ✓ All screens migrated to design tokens — v1.1
 - ✓ Playwright visual regression test suite — v1.1
+- ✓ Squad tab with Friends/Goals top tabs (underline segmented control) — v1.2
+- ✓ Friend list relocated from Profile to Squad → Friends tab — v1.2
+- ✓ Add Friend FAB accessible from Squad → Friends tab — v1.2
+- ✓ Friend Requests (conditional row → separate screen) in Squad → Friends tab — v1.2
+- ✓ Goals tab with "Coming soon" placeholder — v1.2
+- ✓ Bottom nav reordered: Home | Squad | Explore | Chats | Profile — v1.2
+- ✓ Plans tab renamed to Explore with compass icon — v1.2
+- ✓ Chat tab renamed to Chats with chatbubbles icon — v1.2
+- ✓ Profile simplified: @username, ACCOUNT section (email + member since), app version — v1.2
+- ✓ Pending request badge migrated from Profile to Squad tab — v1.2
 
 ### Active
 
-<!-- v1.2 Squad & Navigation -->
-
-- [ ] Squad tab with top tabs (Friends / Goals)
-- [ ] Friend list relocated from Profile to Squad → Friends tab
-- [ ] Add Friend relocated from Profile to Squad → Friends tab
-- [ ] Friend Requests (tappable row → separate screen) in Squad → Friends tab
-- [ ] Goals tab with "Coming soon" placeholder
-- [ ] Bottom nav reordered: Home | Squad | Explore | Chats | Profile
-- [ ] Plans tab renamed to Explore (same functionality)
-- [ ] Chat tab renamed to Chats
-- [ ] Profile tab simplified (friend-related features removed)
+(None — define for next milestone via `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -62,16 +62,16 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - Public profiles or discoverability — friends-only by design
 - Web app / PWA — mobile only
 - Group size pagination — unnecessary for 3–15 person groups
-- Dark mode / theming — v1.2+ (semantic color naming positions for it)
+- Dark mode / theming — v1.3+ (semantic color naming positions for it)
 
 ## Context
 
-Shipped v1.1 UI/UX Design System with 9,535 LOC TypeScript across 9 phases total (6 v1.0 + 3 v1.1).
+Shipped v1.2 Squad & Navigation with 12 phases total (6 v1.0 + 3 v1.1 + 3 v1.2), 89 requirements delivered.
 Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage), Zustand.
-All 73 requirements delivered (55 v1.0 + 18 v1.1). 178 commits, 94 files modified in v1.1.
 
-Design system: `src/theme/` (6 token files), `src/components/common/` (10 shared components), ESLint `no-hardcoded-styles` at error severity.
-Playwright visual regression baselines for all 7 screens (auth login, auth signup, home, plans, chat, friends, profile).
+Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend). Profile is account-focused (@username, email, member since, settings, QR code).
+Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
+Playwright visual regression baselines for all 7 screens updated for v1.2 tab layout.
 
 Known technical considerations:
 - Apple Sign-In works in Expo Go but needs validation on EAS builds
@@ -117,17 +117,9 @@ Known technical considerations:
 | ScreenHeader/SectionHeader as separate components | Two-tier title hierarchy, screens handle safe area | ✓ Good |
 | FAB with Animated.spring scale bounce | Polished press feedback, fixed bottom-right positioning | ✓ Good |
 | Playwright + Expo Web for visual regression | CLI-friendly, no simulators needed, close approximation for StyleSheet-only app | ✓ Good |
+| Custom underline tab switcher over material-top-tabs | Zero dependencies, matches app patterns, avoids swipe/pull-to-refresh conflict | ✓ Good |
+| Title-only tab rename (no file renames) | Expo Router `name` = file, `title` = label. Preserves all deep routes. | ✓ Good |
+| Squad as social hub, Profile as account screen | Clear information architecture — people vs. settings | ✓ Good |
 
 ---
-## Current Milestone: v1.2 Squad & Navigation
-
-**Goal:** Relocate friend management into the Squad tab and reorganize bottom navigation for better information architecture.
-
-**Target features:**
-- Squad screen with top tabs (Friends / Goals)
-- Friend list, add friend, friend requests moved from Profile to Squad
-- Bottom nav reorder and rename (Plans→Explore, Chat→Chats)
-- Profile tab simplified
-
----
-*Last updated: 2026-04-04 after v1.2 milestone start*
+*Last updated: 2026-04-04 after v1.2 milestone*

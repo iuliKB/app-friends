@@ -1,5 +1,20 @@
 # Milestones
 
+## v1.2 Squad & Navigation (Shipped: 2026-04-04)
+
+**Phases completed:** 3 phases, 5 plans | 6 feat commits | 13 files changed, 271 insertions
+**Timeline:** 2026-04-04 (1 day)
+
+**Key accomplishments:**
+- Squad tab with Friends/Goals underline tab switcher (accent orange, haptic feedback), friend list with FAB, conditional requests row
+- Bottom nav reordered to Home|Squad|Explore|Chats|Profile with compass and chatbubbles icons
+- Pending request badge migrated from Profile to Squad tab
+- Profile simplified: @username display, ACCOUNT section (email + member since), app version, SETTINGS section
+- All 7 Playwright visual regression baselines regenerated for new tab layout
+- Title-only tab rename approach (no file renames) preserved all deep route references
+
+---
+
 ## v1.1 UI/UX Design System (Shipped: 2026-03-25)
 
 **Phases completed:** 3 phases, 11 plans | 33 commits | 9,535 LOC TypeScript
