@@ -12,12 +12,11 @@ import { useCallback, useState } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useStatus } from '@/hooks/useStatus';
-import { useFriends } from '@/hooks/useFriends';
-import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { SegmentedControl } from '@/components/status/SegmentedControl';
 import { EmojiTagPicker } from '@/components/status/EmojiTagPicker';
@@ -36,28 +35,27 @@ export default function ProfileScreen() {
   const [loggingOut, setLoggingOut] = useState(false);
   const { status, contextTag, loading, saving, updateStatus, updateContextTag } = useStatus();
   const [savingTag, setSavingTag] = useState<EmojiTag>(null);
-  const { friends, fetchFriends } = useFriends();
-  const { count: pendingCount } = usePendingRequestsCount();
   const [profile, setProfile] = useState<{
     display_name: string;
     avatar_url: string | null;
+    username: string | null;
+    created_at: string | null;
   } | null>(null);
   const [notificationsEnabled, setNotificationsEnabledState] = useState(true);
 
-  // Refetch friends count and profile every time Profile tab comes into focus
+  // Refetch profile every time Profile tab comes into focus
   useFocusEffect(
     useCallback(() => {
-      fetchFriends();
       fetchProfile();
       loadNotificationsEnabled();
-    }, [fetchFriends])
+    }, [])
   );
 
   async function fetchProfile() {
     if (!session?.user?.id) return;
     const { data } = await supabase
       .from('profiles')
-      .select('display_name, avatar_url')
+      .select('display_name, avatar_url, username, created_at')
       .eq('id', session.user.id)
       .single();
     if (data) setProfile(data);
@@ -95,6 +93,11 @@ export default function ProfileScreen() {
     if (error) Alert.alert('Error', "Couldn't update status. Try again.");
   }
 
+  function formatMemberSince(isoDate: string): string {
+    const date = new Date(isoDate);
+    return `Member since ${date.toLocaleString('en-US', { month: 'short', year: 'numeric' })}`;
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.lg }]}>
       {/* Screen title */}
@@ -119,6 +122,7 @@ export default function ProfileScreen() {
           </View>
         </View>
         <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
+        <Text style={styles.username}>@{profile?.username ?? ''}</Text>
       </TouchableOpacity>
 
       {/* Your Status section */}
@@ -138,73 +142,38 @@ export default function ProfileScreen() {
         </>
       )}
 
-      {/* Friends section */}
-      <Text style={styles.sectionHeader}>FRIENDS</Text>
-
-      {/* My Friends row */}
-      <TouchableOpacity
-        style={styles.row}
-        onPress={() => router.push('/friends')}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="people-outline"
-          size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>My Friends</Text>
-        <View style={styles.rowRight}>
-          <View style={styles.countBadge}>
-            <Text style={styles.countBadgeText}>{friends.length}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
-        </View>
-      </TouchableOpacity>
-
-      {/* Friend Requests row */}
-      <TouchableOpacity
-        style={styles.row}
-        onPress={() => router.push('/friends/requests')}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="person-add-outline"
-          size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>Friend Requests</Text>
-        <View style={styles.rowRight}>
-          <View style={[styles.countBadge, pendingCount > 0 && styles.countBadgeAlert]}>
-            <Text style={[styles.countBadgeText, pendingCount > 0 && styles.countBadgeAlertText]}>
-              {pendingCount}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
-        </View>
-      </TouchableOpacity>
-
-      {/* My QR Code row */}
+      {/* QR Code */}
       <TouchableOpacity
         style={styles.row}
         onPress={() => router.push('/qr-code' as never)}
         activeOpacity={0.7}
       >
-        <Ionicons
-          name="qr-code-outline"
-          size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
-          style={styles.rowIcon}
-        />
+        <Ionicons name="qr-code-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} style={styles.rowIcon} />
         <Text style={styles.rowLabel}>My QR Code</Text>
         <View style={styles.rowRight}>
           <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
         </View>
       </TouchableOpacity>
 
-      {/* Notifications section */}
-      <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
+      {/* Account section */}
+      <Text style={styles.sectionHeader}>ACCOUNT</Text>
+
+      <View style={styles.row}>
+        <Ionicons name="mail-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} style={styles.rowIcon} />
+        <Text style={styles.rowLabel} numberOfLines={1} ellipsizeMode="tail">
+          {session?.user?.email ?? ''}
+        </Text>
+      </View>
+
+      <View style={styles.row}>
+        <Ionicons name="calendar-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} style={styles.rowIcon} />
+        <Text style={styles.rowLabel}>
+          {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
+        </Text>
+      </View>
+
+      {/* Settings section */}
+      <Text style={styles.sectionHeader}>SETTINGS</Text>
 
       <View style={styles.row}>
         <Ionicons
@@ -230,6 +199,10 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>Log out</Text>
         )}
       </TouchableOpacity>
+
+      <Text style={styles.versionText}>
+        Campfire v{Constants.expoConfig?.version ?? ''}
+      </Text>
     </ScrollView>
   );
 }
@@ -268,6 +241,13 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
     textAlign: 'center',
   },
+  username: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
+    textAlign: 'center',
+  },
   sectionHeader: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.regular,
@@ -301,26 +281,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.sm,
   },
-  countBadge: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs / 2,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.border,
-    minWidth: FONT_SIZE.xl,
-    alignItems: 'center',
-  },
-  countBadgeText: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-  },
-  countBadgeAlert: {
-    backgroundColor: COLORS.interactive.destructive,
-  },
-  countBadgeAlertText: {
-    color: COLORS.text.primary,
-  },
   logoutRow: {
     height: 52,
     paddingHorizontal: SPACING.lg,
@@ -332,5 +292,11 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.interactive.destructive,
+  },
+  versionText: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
+    marginTop: SPACING.xxl,
   },
 });
