@@ -36,35 +36,35 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="plans"
-        options={{
-          title: 'Plans',
-          tabBarBadge: invitationCount > 0 ? invitationCount : undefined,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? 'chatbubble' : 'chatbubble-outline'}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="squad"
         options={{
           title: 'Squad',
           tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="plans"
+        options={{
+          title: 'Explore',
+          tabBarBadge: invitationCount > 0 ? invitationCount : undefined,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'compass' : 'compass-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chats',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
