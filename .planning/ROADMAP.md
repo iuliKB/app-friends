@@ -78,10 +78,10 @@ Plans:
   1. Profile tab shows no friend list, no friend requests row, and no pending badge on its tab icon
   2. All friend management flows (view friends, add friend, manage requests) still work exclusively from the Squad tab after Profile cleanup
   3. No orphaned hook imports or lint errors remain in profile.tsx after removal
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 12-01: Remove friend sections, imports, and hooks from profile.tsx; verify with full regression
+- [ ] 12-01-PLAN.md — Remove friend sections, add @username/ACCOUNT/SETTINGS/version; visual verification
 
 ## Progress
 
