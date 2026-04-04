@@ -21,10 +21,10 @@ Requirements for v1.2 Squad & Navigation milestone. Each maps to roadmap phases.
 
 ### Navigation
 
-- [ ] **NAV-01**: Bottom nav order is Home | Squad | Explore | Chats | Profile
-- [ ] **NAV-02**: Plans tab displays as "Explore" with same functionality
-- [ ] **NAV-03**: Chat tab displays as "Chats" with same functionality
-- [ ] **NAV-04**: All existing navigation routes (plans, chat) work after rename
+- [x] **NAV-01**: Bottom nav order is Home | Squad | Explore | Chats | Profile
+- [x] **NAV-02**: Plans tab displays as "Explore" with same functionality
+- [x] **NAV-03**: Chat tab displays as "Chats" with same functionality
+- [x] **NAV-04**: All existing navigation routes (plans, chat) work after rename
 
 ### Profile
 
@@ -75,10 +75,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SQAD-07 | Phase 10 | Complete |
 | SQAD-08 | Phase 10 | Complete |
 | SQAD-09 | Phase 10 | Complete |
-| NAV-01 | Phase 11 | Pending |
-| NAV-02 | Phase 11 | Pending |
-| NAV-03 | Phase 11 | Pending |
-| NAV-04 | Phase 11 | Pending |
+| NAV-01 | Phase 11 | Complete |
+| NAV-02 | Phase 11 | Complete |
+| NAV-03 | Phase 11 | Complete |
+| NAV-04 | Phase 11 | Complete |
 | PROF-01 | Phase 12 | Pending |
 | PROF-02 | Phase 12 | Pending |
 | PROF-03 | Phase 12 | Pending |
