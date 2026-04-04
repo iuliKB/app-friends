@@ -33,7 +33,7 @@
 
 **Milestone Goal:** Relocate friend management into a dedicated Squad tab and restructure bottom navigation for better information architecture.
 
-- [ ] **Phase 10: Squad Tab** - Convert Squad screen into a top-tab layout with Friends and Goals sub-tabs; relocate friend management from Profile
+- [x] **Phase 10: Squad Tab** - Convert Squad screen into a top-tab layout with Friends and Goals sub-tabs; relocate friend management from Profile (completed 2026-04-04)
 - [ ] **Phase 11: Navigation Restructure** - Reorder bottom nav, rename Plans to Explore and Chat to Chats, move pending badge to Squad tab; update Playwright tests
 - [ ] **Phase 12: Profile Simplification** - Remove friend-related sections from Profile tab now that Squad is the canonical home
 
@@ -96,6 +96,6 @@ Plans:
 | 7. Design Tokens | v1.1 | 2/2 | Complete | 2026-03-24 |
 | 8. Shared Components | v1.1 | 3/3 | Complete | 2026-03-24 |
 | 9. Screen Consistency Sweep | v1.1 | 6/6 | Complete | 2026-03-25 |
-| 10. Squad Tab | 1/2 | In Progress|  | - |
+| 10. Squad Tab | 2/2 | Complete   | 2026-04-04 | - |
 | 11. Navigation Restructure | v1.2 | 0/2 | Not started | - |
 | 12. Profile Simplification | v1.2 | 0/1 | Not started | - |
