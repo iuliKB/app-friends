@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Liveness & Notifications
-status: defining_requirements
-stopped_at: Milestone v1.3 started — gathering requirements
-last_updated: "2026-04-06T00:00:00.000Z"
-last_activity: 2026-04-06 — Milestone v1.3 started
+status: ready_for_plan_phase
+stopped_at: Roadmap created — ready for /gsd:plan-phase 1
+last_updated: "2026-04-07T00:00:00.000Z"
+last_activity: 2026-04-07 — v1.3 roadmap created (4 phases, 38/38 requirements mapped)
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,50 +18,65 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-04)
+See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** v1.3 Liveness & Notifications — defining requirements
+**Current focus:** v1.3 Liveness & Notifications — Phase 1 ready for planning
 
 ## Current Position
 
 Milestone: v1.3 Liveness & Notifications
-Phase: Not started (defining requirements)
+Phase: Phase 1 — Push Infrastructure & DM Entry Point
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-06 — Milestone v1.3 started
+Status: Ready for `/gsd:plan-phase 1`
+Last activity: 2026-04-07 — v1.3 roadmap created, 38/38 requirements mapped across 4 phases
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 0% (0/4 phases complete)
+
+## Performance Metrics
+
+| Metric | Value |
+|--------|-------|
+| Phases defined | 4 |
+| Phases complete | 0 |
+| Requirements mapped | 38/38 (100%) |
+| Orphaned requirements | 0 |
 
 ## Accumulated Context
 
 ### Decisions
 
-- [v1.2 Research]: Use `@react-navigation/material-top-tabs` + `withLayoutContext` for Squad top tabs — custom useState toggle is explicitly wrong for screen-level navigation
-- [v1.2 Research]: Install all three packages together: material-top-tabs, react-native-tab-view, react-native-pager-view via `npx expo install`
-- [v1.2 Research]: `src/app/friends/` root-level Stack stays in place — only FriendsList view moves into Squad; sub-screens remain at root so tab bar hides during full-screen nav
-- [v1.2 Research]: Single `usePendingRequestsCount` hook call stays in `_layout.tsx` — never call twice; pass count via Zustand if needed downstream
-- [Phase 10-squad-tab]: Squad tab uses useState toggle for Friends/Goals (not navigator) — FriendsList only mounted on friends tab so FAB hides automatically
-- [Phase 10-squad-tab]: Pending request badge moved from Profile to Squad tab in _layout.tsx
-- [Phase Phase 10-squad-tab]: User approved all 5 verification steps for Squad tab — visual and functional correctness confirmed on device
-- [Phase 11-navigation-restructure]: Title-only rename: change title/icon props only, no file/directory renames — keeps route segments stable and zero push call site changes
-- [Phase 11-navigation-restructure]: Playwright snapshot flakiness fix: increase waitForTimeout to 2000ms on data-heavy screens (Explore/Chats/Squad/Profile) to prevent loading-spinner captures as baselines
-- [Phase 11-navigation-restructure]: User approved all 8 device verification steps — Home|Squad|Explore|Chats|Profile tab order, icons, deep nav, and badges all confirmed correct on device
-- [Phase 12-profile-simplification]: Profile screen is now purely self-focused — all friend management delegated to Squad tab; app version read from Constants.expoConfig?.version single-sourced in app.config.ts 1.2.0
-- [Phase 12-profile-simplification]: User approved device verification — no FRIENDS section, @username visible, QR Code row present, ACCOUNT section shows email + member since, SETTINGS header, version text at bottom
+- [v1.3 Research]: Zero new npm dependencies — all required packages (expo-notifications, expo-device, expo-constants, async-storage) already installed at SDK-55-aligned versions
+- [v1.3 Research]: Use outbox queue pattern for Friend-Went-Free (`free_transitions` table + Database Webhook → Edge Function) — never call pg_net from inside a business trigger
+- [v1.3 Research]: View-computed `effective_status` is the source of truth for TTL — pg_cron sweep is optimization only, correctness does not depend on cron timing
+- [v1.3 Research]: Morning prompt uses on-device `scheduleNotificationAsync` with local time + repeats — eliminates `profiles.timezone` column and server cron from v1.3 scope
+- [v1.3 Research]: Action handler for morning prompt runs inside the authenticated app using existing Supabase session — no public Edge Function, RLS protects everything, HMAC-signed payload deferred to v1.4
+- [v1.3 Research]: EAS dev build is the FIRST deliverable of Phase 1, not the last — action buttons and channels are unreliable in Expo Go
+- [v1.3 Research]: Pairwise rate-limit table `free_notifications_sent (recipient_id, sender_id, sent_at)` — no scalars on `profiles`
+- [v1.3 Research]: 5am local daily reset (not midnight) — never clobbers actively-set status with future `expires_at`
+- [v1.3 Research]: Anti-Snapchat streak mechanics — grace week (1 per 4-week window), breaks on 2 consecutive misses, "Best: N" preserved, positive-only copy, no countdown/hourglass UI
+- [v1.3 Roadmap]: Phase numbering RESET to start at Phase 1 — previous milestones (v1.0–v1.2) ended at Phase 12 but directories are archived under `milestones/`
+- [v1.3 Roadmap]: DM entry point folded into Phase 1 as a free-rider — one-file change, zero dependencies, immediate visible win
+- [v1.3 Roadmap]: Morning prompt + Squad Goals streak bundled into Phase 4 — both are "daily engagement polish," share Profile toggle UX, both depend on Phase 2
 
 ### Pending Todos
 
-None.
+- [Phase 1 plan-phase]: Verify Expo SDK 55 trigger shape and notification handler return shape (`shouldShowAlert` deprecated → `shouldShowBanner`/`shouldShowList`)
+- [Phase 1 plan-phase]: Confirm `/dm/[id]` route existence in src/app/ for HomeFriendCard deep-link
+- [Phase 2 plan-phase]: Verify pg_cron availability on the current Supabase free-tier dashboard; confirm project auto-pause behavior
+- [Phase 3 plan-phase]: Verify Database Webhook payload shape on the `free_transitions` queue table
+- [Phase 4 plan-phase]: Resolve STREAK-03 ambiguity — there is no `squad` entity in v1.3, only friends. Working assumption: `get_squad_streak(tz)` takes the viewer's device timezone. Confirm with user.
+- [Phase 4 plan-phase]: Copy review by a non-engineer is a mandatory ship gate for STREAK-08
 
 ### Blockers/Concerns
 
-- [Phase 10]: Delete `squad.tsx` in the same commit that creates `squad/_layout.tsx` — Metro bundler ambiguity if both exist simultaneously
-- [Phase 10]: FAB must be hidden on Goals sub-tab; use `useSegments` for conditional render — easy to miss
-- [Phase 11 RESOLVED]: Playwright tests updated with new locators and all 7 baselines regenerated — 7/7 passing
-- [Phase 11 RESOLVED]: Navigation restructure confirmed on device by user — all 8 verification steps approved
+- [Phase 1]: iOS notification categories MUST be registered at module scope in root `_layout.tsx` BEFORE any permission request — easy to miss, silent failure mode
+- [Phase 1]: `setNotificationCategoryAsync` almost certainly does not work for remote push in Expo Go on iOS — EAS dev build is the first deliverable, not the last
+- [Phase 2]: Retention strategy for `status_history` must be implemented in this phase, not deferred
+- [Phase 3]: Notification storm is the highest product risk in v1.3 — pairwise cap + per-recipient throttle + daily cap + quiet hours must all ship together from day one
+- [Phase 4]: Streak anxiety mechanics destroy the feature — every string must be vetted for loss-aversion language
 
 ## Session Continuity
 
-Last session: 2026-04-04T15:00:00.000Z
-Stopped at: Completed 12-01-PLAN.md — v1.2 milestone capstone delivered
+Last session: 2026-04-07T00:00:00.000Z
+Stopped at: v1.3 roadmap created — 4 phases defined, 38/38 requirements mapped, ready for `/gsd:plan-phase 1`

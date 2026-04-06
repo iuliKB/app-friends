@@ -119,17 +119,61 @@ Explicitly excluded.
 
 ## Traceability
 
-Empty until roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (filled by gsd-roadmapper) | | |
+| PUSH-01 | Phase 1 | Pending |
+| PUSH-02 | Phase 1 | Pending |
+| PUSH-03 | Phase 1 | Pending |
+| PUSH-04 | Phase 1 | Pending |
+| PUSH-05 | Phase 1 | Pending |
+| PUSH-06 | Phase 1 | Pending |
+| PUSH-07 | Phase 1 | Pending |
+| PUSH-08 | Phase 1 | Pending |
+| PUSH-09 | Phase 1 | Pending |
+| PUSH-10 | Phase 1 | Pending |
+| DM-01 | Phase 1 | Pending |
+| TTL-01 | Phase 2 | Pending |
+| TTL-02 | Phase 2 | Pending |
+| TTL-03 | Phase 2 | Pending |
+| TTL-04 | Phase 2 | Pending |
+| TTL-05 | Phase 2 | Pending |
+| TTL-06 | Phase 2 | Pending |
+| TTL-07 | Phase 2 | Pending |
+| TTL-08 | Phase 2 | Pending |
+| FREE-01 | Phase 3 | Pending |
+| FREE-02 | Phase 3 | Pending |
+| FREE-03 | Phase 3 | Pending |
+| FREE-04 | Phase 3 | Pending |
+| FREE-05 | Phase 3 | Pending |
+| FREE-06 | Phase 3 | Pending |
+| FREE-07 | Phase 3 | Pending |
+| FREE-08 | Phase 3 | Pending |
+| FREE-09 | Phase 3 | Pending |
+| FREE-10 | Phase 3 | Pending |
+| FREE-11 | Phase 3 | Pending |
+| MORN-01 | Phase 4 | Pending |
+| MORN-02 | Phase 4 | Pending |
+| MORN-03 | Phase 4 | Pending |
+| MORN-04 | Phase 4 | Pending |
+| MORN-05 | Phase 4 | Pending |
+| MORN-06 | Phase 4 | Pending |
+| MORN-07 | Phase 4 | Pending |
+| MORN-08 | Phase 4 | Pending |
+| STREAK-01 | Phase 4 | Pending |
+| STREAK-02 | Phase 4 | Pending |
+| STREAK-03 | Phase 4 | Pending |
+| STREAK-04 | Phase 4 | Pending |
+| STREAK-05 | Phase 4 | Pending |
+| STREAK-06 | Phase 4 | Pending |
+| STREAK-07 | Phase 4 | Pending |
+| STREAK-08 | Phase 4 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 38 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 38
+- Mapped to phases: 38 (100%)
+- Unmapped: 0
+- Double-mapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after initial v1.3 definition*
+*Last updated: 2026-04-07 after v1.3 roadmap creation (traceability table filled)*
