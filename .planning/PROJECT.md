@@ -8,6 +8,19 @@ Campfire is a "friendship OS" — an all-in-one social coordination app for clos
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
+## Current Milestone: v1.3 Liveness & Notifications
+
+**Goal:** Make Campfire worth opening every day — add status TTL/freshness, real push delivery, and the "Friend went Free" loop that drives spontaneous plans.
+
+**Target features:**
+- Status liveness (TTL, daily reset, expired banner, status_history)
+- Push notification infrastructure (expo-notifications, push_tokens table w/ RLS)
+- "Friend went Free" notification (Postgres trigger + Edge Function fan-out, batched/rate-limited)
+- Morning status prompt (daily local push with Free/Busy/Maybe action buttons)
+- Plan invite push (verify + complete existing wiring)
+- DM entry point fix (compose icon or tappable Home friend cards)
+- Squad Goals: shared streak ("N weeks in a row")
+
 ## Requirements
 
 ### Validated
@@ -48,7 +61,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Active
 
-(None — define for next milestone via `/gsd:new-milestone`)
+(Defining for v1.3 — see Current Milestone section below)
 
 ### Out of Scope
 
@@ -62,7 +75,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - Public profiles or discoverability — friends-only by design
 - Web app / PWA — mobile only
 - Group size pagination — unnecessary for 3–15 person groups
-- Dark mode / theming — v1.3+ (semantic color naming positions for it)
+- Dark mode / theming — v1.4+ (semantic color naming positions for it)
 
 ## Context
 
@@ -122,4 +135,4 @@ Known technical considerations:
 | Squad as social hub, Profile as account screen | Clear information architecture — people vs. settings | ✓ Good |
 
 ---
-*Last updated: 2026-04-04 after v1.2 milestone*
+*Last updated: 2026-04-06 after starting v1.3 milestone*

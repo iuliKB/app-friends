@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Squad & Navigation
-status: completed
-stopped_at: Completed 12-01-PLAN.md — v1.2 milestone capstone delivered
-last_updated: "2026-04-04T19:33:01.389Z"
-last_activity: 2026-04-04 — Phase 12 plan 01 complete, user approved device verification
+milestone: v1.3
+milestone_name: Liveness & Notifications
+status: defining_requirements
+stopped_at: Milestone v1.3 started — gathering requirements
+last_updated: "2026-04-06T00:00:00.000Z"
+last_activity: 2026-04-06 — Milestone v1.3 started
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 12 — Profile Simplification (COMPLETE)
+**Current focus:** v1.3 Liveness & Notifications — defining requirements
 
 ## Current Position
 
-Milestone: v1.2 Squad & Navigation
-Phase: 12 of 12 (Profile Simplification) — COMPLETE
-Plan: 01 of 01 — COMPLETE
-Status: Milestone complete — v1.2 capstone delivered (app version 1.2.0)
-Last activity: 2026-04-04 — Phase 12 plan 01 complete, user approved device verification
+Milestone: v1.3 Liveness & Notifications
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-06 — Milestone v1.3 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Accumulated Context
 
