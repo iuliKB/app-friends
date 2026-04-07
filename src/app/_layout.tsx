@@ -1,3 +1,4 @@
+import '@/lib/notifications-init';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
@@ -10,18 +11,6 @@ import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
-
-// Show notification banner while app is in foreground (native only)
-if (Platform.OS !== 'web') {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
-  });
-}
 
 export default function RootLayout() {
   const { session, setSession, setLoading, needsProfileSetup, setNeedsProfileSetup } =
