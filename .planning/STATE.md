@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Liveness & Notifications
-status: executing
-stopped_at: Phase 1 context gathered (discuss mode)
-last_updated: "2026-04-07T10:10:42.192Z"
-last_activity: 2026-04-07 -- Phase 1 execution started
+status: phase_complete
+stopped_at: Phase 1 code-complete (hardware gate deferred to Phase 5)
+last_updated: "2026-04-07T12:51:28.846Z"
+last_activity: 2026-04-07 -- Phase 01 code-complete, hardware gate deferred to Phase 5
 progress:
-  total_phases: 4
-  completed_phases: 0
+  total_phases: 5
+  completed_phases: 1
   total_plans: 10
-  completed_plans: 0
-  percent: 0
+  completed_plans: 10
+  percent: 20
 ---
 
 # Project State
@@ -21,17 +21,19 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 1 — Push Infrastructure & DM Entry Point
+**Current focus:** Phase 01 code-complete (hardware gate deferred); next up is Phase 02 — status-liveness-ttl
 
 ## Current Position
 
 Milestone: v1.3 Liveness & Notifications
-Phase: 1 (Push Infrastructure & DM Entry Point) — EXECUTING
-Plan: 1 of 10
-Status: Executing Phase 1
-Last activity: 2026-04-07 -- Phase 1 execution started
+Phase: 01 (push-infrastructure-dm-entry-point) — CODE COMPLETE (hardware gate → Phase 5)
+Plan: 10 of 10
+Status: Phase 01 complete; awaiting user to start Phase 02
+Last activity: 2026-04-07 -- Phase 01 code-complete, hardware gate deferred to Phase 5
 
-Progress: [░░░░░░░░░░] 0% (0/4 phases complete)
+Progress: [██░░░░░░░░] 20% (1/5 phases complete)
+
+**Hardware-gate deferral:** The user does not have an active Apple Developer Program account yet (will be acquired near publication). All manual iOS-hardware smoke tests are consolidated in Phase 5 "Hardware Verification Gate" and executed once, at milestone end. This applies to Phases 1-4. Feature phases are marked code-complete once their plans land; they do not block on hardware verification.
 
 ## Performance Metrics
 

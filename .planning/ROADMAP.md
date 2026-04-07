@@ -5,7 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-03-24)
 - ✅ **v1.1 UI/UX Design System** — Phases 7-9 (shipped 2026-03-25)
 - ✅ **v1.2 Squad & Navigation** — Phases 10-12 (shipped 2026-04-04)
-- 🚧 **v1.3 Liveness & Notifications** — Phases 1-4 (active, phase numbering reset)
+- 🚧 **v1.3 Liveness & Notifications** — Phases 1-5 (active, phase numbering reset)
 
 ## Current Milestone: v1.3 Liveness & Notifications
 
@@ -20,6 +20,7 @@
 - [ ] **Phase 2: Status Liveness & TTL** — Duration composer, expires_at, view-computed effective_status, status_history, 5am-local reset
 - [ ] **Phase 3: Friend Went Free Loop** — Outbox queue, rate-limited Edge Function fan-out, quiet hours, deep-link to DM
 - [ ] **Phase 4: Morning Prompt + Squad Goals Streak** — On-device scheduled prompt with action buttons, get_squad_streak SQL, StreakCard
+- [ ] **Phase 5: Hardware Verification Gate** — Consolidated manual smoke-test across all v1.3 phases, executed once when Apple Developer account is acquired (deferred per cost constraint)
 
 ## Phase Details
 
@@ -45,12 +46,16 @@ Plans:
 - [x] 01-02-PLAN.md — push_tokens v1.3 schema migration (device_id, last_seen_at, invalidated_at)
 - [x] 01-03-PLAN.md — notifications-init module + iOS categories + Android channels + plugin tuple
 - [ ] 01-04-PLAN.md — session-ready registration + AppState foreground re-register
-- [ ] 01-05-PLAN.md — usePushNotifications rewrite + Profile toggle rewire
+- [x] 01-05-PLAN.md — usePushNotifications rewrite + Profile toggle rewire
 - [ ] 01-06-PLAN.md — Pre-prompt modal + meaningful-action eligibility tracking
-- [ ] 01-07-PLAN.md — notify-plan-invite Edge Function update (invalidated filter + ticket parser + channelId)
+- [x] 01-07-PLAN.md — notify-plan-invite Edge Function update (invalidated filter + ticket parser + channelId)
 - [x] 01-08-PLAN.md — Tappable HomeFriendCard + cross-platform action sheet helper
 - [x] 01-09-PLAN.md — plan-create preselect_friend_id query param support
-- [ ] 01-10-PLAN.md — Manual smoke-test checklist sign-off
+- [x] 01-10-PLAN.md — Manual smoke-test checklist sign-off (Task 1 authored; Task 2 execution deferred to Phase 5 per no-Apple-Dev-account constraint)
+
+---
+
+**Note:** Plan 10 Task 2 (physical smoke-test execution) is deferred to Phase 5 "Hardware Verification Gate". Phase 1 is **code-complete**; the 11 manual checks (PUSH-01..10 + DM-01) will be executed as part of the consolidated hardware gate once the Apple Developer Program account is acquired.
 
 ---
 
@@ -111,14 +116,44 @@ Plans:
 
 ---
 
+### Phase 5: Hardware Verification Gate
+
+**Goal:** Execute all accumulated manual hardware/device smoke tests for v1.3 in a single consolidated session, once the Apple Developer Program account is acquired. This phase is the ship gate for v1.3.
+
+**Depends on:** Phase 1, Phase 2, Phase 3, Phase 4 (code-complete for all feature phases)
+
+**Rationale:** This project is developed by a solo dev without an active Apple Developer Program account ($99/yr), which will be acquired only when the app is near publication. iOS-hardware-dependent checks (action button categories, pre-prompt timing, differentiated Android channels verified on real devices, real APNs/FCM token delivery) cannot run without a native EAS dev build on real hardware. Rather than gating every feature phase on hardware that isn't available yet, all such checks accumulate here and run once.
+
+**Requirements:** None new — this phase re-verifies requirements already claimed as "code-complete" by Phases 1-4.
+
+**Success Criteria** (what must be TRUE):
+1. A functional EAS dev build of Campfire is installed on a real iPhone (iOS 15+) AND a real Android device or emulator with Play Services.
+2. Every per-requirement check from `.planning/phases/01-push-infrastructure-dm-entry-point/SMOKE-TEST.md` (PUSH-01..10 + DM-01) passes.
+3. Every per-requirement hardware check appended by Phases 2-4 during their plan-phase passes.
+4. No regressions in shipped v1.0–v1.2 features (login, status set, plan create, chat send, friend add, squad view).
+5. Phase 5 SUMMARY.md documents any gap-closure plans that were needed and their disposition.
+
+**Plans:** TBD — at least one: `05-01-PLAN.md` consolidating and executing all accumulated smoke-test checklists.
+
+**Inputs to this phase (append as phases are planned):**
+- `.planning/phases/01-push-infrastructure-dm-entry-point/SMOKE-TEST.md` (Phase 1, 11 checks)
+- Phase 2 hardware checks — to be added during `/gsd-plan-phase 2`
+- Phase 3 hardware checks — to be added during `/gsd-plan-phase 3`
+- Phase 4 hardware checks — to be added during `/gsd-plan-phase 4`
+
+**Planner rule for Phases 2-4:** Any manual smoke-test check that requires a real device should be authored into the phase's own `SMOKE-TEST.md` but NOT gate phase completion. Instead, append the file path to this phase's "Inputs" list above. Phase 5 will consolidate and execute them all.
+
+---
+
 ## Progress (v1.3)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Push Infrastructure & DM Entry Point | 5/10 | In Progress|  |
+| 1. Push Infrastructure & DM Entry Point | 10/10 | Code complete (hardware gate → Phase 5) | 2026-04-07 |
 | 2. Status Liveness & TTL | 0/? | Not started | - |
 | 3. Friend Went Free Loop | 0/? | Not started | - |
 | 4. Morning Prompt + Squad Goals Streak | 0/? | Not started | - |
+| 5. Hardware Verification Gate | 0/? | Deferred (awaits Apple Dev account) | - |
 
 ## Coverage (v1.3)
 

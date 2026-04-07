@@ -32,7 +32,7 @@ decisions:
 metrics:
   duration: "~3 min (authoring only)"
   completed: 2026-04-07
-status: partial
+status: complete (Task 2 execution deferred to Phase 5 Hardware Verification Gate)
 ---
 
 # Phase 1 Plan 10: Smoke Test & Phase Gate Summary
@@ -68,6 +68,14 @@ Resume signal per PLAN.md: user types `smoke green` when all 11 checks pass and 
 | Task 2 — User runs SMOKE-TEST.md on EAS dev build | `checkpoint:human-verify` | Yes (phase gate) | `smoke green` |
 
 **Plan 01-10 is NOT fully complete** until the user executes the checklist and signals completion. The orchestrator must hand off to the user — Claude cannot tick the checkboxes.
+
+### Update 2026-04-07 — execution deferred to Phase 5
+
+The user does not have an active Apple Developer Program account ($99/yr) and will acquire one only when the app is near publication. Without an Apple Dev account, there is no iOS EAS dev build, so ~5 of the 11 checks cannot run.
+
+**Decision:** Rather than block Phase 1 (and subsequently Phases 2-4) on hardware that isn't available, Task 2 execution is deferred to a new **Phase 5: Hardware Verification Gate**, which consolidates all v1.3 manual smoke tests into a single session run once at milestone end. Phase 1 is marked code-complete. Phase 2 is unblocked.
+
+See ROADMAP.md → "Phase 5: Hardware Verification Gate" for the new phase definition and the planner rule that future phases (2-4) should append their hardware checks to Phase 5's input list rather than gating independently.
 
 ## Deviations from Plan
 
