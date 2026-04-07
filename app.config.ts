@@ -23,7 +23,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.campfire.app',
   },
-  plugins: ['expo-router', '@react-native-community/datetimepicker', 'expo-notifications'],
+  plugins: [
+    'expo-router',
+    '@react-native-community/datetimepicker',
+    [
+      'expo-notifications',
+      {
+        icon: './assets/images/icon.png',
+        color: '#ff6b35',
+        mode: 'production',
+      },
+    ],
+  ],
   experiments: {
     typedRoutes: true,
   },
