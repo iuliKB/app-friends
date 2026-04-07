@@ -38,7 +38,19 @@
 4. The build is an EAS development build (not Expo Go), iOS notification categories appear on prompts that request them, and Android notifications arrive on differentiated channels (`plan_invites` MAX, `friend_free` HIGH, `morning_prompt` DEFAULT, `system` LOW) with correct priority and sound.
 5. When Expo returns `DeviceNotRegistered`, the stale token is marked `invalidated_at` and subsequent fan-out skips it; a friendly pre-prompt is shown before the iOS permission modal, deferred until the user's first meaningful action.
 
-**Plans:** TBD
+**Plans:** 10 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — EAS dev build instructions + smoke checklist
+- [ ] 01-02-PLAN.md — push_tokens v1.3 schema migration (device_id, last_seen_at, invalidated_at)
+- [ ] 01-03-PLAN.md — notifications-init module + iOS categories + Android channels + plugin tuple
+- [ ] 01-04-PLAN.md — session-ready registration + AppState foreground re-register
+- [ ] 01-05-PLAN.md — usePushNotifications rewrite + Profile toggle rewire
+- [ ] 01-06-PLAN.md — Pre-prompt modal + meaningful-action eligibility tracking
+- [ ] 01-07-PLAN.md — notify-plan-invite Edge Function update (invalidated filter + ticket parser + channelId)
+- [ ] 01-08-PLAN.md — Tappable HomeFriendCard + cross-platform action sheet helper
+- [ ] 01-09-PLAN.md — plan-create preselect_friend_id query param support
+- [ ] 01-10-PLAN.md — Manual smoke-test checklist sign-off
 
 ---
 
