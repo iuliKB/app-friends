@@ -1,8 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { StatusPill } from '@/components/friends/StatusPill';
+import { supabase } from '@/lib/supabase';
+import { showActionSheet } from '@/lib/action-sheet';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 interface HomeFriendCardProps {
@@ -11,8 +14,48 @@ interface HomeFriendCardProps {
 }
 
 export function HomeFriendCard({ friend, showStatusPill = false }: HomeFriendCardProps) {
+  const router = useRouter();
+
+  // Single tap → DM (D-04, D-08). Mirrors src/app/friends/[id].tsx:55-67.
+  async function handlePress() {
+    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
+      other_user_id: friend.friend_id,
+    });
+    if (error || !data) {
+      Alert.alert('Error', "Couldn't open chat. Try again.");
+      return;
+    }
+    router.push(
+      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(friend.display_name)}` as never
+    );
+  }
+
+  // Long-press → action sheet (D-05). Two actions only — Send DM is intentionally
+  // omitted because single tap already does it (D-07).
+  function handleLongPress() {
+    const firstName = friend.display_name.split(' ')[0];
+    showActionSheet(friend.display_name, [
+      {
+        label: 'View profile',
+        onPress: () => router.push(`/friends/${friend.friend_id}` as never),
+      },
+      {
+        label: `Plan with ${firstName}...`,
+        onPress: () =>
+          router.push(`/plan-create?preselect_friend_id=${friend.friend_id}` as never),
+      },
+    ]);
+  }
+
   return (
-    <View style={styles.card} accessibilityLabel={`${friend.display_name}, ${friend.status}`}>
+    <Pressable
+      onPress={handlePress}
+      onLongPress={handleLongPress}
+      delayLongPress={400}
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`${friend.display_name}, ${friend.status}. Tap to message, long press for more.`}
+    >
       <View style={styles.avatarWrapper}>
         <AvatarCircle size={56} imageUri={friend.avatar_url} displayName={friend.display_name} />
         {friend.context_tag !== null && (
@@ -29,7 +72,7 @@ export function HomeFriendCard({ friend, showStatusPill = false }: HomeFriendCar
           <StatusPill status={friend.status} />
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -42,6 +85,9 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     margin: SPACING.xs,
+  },
+  pressed: {
+    opacity: 0.7,
   },
   avatarWrapper: {
     position: 'relative',
