@@ -41,8 +41,7 @@ export function HomeFriendCard({ friend, showStatusPill = false }: HomeFriendCar
       },
       {
         label: `Plan with ${firstName}...`,
-        onPress: () =>
-          router.push(`/plan-create?preselect_friend_id=${friend.friend_id}` as never),
+        onPress: () => router.push(`/plan-create?preselect_friend_id=${friend.friend_id}` as never),
       },
     ]);
   }
