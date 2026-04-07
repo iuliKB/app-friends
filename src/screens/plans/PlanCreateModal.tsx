@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
@@ -46,6 +46,7 @@ function formatTime(date: Date): string {
 
 export function PlanCreateModal() {
   const router = useRouter();
+  const { preselect_friend_id } = useLocalSearchParams<{ preselect_friend_id?: string }>();
   const { createPlan } = usePlans();
   const { fetchFriends } = useFriends();
 
@@ -61,11 +62,18 @@ export function PlanCreateModal() {
     fetchFriends().then(({ data }) => {
       if (data) {
         setFriends(data);
-        const freeFriendIds = data.filter((f) => f.status === 'free').map((f) => f.friend_id);
-        setSelectedFriendIds(new Set(freeFriendIds));
+        if (preselect_friend_id) {
+          // D-06: long-press "Plan with..." pre-selects the requested friend only.
+          setSelectedFriendIds(new Set([preselect_friend_id]));
+        } else {
+          // Default: all currently-Free friends pre-selected.
+          const freeFriendIds = data.filter((f) => f.status === 'free').map((f) => f.friend_id);
+          setSelectedFriendIds(new Set(freeFriendIds));
+        }
       }
     });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselect_friend_id]);
 
   function toggleFriend(friendId: string) {
     setSelectedFriendIds((prev) => {
