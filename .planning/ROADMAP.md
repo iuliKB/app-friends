@@ -65,7 +65,9 @@ Plans:
 
 **Depends on:** Nothing (independent of Phase 1 — can parallelize)
 
-**Requirements:** TTL-01, TTL-02, TTL-03, TTL-04, TTL-05, TTL-06, TTL-07, TTL-08
+**Requirements:** TTL-01, TTL-02, TTL-03, TTL-04, TTL-05, TTL-06, TTL-07, TTL-08, HEART-01, HEART-02, HEART-03, HEART-04, HEART-05
+
+**Scope redesigned 2026-04-07:** Phase 2 now ships the Mood + Context + Window + Heartbeat model. TTL-05's "5am local clock reset" is replaced by activity-based heartbeat. See `.planning/phases/02-status-liveness-ttl/02-CONTEXT.md` for locked decisions (authoritative over the success criteria below, which are from the original roadmap draft).
 
 **Success Criteria** (what must be TRUE):
 1. When the user sets Free or Busy, the composer asks for a duration (1h / 3h / Until 6pm / Until 10pm / Rest of day, with time-of-day options hidden when not meaningful); Maybe stays indefinite; the user sees their own chip as "Free until 6pm".
@@ -84,7 +86,7 @@ Plans:
 
 **Depends on:** Phase 1 (push delivery must work), Phase 2 (clean transition source and `effective_status` view)
 
-**Requirements:** FREE-01, FREE-02, FREE-03, FREE-04, FREE-05, FREE-06, FREE-07, FREE-08, FREE-09, FREE-10, FREE-11
+**Requirements:** FREE-01, FREE-02, FREE-03, FREE-04, FREE-05, FREE-06, FREE-07, FREE-08, FREE-09, FREE-10, FREE-11, EXPIRY-01
 
 **Success Criteria** (what must be TRUE):
 1. Within ~5 seconds of a friend's status transitioning from non-Free → Free, eligible recipients receive a push whose body reads "Ana is Free • pizza 🍕" (display name + emoji context tag when set).
@@ -157,8 +159,8 @@ Plans:
 
 ## Coverage (v1.3)
 
-**v1.3 requirements:** 38 total
-**Mapped to phases:** 38
+**v1.3 requirements:** 44 total
+**Mapped to phases:** 44
 **Unmapped:** 0
 **Double-mapped:** 0
 
@@ -169,7 +171,9 @@ Plans:
 | PUSH (10) | PUSH-01..10 | Phase 1 |
 | DM (1) | DM-01 | Phase 1 |
 | TTL (8) | TTL-01..08 | Phase 2 |
+| HEART (5) | HEART-01..05 | Phase 2 |
 | FREE (11) | FREE-01..11 | Phase 3 |
+| EXPIRY (1) | EXPIRY-01 | Phase 3 |
 | MORN (8) | MORN-01..08 | Phase 4 |
 | STREAK (8) | STREAK-01..08 | Phase 4 |
 

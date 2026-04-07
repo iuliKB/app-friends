@@ -26,14 +26,22 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 
 ### Status Liveness & TTL
 
-- [ ] **TTL-01**: User picks a duration when setting Free or Busy (1h / 3h / Until 6pm / Until 10pm / Rest of day; time-of-day options conditionally hidden when not meaningful)
-- [ ] **TTL-02**: User's Maybe status remains indefinite (no expiry)
-- [ ] **TTL-03**: User sees their own status with the validity window ("Free until 6pm")
-- [ ] **TTL-04**: Friends viewing the Home screen see a user's status as "unknown / muted" once the `expires_at` has passed, even if the cron sweep hasn't run yet (view-computed `effective_status` is the source of truth)
-- [ ] **TTL-05**: Statuses auto-clear daily at **5am local** to the user (respects active `expires_at` — does NOT clobber a status the user just set)
-- [ ] **TTL-06**: User sees an inline "Your status expired — what's your status now?" banner above the Home Free/Other lists when their own status has expired; banner dismisses on next status set or in-memory dismissal until next foreground
-- [ ] **TTL-07**: Every status change is appended to a `status_history` table (RLS: SELECT own/friend; writes via SECURITY DEFINER trigger only) for analytics and the streak feature
-- [ ] **TTL-08**: `status_history` retention: log only on transitions, nightly rollup for entries >7 days, raw garbage-collect at 30 days
+- [ ] **TTL-01**: User picks a window when setting ANY mood (Free / Busy / Maybe) from: 1h / 3h / Until 6pm / Until 10pm / Rest of day. Time-of-day options are hidden when not meaningful (e.g., "Until 6pm" hidden if current local time is ≥5:30pm). Every active status has a non-null `status_expires_at`.
+- [ ] **TTL-02**: User can optionally tag their status with a preset context chip (5 per mood) stored in `statuses.context_tag` — e.g., Free + "grab a coffee", Maybe + "reach out first", Busy + "deep work". Tag is optional; committing without a tag is valid.
+- [ ] **TTL-03**: User sees their own status as "{Mood} · {tag if set} · {window}" — e.g., "Free · grab a coffee · until 6pm" or "Busy · until 10pm" when no tag is set.
+- [ ] **TTL-04**: Friends viewing the Home screen see a user's status as "unknown / muted" once the `status_expires_at` has passed OR the user's heartbeat is DEAD, via the view-computed `effective_status` which is the source of truth.
+- [ ] **TTL-05**: Heartbeat replaces the previous "5am local hard reset" idea. Staleness is activity-based (see HEART-01..05), not clock-based. No server-side cron clears statuses.
+- [ ] **TTL-06**: User sees an inline `ReEngagementBanner` on Home when their heartbeat is FADING (see HEART-05). Exact copy and actions are defined in HEART-05.
+- [ ] **TTL-07**: Every status change is appended to a `status_history` table (RLS: SELECT own/friend; writes via SECURITY DEFINER trigger only) for analytics and the streak feature. Log only on mood transitions (not context_tag-only changes, not window-only changes).
+- [ ] **TTL-08**: `status_history` retention: log only on transitions, nightly rollup for entries >7 days, raw garbage-collect at 30 days.
+
+### Heartbeat (Phase 2)
+
+- [ ] **HEART-01**: New `last_active_at TIMESTAMPTZ NOT NULL DEFAULT now()` column on the `statuses` table (added via migration 0009).
+- [ ] **HEART-02**: Client updates `last_active_at = now()` on cold launch (after auth) and on every AppState 'active' transition.
+- [ ] **HEART-03**: Heartbeat state is computed **client-side** via `computeHeartbeatState(status_expires_at, last_active_at)` returning `'alive' | 'fading' | 'dead'`. ALIVE = `expires_at > now AND last_active_at > now - 4h`. FADING = `expires_at > now AND last_active_at ∈ [now - 8h, now - 4h]`. DEAD = `expires_at < now OR last_active_at < now - 8h`.
+- [ ] **HEART-04**: FADING friend cards show dimmed (0.6 opacity) with "{Mood} · {Xh ago}" label. DEAD friends move to the Everyone Else section regardless of stored status, labeled "inactive".
+- [ ] **HEART-05**: `ReEngagementBanner` on Home screen when user's own heartbeat is FADING: "Still {mood}? {emoji} · active until {window label}" with **[Keep it]** / **[Update]** / **[Heads down]** actions. "Keep it" updates `last_active_at = now()`. "Update" scrolls focus to the mood composer. "Heads down" sets mood=busy with 3h window. Auto-dismiss after 8s if ignored (no status change on dismiss).
 
 ### Friend Went Free
 
@@ -48,15 +56,16 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 - [ ] **FREE-09**: Tapping a friend-went-Free notification opens the DM with that friend (cold-start safe — guarded on auth + router ready)
 - [ ] **FREE-10**: Fan-out uses an outbox queue pattern: trigger writes a row to `free_transitions`, Database Webhook fires `notify-friend-free` Edge Function asynchronously (user write latency stays <100ms)
 - [ ] **FREE-11**: Operators can monitor unsent rows in the outbox (alert on rows older than 5 minutes)
+- [ ] **EXPIRY-01**: Window-expiry push fires ~30 minutes before `status_expires_at` with action buttons **[Keep it]** / **[Heads down]**. "Keep it" extends the window by the next logical step (e.g., "Until 6pm" → "Until 10pm"); "Heads down" sets mood=busy with 3h window. Eligibility skips friends whose heartbeat is DEAD. Runs as a pg_cron sweep or scheduled Edge Function reading from an outbox/schedule table; reuses the fan-out infrastructure from FREE-10.
 
 ### Morning Status Prompt
 
-- [ ] **MORN-01**: User receives a daily local push at user-configurable time (default 9:00am local) prompting "☀️ What's your status today?"
+- [ ] **MORN-01**: User receives a daily local push at user-configurable time (default 9:00am local) prompting "☀️ What's your status today?". Fires only when heartbeat state is DEAD at the scheduled fire time.
 - [ ] **MORN-02**: Morning prompt is scheduled **on-device** via `Notifications.scheduleNotificationAsync({ hour, minute, repeats: true })` — no server cron, no `profiles.timezone` column
 - [ ] **MORN-03**: Notification shows three action buttons: Free / Busy / Maybe
 - [ ] **MORN-04**: Tapping an action opens the app and sets the user's status via the existing authenticated Supabase session (RLS protects — no public endpoint, no signed token)
 - [ ] **MORN-05**: Action button payload includes `valid_until` so a tap >12h after the prompt fired no-ops gracefully (does not retroactively set status)
-- [ ] **MORN-06**: Morning prompt does not fire if user's `effective_status` is still active (skip-if-set logic)
+- [ ] **MORN-06**: Morning prompt does not fire if user's heartbeat state is ALIVE or FADING (skip-if-active logic — only DEAD triggers the prompt).
 - [ ] **MORN-07**: User can disable morning prompt via a Profile toggle alongside the other notification toggles
 - [ ] **MORN-08**: User can pick the prompt time from a settings row (default 9am)
 
@@ -140,6 +149,11 @@ Explicitly excluded.
 | TTL-06 | Phase 2 | Pending |
 | TTL-07 | Phase 2 | Pending |
 | TTL-08 | Phase 2 | Pending |
+| HEART-01 | Phase 2 | Pending |
+| HEART-02 | Phase 2 | Pending |
+| HEART-03 | Phase 2 | Pending |
+| HEART-04 | Phase 2 | Pending |
+| HEART-05 | Phase 2 | Pending |
 | FREE-01 | Phase 3 | Pending |
 | FREE-02 | Phase 3 | Pending |
 | FREE-03 | Phase 3 | Pending |
@@ -151,6 +165,7 @@ Explicitly excluded.
 | FREE-09 | Phase 3 | Pending |
 | FREE-10 | Phase 3 | Pending |
 | FREE-11 | Phase 3 | Pending |
+| EXPIRY-01 | Phase 3 | Pending |
 | MORN-01 | Phase 4 | Pending |
 | MORN-02 | Phase 4 | Pending |
 | MORN-03 | Phase 4 | Pending |
@@ -169,11 +184,11 @@ Explicitly excluded.
 | STREAK-08 | Phase 4 | Pending |
 
 **Coverage:**
-- v1.3 requirements: 38 total
-- Mapped to phases: 38 (100%)
+- v1.3 requirements: 44 total (+5 HEART-01..05, +1 EXPIRY-01 added 2026-04-07)
+- Mapped to phases: 44 (100%)
 - Unmapped: 0
 - Double-mapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-07 after v1.3 roadmap creation (traceability table filled)*
+*Last updated: 2026-04-07 — Phase 2 redesign: Mood + Context + Window + Heartbeat (replaces TTL-05 clock reset with activity-based heartbeat; adds HEART-01..05; adds EXPIRY-01 in Phase 3; MORN-01/06 now gated on DEAD heartbeat)*
