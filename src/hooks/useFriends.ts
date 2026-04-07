@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { StatusValue, EmojiTag, Profile } from '@/types/app';
+import { markPushPromptEligible } from '@/hooks/usePushNotifications';
 
 export interface FriendWithStatus {
   friend_id: string;
@@ -191,6 +192,8 @@ export function useFriends() {
     if (error) {
       return { data: null, error };
     }
+    // PUSH-08 (D-01): mark eligibility on first meaningful action.
+    markPushPromptEligible().catch(() => {});
     return { data, error: null };
   }
 
@@ -205,6 +208,8 @@ export function useFriends() {
       .eq('addressee_id', session.user.id);
 
     if (error) return { data: null, error };
+    // PUSH-08 (D-01): mark eligibility on first meaningful action.
+    markPushPromptEligible().catch(() => {});
     return { data, error: null };
   }
 

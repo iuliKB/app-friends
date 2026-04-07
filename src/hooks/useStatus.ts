@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { StatusValue, EmojiTag } from '@/types/app';
+import { markPushPromptEligible } from '@/hooks/usePushNotifications';
 
 export function useStatus() {
   const session = useAuthStore((s) => s.session);
@@ -36,6 +37,9 @@ export function useStatus() {
       .eq('user_id', session.user.id);
     if (!error) {
       setStatus(newStatus);
+      // PUSH-08 (D-01): mark eligibility on first meaningful action.
+      // Idempotent — safe to call on every successful update.
+      markPushPromptEligible().catch(() => {});
     }
     setSaving(false);
     return { error: error?.message ?? null };
@@ -51,6 +55,8 @@ export function useStatus() {
       .eq('user_id', session.user.id);
     if (!error) {
       setContextTag(nextTag);
+      // PUSH-08 (D-01): mark eligibility on first meaningful action.
+      markPushPromptEligible().catch(() => {});
     }
     setSaving(false);
     return { error: error?.message ?? null };
