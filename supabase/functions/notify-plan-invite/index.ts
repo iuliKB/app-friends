@@ -12,6 +12,18 @@ interface WebhookPayload {
   schema: 'public';
 }
 
+interface ExpoTicket {
+  status: 'ok' | 'error';
+  id?: string;
+  message?: string;
+  details?: { error?: string };
+}
+
+interface ExpoSendResponse {
+  data?: ExpoTicket[];
+  errors?: unknown[];
+}
+
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -29,7 +41,12 @@ Deno.serve(async (req) => {
   const [inviterResult, planResult, tokensResult] = await Promise.all([
     supabase.from('profiles').select('display_name').eq('id', record.invited_by).single(),
     supabase.from('plans').select('title').eq('id', record.plan_id).single(),
-    supabase.from('push_tokens').select('token').eq('user_id', record.user_id),
+    // PUSH-09 consumer side: skip invalidated tokens (Plan 02 schema)
+    supabase
+      .from('push_tokens')
+      .select('token')
+      .eq('user_id', record.user_id)
+      .is('invalidated_at', null),
   ]);
 
   const inviterName = inviterResult.data?.display_name ?? 'Someone';
@@ -40,12 +57,15 @@ Deno.serve(async (req) => {
     return new Response('no tokens', { status: 200 });
   }
 
+  // D-19: target the dedicated plan_invites Android channel for new installs.
+  // Legacy installs (using the dormant 'default' channel) ignore an unknown channelId.
   const messages = tokens.map((token) => ({
     to: token,
     sound: 'default' as const,
     title: 'Plan invite',
     body: `${inviterName} invited you to ${planTitle}`,
     data: { planId: record.plan_id },
+    channelId: 'plan_invites',
   }));
 
   const res = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -57,7 +77,26 @@ Deno.serve(async (req) => {
     body: JSON.stringify(messages),
   });
 
-  return new Response(await res.text(), {
+  // D-22 / PUSH-09 producer side: parse ticket-level errors.
+  // Expo returns errors inside HTTP 200, in body.data[]. Order matches submitted messages.
+  const body = (await res.json()) as ExpoSendResponse;
+
+  if (body.data) {
+    const invalidatedTokens: string[] = [];
+    body.data.forEach((ticket, idx) => {
+      if (ticket.status === 'error' && ticket.details?.error === 'DeviceNotRegistered') {
+        invalidatedTokens.push(tokens[idx]);
+      }
+    });
+    if (invalidatedTokens.length > 0) {
+      await supabase
+        .from('push_tokens')
+        .update({ invalidated_at: new Date().toISOString() })
+        .in('token', invalidatedTokens);
+    }
+  }
+
+  return new Response(JSON.stringify(body), {
     headers: { 'Content-Type': 'application/json' },
   });
 });
