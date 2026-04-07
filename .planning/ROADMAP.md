@@ -41,15 +41,15 @@
 **Plans:** 10 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — EAS dev build instructions + smoke checklist
-- [ ] 01-02-PLAN.md — push_tokens v1.3 schema migration (device_id, last_seen_at, invalidated_at)
-- [ ] 01-03-PLAN.md — notifications-init module + iOS categories + Android channels + plugin tuple
+- [x] 01-01-PLAN.md — EAS dev build instructions + smoke checklist
+- [x] 01-02-PLAN.md — push_tokens v1.3 schema migration (device_id, last_seen_at, invalidated_at)
+- [x] 01-03-PLAN.md — notifications-init module + iOS categories + Android channels + plugin tuple
 - [ ] 01-04-PLAN.md — session-ready registration + AppState foreground re-register
 - [ ] 01-05-PLAN.md — usePushNotifications rewrite + Profile toggle rewire
 - [ ] 01-06-PLAN.md — Pre-prompt modal + meaningful-action eligibility tracking
 - [ ] 01-07-PLAN.md — notify-plan-invite Edge Function update (invalidated filter + ticket parser + channelId)
-- [ ] 01-08-PLAN.md — Tappable HomeFriendCard + cross-platform action sheet helper
-- [ ] 01-09-PLAN.md — plan-create preselect_friend_id query param support
+- [x] 01-08-PLAN.md — Tappable HomeFriendCard + cross-platform action sheet helper
+- [x] 01-09-PLAN.md — plan-create preselect_friend_id query param support
 - [ ] 01-10-PLAN.md — Manual smoke-test checklist sign-off
 
 ---
@@ -115,7 +115,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Push Infrastructure & DM Entry Point | 0/? | Not started | - |
+| 1. Push Infrastructure & DM Entry Point | 5/10 | In Progress|  |
 | 2. Status Liveness & TTL | 0/? | Not started | - |
 | 3. Friend Went Free Loop | 0/? | Not started | - |
 | 4. Morning Prompt + Squad Goals Streak | 0/? | Not started | - |
