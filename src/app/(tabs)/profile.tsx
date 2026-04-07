@@ -23,8 +23,8 @@ import { EmojiTagPicker } from '@/components/status/EmojiTagPicker';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import {
   registerForPushNotifications,
+  unregisterForPushNotifications,
   getNotificationsEnabled,
-  setNotificationsEnabled,
 } from '@/hooks/usePushNotifications';
 import type { EmojiTag, StatusValue } from '@/types/app';
 
@@ -67,10 +67,27 @@ export default function ProfileScreen() {
   }
 
   async function handleToggleNotifications(value: boolean) {
-    await setNotificationsEnabled(value);
+    if (!session?.user?.id) return;
+    // Optimistic UI flip — revert on permission failure (D-13)
     setNotificationsEnabledState(value);
-    if (value && session?.user?.id) {
-      await registerForPushNotifications(session.user.id);
+
+    if (value) {
+      // Toggle ON: silent re-register, bypassing the eligibility gate AND pre-prompt gate (D-13).
+      // The Profile toggle is itself an explicit user action — no value-led modal needed.
+      const result = await registerForPushNotifications(session.user.id, {
+        skipEligibilityCheck: true,
+      });
+      if (result === 'permission_denied') {
+        // OS-level permission was revoked — revert switch and explain
+        setNotificationsEnabledState(false);
+        Alert.alert(
+          'Notifications blocked',
+          'Notifications are turned off in iOS Settings. Open Settings → Campfire → Notifications to re-enable.'
+        );
+      }
+    } else {
+      // Toggle OFF: hard-delete server row + set local opt-out (D-12)
+      await unregisterForPushNotifications(session.user.id);
     }
   }
 
