@@ -276,7 +276,35 @@ None — `todo match-phase 2` returned 0 results.
 
 </deferred>
 
+<post_research_overrides>
+## Post-Research Overrides (added 2026-04-07 after gsd-phase-researcher)
+
+These corrections OVERRIDE the matching decisions above. The researcher verified these against the live codebase; the original decisions were written before the scout finished. Downstream agents (planner, executor) should treat the overrides as authoritative.
+
+- **OVR-01 → overrides D-11, D-15, D-29:** Utility files live in **`src/lib/`**, not `src/utils/`. The codebase has no `src/utils/` directory; established convention is `src/lib/` (`action-sheet.ts`, `notifications-init.ts`, `supabase.ts`, `username.ts`). Phase 2 creates `src/lib/heartbeat.ts` and `src/lib/windows.ts`.
+
+- **OVR-02 → overrides D-25:** Cross-screen sync between Home and Profile MoodPickers happens via the **existing Zustand store pattern** (`src/stores/useHomeStore.ts`, `src/stores/useAuthStore.ts`), NOT React Query. The codebase has zero React Query (`@tanstack/react-query` is not installed). Either extend `useHomeStore` to hold `currentStatus` or create a new `src/stores/useStatusStore.ts` matching the existing store pattern. Planner picks at plan time; recommend `useStatusStore.ts` to avoid bloating `useHomeStore`.
+
+- **OVR-03 → overrides D-33 trailing clause:** `useStatus` has **no realtime subscription** today. The friend-status realtime listener lives in `src/hooks/useHomeScreen.ts:22-46` and subscribes to the `statuses` table directly. Phase 2 keeps that arrangement: `useStatus` is plain state + Supabase calls + the new Zustand sync (OVR-02), and `useHomeScreen`'s realtime subscription stays pointed at the **`statuses` table** (Supabase Realtime cannot publish views — see PITFALLS Pitfall 12). Read queries against `effective_status` view; subscription stays on the table.
+
+- **OVR-04 → overrides D-14 implementation:** The cold-launch + AppState 'active' effect for heartbeat `touch()` MUST extend the existing `useEffect` in `src/app/(tabs)/_layout.tsx:28-50` (Phase 1 wired this for push re-registration). Do NOT add a second `AppState` listener — double-fires + debounce complexity. Add the `touch()` call inside the existing branch.
+
+- **OVR-05 → overrides D-20 + adds new deferred idea:** **Retention rollup and GC are DEFERRED to v1.4.** pg_cron is not enabled on this Supabase project (verified) and the user's "no new infrastructure for v1.3" stance + "zero new deps" rule make a scheduled Edge Function out of scope. Phase 2 ships the `status_history` table, the SECURITY DEFINER trigger, and the RLS policies — but **no rollup job and no GC job**. At v1.3 scale (3-15 friend squads, low-frequency status changes) the table will not accumulate enough rows in 30 days to need active management. The retention job is captured as a v1.4 deferred idea below.
+
+- **OVR-06 → overrides D-15/D-16 silent-expiry behavior:** Because expiries are silent (no DB write happens when `status_expires_at` passes), the realtime subscription cannot push the transition. The Home screen needs a **60-second `setInterval` re-render trigger** to re-evaluate `computeHeartbeatState` for own + friend statuses without re-fetching. Single interval at the screen level, not per-card. Cancel on screen unmount.
+
+- **OVR-07 → overrides D-28 sort behavior:** `useHomeScreen.ts:81-138` currently sorts free friends by `updated_at DESC`. Phase 2 must switch this to `last_active_at DESC` (freshness, not last-write). Same applies to any divergent `STATUS_SORT_ORDER` constant — researcher noted `useFriends.ts:28` and `useHomeScreen.ts:8` have a divergent constant; consolidate to a single source while we're touching the file.
+
+- **OVR-08 → adds to D-17:** Migration 0009 must use `WITH (security_invoker = true)` on the `effective_status` view (Postgres 15+ feature) so view reads inherit the caller's RLS context. Verify Postgres 15+ before finalizing the migration. Without `security_invoker`, friends would bypass RLS through the view.
+
+- **OVR-09 → adds to D-17 trigger:** The `on_status_transition` trigger MUST use `IS DISTINCT FROM` (not `<>`) to handle NULL→value mood transitions correctly, and MUST guard with `OLD.status IS DISTINCT FROM NEW.status` so context-tag-only and window-only updates do NOT log. Per D-21 + PITFALLS Pitfall 11.
+
+- **OVR-10 → adds to deferred ideas:** **Jest dev-dep for unit tests on `heartbeat.ts` and `windows.ts`** — explicitly REJECTED. Phase 1 verified everything via grep + tsc + eslint + assertion scripts in plan acceptance criteria. Phase 2 follows the same pattern. Add a Jest dev-dep would violate the "no test framework in v1.3" decision Phase 1 made.
+
+</post_research_overrides>
+
 ---
 
 *Phase: 02-status-liveness-ttl*
 *Context gathered: 2026-04-07*
+*Post-research overrides: 2026-04-07 (after gsd-phase-researcher findings)*
