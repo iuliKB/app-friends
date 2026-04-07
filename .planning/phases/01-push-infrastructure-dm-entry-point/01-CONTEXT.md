@@ -107,7 +107,7 @@ Make push notifications actually reach devices reliably on fresh installs (close
 - `src/app/(tabs)/chat/room.tsx` — destination for DM deep links
 - `src/app/plan-create.tsx` — verify whether `?preselect_friend_id=…` is supported; small addition if not
 - `app.config.ts` — `expo-notifications` plugin already registered as bare string; convert to tuple form for icon/color options
-- `supabase/migrations/0003_push_tokens.sql` — current schema; new migration `0004_push_tokens_v1_3.sql` evolves it
+- `supabase/migrations/0003_push_tokens.sql` — current schema; new migration `0008_push_tokens_v1_3.sql` evolves it
 - `supabase/migrations/0001_init.sql` §570 — `get_or_create_dm_channel` RPC definition (already exists, no changes)
 - `supabase/functions/notify-plan-invite/index.ts` — existing Edge Function; minor update to filter `invalidated_at IS NULL` and parse ticket errors
 
@@ -133,7 +133,7 @@ Make push notifications actually reach devices reliably on fresh installs (close
 ### Established Patterns
 - **Hooks per domain** — `src/hooks/usePushNotifications.ts` follows the convention. Rewrite stays in place; do not split into multiple files unless complexity demands it.
 - **`router.push` with query string for DM context** — `?dm_channel_id=…&friend_name=…` is the established shape. Phase 1 must match this exactly.
-- **Migration numbering** — sequential `0001_…`, `0002_…`, `0003_push_tokens.sql`. New migration is `0004_push_tokens_v1_3.sql`.
+- **Migration numbering** — sequential `0001_…`, `0002_…`, `0003_push_tokens.sql`. New migration is `0008_push_tokens_v1_3.sql`.
 - **RLS-first** — every table change ships with policies. `push_tokens` policies stay user-scoped.
 - **`as never` cast on router.push paths** — used at `src/app/friends/[id].tsx:65` to satisfy Expo Router's typed routes; same pattern in HomeFriendCard.
 - **AsyncStorage prefixed with `campfire:`** — `NOTIFICATIONS_ENABLED_KEY = 'campfire:notifications_enabled'`. New keys follow same prefix.
@@ -144,7 +144,7 @@ Make push notifications actually reach devices reliably on fresh installs (close
 - **`src/app/(tabs)/_layout.tsx`** — session-ready `useEffect` calling `registerForPushNotifications(userId)` + `AppState` listener for foreground re-register
 - **`src/components/home/HomeFriendCard.tsx`** — wrap return JSX in `Pressable`, add `onPress` (DM) and `onLongPress` (ActionSheet) handlers
 - **`src/app/(tabs)/profile.tsx`** — existing notifications toggle: rewire `setNotificationsEnabled(false)` path to also delete the server-side `push_tokens` row, and `setNotificationsEnabled(true)` path to call `registerForPushNotifications` for silent re-register
-- **`supabase/migrations/0004_push_tokens_v1_3.sql`** (NEW) — schema migration for `device_id`, `last_seen_at`, `invalidated_at`, composite unique
+- **`supabase/migrations/0008_push_tokens_v1_3.sql`** (NEW) — schema migration for `device_id`, `last_seen_at`, `invalidated_at`, composite unique
 - **`supabase/functions/notify-plan-invite/index.ts`** — small update: filter `invalidated_at IS NULL`, parse ticket errors → mark stale tokens
 
 ### Notable Findings

@@ -60,7 +60,7 @@ created: 2026-04-06
 
 - [ ] `src/lib/notifications-init.ts` — created in Plan 03 (file does not yet exist)
 - [ ] `src/components/notifications/PrePromptModal.tsx` — created in Plan 07
-- [ ] `supabase/migrations/0004_push_tokens_v1_3.sql` — created in Plan 02
+- [ ] `supabase/migrations/0008_push_tokens_v1_3.sql` — created in Plan 02
 - [ ] No new test framework installation — manual checklist + tsc/eslint cover the contract
 
 *Existing infrastructure covers static-correctness sampling for all touched files. Runtime behaviors are verified via manual smoke checklist on the EAS dev build.*

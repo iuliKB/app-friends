@@ -66,7 +66,7 @@ None — plan executed exactly as written. The plan was already pre-corrected fo
 | 1    | feat(01-08): add cross-platform action sheet helper | 6524273 |
 | 2    | feat(01-08): make HomeFriendCard tappable for DM and action sheet | 5e0e3b4 |
 
-Note: Task 1's commit `6524273` accidentally bundled files belonging to Plans 01-02 (`0004_push_tokens_v1_3.sql`, `01-02-SUMMARY.md`) and 01-03 (`src/lib/notifications-init.ts`) due to a worktree soft-reset state contamination. The action-sheet.ts file is the only Plan 01-08 contribution in that commit. Task 2 was committed cleanly as `5e0e3b4` by the orchestrator after worktree recovery.
+Note: Task 1's commit `6524273` accidentally bundled files belonging to Plans 01-02 (`0008_push_tokens_v1_3.sql`, `01-02-SUMMARY.md`) and 01-03 (`src/lib/notifications-init.ts`) due to a worktree soft-reset state contamination. The action-sheet.ts file is the only Plan 01-08 contribution in that commit. Task 2 was committed cleanly as `5e0e3b4` by the orchestrator after worktree recovery.
 
 ## Verification
 

@@ -23,7 +23,7 @@ tech-stack:
     - "Partial index for cheap active-token fan-out reads"
 key-files:
   created:
-    - "supabase/migrations/0004_push_tokens_v1_3.sql"
+    - "supabase/migrations/0008_push_tokens_v1_3.sql"
   modified: []
 decisions:
   - "Used three-step add/backfill/not-null pattern to avoid data loss on existing rows (D-14)"
@@ -38,11 +38,11 @@ metrics:
 
 # Phase 1 Plan 02: push_tokens v1.3 Schema Migration Summary
 
-Migration `0004_push_tokens_v1_3.sql` evolves `public.push_tokens` from token-keyed to device-keyed uniqueness, adding the `device_id`, `last_seen_at`, and `invalidated_at` columns required for stale-token reaping (Plan 07) and per-device opt-out (Plan 05).
+Migration `0008_push_tokens_v1_3.sql` evolves `public.push_tokens` from token-keyed to device-keyed uniqueness, adding the `device_id`, `last_seen_at`, and `invalidated_at` columns required for stale-token reaping (Plan 07) and per-device opt-out (Plan 05).
 
 ## What Changed
 
-Created `supabase/migrations/0004_push_tokens_v1_3.sql` containing the verbatim shape from `01-RESEARCH.md`, validated against the existing `0003_push_tokens.sql` schema:
+Created `supabase/migrations/0008_push_tokens_v1_3.sql` containing the verbatim shape from `01-RESEARCH.md`, validated against the existing `0003_push_tokens.sql` schema:
 
 1. **Step 1 — ADD COLUMN nullable:** `device_id TEXT`, `last_seen_at TIMESTAMPTZ`, `invalidated_at TIMESTAMPTZ` added without `NOT NULL` so existing rows are not rejected.
 2. **Step 2 — Backfill:** `UPDATE` sets `device_id = 'legacy:' || id::text` and `last_seen_at = COALESCE(last_seen_at, created_at)` for any pre-existing rows.
@@ -55,7 +55,7 @@ Created `supabase/migrations/0004_push_tokens_v1_3.sql` containing the verbatim 
 
 All Task 1 acceptance criteria pass:
 
-- File exists at `supabase/migrations/0004_push_tokens_v1_3.sql`
+- File exists at `supabase/migrations/0008_push_tokens_v1_3.sql`
 - Contains `ADD COLUMN device_id`, `ADD COLUMN last_seen_at`, `ADD COLUMN invalidated_at`
 - Contains `CREATE UNIQUE INDEX idx_push_tokens_user_device`
 - Contains `CREATE INDEX idx_push_tokens_active` and `WHERE invalidated_at IS NULL`
@@ -67,7 +67,7 @@ All Task 1 acceptance criteria pass:
 
 None — plan executed exactly as written. The migration content matches the verbatim block in `01-02-PLAN.md`.
 
-**Note on filename:** A pre-existing migration `0004_fix_plan_members_rls_recursion.sql` already lives in `supabase/migrations/`. Supabase orders migrations lexicographically, so `0004_fix_plan_members_rls_recursion.sql` and `0004_push_tokens_v1_3.sql` coexist without conflict — the `fix_*` file applies before the `push_*` file alphabetically. No rename needed.
+**Note on filename:** A pre-existing migration `0004_fix_plan_members_rls_recursion.sql` already lives in `supabase/migrations/`. Supabase orders migrations lexicographically, so `0004_fix_plan_members_rls_recursion.sql` and `0008_push_tokens_v1_3.sql` coexist without conflict — the `fix_*` file applies before the `push_*` file alphabetically. No rename needed.
 
 ## Authentication Gates
 
@@ -81,7 +81,7 @@ None during Task 1. Task 2 (`supabase db push`) is a human-action checkpoint, no
 
 **Task 2 is a blocking human-action checkpoint.** The user must:
 
-1. Review `supabase/migrations/0004_push_tokens_v1_3.sql` end-to-end
+1. Review `supabase/migrations/0008_push_tokens_v1_3.sql` end-to-end
 2. Run `supabase db push`
 3. Verify schema in Supabase SQL editor (`\d public.push_tokens`)
 4. Spot-check legacy backfill (`SELECT id, device_id FROM public.push_tokens LIMIT 5;`)
@@ -91,5 +91,5 @@ Plans 05 and 07 depend on the new columns existing in the live database before t
 
 ## Self-Check: PASSED
 
-- FOUND: supabase/migrations/0004_push_tokens_v1_3.sql
+- FOUND: supabase/migrations/0008_push_tokens_v1_3.sql
 - FOUND: commit 0b53bcb

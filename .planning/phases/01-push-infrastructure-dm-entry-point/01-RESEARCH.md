@@ -74,7 +74,7 @@ The four CONTEXT.md verification items resolved cleanly:
 - ActionSheetIOS / Android equivalent — **Recommendation: React Native `ActionSheetIOS` on iOS, `Alert.alert` with cancellable buttons on Android.** No new dep. Encapsulated in a tiny `src/lib/action-sheet.ts` helper.
 - Smoke-test script structure — Recommendation: markdown checklist in the phase folder.
 - Comment density in `notifications-init.ts` — keep brief, link to D-20/D-21 in CONTEXT.md.
-- Migration file naming — `0004_push_tokens_v1_3.sql` (matches existing sequential pattern).
+- Migration file naming — `0008_push_tokens_v1_3.sql` (matches existing sequential pattern).
 
 ### Deferred Ideas (OUT OF SCOPE for Phase 1)
 - Compose icon in Chats tab header.
@@ -157,7 +157,7 @@ src/
 
 supabase/
 ├── migrations/
-│   └── 0004_push_tokens_v1_3.sql      # NEW: schema evolution (D-14, D-15)
+│   └── 0008_push_tokens_v1_3.sql      # NEW: schema evolution (D-14, D-15)
 └── functions/
     └── notify-plan-invite/index.ts    # MODIFIED: invalidated filter + ticket parser + channelId
 ```
@@ -596,7 +596,7 @@ useEffect(() => {
 }, [preselect_friend_id]);
 ```
 
-### `supabase/migrations/0004_push_tokens_v1_3.sql` (NEW)
+### `supabase/migrations/0008_push_tokens_v1_3.sql` (NEW)
 
 ```sql
 -- Phase 1 v1.3: evolve push_tokens for device-scoped uniqueness + stale-token reaping
