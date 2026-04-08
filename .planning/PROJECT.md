@@ -61,7 +61,10 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Active
 
-(Defining for v1.3 — see Current Milestone section below)
+- ◆ v1.3 Phase 1 (Push Infrastructure & DM Entry Point) — in progress
+- ✓ v1.3 Phase 2 (Status Liveness & TTL) — shipped 2026-04-08: Mood + Context + Window + Heartbeat model live; migration 0009 applied; 10 UI behaviors deferred to Phase 5 Hardware Verification Gate
+
+(Remaining phases — see Current Milestone section below)
 
 ### Out of Scope
 
@@ -133,6 +136,10 @@ Known technical considerations:
 | Custom underline tab switcher over material-top-tabs | Zero dependencies, matches app patterns, avoids swipe/pull-to-refresh conflict | ✓ Good |
 | Title-only tab rename (no file renames) | Expo Router `name` = file, `title` = label. Preserves all deep routes. | ✓ Good |
 | Squad as social hub, Profile as account screen | Clear information architecture — people vs. settings | ✓ Good |
+| Activity-based heartbeat replaces 5am clock reset (v1.3 Phase 2) | Wall-clock resets clobber intentional Busy windows; heartbeat (4h FADING / 8h DEAD) tracks real liveness | ✓ Good |
+| Mood + Context + Window composer (v1.3 Phase 2) | Two-stage commit (mood row → preset chip + window chip) with 15 preset context tags; every status has non-null expires_at | ✓ Good |
+| `effective_status` view with `security_invoker=true` (v1.3 Phase 2) | View-computed freshness: NULL when expired OR last_active_at >8h stale; friends never see stale data | ✓ Good |
+| TTL-08 retention rollup deferred to v1.4 | pg_cron not enabled; at v1.3 scale (~120 rows/user/month) status_history doesn't need active management | ✓ Good |
 
 ---
-*Last updated: 2026-04-06 after starting v1.3 milestone*
+*Last updated: 2026-04-08 after v1.3 Phase 2 completion*
