@@ -48,18 +48,25 @@ export type Database = {
           status: Database['public']['Enums']['availability_status'];
           context_tag: string | null;
           updated_at: string;
+          // Phase 2 v1.3 (migration 0009) — TTL + heartbeat columns
+          status_expires_at: string;
+          last_active_at: string;
         };
         Insert: {
           user_id: string;
           status?: Database['public']['Enums']['availability_status'];
           context_tag?: string | null;
           updated_at?: string;
+          status_expires_at?: string;
+          last_active_at?: string;
         };
         Update: {
           user_id?: string;
           status?: Database['public']['Enums']['availability_status'];
           context_tag?: string | null;
           updated_at?: string;
+          status_expires_at?: string;
+          last_active_at?: string;
         };
         Relationships: [
           {
@@ -311,7 +318,20 @@ export type Database = {
         ];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      // Phase 2 v1.3 (migration 0009) — effective status view (security_invoker=true).
+      // Encodes the server-side ALIVE/DEAD projection of statuses per D-16.
+      effective_status: {
+        Row: {
+          user_id: string;
+          effective_status: Database['public']['Enums']['availability_status'] | null;
+          context_tag: string | null;
+          status_expires_at: string;
+          last_active_at: string;
+        };
+        Relationships: [];
+      };
+    };
     Enums: {
       availability_status: 'free' | 'busy' | 'maybe';
       friendship_status: 'pending' | 'accepted' | 'rejected';
