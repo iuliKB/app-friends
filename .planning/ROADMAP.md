@@ -159,7 +159,7 @@ Plans:
 **Inputs to this phase (append as phases are planned):**
 - `.planning/phases/01-push-infrastructure-dm-entry-point/SMOKE-TEST.md` (Phase 1, 11 checks)
 - Phase 2 hardware checks — to be added during `/gsd-plan-phase 2`
-- Phase 3 hardware checks — to be added during `/gsd-plan-phase 3`
+- `.planning/phases/03-friend-went-free-loop/03-SMOKE-TEST.md` (Phase 3, 9 checks)
 - Phase 4 hardware checks — to be added during `/gsd-plan-phase 4`
 
 **Planner rule for Phases 2-4:** Any manual smoke-test check that requires a real device should be authored into the phase's own `SMOKE-TEST.md` but NOT gate phase completion. Instead, append the file path to this phase's "Inputs" list above. Phase 5 will consolidate and execute them all.
