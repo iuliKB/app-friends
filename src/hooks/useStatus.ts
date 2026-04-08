@@ -5,10 +5,6 @@
 // Cross-screen sync: Zustand useStatusStore (replaces D-25 react-query plan).
 // Debounce: module-scope lastTouchAt ref, 60s floor (D-34, T-02-15 mitigation).
 // Signout: module-scope useAuthStore.subscribe clears store (T-02-16 mitigation).
-//
-// Back-compat shims (status, contextTag, updateStatus, updateContextTag) exist
-// so the pre-Phase-2 callers in HomeScreen.tsx + profile.tsx keep compiling
-// until Plan 06 rewrites them to consume the new shape directly.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -16,7 +12,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { computeWindowExpiry } from '@/lib/windows';
-import type { StatusValue, WindowId, CurrentStatus, HeartbeatState, EmojiTag } from '@/types/app';
+import type { StatusValue, WindowId, CurrentStatus, HeartbeatState } from '@/types/app';
 import { markPushPromptEligible } from '@/hooks/usePushNotifications';
 
 // ---------------------------------------------------------------------------
@@ -44,7 +40,6 @@ const TOUCH_DEBOUNCE_MS = 60_000;
 let lastTouchAt = 0;
 
 export interface UseStatusResult {
-  // New Phase 2 shape (D-33)
   currentStatus: CurrentStatus | null;
   loading: boolean;
   saving: boolean;
@@ -55,11 +50,6 @@ export interface UseStatusResult {
     windowId: WindowId
   ) => Promise<{ error: string | null }>;
   touch: () => Promise<void>;
-  // Back-compat shims (removed by Plan 06 when HomeScreen + profile are rewritten)
-  status: StatusValue | null;
-  contextTag: EmojiTag;
-  updateStatus: (newStatus: StatusValue) => Promise<{ error: string | null }>;
-  updateContextTag: (emoji: EmojiTag) => Promise<{ error: string | null }>;
 }
 
 export function useStatus(): UseStatusResult {
@@ -168,52 +158,12 @@ export function useStatus(): UseStatusResult {
     [currentStatus?.status_expires_at, currentStatus?.last_active_at]
   );
 
-  // ---------------------------------------------------------------------------
-  // Back-compat shims — consumed by HomeScreen.tsx + profile.tsx until Plan 06.
-  // Plan 06 deletes these along with the old call sites.
-  // ---------------------------------------------------------------------------
-  const updateStatus = useCallback(
-    async (newStatus: StatusValue): Promise<{ error: string | null }> => {
-      // Temporary bridge: default to 3h window, preserve existing tag.
-      return setStatus(newStatus, currentStatus?.context_tag ?? null, '3h');
-    },
-    [setStatus, currentStatus?.context_tag]
-  );
-
-  const updateContextTag = useCallback(
-    async (emoji: EmojiTag): Promise<{ error: string | null }> => {
-      if (!session || !currentStatus) return { error: 'Not ready' };
-      const nextTag = currentStatus.context_tag === emoji ? null : emoji;
-      const nowIso = new Date().toISOString();
-      const { error } = await supabase
-        .from('statuses')
-        .update({ context_tag: nextTag, last_active_at: nowIso })
-        .eq('user_id', session.user.id);
-      if (!error) {
-        setCurrentStatus({
-          ...currentStatus,
-          context_tag: nextTag,
-          last_active_at: nowIso,
-        });
-        markPushPromptEligible().catch(() => {});
-      }
-      return { error: error?.message ?? null };
-    },
-    [session, currentStatus, setCurrentStatus]
-  );
-
   return {
-    // New shape (D-33)
     currentStatus,
     loading,
     saving,
     heartbeatState,
     setStatus,
     touch,
-    // Back-compat shims (removed by Plan 06)
-    status: currentStatus?.status ?? null,
-    contextTag: (currentStatus?.context_tag as EmojiTag) ?? null,
-    updateStatus,
-    updateContextTag,
   };
 }
