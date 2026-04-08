@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   Animated,
   FlatList,
@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,20 +16,49 @@ import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { useStatus } from '@/hooks/useStatus';
-import { SegmentedControl } from '@/components/status/SegmentedControl';
+import { MoodPicker } from '@/components/status/MoodPicker';
+import { ReEngagementBanner } from '@/components/home/ReEngagementBanner';
 import { HomeFriendCard } from '@/components/home/HomeFriendCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import type { FriendWithStatus } from '@/hooks/useFriends';
-import type { StatusValue } from '@/types/app';
 
 export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { status, loading: statusLoading, saving, updateStatus } = useStatus();
+  const { heartbeatState, currentStatus, loading: statusLoading } = useStatus();
   const { friends, freeFriends, otherFriends, error, refreshing, handleRefresh } = useHomeScreen();
 
   const countScale = useRef(new Animated.Value(1)).current;
   const prevCountRef = useRef(freeFriends.length);
+
+  // OVR-06: 60s tick to force heartbeat re-evaluation across own + friend rows
+  // without a refetch. setHeartbeatTick is enough to trigger a re-render that
+  // recomputes computeHeartbeatState() in HomeFriendCard + the partition above.
+  const [, setHeartbeatTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setHeartbeatTick((t) => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // D-27: "What's your status today?" heading appears only when the user opens
+  // Home with own heartbeat already DEAD. Once they commit anything in this
+  // session (or it flips back to alive/fading), the heading is suppressed for
+  // the rest of the session.
+  const deadOnOpenRef = useRef(heartbeatState === 'dead');
+  const [hasCommittedThisSession, setHasCommittedThisSession] = useState(false);
+  useEffect(() => {
+    if (currentStatus && heartbeatState !== 'dead') {
+      setHasCommittedThisSession(true);
+    }
+  }, [currentStatus, heartbeatState]);
+  const showDeadHeading = deadOnOpenRef.current && !hasCommittedThisSession;
+
+  // ReEngagementBanner "Update" → scroll the MoodPicker into view (T-02-28 accept).
+  const scrollRef = useRef<ScrollView>(null);
+  const moodPickerYRef = useRef(0);
+  function handleUpdatePressed() {
+    scrollRef.current?.scrollTo({ y: moodPickerYRef.current, animated: false });
+  }
 
   useEffect(() => {
     if (prevCountRef.current !== freeFriends.length) {
@@ -50,17 +78,13 @@ export function HomeScreen() {
     }
   }, [freeFriends.length, countScale]);
 
-  async function handleStatusChange(newStatus: StatusValue) {
-    const { error: statusError } = await updateStatus(newStatus);
-    if (statusError) Alert.alert('Error', "Couldn't update status. Try again.");
-  }
-
   const countHeading =
     freeFriends.length > 0 ? `${freeFriends.length} friends free now` : 'No friends free right now';
 
   return (
     <View style={styles.root}>
       <ScrollView
+        ref={scrollRef}
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + SPACING.sm }]}
         refreshControl={
@@ -76,9 +100,20 @@ export function HomeScreen() {
           <ScreenHeader title="Campfire" />
         </View>
 
-        {/* Status toggle */}
-        <View style={styles.toggleContainer}>
-          <SegmentedControl value={status} onValueChange={handleStatusChange} saving={saving} />
+        {/* Re-engagement banner (FADING heartbeat) */}
+        <ReEngagementBanner onUpdatePressed={handleUpdatePressed} />
+
+        {/* DEAD heading on cold open (D-27) */}
+        {showDeadHeading && <Text style={styles.deadHeading}>{"What's your status today?"}</Text>}
+
+        {/* Mood picker */}
+        <View
+          style={styles.toggleContainer}
+          onLayout={(e) => {
+            moodPickerYRef.current = e.nativeEvent.layout.y;
+          }}
+        >
+          <MoodPicker />
         </View>
 
         {/* Error state */}
@@ -165,6 +200,13 @@ const styles = StyleSheet.create({
   toggleContainer: {
     paddingTop: 0,
     paddingBottom: SPACING.lg,
+  },
+  deadHeading: {
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   errorText: {
     color: COLORS.text.secondary,
