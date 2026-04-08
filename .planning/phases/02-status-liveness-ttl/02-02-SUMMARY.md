@@ -41,9 +41,10 @@ patterns-established:
 requirements-completed: [TTL-08]
 
 # Metrics
-duration: ~10min (autonomous portion; pending human Studio verification)
+duration: ~10min (autonomous portion) + human Studio verification
 completed: 2026-04-08
-status: PARTIAL — pending human Studio verification (5 manual checks)
+status: COMPLETE
+human-verification: approved at 2026-04-08T00:00:00Z
 ---
 
 # Phase 02 Plan 02: Apply Migration 0009 to Live Supabase Summary
@@ -52,9 +53,9 @@ status: PARTIAL — pending human Studio verification (5 manual checks)
 
 ## Status
 
-**PARTIAL — autonomous verification complete; awaiting human Studio confirmation.**
+**COMPLETE — autonomous verification passed; all 5 human Studio checks approved.**
 
-The 6 automated verification SELECTs against the live database all returned the expected shape (see "Verification Trace" below). The 5 manual Supabase Studio checks from `<how-to-verify>` are still pending — the user must approve before this plan is marked complete.
+Human verification: **approved at 2026-04-08T00:00:00Z**. All 5 manual Supabase Studio checks from `<how-to-verify>` passed. TTL-08 deferral to v1.4 acknowledged by user. The 6 automated verification SELECTs against the live database also returned the expected shape (see "Verification Trace" below).
 
 ## Performance
 
@@ -230,14 +231,16 @@ None during execution. The autonomous portion ran clean.
 
 ## Next Phase Readiness
 
-**Blocked on:** Human Studio verification (5 manual checks from `<how-to-verify>`). Once the user types `approved`, this SUMMARY will be promoted from PARTIAL to COMPLETE and downstream Plans 02-03..02-06 are unblocked.
+**Unblocked.** Human Studio verification approved 2026-04-08T00:00:00Z — all 5 manual checks passed. Downstream Plans 02-03..02-06 are cleared to consume the live schema.
 
-**Once approved:**
-- 02-03 (already has SUMMARY) — already executed against the now-live schema; reconfirm no errors at first foreground.
+- 02-03 (already has SUMMARY) — executed against the now-live schema; reconfirm no errors at first foreground.
 - 02-04, 02-05 (05 has SUMMARY), 02-06 — all read `effective_status` and write `last_active_at`; all unblocked.
+
+TTL-08 retention rollup/GC remains DEFERRED to v1.4 per OVR-05 (user acknowledged at approval).
 
 ---
 *Phase: 02-status-liveness-ttl*
 *Plan: 02*
-*Status: PARTIAL — pending human Studio verification*
+*Status: COMPLETE*
 *Autonomous portion completed: 2026-04-08*
+*Human verification approved: 2026-04-08T00:00:00Z*
