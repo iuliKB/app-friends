@@ -6,6 +6,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { COLORS, FONT_SIZE } from '@/theme';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useInvitationCount } from '@/hooks/useInvitationCount';
+import { useStatus } from '@/hooks/useStatus';
 import { useAuthStore } from '@/stores/useAuthStore';
 import {
   registerForPushNotifications,
@@ -18,6 +19,7 @@ import { PrePromptModal } from '@/components/notifications/PrePromptModal';
 export default function TabsLayout() {
   const { count: pendingCount } = usePendingRequestsCount();
   const { count: invitationCount } = useInvitationCount();
+  const { touch } = useStatus();
   const insets = useSafeAreaInsets();
 
   // PUSH-01 + PUSH-02 + PUSH-08 (D-16, D-01..D-03): register token once per authenticated
@@ -31,23 +33,26 @@ export default function TabsLayout() {
   useEffect(() => {
     if (!userId) return;
 
-    // Initial register on session-ready
+    // Initial register + cold-launch touch (HEART-02)
     registerForPushNotifications(userId)
       .then((result) => setRegisterState(result))
       .catch(() => {});
+    touch().catch(() => {});
 
-    // Foreground re-register
+    // Foreground re-register + touch (HEART-02 on AppState 'active') — OVR-04:
+    // single AppState listener; do NOT add a second one for touch.
     const sub = AppState.addEventListener('change', (next) => {
       if (appState.current.match(/inactive|background/) && next === 'active') {
         registerForPushNotifications(userId)
           .then((result) => setRegisterState(result))
           .catch(() => {});
+        touch().catch(() => {});
       }
       appState.current = next;
     });
 
     return () => sub.remove();
-  }, [userId]);
+  }, [userId, touch]);
 
   // PrePromptModal handlers (D-02, D-03).
   async function handlePrePromptAccept() {
