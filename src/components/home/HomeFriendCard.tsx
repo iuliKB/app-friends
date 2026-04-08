@@ -3,18 +3,43 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
-import { StatusPill } from '@/components/friends/StatusPill';
+import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
+import { formatWindowLabel } from '@/lib/windows';
 import { supabase } from '@/lib/supabase';
 import { showActionSheet } from '@/lib/action-sheet';
 import type { FriendWithStatus } from '@/hooks/useFriends';
+import type { StatusValue } from '@/types/app';
 
 interface HomeFriendCardProps {
   friend: FriendWithStatus;
-  showStatusPill?: boolean;
 }
 
-export function HomeFriendCard({ friend, showStatusPill = false }: HomeFriendCardProps) {
+const MOOD_LABEL: Record<StatusValue, string> = {
+  free: 'Free',
+  busy: 'Busy',
+  maybe: 'Maybe',
+};
+
+export function HomeFriendCard({ friend }: HomeFriendCardProps) {
   const router = useRouter();
+
+  // HEART-04 / TTL-03: compute heartbeat per render so the screen-level 60s
+  // interval (HomeScreen) forces re-evaluation without a refetch (OVR-06).
+  const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
+
+  let statusLabel: string;
+  if (heartbeatState === 'dead') {
+    statusLabel = 'inactive';
+  } else if (heartbeatState === 'fading') {
+    statusLabel = `${MOOD_LABEL[friend.status]} · ${formatDistanceToNow(friend.last_active_at)}`;
+  } else {
+    // ALIVE: TTL-03 format "{Mood} · {tag} · {window}" (tag/window optional)
+    const windowLabel = friend.status_expires_at ? formatWindowLabel(friend.status_expires_at) : '';
+    const segments: string[] = [MOOD_LABEL[friend.status]];
+    if (friend.context_tag) segments.push(String(friend.context_tag));
+    if (windowLabel) segments.push(windowLabel);
+    statusLabel = segments.join(' · ');
+  }
 
   // Single tap → DM (D-04, D-08). Mirrors src/app/friends/[id].tsx:55-67.
   async function handlePress() {
@@ -51,9 +76,13 @@ export function HomeFriendCard({ friend, showStatusPill = false }: HomeFriendCar
       onPress={handlePress}
       onLongPress={handleLongPress}
       delayLongPress={400}
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.card,
+        heartbeatState === 'fading' && styles.fadingCard,
+        pressed && styles.pressed,
+      ]}
       accessibilityRole="button"
-      accessibilityLabel={`${friend.display_name}, ${friend.status}. Tap to message, long press for more.`}
+      accessibilityLabel={`${friend.display_name}, ${statusLabel}. Tap to message, long press for more.`}
     >
       <View style={styles.avatarWrapper}>
         <AvatarCircle size={56} imageUri={friend.avatar_url} displayName={friend.display_name} />
@@ -66,11 +95,9 @@ export function HomeFriendCard({ friend, showStatusPill = false }: HomeFriendCar
       <Text style={styles.displayName} numberOfLines={1}>
         {friend.display_name}
       </Text>
-      {showStatusPill && (
-        <View style={styles.pillWrapper}>
-          <StatusPill status={friend.status} />
-        </View>
-      )}
+      <Text style={styles.statusLabel} numberOfLines={1}>
+        {statusLabel}
+      </Text>
     </Pressable>
   );
 }
@@ -87,6 +114,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  fadingCard: {
+    opacity: 0.6,
   },
   avatarWrapper: {
     position: 'relative',
@@ -110,7 +140,10 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
     textAlign: 'center',
   },
-  pillWrapper: {
+  statusLabel: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
     marginTop: SPACING.xs,
   },
 });

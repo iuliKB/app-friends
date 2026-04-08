@@ -127,7 +127,7 @@ export function HomeScreen() {
               keyExtractor={(item) => item.friend_id}
               numColumns={3}
               scrollEnabled={false}
-              renderItem={({ item }) => <HomeFriendCard friend={item} showStatusPill />}
+              renderItem={({ item }) => <HomeFriendCard friend={item} />}
               columnWrapperStyle={styles.columnWrapper}
               contentContainerStyle={styles.gridContent}
             />
