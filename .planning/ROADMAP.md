@@ -76,7 +76,16 @@ Plans:
 4. When the user's own status has expired, a dismissible "Your status expired — what's your status now?" banner appears above the Home Free/Other lists and goes away on next status set or in-memory dismissal until next foreground.
 5. Every status transition is appended to `status_history` via a SECURITY DEFINER trigger, RLS-protected (SELECT own/friend), with a retention strategy that logs on transitions only, rolls up entries older than 7 days, and garbage-collects raw rows at 30 days.
 
-**Plans:** TBD
+**Plans:** 6 plans
+
+Plans:
+- [x] 02-01-PLAN.md — Migration 0009 authored (columns + status_history + trigger + effective_status view)
+- [x] 02-02-PLAN.md — [BLOCKING] Apply migration 0009 via supabase db push; TTL-08 formally deferred per OVR-05
+- [x] 02-03-PLAN.md — Pure utilities: src/lib/heartbeat.ts, src/lib/windows.ts, moodPresets.ts, useStatusStore (Zustand), type extensions
+- [x] 02-04-PLAN.md — useStatus rewrite (D-33) + AppState touch() extension in (tabs)/_layout.tsx (HEART-02)
+- [x] 02-05-PLAN.md — MoodPicker component (TTL-01/02) + ReEngagementBanner component (TTL-06/HEART-05)
+- [x] 02-06-PLAN.md — Screen integration: HomeScreen + profile.tsx + HomeFriendCard heartbeat rendering + effective_status reads + shim cleanup
+
 
 ---
 
