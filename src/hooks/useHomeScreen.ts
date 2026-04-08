@@ -3,9 +3,12 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useHomeStore } from '@/stores/useHomeStore';
 import type { FriendWithStatus } from '@/hooks/useFriends';
-import type { StatusValue, EmojiTag } from '@/types/app';
+import type { StatusValue } from '@/types/app';
+import { computeHeartbeatState } from '@/lib/heartbeat';
 
-const STATUS_SORT_ORDER: Record<StatusValue, number> = {
+// Single source of truth for status sort order, imported by useFriends as well (OVR-07).
+// Order matches MoodPicker row order: free → maybe → busy.
+export const STATUS_SORT_ORDER: Record<StatusValue, number> = {
   free: 0,
   maybe: 1,
   busy: 2,
@@ -13,7 +16,7 @@ const STATUS_SORT_ORDER: Record<StatusValue, number> = {
 
 export function useHomeScreen() {
   const session = useAuthStore((s) => s.session);
-  const { friends, statusUpdatedAt, setFriends } = useHomeStore();
+  const { friends, lastActiveAt, setFriends } = useHomeStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -72,21 +75,30 @@ export function useHomeScreen() {
       const friendIds = rows.map((r) => r.friend_id);
       let statusMap: Map<
         string,
-        { status: StatusValue; context_tag: EmojiTag; updated_at: string }
+        {
+          status: StatusValue;
+          context_tag: string | null;
+          status_expires_at: string | null;
+          last_active_at: string | null;
+        }
       > = new Map();
 
       if (friendIds.length > 0) {
+        // OVR-03: read from the effective_status view, not the statuses table.
+        // The view returns NULL effective_status for expired/dead rows; we default
+        // to 'maybe' so heartbeat computation classifies them DEAD on the card.
         const { data: statuses } = await supabase
-          .from('statuses')
-          .select('user_id, status, context_tag, updated_at')
+          .from('effective_status')
+          .select('user_id, effective_status, context_tag, status_expires_at, last_active_at')
           .in('user_id', friendIds);
 
         if (statuses) {
           for (const s of statuses) {
             statusMap.set(s.user_id, {
-              status: (s.status as StatusValue) ?? 'maybe',
-              context_tag: (s.context_tag as EmojiTag) ?? null,
-              updated_at: s.updated_at ?? '',
+              status: ((s.effective_status as StatusValue) ?? 'maybe') as StatusValue,
+              context_tag: (s.context_tag as string | null) ?? null,
+              status_expires_at: (s.status_expires_at as string | null) ?? null,
+              last_active_at: (s.last_active_at as string | null) ?? null,
             });
           }
         }
@@ -99,14 +111,18 @@ export function useHomeScreen() {
         avatar_url: r.avatar_url,
         status: statusMap.get(r.friend_id)?.status ?? 'maybe',
         context_tag: statusMap.get(r.friend_id)?.context_tag ?? null,
+        status_expires_at: statusMap.get(r.friend_id)?.status_expires_at ?? null,
+        last_active_at: statusMap.get(r.friend_id)?.last_active_at ?? null,
       }));
 
-      const newStatusUpdatedAt: Record<string, string> = {};
+      const newLastActiveAt: Record<string, string> = {};
       for (const [userId, statusData] of statusMap.entries()) {
-        newStatusUpdatedAt[userId] = statusData.updated_at;
+        if (statusData.last_active_at) {
+          newLastActiveAt[userId] = statusData.last_active_at;
+        }
       }
 
-      setFriends(allFriends, newStatusUpdatedAt);
+      setFriends(allFriends, newLastActiveAt);
       const ids = allFriends.map((f) => f.friend_id);
       subscribeRealtime(ids);
       setLoading(false);
@@ -129,17 +145,27 @@ export function useHomeScreen() {
     };
   }, [session?.user?.id]);
 
+  // HEART-04 partition: ALIVE/FADING free → freeFriends; everything else (including
+  // DEAD regardless of stored mood) → otherFriends. Sort free by last_active_at DESC
+  // per OVR-07 (freshness, not updated_at).
   const freeFriends = friends
-    .filter((f) => f.status === 'free')
+    .filter((f) => {
+      const hb = computeHeartbeatState(f.status_expires_at, f.last_active_at);
+      return f.status === 'free' && (hb === 'alive' || hb === 'fading');
+    })
     .sort((a, b) => {
-      const aTime = statusUpdatedAt[a.friend_id] ?? '';
-      const bTime = statusUpdatedAt[b.friend_id] ?? '';
-      // Sort by updated_at descending (most recent first)
-      return bTime.localeCompare(aTime);
+      const aActive = lastActiveAt[a.friend_id] ?? '';
+      const bActive = lastActiveAt[b.friend_id] ?? '';
+      return bActive.localeCompare(aActive);
     });
 
   const otherFriends = friends
-    .filter((f) => f.status !== 'free')
+    .filter((f) => {
+      const hb = computeHeartbeatState(f.status_expires_at, f.last_active_at);
+      // Everyone Else: any DEAD friend (regardless of stored mood) plus all
+      // ALIVE/FADING non-free friends.
+      return hb === 'dead' || f.status !== 'free';
+    })
     .sort((a, b) => {
       const orderDiff = STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status];
       if (orderDiff !== 0) return orderDiff;

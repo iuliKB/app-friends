@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
-import type { StatusValue, EmojiTag, Profile } from '@/types/app';
+import type { StatusValue, Profile } from '@/types/app';
 import { markPushPromptEligible } from '@/hooks/usePushNotifications';
+import { STATUS_SORT_ORDER } from '@/hooks/useHomeScreen';
 
 export interface FriendWithStatus {
   friend_id: string;
@@ -10,7 +11,9 @@ export interface FriendWithStatus {
   display_name: string;
   avatar_url: string | null;
   status: StatusValue;
-  context_tag: EmojiTag;
+  context_tag: string | null;
+  status_expires_at: string | null;
+  last_active_at: string | null;
 }
 
 export interface PendingRequest {
@@ -24,12 +27,6 @@ export interface PendingRequest {
     avatar_url: string | null;
   };
 }
-
-const STATUS_ORDER: Record<StatusValue, number> = {
-  free: 0,
-  busy: 1,
-  maybe: 2,
-};
 
 export function useFriends() {
   const session = useAuthStore((s) => s.session);
@@ -58,19 +55,29 @@ export function useFriends() {
       }[];
 
       const friendIds = rows.map((r) => r.friend_id);
-      let statusMap: Record<string, { status: StatusValue; context_tag: EmojiTag }> = {};
+      let statusMap: Record<
+        string,
+        {
+          status: StatusValue;
+          context_tag: string | null;
+          status_expires_at: string | null;
+          last_active_at: string | null;
+        }
+      > = {};
 
       if (friendIds.length > 0) {
         const { data: statuses } = await supabase
-          .from('statuses')
-          .select('user_id, status, context_tag')
+          .from('effective_status')
+          .select('user_id, effective_status, context_tag, status_expires_at, last_active_at')
           .in('user_id', friendIds);
 
         if (statuses) {
           for (const s of statuses) {
             statusMap[s.user_id] = {
-              status: (s.status as StatusValue) ?? 'maybe',
-              context_tag: (s.context_tag as EmojiTag) ?? null,
+              status: ((s.effective_status as StatusValue) ?? 'maybe') as StatusValue,
+              context_tag: (s.context_tag as string | null) ?? null,
+              status_expires_at: (s.status_expires_at as string | null) ?? null,
+              last_active_at: (s.last_active_at as string | null) ?? null,
             };
           }
         }
@@ -83,10 +90,12 @@ export function useFriends() {
         avatar_url: r.avatar_url,
         status: statusMap[r.friend_id]?.status ?? 'maybe',
         context_tag: statusMap[r.friend_id]?.context_tag ?? null,
+        status_expires_at: statusMap[r.friend_id]?.status_expires_at ?? null,
+        last_active_at: statusMap[r.friend_id]?.last_active_at ?? null,
       }));
 
       result.sort((a, b) => {
-        const orderDiff = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+        const orderDiff = STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status];
         if (orderDiff !== 0) return orderDiff;
         return a.display_name.localeCompare(b.display_name);
       });
