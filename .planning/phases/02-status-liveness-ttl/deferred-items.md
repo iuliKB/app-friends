@@ -1,0 +1,1 @@
+- profile.tsx:46 react-hooks/exhaustive-deps useCallback missing 'fetchProfile' (pre-existing, not introduced by 02-06)

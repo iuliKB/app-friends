@@ -16,25 +16,20 @@ import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
-import { useStatus } from '@/hooks/useStatus';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
-import { SegmentedControl } from '@/components/status/SegmentedControl';
-import { EmojiTagPicker } from '@/components/status/EmojiTagPicker';
+import { MoodPicker } from '@/components/status/MoodPicker';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import {
   registerForPushNotifications,
   unregisterForPushNotifications,
   getNotificationsEnabled,
 } from '@/hooks/usePushNotifications';
-import type { EmojiTag, StatusValue } from '@/types/app';
 
 export default function ProfileScreen() {
   const session = useAuthStore((s) => s.session);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [loggingOut, setLoggingOut] = useState(false);
-  const { status, contextTag, loading, saving, updateStatus, updateContextTag } = useStatus();
-  const [savingTag, setSavingTag] = useState<EmojiTag>(null);
   const [profile, setProfile] = useState<{
     display_name: string;
     avatar_url: string | null;
@@ -98,25 +93,16 @@ export default function ProfileScreen() {
     setLoggingOut(false);
   }
 
-  async function handleStatusChange(newStatus: StatusValue) {
-    const { error } = await updateStatus(newStatus);
-    if (error) Alert.alert('Error', "Couldn't update status. Try again.");
-  }
-
-  async function handleTagChange(emoji: EmojiTag) {
-    setSavingTag(emoji);
-    const { error } = await updateContextTag(emoji);
-    setSavingTag(null);
-    if (error) Alert.alert('Error', "Couldn't update status. Try again.");
-  }
-
   function formatMemberSince(isoDate: string): string {
     const date = new Date(isoDate);
     return `Member since ${date.toLocaleString('en-US', { month: 'short', year: 'numeric' })}`;
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.lg }]}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.lg }]}
+    >
       {/* Screen title */}
       <View style={styles.headerWrapper}>
         <ScreenHeader title="Profile" />
@@ -144,20 +130,7 @@ export default function ProfileScreen() {
 
       {/* Your Status section */}
       <Text style={styles.sectionHeader}>YOUR STATUS</Text>
-      {loading ? (
-        <ActivityIndicator color={COLORS.text.secondary} style={styles.loader} />
-      ) : (
-        <>
-          <SegmentedControl value={status} onValueChange={handleStatusChange} saving={saving} />
-          <EmojiTagPicker
-            selectedTag={contextTag}
-            onTagChange={handleTagChange}
-            currentStatus={status}
-            saving={saving}
-            savingTag={savingTag}
-          />
-        </>
-      )}
+      <MoodPicker />
 
       {/* QR Code */}
       <TouchableOpacity
@@ -165,7 +138,12 @@ export default function ProfileScreen() {
         onPress={() => router.push('/qr-code' as never)}
         activeOpacity={0.7}
       >
-        <Ionicons name="qr-code-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} style={styles.rowIcon} />
+        <Ionicons
+          name="qr-code-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
         <Text style={styles.rowLabel}>My QR Code</Text>
         <View style={styles.rowRight}>
           <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
@@ -176,14 +154,24 @@ export default function ProfileScreen() {
       <Text style={styles.sectionHeader}>ACCOUNT</Text>
 
       <View style={styles.row}>
-        <Ionicons name="mail-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} style={styles.rowIcon} />
+        <Ionicons
+          name="mail-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
         <Text style={styles.rowLabel} numberOfLines={1} ellipsizeMode="tail">
           {session?.user?.email ?? ''}
         </Text>
       </View>
 
       <View style={styles.row}>
-        <Ionicons name="calendar-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} style={styles.rowIcon} />
+        <Ionicons
+          name="calendar-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
         <Text style={styles.rowLabel}>
           {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
         </Text>
@@ -217,9 +205,7 @@ export default function ProfileScreen() {
         )}
       </TouchableOpacity>
 
-      <Text style={styles.versionText}>
-        Campfire v{Constants.expoConfig?.version ?? ''}
-      </Text>
+      <Text style={styles.versionText}>Campfire v{Constants.expoConfig?.version ?? ''}</Text>
     </ScrollView>
   );
 }
