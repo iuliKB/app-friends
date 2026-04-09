@@ -133,3 +133,35 @@ export function formatWindowLabel(expiresAt: string | Date, now: Date = new Date
   const display = h % 12 === 0 ? 12 : h % 12;
   return `until ${display}:${m}${suffix}`;
 }
+
+/**
+ * Phase 3 — "Keep it" action helper (EXPIRY-01, D-03).
+ * Given the current window, returns the next-larger window for extending
+ * the status. Mapping:
+ *   '1h'          -> '3h'
+ *   '3h'          -> 'until_6pm'   (falls back to 'rest_of_day' when past 5:30pm via callers)
+ *   'until_6pm'   -> 'until_10pm'
+ *   'until_10pm'  -> 'rest_of_day'
+ *   'rest_of_day' -> 'rest_of_day' (already the largest — re-anchor)
+ * Unknown / null → '3h' (safe default consistent with [Heads down] fallback).
+ *
+ * Callers that hit the boundary between 'until_6pm' and 'until_10pm' based on
+ * time-of-day should use getWindowOptions(now) to check visibility and fall
+ * back to '3h' if neither 'until_*' option is visible.
+ */
+export function nextLargerWindow(current: WindowId | null): WindowId {
+  switch (current) {
+    case '1h':
+      return '3h';
+    case '3h':
+      return 'until_6pm';
+    case 'until_6pm':
+      return 'until_10pm';
+    case 'until_10pm':
+      return 'rest_of_day';
+    case 'rest_of_day':
+      return 'rest_of_day';
+    default:
+      return '3h';
+  }
+}

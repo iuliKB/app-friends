@@ -29,6 +29,12 @@ export interface CurrentStatus {
   context_tag: string | null;
   status_expires_at: string; // ISO 8601
   last_active_at: string; // ISO 8601
+  // Phase 3 — Carried so the expiry_warning response listener can compute
+  // nextLargerWindow without re-deriving from raw timestamps (CONTEXT D-03, A8).
+  // Optional for backward compat: legacy rows loaded from effective_status have no
+  // window_id column. Plan 03-05 writes the value on every setStatus call.
+  // Plan 03-06 normalizes `current.window_id ?? null` at the read site.
+  window_id?: WindowId | null;
 }
 
 export interface MoodPreset {
