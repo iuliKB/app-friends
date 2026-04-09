@@ -38,7 +38,11 @@ if (Platform.OS !== 'web') {
   // Action identifiers are stable strings used by the response listener.
   Notifications.setNotificationCategoryAsync('expiry_warning', [
     { identifier: 'KEEP_IT', buttonTitle: 'Keep it', options: { opensAppToForeground: true } },
-    { identifier: 'HEADS_DOWN', buttonTitle: 'Heads down', options: { opensAppToForeground: true } },
+    {
+      identifier: 'HEADS_DOWN',
+      buttonTitle: 'Heads down',
+      options: { opensAppToForeground: true },
+    },
   ]).catch(() => {
     // Not supported in Expo Go; safe to swallow
   });
