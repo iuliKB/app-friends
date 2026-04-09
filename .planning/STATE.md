@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Liveness & Notifications
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-04-09T05:02:33.711Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-04-09T05:06:28.931Z"
 last_activity: 2026-04-09
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 24
-  completed_plans: 21
-  percent: 88
+  completed_plans: 22
+  percent: 92
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 Milestone: v1.3 Liveness & Notifications
 Phase: 03 (friend-went-free-loop) — EXECUTING
-Plan: 3 of 8
+Plan: 4 of 8
 Status: Ready to execute
 Last activity: 2026-04-09
 
@@ -45,6 +45,7 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 | Orphaned requirements | 0 |
 | Phase 03 P04 | 15 | 2 tasks | 3 files |
 | Phase 03 P03 | 8 minutes | 1 tasks | 1 files |
+| Phase 03 P05 | 2 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 - [Phase 03]: expiryScheduler no-ops on web (Platform.OS guard) and when fire time within 1-min safety margin; ReEngagementBanner covers short windows
 - [Phase 03]: busy/DEAD conflation logged as 'recipient_busy' — NOTE (CONTEXT D-11) in code documents this; dedicated 'recipient_dead' enum deferred to v1.4
 - [Phase 03]: Fail-open quiet hours: local_hour === null skips the quiet-hours gate rather than suppressing — matches CONTEXT D-16
+- [Phase 03]: window_id set to null on hydrate (server effective_status view carries no window_id column); only re-derived on client setStatus call
+- [Phase 03]: syncDeviceTimezone placed at module scope to avoid useCallback capture; fail-open matches D-16 (Hermes guard discards tz rather than computing offset-derived string)
 
 ### Pending Todos
 
@@ -86,5 +89,5 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 
 ## Session Continuity
 
-Last session: 2026-04-09T05:02:33.708Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-04-09T05:06:28.928Z
+Stopped at: Completed 03-05-PLAN.md
