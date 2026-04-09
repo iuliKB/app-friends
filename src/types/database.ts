@@ -15,6 +15,9 @@ export type Database = {
           avatar_url: string | null;
           created_at: string;
           updated_at: string;
+          // Phase 3 v1.3 (migration 0010) — timezone + friend-free toggle
+          timezone: string | null;
+          notify_friend_free: boolean;
         };
         Insert: {
           id: string;
@@ -23,6 +26,9 @@ export type Database = {
           avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
+          // Phase 3 v1.3 (migration 0010) — timezone + friend-free toggle
+          timezone?: string | null;
+          notify_friend_free?: boolean;
         };
         Update: {
           id?: string;
@@ -31,6 +37,9 @@ export type Database = {
           avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
+          // Phase 3 v1.3 (migration 0010) — timezone + friend-free toggle
+          timezone?: string | null;
+          notify_friend_free?: boolean;
         };
         Relationships: [
           {
@@ -317,6 +326,88 @@ export type Database = {
           },
         ];
       };
+      // Phase 3 v1.3 (migration 0010) — outbox table for friend-went-free webhook dispatch
+      free_transitions: {
+        Row: {
+          id: number;
+          sender_id: string;
+          occurred_at: string;
+          context_tag: string | null;
+          sent_at: string | null;
+          attempts: number;
+          last_error: string | null;
+        };
+        Insert: {
+          id?: number;
+          sender_id: string;
+          occurred_at?: string;
+          context_tag?: string | null;
+          sent_at?: string | null;
+          attempts?: number;
+          last_error?: string | null;
+        };
+        Update: {
+          id?: number;
+          sender_id?: string;
+          occurred_at?: string;
+          context_tag?: string | null;
+          sent_at?: string | null;
+          attempts?: number;
+          last_error?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'free_transitions_sender_id_fkey';
+            columns: ['sender_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      // Phase 3 v1.3 (migration 0010) — rate-limit log for friend-free push decisions
+      friend_free_pushes: {
+        Row: {
+          id: number;
+          recipient_id: string;
+          sender_id: string;
+          sent_at: string;
+          suppressed: boolean;
+          suppression_reason: string | null;
+        };
+        Insert: {
+          id?: number;
+          recipient_id: string;
+          sender_id: string;
+          sent_at?: string;
+          suppressed: boolean;
+          suppression_reason?: string | null;
+        };
+        Update: {
+          id?: number;
+          recipient_id?: string;
+          sender_id?: string;
+          sent_at?: string;
+          suppressed?: boolean;
+          suppression_reason?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'friend_free_pushes_recipient_id_fkey';
+            columns: ['recipient_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'friend_free_pushes_sender_id_fkey';
+            columns: ['sender_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
       // Phase 2 v1.3 (migration 0009) — effective status view (security_invoker=true).
@@ -373,6 +464,19 @@ export type Database = {
         };
         Returns: string;
       };
+      // Phase 3 v1.3 (migration 0010) — returns full candidate set for friend-free push
+      get_friend_free_candidates: {
+        Args: {
+          p_sender: string;
+        };
+        Returns: {
+          recipient_id: string;
+          notify_friend_free: boolean;
+          effective_status: Database['public']['Enums']['availability_status'] | null;
+          local_hour: number | null;
+          push_tokens: string[];
+        }[];
+      };
     };
     CompositeTypes: Record<string, never>;
   };
@@ -403,3 +507,7 @@ export type Message = Tables<'messages'>;
 export type AvailabilityStatus = Enums<'availability_status'>;
 export type FriendshipStatus = Enums<'friendship_status'>;
 export type RsvpStatus = Enums<'rsvp_status'>;
+
+// Phase 3 v1.3 row-type aliases
+export type FreeTransition = Tables<'free_transitions'>;
+export type FriendFreePush = Tables<'friend_free_pushes'>;
