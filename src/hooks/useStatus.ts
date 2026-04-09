@@ -35,6 +35,35 @@ function installAuthListenerOnce() {
 }
 
 // ---------------------------------------------------------------------------
+// Phase 3 FREE-06 / D-14, D-15 — timezone sync with Hermes iOS guard.
+// Called from the hydrate effect on session change. Fire-and-forget; silent on error.
+// ---------------------------------------------------------------------------
+async function syncDeviceTimezone(userId: string): Promise<void> {
+  let tz: string | null = null;
+  try {
+    tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    tz = null;
+  }
+  // Hermes iOS fallback: if we got 'UTC' but the device offset is non-zero, it's lying.
+  // See RESEARCH Pitfall 1 + github.com/facebook/hermes/issues/1172.
+  if (tz === 'UTC' && new Date().getTimezoneOffset() !== 0) {
+    tz = null;
+  }
+  if (!tz) return; // Fail-open per D-16 — Edge Function falls back to UTC
+
+  // Only write if value differs from what's stored
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('timezone')
+    .eq('id', userId)
+    .maybeSingle();
+  if (existing?.timezone === tz) return;
+
+  await supabase.from('profiles').update({ timezone: tz }).eq('id', userId);
+}
+
+// ---------------------------------------------------------------------------
 // touch() debounce state (module scope) — 60s per D-34.
 // Mitigates T-02-15: prevents touch spam during rapid background/foreground
 // cycling by short-circuiting writes within the debounce window.
@@ -72,6 +101,8 @@ export function useStatus(): UseStatusResult {
       setLoading(false);
       return;
     }
+    // Phase 3 — timezone sync (D-15). Fire-and-forget, does not gate loading state.
+    syncDeviceTimezone(session.user.id).catch(() => {});
     setLoading(true);
     supabase
       .from('effective_status')
