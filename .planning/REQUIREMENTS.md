@@ -45,16 +45,16 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 
 ### Friend Went Free
 
-- [ ] **FREE-01**: When a friend's status transitions from non-Free → Free, recipients receive a push within ~5 seconds
-- [ ] **FREE-02**: Recipients currently `busy` are skipped; users never get notified about themselves
-- [ ] **FREE-03**: Pairwise rate limit: at most one "friend went Free" push per (recipient, sender) pair per 15 minutes
-- [ ] **FREE-04**: Per-recipient throttle: at most one friend-went-Free push per recipient per 5 minutes
-- [ ] **FREE-05**: Daily hard cap: at most ~3 friend-went-Free pushes per recipient per day
-- [ ] **FREE-06**: Quiet hours: friend-went-Free pushes are suppressed between 22:00 and 08:00 local (hardcoded for v1.3; configurable deferred to v1.4)
-- [ ] **FREE-07**: User can disable "Friend availability" pushes via a new Profile toggle alongside the existing "Plan invites" toggle
-- [ ] **FREE-08**: Push body shows the friend's display name and emoji context tag if set ("Ana is Free • pizza 🍕")
+- [x] **FREE-01**: When a friend's status transitions from non-Free → Free, recipients receive a push within ~5 seconds
+- [x] **FREE-02**: Recipients currently `busy` are skipped; users never get notified about themselves
+- [x] **FREE-03**: Pairwise rate limit: at most one "friend went Free" push per (recipient, sender) pair per 15 minutes
+- [x] **FREE-04**: Per-recipient throttle: at most one friend-went-Free push per recipient per 5 minutes
+- [x] **FREE-05**: Daily hard cap: at most ~3 friend-went-Free pushes per recipient per day
+- [x] **FREE-06**: Quiet hours: friend-went-Free pushes are suppressed between 22:00 and 08:00 local (hardcoded for v1.3; configurable deferred to v1.4)
+- [x] **FREE-07**: User can disable "Friend availability" pushes via a new Profile toggle alongside the existing "Plan invites" toggle
+- [x] **FREE-08**: Push body shows the friend's display name and emoji context tag if set ("Ana is Free • pizza 🍕")
 - [ ] **FREE-09**: Tapping a friend-went-Free notification opens the DM with that friend (cold-start safe — guarded on auth + router ready)
-- [ ] **FREE-10**: Fan-out uses an outbox queue pattern: trigger writes a row to `free_transitions`, Database Webhook fires `notify-friend-free` Edge Function asynchronously (user write latency stays <100ms)
+- [x] **FREE-10**: Fan-out uses an outbox queue pattern: trigger writes a row to `free_transitions`, Database Webhook fires `notify-friend-free` Edge Function asynchronously (user write latency stays <100ms)
 - [ ] **FREE-11**: Operators can monitor unsent rows in the outbox (alert on rows older than 5 minutes)
 - [x] **EXPIRY-01**: Window-expiry push fires ~30 minutes before `status_expires_at` with action buttons **[Keep it]** / **[Heads down]**. "Keep it" extends the window by the next logical step (e.g., "Until 6pm" → "Until 10pm"); "Heads down" sets mood=busy with 3h window. Eligibility skips friends whose heartbeat is DEAD. Runs as a pg_cron sweep or scheduled Edge Function reading from an outbox/schedule table; reuses the fan-out infrastructure from FREE-10.
 
@@ -154,16 +154,16 @@ Explicitly excluded.
 | HEART-03 | Phase 2 | Pending |
 | HEART-04 | Phase 2 | Pending |
 | HEART-05 | Phase 2 | Pending |
-| FREE-01 | Phase 3 | Pending |
-| FREE-02 | Phase 3 | Pending |
-| FREE-03 | Phase 3 | Pending |
-| FREE-04 | Phase 3 | Pending |
-| FREE-05 | Phase 3 | Pending |
-| FREE-06 | Phase 3 | Pending |
-| FREE-07 | Phase 3 | Pending |
-| FREE-08 | Phase 3 | Pending |
+| FREE-01 | Phase 3 | Complete |
+| FREE-02 | Phase 3 | Complete |
+| FREE-03 | Phase 3 | Complete |
+| FREE-04 | Phase 3 | Complete |
+| FREE-05 | Phase 3 | Complete |
+| FREE-06 | Phase 3 | Complete |
+| FREE-07 | Phase 3 | Complete |
+| FREE-08 | Phase 3 | Complete |
 | FREE-09 | Phase 3 | Pending |
-| FREE-10 | Phase 3 | Pending |
+| FREE-10 | Phase 3 | Complete |
 | FREE-11 | Phase 3 | Pending |
 | EXPIRY-01 | Phase 3 | Complete |
 | MORN-01 | Phase 4 | Pending |
