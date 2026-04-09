@@ -37,6 +37,7 @@ export default function ProfileScreen() {
     created_at: string | null;
   } | null>(null);
   const [notificationsEnabled, setNotificationsEnabledState] = useState(true);
+  const [friendFreeEnabled, setFriendFreeEnabled] = useState(true);
 
   // Refetch profile every time Profile tab comes into focus
   useFocusEffect(
@@ -50,10 +51,19 @@ export default function ProfileScreen() {
     if (!session?.user?.id) return;
     const { data } = await supabase
       .from('profiles')
-      .select('display_name, avatar_url, username, created_at')
+      .select('display_name, avatar_url, username, created_at, notify_friend_free')
       .eq('id', session.user.id)
       .single();
-    if (data) setProfile(data);
+    if (data) {
+      setProfile({
+        display_name: data.display_name,
+        avatar_url: data.avatar_url,
+        username: data.username,
+        created_at: data.created_at,
+      });
+      // Phase 3 FREE-07 — hydrate toggle from profiles.notify_friend_free
+      setFriendFreeEnabled(data.notify_friend_free ?? true);
+    }
   }
 
   async function loadNotificationsEnabled() {
@@ -83,6 +93,20 @@ export default function ProfileScreen() {
     } else {
       // Toggle OFF: hard-delete server row + set local opt-out (D-12)
       await unregisterForPushNotifications(session.user.id);
+    }
+  }
+
+  async function handleToggleFriendFree(value: boolean) {
+    if (!session?.user?.id) return;
+    // Optimistic flip; revert on server error
+    setFriendFreeEnabled(value);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ notify_friend_free: value })
+      .eq('id', session.user.id);
+    if (error) {
+      setFriendFreeEnabled(!value);
+      Alert.alert('Update failed', error.message);
     }
   }
 
@@ -193,6 +217,22 @@ export default function ProfileScreen() {
           onValueChange={handleToggleNotifications}
           trackColor={{ false: COLORS.border, true: COLORS.interactive.accent + '40' }}
           thumbColor={notificationsEnabled ? COLORS.interactive.accent : COLORS.border}
+        />
+      </View>
+
+      <View style={styles.row}>
+        <Ionicons
+          name="people-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>Friend availability</Text>
+        <Switch
+          value={friendFreeEnabled}
+          onValueChange={handleToggleFriendFree}
+          trackColor={{ false: COLORS.border, true: COLORS.interactive.accent + '40' }}
+          thumbColor={friendFreeEnabled ? COLORS.interactive.accent : COLORS.border}
         />
       </View>
 
