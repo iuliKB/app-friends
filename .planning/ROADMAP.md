@@ -133,7 +133,15 @@ Plans:
 4. The Squad → Goals tab replaces the "Coming soon" stub with a `StreakCard` showing the current weekly streak and "Best: N weeks" record; copy is celebratory and positive-only, with no countdown, hourglass, or "about to lose it" UI, every string vetted by a non-engineer before ship.
 5. The streak is computed by a `get_squad_streak(tz)` SQL function (computed view, not materialized) using Mon 00:00 → Sun 23:59 week boundaries, where a week is active if ≥1 plan with ≥2 confirmed attendees completed that week; the streak survives 1 grace week per 4-week window, breaks only on 2 consecutive misses within a 4-week window, and "Best: N" is preserved permanently across breaks.
 
-**Plans:** TBD
+**Plans:** 6 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Author migration 0011 get_squad_streak (SECURITY DEFINER + sliding 4-week window)
+- [ ] 04-02-PLAN.md — [BLOCKING] Apply migration 0011 via supabase db push + 4-SELECT attestation
+- [ ] 04-03-PLAN.md — Morning prompt client primitives: scheduler module + response handler branch + signout cancel
+- [ ] 04-04-PLAN.md — Squad streak UI: useStreakData hook + StreakCard + Goals tab integration + pull-to-refresh
+- [ ] 04-05-PLAN.md — Profile Morning prompt section (Switch + time picker + permission flow) + cold-launch schedule
+- [ ] 04-06-PLAN.md — [BLOCKING] Copy review gate (STREAK-08 non-engineer approval checkpoint)
 
 ---
 
