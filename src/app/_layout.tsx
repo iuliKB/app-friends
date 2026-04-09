@@ -9,8 +9,120 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useStatusStore } from '@/stores/useStatusStore';
+import { computeWindowExpiry, nextLargerWindow } from '@/lib/windows';
+import type { WindowId } from '@/types/app';
 
 SplashScreen.preventAutoHideAsync();
+
+// Phase 3 — Shared dispatcher for notification response routing. Runs outside
+// React render tree, so it can NOT use hooks. Reach into Zustand via getState().
+// See .planning/phases/03-friend-went-free-loop/03-RESEARCH.md §Pattern 5 + Pitfall 3.
+async function handleNotificationResponse(
+  response: Notifications.NotificationResponse,
+  router: ReturnType<typeof useRouter>
+): Promise<void> {
+  const category = response.notification.request.content.categoryIdentifier;
+  const action = response.actionIdentifier;
+  const data = response.notification.request.content.data as
+    | { kind?: string; senderId?: string; senderName?: string; planId?: string }
+    | undefined;
+
+  // --- Plan invite (Phase 1 legacy — keep working) ---
+  if (data?.planId) {
+    router.push(`/plans/${data.planId}` as never);
+    return;
+  }
+
+  // --- Friend Went Free (FREE-09) ---
+  if (category === 'friend_free' && data?.senderId) {
+    // Resolve the DM channel lazily via the existing RPC; we do NOT cache in the push payload.
+    const { data: dmChannelId, error } = await supabase.rpc('get_or_create_dm_channel', {
+      other_user_id: data.senderId,
+    });
+    if (error || !dmChannelId) return;
+    const friendName = encodeURIComponent(data.senderName ?? 'Friend');
+    router.push(`/chat/room?dm_channel_id=${dmChannelId}&friend_name=${friendName}` as never);
+    return;
+  }
+
+  // --- Expiry warning action buttons (EXPIRY-01 / D-03, D-05) ---
+  if (category === 'expiry_warning') {
+    const current = useStatusStore.getState().currentStatus;
+    if (!current) return;
+
+    // Look up the authenticated user via supabase.auth.getSession
+    const { data: session } = await supabase.auth.getSession();
+    const userId = session.session?.user.id;
+    if (!userId) return;
+
+    // Body-tap (DEFAULT_ACTION_IDENTIFIER) on expiry_warning is unspecified by CONTEXT D-05.
+    // D-05 only defines KEEP_IT and HEADS_DOWN as explicit action-button behaviors.
+    // Silently dispatching a status change on body-tap would surprise the user — instead,
+    // bring the app to foreground and navigate to Home (which hosts MoodPicker).
+    if (action === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+      router.push('/(tabs)/' as never);
+      return;
+    }
+
+    if (action === 'KEEP_IT') {
+      const nextWindowId: WindowId = nextLargerWindow(current.window_id ?? null);
+      const now = new Date();
+      const expiry = computeWindowExpiry(nextWindowId, now);
+      const nowIso = now.toISOString();
+      const expiryIso = expiry.toISOString();
+
+      const { error: upsertErr } = await supabase.from('statuses').upsert(
+        {
+          user_id: userId,
+          status: current.status,
+          context_tag: current.context_tag,
+          status_expires_at: expiryIso,
+          last_active_at: nowIso,
+        },
+        { onConflict: 'user_id' }
+      );
+      if (!upsertErr) {
+        useStatusStore.getState().setCurrentStatus({
+          status: current.status,
+          context_tag: current.context_tag,
+          status_expires_at: expiryIso,
+          last_active_at: nowIso,
+          window_id: nextWindowId,
+        });
+      }
+      return;
+    }
+
+    if (action === 'HEADS_DOWN') {
+      const now = new Date();
+      const expiry = computeWindowExpiry('3h', now);
+      const nowIso = now.toISOString();
+      const expiryIso = expiry.toISOString();
+
+      const { error: upsertErr } = await supabase.from('statuses').upsert(
+        {
+          user_id: userId,
+          status: 'busy',
+          context_tag: null,
+          status_expires_at: expiryIso,
+          last_active_at: nowIso,
+        },
+        { onConflict: 'user_id' }
+      );
+      if (!upsertErr) {
+        useStatusStore.getState().setCurrentStatus({
+          status: 'busy',
+          context_tag: null,
+          status_expires_at: expiryIso,
+          last_active_at: nowIso,
+          window_id: '3h',
+        });
+      }
+      return;
+    }
+  }
+}
 
 export default function RootLayout() {
   const { session, setSession, setLoading, needsProfileSetup, setNeedsProfileSetup } =
@@ -69,20 +181,21 @@ export default function RootLayout() {
   useEffect(() => {
     if (Platform.OS === 'web') return;
 
-    // CASE 1: App running/backgrounded — user taps notification
+    // CASE 1: App running/backgrounded — user taps notification or action button.
+    // Delegates to module-scope handler so it is never stale (no closure capture).
     const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const planId = response.notification.request.content.data?.planId as string;
-      if (planId) router.push(`/plans/${planId}` as never);
+      handleNotificationResponse(response, router).catch(() => {
+        // Silent — don't crash the app on notification routing failure
+      });
     });
 
-    // CASE 2: Cold start — app was killed, launched by tapping notification
+    // CASE 2: Cold start — app was killed, launched by tapping notification.
+    // Delay to ensure navigation tree is mounted (T-03-37 mitigation).
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (!response) return;
-      const planId = response.notification.request.content.data?.planId as string;
-      if (planId) {
-        // Delay to ensure navigation tree is mounted
-        setTimeout(() => router.push(`/plans/${planId}` as never), 150);
-      }
+      setTimeout(() => {
+        handleNotificationResponse(response, router).catch(() => {});
+      }, 150);
     });
 
     return () => responseSub.remove();
@@ -105,7 +218,10 @@ export default function RootLayout() {
     <View style={{ flex: 1, backgroundColor: COLORS.surface.base }}>
       <OfflineBanner />
       <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.surface.base } }}
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: COLORS.surface.base },
+        }}
       >
         <Stack.Protected guard={!!session && !needsProfileSetup}>
           <Stack.Screen name="(tabs)" />
