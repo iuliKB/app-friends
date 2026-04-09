@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Liveness & Notifications
 status: executing
-stopped_at: Phase 3 context gathered
-last_updated: "2026-04-08T12:47:21.389Z"
-last_activity: 2026-04-08 -- Phase 03 planning complete
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-04-09T04:40:32.593Z"
+last_activity: 2026-04-09
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 24
-  completed_plans: 16
-  percent: 67
+  completed_plans: 19
+  percent: 79
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 02 — status-liveness-ttl
+**Current focus:** Phase 03 — friend-went-free-loop
 
 ## Current Position
 
 Milestone: v1.3 Liveness & Notifications
-Phase: 3
-Plan: Not started
+Phase: 03 (friend-went-free-loop) — EXECUTING
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-04-08 -- Phase 03 planning complete
+Last activity: 2026-04-09
 
 Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 
@@ -43,6 +43,7 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 | Phases complete | 0 |
 | Requirements mapped | 38/38 (100%) |
 | Orphaned requirements | 0 |
+| Phase 03 P04 | 15 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,8 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 - [v1.3 Roadmap]: Phase numbering RESET to start at Phase 1 — previous milestones (v1.0–v1.2) ended at Phase 12 but directories are archived under `milestones/`
 - [v1.3 Roadmap]: DM entry point folded into Phase 1 as a free-rider — one-file change, zero dependencies, immediate visible win
 - [v1.3 Roadmap]: Morning prompt + Squad Goals streak bundled into Phase 4 — both are "daily engagement polish," share Profile toggle UX, both depend on Phase 2
+- [Phase 03]: window_id made optional in CurrentStatus for backward compat with legacy effective_status rows
+- [Phase 03]: expiryScheduler no-ops on web (Platform.OS guard) and when fire time within 1-min safety margin; ReEngagementBanner covers short windows
 
 ### Pending Todos
 
@@ -80,5 +83,5 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 
 ## Session Continuity
 
-Last session: 2026-04-08T11:44:48.184Z
-Stopped at: Phase 3 context gathered
+Last session: 2026-04-09T04:40:32.590Z
+Stopped at: Completed 03-04-PLAN.md

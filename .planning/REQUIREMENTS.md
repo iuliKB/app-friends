@@ -56,7 +56,7 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 - [ ] **FREE-09**: Tapping a friend-went-Free notification opens the DM with that friend (cold-start safe — guarded on auth + router ready)
 - [ ] **FREE-10**: Fan-out uses an outbox queue pattern: trigger writes a row to `free_transitions`, Database Webhook fires `notify-friend-free` Edge Function asynchronously (user write latency stays <100ms)
 - [ ] **FREE-11**: Operators can monitor unsent rows in the outbox (alert on rows older than 5 minutes)
-- [ ] **EXPIRY-01**: Window-expiry push fires ~30 minutes before `status_expires_at` with action buttons **[Keep it]** / **[Heads down]**. "Keep it" extends the window by the next logical step (e.g., "Until 6pm" → "Until 10pm"); "Heads down" sets mood=busy with 3h window. Eligibility skips friends whose heartbeat is DEAD. Runs as a pg_cron sweep or scheduled Edge Function reading from an outbox/schedule table; reuses the fan-out infrastructure from FREE-10.
+- [x] **EXPIRY-01**: Window-expiry push fires ~30 minutes before `status_expires_at` with action buttons **[Keep it]** / **[Heads down]**. "Keep it" extends the window by the next logical step (e.g., "Until 6pm" → "Until 10pm"); "Heads down" sets mood=busy with 3h window. Eligibility skips friends whose heartbeat is DEAD. Runs as a pg_cron sweep or scheduled Edge Function reading from an outbox/schedule table; reuses the fan-out infrastructure from FREE-10.
 
 ### Morning Status Prompt
 
@@ -165,7 +165,7 @@ Explicitly excluded.
 | FREE-09 | Phase 3 | Pending |
 | FREE-10 | Phase 3 | Pending |
 | FREE-11 | Phase 3 | Pending |
-| EXPIRY-01 | Phase 3 | Pending |
+| EXPIRY-01 | Phase 3 | Complete |
 | MORN-01 | Phase 4 | Pending |
 | MORN-02 | Phase 4 | Pending |
 | MORN-03 | Phase 4 | Pending |

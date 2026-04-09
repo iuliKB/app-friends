@@ -107,14 +107,14 @@ Plans:
 **Plans:** 8 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Author migration 0010 (pg_net, free_transitions, friend_free_pushes, profiles.timezone/notify_friend_free, trigger + RPC + webhook dispatcher)
+- [x] 03-01-PLAN.md — Author migration 0010 (pg_net, free_transitions, friend_free_pushes, profiles.timezone/notify_friend_free, trigger + RPC + webhook dispatcher)
 - [ ] 03-02-PLAN.md — [BLOCKING] Apply migration 0010 via supabase db push + 7-SELECT attestation + GUCs + database.ts hand-patch
 - [ ] 03-03-PLAN.md — notify-friend-free Edge Function (rate-limit gauntlet + ticket-level token invalidation)
-- [ ] 03-04-PLAN.md — Client primitives: nextLargerWindow + CurrentStatus.window_id + expiryScheduler.ts
+- [x] 03-04-PLAN.md — Client primitives: nextLargerWindow + CurrentStatus.window_id + expiryScheduler.ts
 - [ ] 03-05-PLAN.md — useStatus wires expiry scheduler + profiles.timezone sync with Hermes guard
 - [ ] 03-06-PLAN.md — iOS categories (friend_free, expiry_warning) + _layout.tsx response dispatcher (DM route + setStatus via store.getState())
 - [ ] 03-07-PLAN.md — Profile "Friend availability" toggle (FREE-07)
-- [ ] 03-08-PLAN.md — Monitoring doc (FREE-11 SQL query) + Phase 5 smoke-test checklist input
+- [x] 03-08-PLAN.md — Monitoring doc (FREE-11 SQL query) + Phase 5 smoke-test checklist input
 
 ---
 
@@ -172,7 +172,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Push Infrastructure & DM Entry Point | 10/10 | Code complete (hardware gate → Phase 5) | 2026-04-07 |
 | 2. Status Liveness & TTL | 0/? | Not started | - |
-| 3. Friend Went Free Loop | 0/8 | Planned | - |
+| 3. Friend Went Free Loop | 3/8 | In Progress|  |
 | 4. Morning Prompt + Squad Goals Streak | 0/? | Not started | - |
 | 5. Hardware Verification Gate | 0/? | Deferred (awaits Apple Dev account) | - |
 
