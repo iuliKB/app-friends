@@ -108,7 +108,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Author migration 0010 (pg_net, free_transitions, friend_free_pushes, profiles.timezone/notify_friend_free, trigger + RPC + webhook dispatcher)
-- [ ] 03-02-PLAN.md — [BLOCKING] Apply migration 0010 via supabase db push + 7-SELECT attestation + GUCs + database.ts hand-patch
+- [x] 03-02-PLAN.md — [BLOCKING] Apply migration 0010 via supabase db push + 7-SELECT attestation + GUCs + database.ts hand-patch
 - [ ] 03-03-PLAN.md — notify-friend-free Edge Function (rate-limit gauntlet + ticket-level token invalidation)
 - [x] 03-04-PLAN.md — Client primitives: nextLargerWindow + CurrentStatus.window_id + expiryScheduler.ts
 - [ ] 03-05-PLAN.md — useStatus wires expiry scheduler + profiles.timezone sync with Hermes guard
