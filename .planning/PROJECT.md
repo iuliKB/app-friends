@@ -63,6 +63,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 - ◆ v1.3 Phase 1 (Push Infrastructure & DM Entry Point) — in progress
 - ✓ v1.3 Phase 2 (Status Liveness & TTL) — shipped 2026-04-08: Mood + Context + Window + Heartbeat model live; migration 0009 applied; 10 UI behaviors deferred to Phase 5 Hardware Verification Gate
+- ✓ v1.3 Phase 3 (Friend Went Free Loop) — shipped 2026-04-09: migration 0010 applied; notify-friend-free Edge Function with 8-stage rate-limit gauntlet authored; client primitives (window_id, nextLargerWindow, expiryScheduler) + useStatus wiring + notification categories/response dispatcher + profile toggle all live; monitoring + smoke-test docs authored; hardware checks deferred to Phase 5
 
 (Remaining phases — see Current Milestone section below)
 
@@ -142,4 +143,4 @@ Known technical considerations:
 | TTL-08 retention rollup deferred to v1.4 | pg_cron not enabled; at v1.3 scale (~120 rows/user/month) status_history doesn't need active management | ✓ Good |
 
 ---
-*Last updated: 2026-04-08 after v1.3 Phase 2 completion*
+*Last updated: 2026-04-09 after v1.3 Phase 3 completion*
