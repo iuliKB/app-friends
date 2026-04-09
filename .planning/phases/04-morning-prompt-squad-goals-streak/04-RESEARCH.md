@@ -1044,27 +1044,27 @@ These are the behavioral invariants the planner should turn into explicit VERIFI
 | A9 | Opt-out default (`campfire:morning_prompt_enabled='true'` on first read) for existing v1.2→v1.3 upgrade users is intended behavior. | Runtime State Inventory | Low — [CITED: CONTEXT D-34 explicitly says "default: 'true' on first load, matching v1.3's opt-out-default posture for notification features"]. Surface in SUMMARY as behavior change. |
 | A10 | The sliding-window implementation above (PL/pgSQL loop walking forward from oldest week) is correct for D-08 semantics. | Pattern 4 | Medium — this is my best reading of D-08. The spec is clear on rules but multiple valid algorithms exist. **Planner should add seed fixture tests verifying at least scenarios (4): all-active, single-grace-preserved, two-consecutive-break, isolated-break-then-restart.** |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **PrePromptModal body copy for morning-prompt-ON path**
    - What we know: PrePromptModal is reused per D-38; current body is friend-free framed.
    - What's unclear: Whether to parameterize for context-specific copy (refactor) or accept for v1.3 (ship).
-   - Recommendation: Accept for v1.3; add to copy review task as a noted mismatch; parameterization is a trivial follow-up for v1.4.
+   - RESOLVED: Accept for v1.3; add to copy review task as a noted mismatch; parameterization is a trivial follow-up for v1.4.
 
 2. **Seed fixture format for SQL function testing**
    - What we know: No test framework; manual SQL exec is the validation path.
    - What's unclear: Whether to author a `supabase/scripts/seed_streak_fixtures.sql` file or inline the seed steps in PLAN.md.
-   - Recommendation: Inline in PLAN.md — the validation is one-shot during VERIFICATION, not repeated.
+   - RESOLVED: Inline in PLAN.md — the validation is one-shot during VERIFICATION, not repeated.
 
 3. **Pull-to-refresh vs focus-refetch for StreakCard**
    - What we know: D-18 requires pull-to-refresh; `useFocusEffect` vs `useEffect` is Claude's discretion.
    - What's unclear: Whether first-render refetch + pull-to-refresh is enough, or whether focus-refetch should fire every time the Goals tab is selected.
-   - Recommendation: First-render + pull-to-refresh for v1.3 (matches minimalism); focus-refetch if the non-engineer reviewer complains about stale numbers.
+   - RESOLVED: First-render + pull-to-refresh for v1.3 (matches minimalism); focus-refetch if the non-engineer reviewer complains about stale numbers.
 
 4. **StreakCardSkeleton dimensions**
    - What we know: D-16 — minimal placeholder.
    - What's unclear: Exact skeleton pattern (no prior skeleton primitive exists in the repo).
-   - Recommendation: Three grey rectangles (big number box, label box, subline box) with `COLORS.surface.card` background — match StreakCard layout with opacity 0.3.
+   - RESOLVED: Three grey rectangles (big number box, label box, subline box) with `COLORS.surface.card` background — match StreakCard layout with opacity 0.3.
 
 ## Sources
 
