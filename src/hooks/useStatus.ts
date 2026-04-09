@@ -14,6 +14,7 @@ import { computeHeartbeatState } from '@/lib/heartbeat';
 import { computeWindowExpiry } from '@/lib/windows';
 import type { StatusValue, WindowId, CurrentStatus, HeartbeatState } from '@/types/app';
 import { markPushPromptEligible } from '@/hooks/usePushNotifications';
+import { scheduleExpiryNotification, cancelExpiryNotification } from '@/lib/expiryScheduler';
 
 // ---------------------------------------------------------------------------
 // Auth listener (module scope) — clears cached status on signout.
@@ -27,6 +28,8 @@ function installAuthListenerOnce() {
   useAuthStore.subscribe((state, prev) => {
     if (prev?.session && !state.session) {
       useStatusStore.getState().clear();
+      // Phase 3 EXPIRY-01 — tear down scheduled expiry notification on signout
+      cancelExpiryNotification().catch(() => {});
     }
   });
 }
@@ -82,6 +85,7 @@ export function useStatus(): UseStatusResult {
             context_tag: (data.context_tag as string | null) ?? null,
             status_expires_at: data.status_expires_at as string,
             last_active_at: data.last_active_at as string,
+            window_id: null, // Server doesn't store window_id; re-derived only on client setStatus
           });
         } else {
           setCurrentStatus(null);
@@ -121,7 +125,10 @@ export function useStatus(): UseStatusResult {
           context_tag: tag,
           status_expires_at: expiryIso,
           last_active_at: nowIso,
+          window_id: windowId, // Phase 3 — carry for Keep-it action (CONTEXT D-03)
         });
+        // Phase 3 EXPIRY-01 — schedule 30-min-before-expiry local notification (D-01, D-02)
+        scheduleExpiryNotification(expiry, mood).catch(() => {});
         // PUSH-08 (Plan 01): mark push-prompt eligibility on first meaningful action.
         markPushPromptEligible().catch(() => {});
         // Reset touch debounce — we just wrote last_active_at.
