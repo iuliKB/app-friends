@@ -28,6 +28,21 @@ if (Platform.OS !== 'web') {
     // Categories are not supported in Expo Go on iOS — safe to swallow during dev.
   });
 
+  // Phase 3 D-17 — friend_free category: body-only, no action buttons.
+  // Tap dispatches to the response listener in _layout.tsx which routes to DM.
+  Notifications.setNotificationCategoryAsync('friend_free', []).catch(() => {
+    // Not supported in Expo Go; safe to swallow
+  });
+
+  // Phase 3 D-17, D-18 — expiry_warning category: [Keep it] / [Heads down] actions.
+  // Action identifiers are stable strings used by the response listener.
+  Notifications.setNotificationCategoryAsync('expiry_warning', [
+    { identifier: 'KEEP_IT', buttonTitle: 'Keep it', options: { opensAppToForeground: true } },
+    { identifier: 'HEADS_DOWN', buttonTitle: 'Heads down', options: { opensAppToForeground: true } },
+  ]).catch(() => {
+    // Not supported in Expo Go; safe to swallow
+  });
+
   // Android channels — D-18.
   // Existing 'default' channel from v1.0 stays dormant (Android channel IDs are immutable).
   if (Platform.OS === 'android') {
@@ -49,6 +64,13 @@ if (Platform.OS !== 'web') {
     Notifications.setNotificationChannelAsync('system', {
       name: 'System',
       importance: Notifications.AndroidImportance.LOW,
+    });
+    // Phase 3 L-02 — Dedicated Android channel for expiry_warning so Android notification
+    // settings show a semantically correct label ("Status expiry warnings") rather than
+    // reusing the misleading "Daily status check-in" (morning_prompt) channel.
+    Notifications.setNotificationChannelAsync('expiry_warning', {
+      name: 'Status expiry warnings',
+      importance: Notifications.AndroidImportance.DEFAULT,
     });
   }
 }
