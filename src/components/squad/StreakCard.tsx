@@ -2,18 +2,27 @@
 // Minimal hero card: big number, "week streak" label, 🔥, divider, "Best: N weeks" subline.
 // Tapping navigates to the root /plan-create modal (D-14, verified route).
 // Zero-state: muted 0, subline "Start your first week — make a plan with friends." (D-13).
-// Loading: skeleton (D-16). Error: silent fallback to zero state via useStreakData (D-17).
+// Loading: skeleton (D-16). Error: silent fallback to zero state per D-17.
+// Data ownership: caller (squad.tsx) owns the streak hook instance and passes data down.
 //
 // ALL strings here are subject to the Plan 06 copy review gate (D-20).
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
-import { useStreakData } from '@/hooks/useStreakData';
+interface StreakCardProps {
+  streak: {
+    currentWeeks: number;
+    bestWeeks: number;
+    loading: boolean;
+    error: string | null;
+    refetch: () => Promise<void>;
+  };
+}
 
-export function StreakCard() {
+export function StreakCard({ streak }: StreakCardProps) {
   const router = useRouter();
-  const { currentWeeks, bestWeeks, loading } = useStreakData();
+  const { currentWeeks, bestWeeks, loading } = streak;
 
   if (loading) {
     return <StreakCardSkeleton />;
