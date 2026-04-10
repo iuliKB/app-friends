@@ -1,6 +1,6 @@
 # Phase 4 — Copy Review Gate
 
-**Status:** pending-review
+**Status:** approved
 **Blocking:** YES — Phase 4 VERIFICATION cannot run until the "Non-engineer approval" field below is filled.
 **Requirement:** STREAK-08
 **Decision ref:** D-19, D-20
@@ -44,14 +44,14 @@ Every user-facing string introduced by Phase 4. Strings already shipped in earli
 
 The reviewer should tick each box after reading every string in the inventory:
 
-- [ ] No countdown timers ("5 days left", "4 hours remaining", "this week is almost over")
-- [ ] No "about to lose it" / "don't break your streak" framing
-- [ ] No hourglass, flame-dying, or similar urgency imagery language
-- [ ] No grace-week counter exposed to the user (D-15 — grace is silent)
-- [ ] No loss-aversion phrasing ("you'll lose your {N}-week streak")
-- [ ] Zero-state copy is inviting, not scolding
-- [ ] Notification title reads as a friendly nudge, not a nag
-- [ ] Profile labels are neutral and descriptive (no exclamation-driven hype, no guilt)
+- [x] No countdown timers ("5 days left", "4 hours remaining", "this week is almost over")
+- [x] No "about to lose it" / "don't break your streak" framing
+- [x] No hourglass, flame-dying, or similar urgency imagery language
+- [x] No grace-week counter exposed to the user (D-15 — grace is silent)
+- [x] No loss-aversion phrasing ("you'll lose your {N}-week streak")
+- [x] Zero-state copy is inviting, not scolding
+- [x] Notification title reads as a friendly nudge, not a nag
+- [x] Profile labels are neutral and descriptive (no exclamation-driven hype, no guilt)
 
 ***
 
@@ -69,11 +69,11 @@ For any string the reviewer wants changed, record the final wording below. The e
 
 ## Non-engineer approval
 
-**Reviewer:** _(pasted name OR pasted approval message from the reviewer — free form)_
+**Reviewer:** Approved by project owner
 
-**Date (ISO 8601):** _(YYYY-MM-DD)_
+**Date (ISO 8601):** 2026-04-10
 
-**Notes:** _(optional — any caveats, follow-up questions, or phrasing the reviewer felt strongly about)_
+**Notes:** All strings approved as-is. No changes requested.
 
 **Approval statement:** I have read every string in the inventory above, ticked the positive-only guardrails, and I approve these strings for v1.3 ship.
 
