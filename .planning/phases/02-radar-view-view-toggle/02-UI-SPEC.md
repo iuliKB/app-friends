@@ -33,7 +33,7 @@ Declared values from `src/theme/spacing.ts` (project-specific, note: `md` = 12px
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xs | 4px | Icon gaps, tight inline spacing, avatar overlap offsets |
+| xs | 4px | Icon gaps, tight inline spacing, avatar overlap offsets, bubble label bottom margin |
 | sm | 8px | Separator height, inline gaps, icon-label gap |
 | md | 12px | Card section gaps, internal padding |
 | lg | 16px | Standard screen padding, card padding, toggle margin |
@@ -44,7 +44,6 @@ Exceptions:
 - Radar container height: 320px (fixed, within D-22's 300–350px range — Claude's discretion)
 - Touch targets (bubble tap areas): minimum 44px × 44px regardless of visual bubble size (accessibility floor)
 - Overflow chip size: 34px diameter (within D-20's 32–36px range — Claude's discretion)
-- Bubble label bottom margin: 6px (between bubble and name text — no exact token, closest to xs=4)
 
 Source: `src/theme/spacing.ts` (pre-populated). Exceptions from CONTEXT.md D-22 + accessibility standard.
 
@@ -63,6 +62,8 @@ From `src/theme/typography.ts`:
 
 Only 2 weights used: regular (400) and semibold (600) — matches existing FONT_WEIGHT tokens.
 Only 3 sizes used in this phase: xs (11), sm (13), md (14).
+
+Note: Label (13px) and Body (14px) are 1px apart. The checker flagged this as potentially imperceptible. These two sizes appear in distinct components — bubble names (Label) and toggle labels (Body/Body Active) — and never alongside each other in the same element. The toggle's active/inactive differentiation is already weight-only (both at 14px). Retaining 13px for bubble names to match the existing `FONT_SIZE.sm` token usage in the codebase and to keep bubble text compact relative to avatar size.
 
 Heading sizes (xl, xxl) are not used in this phase — the radar is a visual, not a text-heavy view.
 
@@ -136,7 +137,7 @@ Status gradient: absolute View behind avatar, same dimensions, borderRadius = si
 
 Depth effect (D-07): bubbles positioned in upper half of container get scale: 0.92 and opacity multiplier 0.85 applied on top of base size/opacity
 
-Name label: directly below bubble, FONT_SIZE.sm (13px), FONT_WEIGHT.regular (400), color COLORS.text.primary (FADING: COLORS.text.secondary), textAlign: center, maxWidth = bubble size + 16px
+Name label: directly below bubble, FONT_SIZE.sm (13px), FONT_WEIGHT.regular (400), color COLORS.text.primary (FADING: COLORS.text.secondary), textAlign: center, maxWidth = bubble size + 16px, marginTop: SPACING.xs (4px)
 
 Touch target: minimum 44×44px hit slop applied via hitSlop prop when bubble < 44px
 ```
@@ -337,6 +338,7 @@ React Native project. No component registry used. All components are custom impl
 | Gradient opacity levels | Claude's discretion (D-11) |
 | Depth scale 0.92 / opacity 0.85 | Claude's discretion (D-07) |
 | Crossfade 250ms | Claude's discretion (D-15 range 200–300ms) |
+| Bubble label bottom margin SPACING.xs (4px) | checker revision — replaced non-token 6px |
 
 ---
 
