@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
 status: verifying
-stopped_at: Completed 01-03-PLAN.md — Phase 01 complete, checkpoint approved
-last_updated: "2026-04-10T22:44:07.033Z"
+stopped_at: Completed 01.1-01-PLAN.md
+last_updated: "2026-04-10T23:09:45.607Z"
 last_activity: 2026-04-10
 progress:
   total_phases: 3
@@ -66,6 +66,8 @@ Requirements covered: 23/23 mapped
 - [Phase 01-status-pill-bottom-sheet]: sessionCount comes from parent props (HomeScreen reads AsyncStorage, passes down) — keeps OwnStatusPill pure and testable
 - [Phase 01-status-pill-bottom-sheet]: display_name from session.user.user_metadata avoids extra Supabase query at OwnStatusPill render time
 - [Phase 01-status-pill-bottom-sheet]: MoodPicker + ReEngagementBanner removal is atomic in HomeScreen refactor (D-11)
+- [Phase 01.1-own-status-card]: OwnStatusCard replaces OwnStatusPill in HomeScreen — full-width card in ScrollView with always-active pulse, no session count gate
+- [Phase 01.1-own-status-card]: FONT_WEIGHT.bold missing from theme tokens — used hardcoded 700 with eslint-disable per project convention
 
 ### Pending Todos
 
@@ -77,5 +79,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-10T22:40:13.492Z
-Stopped at: Completed 01-03-PLAN.md — Phase 01 complete, checkpoint approved
+Last session: 2026-04-10T23:09:45.604Z
+Stopped at: Completed 01.1-01-PLAN.md
