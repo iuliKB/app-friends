@@ -464,6 +464,17 @@ export type Database = {
         };
         Returns: string;
       };
+      // Phase 4 v1.3 (migration 0011) — viewer-scoped sliding-window streak; SECURITY DEFINER
+      get_squad_streak: {
+        Args: {
+          viewer_id: string;
+          tz: string;
+        };
+        Returns: {
+          current_weeks: number;
+          best_weeks: number;
+        }[];
+      };
       // Phase 3 v1.3 (migration 0010) — returns full candidate set for friend-free push
       get_friend_free_candidates: {
         Args: {
