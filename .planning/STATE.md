@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
 status: executing
-stopped_at: Phase 1 planned (3 plans, 2 waves)
-last_updated: "2026-04-10T22:28:46.900Z"
-last_activity: 2026-04-11 — Phase 1 plans created (3 plans, 2 waves)
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-04-10T22:32:40.715Z"
+last_activity: 2026-04-10
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 1 — Status Pill & Bottom Sheet
+**Current focus:** Phase 01 — status-pill-bottom-sheet
 
 ## Current Position
 
 Milestone: v1.3.5 Homescreen Redesign
-Phase: Phase 1 — Status Pill & Bottom Sheet
-Plan: 01-01 (next to execute)
+Phase: 01 (status-pill-bottom-sheet) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-11 — Phase 1 plans created (3 plans, 2 waves)
+Last activity: 2026-04-10
 
 Progress: [░░░░░░░░░░] 0% (0/3 phases)
 
@@ -62,6 +62,7 @@ Requirements covered: 23/23 mapped
 - [v1.3.5]: Lightweight nudge ping (NUDGE-01, NUDGE-02) deferred to v1.4
 - [v1.3.5]: display_name sourced from session.user.user_metadata.display_name (no extra DB fetch needed for pill empty state)
 - [v1.3.5]: Session count module-level flag (sessionIncrementedThisLaunch) guards against double-increment on tab switch remount
+- [Phase 01-status-pill-bottom-sheet]: StatusPickerSheet translateY starts at 600 (not 300) to guarantee off-screen initial position for taller MoodPicker content
 
 ### Pending Todos
 
@@ -73,5 +74,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-10T22:28:46.896Z
-Stopped at: Phase 1 planned (3 plans, 2 waves)
+Last session: 2026-04-10T22:32:40.711Z
+Stopped at: Completed 01-01-PLAN.md
