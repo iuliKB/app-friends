@@ -8,9 +8,16 @@ Campfire is a "friendship OS" — an all-in-one social coordination app for clos
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone
+## Current Milestone: v1.3.5 Homescreen Redesign
 
-Next milestone not yet planned. Run `/gsd-new-milestone` to start.
+**Goal:** Transform the homescreen from a static friend list into a dynamic pulse dashboard with cleaner status UX.
+
+**Target features:**
+- Status pill in header with bottom sheet picker (replaces inline MoodPicker)
+- Unified friends section with Radar/Cards view toggle
+- Radar view: spatial bubble layout (top 6 + horizontal scroll overflow)
+- Card stack view: swipeable cards with Nudge (DM) / Skip actions
+- Remove old two-section friend split (Free grid + Everyone Else)
 
 ## Requirements
 
