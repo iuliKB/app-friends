@@ -1,653 +1,413 @@
-# Architecture Patterns
+# Architecture Research
 
-**Project:** Campfire v1.3 — Liveness & Notifications
-**Researched:** 2026-04-06
-**Research mode:** Integration architecture for subsequent milestone
-**Overall confidence:** HIGH (grounded in actual repo inspection)
-
----
-
-## Context Snapshot — What Already Exists
-
-Verified by reading the codebase, not assumed:
-
-| Asset | Status | Location |
-|---|---|---|
-| `push_tokens` table | EXISTS (needs evolution) | `supabase/migrations/0003_push_tokens.sql` |
-| `notify-plan-invite` Edge Function | EXISTS | `supabase/functions/notify-plan-invite/index.ts` |
-| `registerForPushNotifications()` helper | EXISTS | `src/hooks/usePushNotifications.ts` |
-| Token registration call site | Profile toggle only | `src/app/(tabs)/profile.tsx:73` |
-| `statuses` table | EXISTS, no TTL column | `supabase/migrations/0001_init.sql:43` |
-| `handle_new_user` trigger | Auto-creates profile + status | `0001_init.sql:456` |
-| Realtime on `statuses` | `REPLICA IDENTITY FULL` set | `0001_init.sql:490` |
-| `HomeFriendCard` | Pure View, NOT tappable | `src/components/home/HomeFriendCard.tsx` |
-| Plan invite push flow | Database Webhook → Edge Function | Table `plan_members` INSERT fires `notify-plan-invite` |
-
-**The current `push_tokens` schema is too thin for v1.3:**
-
-```sql
--- Existing (0003_push_tokens.sql)
-push_tokens (id, user_id, token, platform, created_at)
-UNIQUE (user_id, token)
-```
-
-No `device_id`, no `last_seen_at`, no notion of stale tokens. The current upsert in `usePushNotifications.ts` uses `onConflict: 'user_id,token'` which matches the existing unique index — but we have no way to reap dead tokens or dedupe by device. **v1.3 must migrate this table.**
-
-**The plan-invite flow is already wired end-to-end.** A Database Webhook on `plan_members` INSERT calls `notify-plan-invite`, which fetches tokens and calls Expo push. The "gap" is not the server side — it is **registration**. Tokens are only ever registered when the user flips the Profile toggle. A fresh install that never visits Profile has an empty `push_tokens` row and will silently receive nothing. This is the fix point for Feature #5.
+**Domain:** React Native homescreen redesign — adding bottom sheet picker, Radar view, Card Stack view, view toggle, and status pill to an existing Expo + Supabase app
+**Researched:** 2026-04-10
+**Confidence:** HIGH (grounded entirely in repo inspection and verified library research)
 
 ---
 
-## Recommended Architecture per Feature
+## Context: What Already Exists
 
-### Feature 1 — Status TTL & Freshness
+All findings verified by reading the actual codebase.
 
-**Schema changes** (single new migration, e.g. `0008_status_ttl.sql`):
+| Asset | Status | Key facts |
+|-------|--------|-----------|
+| `HomeScreen.tsx` | EXISTS, 238 lines | ScrollView wrapper; renders `ReEngagementBanner`, `MoodPicker`, `freeFriends` FlatList, `otherFriends` FlatList |
+| `HomeFriendCard.tsx` | EXISTS, 149 lines | Grid card — handles tap → DM, long-press → action sheet |
+| `MoodPicker.tsx` | EXISTS, 228 lines | Inline 3-row mood selector with LayoutAnimation expand; calls `useStatus().setStatus()` |
+| `ReEngagementBanner.tsx` | EXISTS, 150 lines | Animated height banner when heartbeat is FADING; reads `useStatus()` |
+| `useStatus.ts` | EXISTS, 210 lines | Hydrates from `effective_status` view; exposes `currentStatus`, `heartbeatState`, `setStatus`, `touch` |
+| `useHomeScreen.ts` | EXISTS, 191 lines | Fetches `friends` array, computes `freeFriends`/`otherFriends` partitions, Realtime subscription |
+| `useStatusStore.ts` | EXISTS | Zustand — owns `currentStatus`, `setCurrentStatus`, `updateLastActive`, `clear` |
+| `useHomeStore.ts` | EXISTS | Zustand — owns `friends[]`, `lastActiveAt`, `lastFetchedAt` |
+| `heartbeat.ts` | EXISTS | Pure `computeHeartbeatState(expiresAt, lastActiveAt)` — mirrors SQL view logic |
+| `windows.ts` | EXISTS | `getWindowOptions()`, `computeWindowExpiry()`, `formatWindowLabel()` |
+| `src/theme/` | EXISTS | 6 token files: colors, spacing, radii, shadows, typography, barrel export |
+| `react-native-reanimated` | v4.2.1 (Expo SDK 55) | Already installed, pre-bundled in Expo Go |
+| `react-native-gesture-handler` | v2.30.0 | Already installed, pre-bundled in Expo Go |
+| `AsyncStorage` | EXISTS | Used for notification toggle preference — established pattern for per-device persistence |
 
-```sql
--- Add expiry + source tracking to statuses
-ALTER TABLE public.statuses
-  ADD COLUMN expires_at  timestamptz,           -- NULL = never expires (legacy/opt-out)
-  ADD COLUMN set_at      timestamptz NOT NULL DEFAULT now(),
-  ADD COLUMN set_source  text NOT NULL DEFAULT 'manual'
-    CHECK (set_source IN ('manual', 'morning_prompt', 'push_action', 'daily_reset'));
-
--- Partial index for the expiry sweep
-CREATE INDEX idx_statuses_expires_at
-  ON public.statuses (expires_at)
-  WHERE expires_at IS NOT NULL;
-
--- Append-only history
-CREATE TABLE public.status_history (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  status      public.availability_status NOT NULL,
-  context_tag text,
-  set_source  text NOT NULL,
-  set_at      timestamptz NOT NULL DEFAULT now(),
-  expired_at  timestamptz
-);
-ALTER TABLE public.status_history ENABLE ROW LEVEL SECURITY;
-
-CREATE INDEX idx_status_history_user_set ON public.status_history (user_id, set_at DESC);
-```
-
-**Default TTL per status type** (encoded in an RPC, not a column, so we can tune without migrations):
-
-| Status | Default TTL | Rationale |
-|---|---|---|
-| `free`  | 4 hours | Free is a commitment — decays to "not actively Free" after half an afternoon |
-| `maybe` | 8 hours | Soft signal, longer half-life |
-| `busy`  | 6 hours | Busy now != busy tomorrow |
-
-Reset happens at 4am local time regardless of TTL (see daily reset job).
-
-**RLS on `status_history`:**
-- SELECT own: `user_id = (SELECT auth.uid())`
-- SELECT friend: reuse `is_friend_of(user_id)` helper
-- INSERT: only via SECURITY DEFINER trigger (no direct client writes)
-- UPDATE/DELETE: none
-
-**Trigger — append to history + stamp set_at:**
-
-```sql
-CREATE OR REPLACE FUNCTION public.record_status_change()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
-BEGIN
-  -- Close out previous row
-  UPDATE public.status_history
-    SET expired_at = now()
-    WHERE user_id = NEW.user_id AND expired_at IS NULL;
-  -- Insert new row
-  INSERT INTO public.status_history (user_id, status, context_tag, set_source, set_at)
-    VALUES (NEW.user_id, NEW.status, NEW.context_tag, NEW.set_source, now());
-  NEW.set_at := now();
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER statuses_record_history
-  BEFORE INSERT OR UPDATE OF status, context_tag ON public.statuses
-  FOR EACH ROW EXECUTE PROCEDURE public.record_status_change();
-```
-
-**Daily reset job — pg_cron, NOT client-side.** Client-side reset is unreliable (user may not open the app for 3 days, TTL lingers, `is_friend_of` shows stale Free). pg_cron is available on Supabase free tier (`pg_cron` extension).
-
-```sql
--- Runs every 15 minutes. Resets expired statuses to 'maybe'.
--- The 15-min cadence is fine because the client also filters by expires_at on read.
-SELECT cron.schedule(
-  'expire-statuses',
-  '*/15 * * * *',
-  $$
-    UPDATE public.statuses
-       SET status = 'maybe',
-           context_tag = NULL,
-           set_source = 'daily_reset',
-           expires_at = NULL
-     WHERE expires_at IS NOT NULL AND expires_at < now();
-  $$
-);
-```
-
-**Foreground UI:**
-- `ExpiredStatusBanner` component — rendered in `HomeScreen.tsx` ABOVE the "Who's Free" list, only when own status has `expires_at < now()` OR `expires_at IS NULL` AND last `set_at` > 12 h ago. Tapping opens the existing status bottom sheet.
-- Dismissal: in-memory only (Zustand flag), reappears on next app foreground — we want friction, not a one-click-silence.
-- **Integration point:** `src/screens/home/HomeScreen.tsx` (render slot above the two FlatLists at line ~115).
-
-**New hooks:**
-- Extend `useStatus.ts` — add `expiresAt`, `isStale`, pass `set_source` through `updateStatus`.
-- `useStatusHistory(userId)` — for future "friend recency" pill (optional in v1.3).
-
-**New components:** `ExpiredStatusBanner.tsx` in `src/components/home/`.
+**Critical library finding:** `@gorhom/bottom-sheet` v5 (the current release as of April 2026) supports Reanimated v1–3 only. It is NOT compatible with Reanimated v4. The project runs Reanimated v4.2.1. Installing `@gorhom/bottom-sheet` would create a version conflict with no working resolution. The correct approach is a custom `Modal`-based bottom sheet — which also satisfies the existing "no UI libraries" constraint.
 
 ---
 
-### Feature 2 — `push_tokens` Evolution
+## Standard Architecture
 
-**Migration (`0009_push_tokens_evolution.sql`):**
+### System Overview
 
-```sql
--- Drop the old unique index — we're moving to a device-scoped key
-ALTER TABLE public.push_tokens DROP CONSTRAINT push_tokens_user_id_token_key;
-
-ALTER TABLE public.push_tokens
-  ADD COLUMN device_id     text,
-  ADD COLUMN last_seen_at  timestamptz NOT NULL DEFAULT now(),
-  ADD COLUMN invalidated_at timestamptz;
-
--- Backfill device_id for existing rows (one-time, use hash of token)
-UPDATE public.push_tokens SET device_id = substr(md5(token), 1, 16) WHERE device_id IS NULL;
-ALTER TABLE public.push_tokens ALTER COLUMN device_id SET NOT NULL;
-
--- Composite uniqueness: one row per (user, device)
-CREATE UNIQUE INDEX idx_push_tokens_user_device
-  ON public.push_tokens (user_id, device_id);
-
-CREATE INDEX idx_push_tokens_active
-  ON public.push_tokens (user_id)
-  WHERE invalidated_at IS NULL;
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         HomeScreen.tsx                               │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  Header row: ScreenHeader title + StatusPill (tappable)      │   │
+│  ├──────────────────────────────────────────────────────────────┤   │
+│  │  ViewToggle (Radar | Cards) — persisted to AsyncStorage      │   │
+│  ├──────────────────────────────────────────────────────────────┤   │
+│  │  RadarView  OR  CardStackView                                │   │
+│  │  (both receive same friends[] from useHomeScreen)            │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  StatusPickerSheet (Modal, rendered at root level)           │   │
+│  │  Contains: MoodPicker logic (lifted into sheet)              │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────────┤
+│                           Hooks Layer                                │
+│  useHomeScreen  ──→  useHomeStore  (friends[], lastActiveAt)        │
+│  useStatus      ──→  useStatusStore (currentStatus, heartbeatState) │
+│  useViewMode    ──→  useHomeStore extended (viewMode, setViewMode)  │
+├─────────────────────────────────────────────────────────────────────┤
+│                        Supabase / AsyncStorage                       │
+│  effective_status view  ·  statuses table  ·  AsyncStorage (mode)  │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Device ID source:** `expo-application` → `Application.getAndroidId()` or `Application.getIosIdForVendorAsync()`. Both are Expo Go compatible. Fall back to a persisted UUID in AsyncStorage if unavailable.
+### Component Responsibilities
 
-**RLS:** existing `"Users manage own push tokens"` policy is correct (`FOR ALL USING auth.uid() = user_id`). No change.
+| Component | Responsibility | New or Modified |
+|-----------|----------------|-----------------|
+| `HomeScreen.tsx` | Orchestrator — composes header, toggle, active view, sheet | Modified (major) |
+| `StatusPill.tsx` | Header element showing own mood + heartbeat ring; tap → open sheet | New |
+| `ViewToggle.tsx` | Two-button segment (Radar / Cards); reads + writes `viewMode` | New |
+| `RadarView.tsx` | Spatial bubble layout using absolute positioning; top 6 + overflow scroll | New |
+| `CardStackView.tsx` | Swipeable card-per-friend with Nudge / Skip actions | New |
+| `StatusPickerSheet.tsx` | Modal-based bottom sheet wrapping MoodPicker logic | New |
+| `MoodPicker.tsx` | Unchanged internals — either deleted from HomeScreen or lifted into sheet | Modified (location only) |
+| `ReEngagementBanner.tsx` | Remove from HomeScreen; its FADING-state nudge is handled by the pill | Removed |
+| `HomeFriendCard.tsx` | Used inside RadarView bubbles and potentially CardStackView cards | Unchanged or minor |
 
-**Where registration fires — change the call site, not the helper:**
+---
 
-Currently: `src/app/(tabs)/profile.tsx:73` — only fires when user toggles switch.
+## Recommended Project Structure
 
-New: Call `registerForPushNotifications(session.user.id)` from the **root session-ready effect**. The cleanest seam is in the `Stack.Protected` layout that guards authenticated routes, or in a top-level `useEffect` in `src/app/(tabs)/_layout.tsx` when `session?.user?.id` becomes non-null.
+```
+src/
+├── screens/
+│   └── home/
+│       └── HomeScreen.tsx          # rewritten orchestrator
+├── components/
+│   └── home/
+│       ├── HomeFriendCard.tsx      # existing — unchanged
+│       ├── ReEngagementBanner.tsx  # existing — DELETED from HomeScreen render
+│       ├── StatusPill.tsx          # NEW
+│       ├── ViewToggle.tsx          # NEW
+│       ├── RadarView.tsx           # NEW
+│       └── CardStackView.tsx       # NEW
+├── components/
+│   └── status/
+│       ├── MoodPicker.tsx          # existing — rendered inside sheet, not inline
+│       └── StatusPickerSheet.tsx   # NEW
+├── hooks/
+│   └── useHomeScreen.ts            # existing — unchanged (still provides friends[])
+├── stores/
+│   └── useHomeStore.ts             # modified — add viewMode + setViewMode
+└── lib/
+    └── viewMode.ts                 # NEW — AsyncStorage key + read/write helpers
+```
 
-**Foreground upsert on every launch:** the helper already calls `Notifications.getExpoPushTokenAsync()`; amend the upsert to also refresh `last_seen_at = now()`. Rationale: if a token hasn't been seen in 60 days, the token-reaping cron (below) can safely invalidate it.
+### Structure Rationale
+
+- **`components/home/`** owns all home-specific visual components; Radar and Cards live here alongside the existing `HomeFriendCard`.
+- **`components/status/`** already holds `MoodPicker` and mood presets; `StatusPickerSheet` belongs there as it is the status-setting surface.
+- **`stores/useHomeStore`** is the natural place for `viewMode` since it already owns the home screen's data state and is the only store `useHomeScreen` writes to.
+- **`lib/viewMode.ts`** isolates AsyncStorage key and serialization — same pattern as `lib/morningPrompt.ts` and `lib/expiryScheduler.ts`.
+
+---
+
+## Architectural Patterns
+
+### Pattern 1: Custom Modal-Based Bottom Sheet (no third-party library)
+
+**What:** A `Modal` component wrapping a `View` that slides up with `Animated.timing`. Backdrop is a semi-transparent `Pressable` that dismisses on tap. The sheet is rendered at the root of `HomeScreen` (outside the `ScrollView`) so it overlays everything including the tab bar.
+
+**When to use:** Any time `@gorhom/bottom-sheet` would be the instinct — but the project runs Reanimated v4 which is incompatible with that library's current release.
+
+**Trade-offs:** Less polish than `@gorhom/bottom-sheet` (no spring-physics snap, no drag-to-dismiss gesture) but zero dependency risk, works in Expo Go, fits the "no UI libraries" constraint. Drag-to-dismiss can be added later using the existing `react-native-gesture-handler` (already installed).
+
+**Example shape:**
 
 ```typescript
-// src/hooks/usePushNotifications.ts — new upsert shape
-await supabase
-  .from('push_tokens')
-  .upsert(
-    { user_id: userId, device_id: deviceId, token, platform: Platform.OS, last_seen_at: new Date().toISOString(), invalidated_at: null },
-    { onConflict: 'user_id,device_id' }
+// src/components/status/StatusPickerSheet.tsx
+interface StatusPickerSheetProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) {
+  const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
+
+  useEffect(() => {
+    Animated.timing(translateY, {
+      toValue: visible ? 0 : SHEET_HEIGHT,
+      duration: 280,
+      useNativeDriver: true,
+    }).start();
+  }, [visible]);
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      {/* Backdrop */}
+      <Pressable style={styles.backdrop} onPress={onClose} />
+      {/* Sheet */}
+      <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
+        <MoodPicker onCommit={onClose} />
+      </Animated.View>
+    </Modal>
   );
+}
 ```
 
-**Token reaping (optional but cheap):** pg_cron weekly `UPDATE push_tokens SET invalidated_at = now() WHERE last_seen_at < now() - interval '60 days'`.
+`MoodPicker` needs one new optional prop `onCommit?: () => void` — called after `handleWindowPress` succeeds so the sheet auto-closes on commit. This is a minimal addition to the existing component.
 
-**Integration points:**
-- `src/hooks/usePushNotifications.ts` — rewrite `registerForPushNotifications` for new schema
-- `src/app/(tabs)/_layout.tsx` — new `useEffect` to call registration once per session
-- `src/app/(tabs)/profile.tsx:73` — leave the toggle path, but it's no longer the primary registration entry
+### Pattern 2: Radar View — Pre-Computed Absolute Positioning
+
+**What:** A fixed-height `View` (e.g., 320dp) with `position: 'relative'`. Each friend bubble is a `View` with `position: 'absolute'` and pre-computed `top`/`left` values. The first 6 friends fill designated "orbits"; overflow friends appear in a horizontal `FlatList` below.
+
+**When to use:** Any spatial "who's around" layout that doesn't need physics or drag. Status-freshness rings can be done with `borderColor` + `opacity` using existing `computeHeartbeatState`.
+
+**Trade-offs:** Simple, no library. Positions are deterministic (not physics-simulated), which means consistent layout that doesn't "jitter" on re-render. If animated placement is wanted later, Reanimated shared values can replace the static `top`/`left`.
+
+**Example coordinate scheme (6 positions):**
+
+```typescript
+// Positions relative to a 320×300 canvas, centre = (160, 150)
+const RADAR_SLOTS: { top: number; left: number }[] = [
+  { top: 20,  left: 130 },  // top centre
+  { top: 80,  left: 230 },  // top right
+  { top: 180, left: 230 },  // bottom right
+  { top: 220, left: 130 },  // bottom centre
+  { top: 180, left: 30  },  // bottom left
+  { top: 80,  left: 30  },  // top left
+];
+```
+
+The `friends` array from `useHomeScreen` is sliced to `friends.slice(0, 6)` for the radar. Remaining friends go into a `FlatList` with `horizontal` below the canvas.
+
+### Pattern 3: View Toggle State — Zustand Slice + AsyncStorage Persistence
+
+**What:** Add `viewMode: 'radar' | 'cards'` and `setViewMode(mode)` to `useHomeStore`. On app start, `useHomeScreen` (or a dedicated `useViewMode` hook) reads the persisted value from AsyncStorage and hydrates the store. On change, `setViewMode` writes to AsyncStorage.
+
+**When to use:** Any UI preference that should survive app restarts but doesn't need server sync.
+
+**Trade-offs:** Synchronous Zustand reads are fast; AsyncStorage writes are fire-and-forget. The first render uses the Zustand default (e.g., `'radar'`); the hydrated value arrives within a few milliseconds before any user interaction. No flicker risk in practice at this app's scale.
+
+**Why not local state in HomeScreen:** The view mode should survive navigation away and back (e.g., user visits Squad, returns to Home — the toggle should stay where they left it). Zustand persists across React unmounts within the session; AsyncStorage persists across restarts.
+
+**Why not a separate `useViewModeStore`:** `useHomeStore` already owns home screen UI state (`lastFetchedAt`, `lastActiveAt`). Adding two fields there keeps the store count flat and follows the existing pattern.
+
+### Pattern 4: Status Pill — Direct useStatusStore Read
+
+**What:** A header-area component that reads `currentStatus` and `heartbeatState` directly from `useStatusStore` (not via `useStatus` hook — no Supabase calls needed, store is already hydrated). Tapping the pill calls a local `setSheetVisible(true)` in `HomeScreen`.
+
+**When to use:** Any component that needs to display already-cached status without triggering a refetch.
+
+**Trade-offs:** The pill is purely display. It stays reactive because Zustand subscriptions are fine-grained — any `setCurrentStatus` call from anywhere (profile screen, notification handler) updates the pill instantly.
 
 ---
 
-### Feature 3 — "Friend went Free" Notification
+## Data Flow
 
-**Decision: Database Webhook → Edge Function. NOT pg_net from a trigger.**
+### Status Update Flow (new — via bottom sheet)
 
-Rationale:
-- `pg_net` from inside a trigger blocks the UPDATE transaction on HTTP latency, and the existing plan-invite flow already uses the Database Webhook pattern (no inconsistency).
-- Edge Function can be versioned and tested locally; pg_net logic buried in a trigger cannot.
-- Failed webhooks retry; failed `pg_net` calls vanish silently.
-
-**Trigger — only to filter the event, no HTTP work:**
-
-The Database Webhook fires on any UPDATE. We want to fire ONLY when `status` transitioned to `'free'`. Supabase Webhooks don't support WHERE clauses, so we filter inside the Edge Function — cheap.
-
-Actually better: use a **dedicated trigger that writes to a `free_transitions` notification queue** table, and put the webhook on that queue table. This gives us:
-1. Idempotent retry (the queue row is the source of truth)
-2. A single place to enforce rate-limiting ("don't notify same user → same friend twice in N hours")
-3. Clear auditability
-
-```sql
-CREATE TABLE public.free_transitions (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  occurred_at   timestamptz NOT NULL DEFAULT now(),
-  processed_at  timestamptz
-);
-ALTER TABLE public.free_transitions ENABLE ROW LEVEL SECURITY;
--- No client access; service role only.
-
-CREATE INDEX idx_free_transitions_unprocessed
-  ON public.free_transitions (occurred_at)
-  WHERE processed_at IS NULL;
-
-CREATE OR REPLACE FUNCTION public.capture_free_transition()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-  IF NEW.status = 'free' AND (OLD.status IS DISTINCT FROM 'free') THEN
-    INSERT INTO public.free_transitions (user_id) VALUES (NEW.user_id);
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER statuses_capture_free_transition
-  AFTER UPDATE OF status ON public.statuses
-  FOR EACH ROW EXECUTE PROCEDURE public.capture_free_transition();
+```
+User taps StatusPill
+    ↓
+HomeScreen sets sheetVisible = true
+    ↓
+StatusPickerSheet renders (Modal slides up)
+    ↓
+User selects mood + tag + window in MoodPicker
+    ↓
+MoodPicker.handleWindowPress → useStatus().setStatus(mood, tag, windowId)
+    ↓
+supabase.from('statuses').upsert(...)  [server confirmation]
+    ↓
+setCurrentStatus({...}) updates useStatusStore
+    ↓
+StatusPill re-renders with new mood (Zustand subscription)
+MoodPicker collapses via existing useEffect on currentStatus change
+MoodPicker calls onCommit() → sheet closes
 ```
 
-Database Webhook: `INSERT ON free_transitions → notify-friend-free` Edge Function.
+### Friend List → View Rendering Flow
 
-**New Edge Function: `notify-friend-free`**
-
-Receives `{ user_id }`. Does:
-1. Fetch the user's `display_name`.
-2. Query `get_friends_of(user_id)` (new SECURITY DEFINER RPC, not the caller-bound `get_friends`). Only accepted friendships.
-3. For each friend, check their current status — **skip if busy** (they've self-declared Do Not Disturb). Notify free + maybe.
-4. Check rate-limit via a new column on `profiles` or a side table — see below.
-5. Fetch their `push_tokens WHERE invalidated_at IS NULL`.
-6. Batch to Expo push (Expo supports 100 messages per call).
-7. Update `processed_at` on the `free_transitions` row.
-8. Handle Expo `DeviceNotRegistered` receipts → mark `push_tokens.invalidated_at = now()`.
-
-**Rate-limit state: side table, NOT on profile.**
-
-`last_free_notified_at` on `profiles` is wrong because it's (recipient, sender) pairwise — you want to not spam Alice about Bob twice in 2h, but Alice should still hear about Carol. Use:
-
-```sql
-CREATE TABLE public.free_notifications_sent (
-  recipient_id  uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  sender_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  sent_at       timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (recipient_id, sender_id)
-);
--- Edge function does UPSERT and only sends if sent_at < now() - interval '2 hours'
+```
+useHomeScreen (unchanged)
+    ↓
+friends: FriendWithStatus[]  (stored in useHomeStore)
+    ↓
+HomeScreen reads viewMode from useHomeStore
+    ↓
+viewMode === 'radar'  →  <RadarView friends={friends} />
+viewMode === 'cards'  →  <CardStackView friends={friends} />
 ```
 
-RLS: no client access (service role only) — revoke all from `authenticated`.
+Both views receive the same `friends[]` array. No new Supabase queries. No new hooks for data fetching.
 
-**Integration points:**
-- `src/hooks/usePushNotifications.ts` — add an `expo-notifications` listener in `_layout.tsx` to route tapped notifications (friend_id → DM or Home)
-- New Edge Function at `supabase/functions/notify-friend-free/index.ts`
+### View Mode Persistence Flow
+
+```
+App start
+    ↓
+useHomeScreen mounts → reads AsyncStorage('home_view_mode')
+    ↓
+Calls useHomeStore.setViewMode(persisted | 'radar')
+    ↓
+HomeScreen renders correct view immediately
+    ↓
+User taps ViewToggle
+    ↓
+useHomeStore.setViewMode(newMode) → AsyncStorage.setItem (fire-and-forget)
+```
 
 ---
 
-### Feature 4 — Morning Status Prompt
-
-**Timezone strategy — IANA tz on profile, NOT numeric offset.**
-
-```sql
-ALTER TABLE public.profiles
-  ADD COLUMN timezone text NOT NULL DEFAULT 'UTC';
--- Client sets this on first launch via Intl.DateTimeFormat().resolvedOptions().timeZone
-```
-
-**pg_cron schedule: every 15 minutes, dispatch to Edge Function:**
-
-```sql
-SELECT cron.schedule(
-  'morning-prompt-dispatch',
-  '*/15 * * * *',
-  $$ SELECT net.http_post(
-       url := 'https://<project>.supabase.co/functions/v1/morning-prompt',
-       headers := '{"Authorization":"Bearer <service-role>"}'::jsonb
-     ); $$
-);
-```
-
-**Edge Function `morning-prompt` logic:**
-
-```sql
--- Finds users where local time is 09:00–09:14 and no Free-triggered prompt yet today
-SELECT p.id, p.timezone, p.display_name
-FROM public.profiles p
-WHERE EXTRACT(hour FROM now() AT TIME ZONE p.timezone) = 9
-  AND EXTRACT(minute FROM now() AT TIME ZONE p.timezone) < 15
-  AND NOT EXISTS (
-    SELECT 1 FROM public.morning_prompt_log mpl
-    WHERE mpl.user_id = p.id
-      AND mpl.sent_on = (now() AT TIME ZONE p.timezone)::date
-  );
-```
-
-Deduplication table `morning_prompt_log (user_id, sent_on date, PRIMARY KEY (user_id, sent_on))` prevents double-sends across cron ticks.
-
-**Notification payload with action buttons:**
-
-- iOS: register a `NotificationCategoryIdentifier` `"morning_status"` with three actions: `SET_FREE`, `SET_BUSY`, `SET_MAYBE`. Register at app startup in `usePushNotifications.ts`.
-- Android: single channel `morning_prompts` with `MAX` importance. Android doesn't support inline action buttons the same way — the tap opens the app to Home with a bottom-sheet auto-opened.
-
-**Signed action token — the spoofing concern is real.**
-
-The problem: "a public Edge Function to set status" means anyone with a user's JWT could post anything. But we already have that — the `statuses` UPDATE RLS policy already requires `auth.uid() = user_id`, so a normal authenticated call from the app works. The push action path is different because the notification action handler runs **inside the app** with the user's existing Supabase session. So:
-
-**Recommendation:** no new public endpoint. The iOS notification action handler dispatches a background task that uses the existing authenticated Supabase client to do a normal `UPDATE statuses` with `set_source = 'push_action'`. RLS already protects it. No signed token needed.
-
-If and only if we decide to let the user tap an action without launching the app (iOS `UNNotificationActionOptions.None`), then we need a signed-JWT endpoint. **Punt that to v1.4.** Ship v1.3 with "taps open app, app sets status."
-
-**Integration points:**
-- New Edge Function `supabase/functions/morning-prompt/index.ts`
-- New migration adds `profiles.timezone`, `morning_prompt_log`, pg_cron schedule
-- `src/hooks/usePushNotifications.ts` — register iOS categories
-- `src/app/(tabs)/_layout.tsx` — notification response listener that handles `morning_status` actions
-- Client sets timezone on login — add to existing profile bootstrap
-
----
-
-### Feature 5 — Plan Invite Push Wiring Fix
-
-**The wiring is NOT broken server-side.** Verified in code:
-- `supabase/functions/notify-plan-invite/index.ts` exists and queries `push_tokens`
-- The webhook payload shape (`table: string, record: { plan_id, user_id, invited_by }`) matches a Database Webhook on `plan_members` INSERT
-- `src/hooks/usePlans.ts:180` does the INSERT that triggers it
-
-**The gap is client-side registration.** Tokens are only written when the user toggles the Profile switch. Fix = Feature 2 (move registration to session-ready effect). Once Feature 2 lands, plan-invite push works with zero Edge Function changes.
-
-**Second gap: the AsyncStorage "notifications enabled" toggle is per-device and not visible to the server.** `notify-plan-invite` happily pushes to a user who toggled OFF, because their token row is still there. Two fixes:
-
-**Option A (simple):** When the toggle flips OFF, delete the token row (or set `invalidated_at`). Flipping ON re-registers. Pro: server-side honoured without new schema. Con: losing other devices if we're not careful with the delete scope — must scope by `device_id`.
-
-**Option B (richer):** Add `notifications_enabled boolean` to `push_tokens`, filter in Edge Function. Overkill for v1.3.
-
-**Recommendation: Option A.** Matches existing "toggle controls registration" mental model in `usePushNotifications.ts`.
-
-**Integration points:**
-- `src/hooks/usePushNotifications.ts` — `setNotificationsEnabled(false)` should also call `supabase.from('push_tokens').update({ invalidated_at: now }).eq('user_id', ...).eq('device_id', ...)`
-- Make `notify-plan-invite` filter `.is('invalidated_at', null)` (one-line change)
-
----
-
-### Feature 6 — DM Entry Point
-
-Comparing the two options against the actual codebase:
-
-| Criterion | (a) Compose icon in Chats header | (b) Tappable Home friend cards |
-|---|---|---|
-| Code changes | New screen (friend picker), new header button, new route | Wrap `HomeFriendCard` in `Pressable`, router.push |
-| Files touched | ~4–5 | 1–2 |
-| Matches existing patterns | Yes (FAB/header icons are conventional) | Yes (cards tap into detail — universal mobile pattern) |
-| Discoverability | Medium — must learn the icon | High — the cards are the primary Home object |
-| Blocks existing gesture | No | No (cards have no current tap handler, confirmed) |
-| Uses existing `get_or_create_dm_channel` RPC | Yes | Yes |
-
-**Recommendation: (b), but also add (a) later.** (b) is a 1-file change: `src/components/home/HomeFriendCard.tsx` wrap in `Pressable` → `router.push('/dm/[userId]')` which calls `get_or_create_dm_channel(other_user_id)` (already exists in `0001_init.sql:570`) and navigates to the DM screen. (a) can ship in v1.4 as polish.
-
-**Note:** the DM route already exists (used from `useChatList`). Verify the route path by inspecting `src/app/` — if there's no `/dm/[id]` screen yet, the route must be created too. (Chats tab navigates into DMs from the chat list already, so the screen exists.)
-
-**Integration points:**
-- `src/components/home/HomeFriendCard.tsx` — add `Pressable`, accept `onPress` prop or hard-code the navigation
-- `src/screens/home/HomeScreen.tsx:115` — no change if onPress is internal
-- Zero schema/Edge Function/RLS work
-
----
-
-### Feature 7 — Squad Goals Streak
-
-**Definition:**
-- Week boundary: **Monday 00:00 to Sunday 23:59 in the user's timezone.** ISO week. Universal and matches calendar apps.
-- Streak unit: a week in which ≥1 accepted plan exists where both the user and at least one friend were `plan_members.rsvp = 'going'` AND the plan's `scheduled_for` falls within that week.
-- "Current streak" = longest run of consecutive such weeks ending in the current or last week.
-
-**Schema approach — computed view, not materialized table.**
-
-Rationale: free-tier friend groups of 3–15 people generate at most a few dozen plans per week. The query is cheap. Materializing introduces staleness and refresh-job complexity for no win. Revisit only if we observe slow queries.
-
-```sql
-CREATE OR REPLACE FUNCTION public.get_squad_streak(tz text DEFAULT 'UTC')
-RETURNS TABLE (
-  week_start    date,
-  plan_count    int,
-  counted       boolean
-)
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
-  WITH my_plans AS (
-    SELECT p.id, p.scheduled_for
-    FROM public.plans p
-    JOIN public.plan_members pm ON pm.plan_id = p.id
-    WHERE pm.user_id = (SELECT auth.uid())
-      AND pm.rsvp = 'going'
-      AND p.scheduled_for IS NOT NULL
-  ),
-  friend_plans AS (
-    -- At least one friend also going
-    SELECT mp.id, mp.scheduled_for
-    FROM my_plans mp
-    WHERE EXISTS (
-      SELECT 1 FROM public.plan_members pm2
-      WHERE pm2.plan_id = mp.id
-        AND pm2.user_id <> (SELECT auth.uid())
-        AND pm2.rsvp = 'going'
-        AND public.is_friend_of(pm2.user_id)
-    )
-  )
-  SELECT
-    date_trunc('week', fp.scheduled_for AT TIME ZONE tz)::date AS week_start,
-    count(*)::int AS plan_count,
-    true AS counted
-  FROM friend_plans fp
-  GROUP BY 1
-  ORDER BY 1 DESC;
-$$;
-```
-
-Client computes the streak length by walking consecutive weeks — simpler to tune UI copy there than in SQL.
-
-**Integration points:**
-- New migration adds `get_squad_streak` RPC
-- New hook `src/hooks/useSquadStreak.ts` — calls RPC, computes current/longest streak
-- Update `src/app/(tabs)/squad.tsx` (Goals sub-tab) to render streak UI instead of "Coming soon"
-
----
-
-## Component & Data Flow Summary
-
-### New / Modified Tables
-
-| Table | New or Migrated | Notes |
-|---|---|---|
-| `statuses` | Migrated | +`expires_at`, +`set_at`, +`set_source` |
-| `status_history` | New | Append-only, RLS mirrors `statuses` SELECT |
-| `push_tokens` | Migrated | +`device_id`, +`last_seen_at`, +`invalidated_at`; new unique index |
-| `profiles` | Migrated | +`timezone` (IANA) |
-| `free_transitions` | New | Queue table, service-role only |
-| `free_notifications_sent` | New | Rate-limit pair table, service-role only |
-| `morning_prompt_log` | New | Per-user dedup, service-role only |
-
-### New RLS Policies
-
-| Table | Policy | Who |
-|---|---|---|
-| `status_history` | SELECT own or friend | `user_id = auth.uid() OR is_friend_of(user_id)` |
-| `status_history` | No client INSERT/UPDATE/DELETE | Writes via trigger only |
-| `push_tokens` | (existing) | No change needed |
-| `free_transitions`, `free_notifications_sent`, `morning_prompt_log` | Revoke from authenticated | Service role only |
-
-### New Edge Functions
-
-| Function | Trigger | Purpose |
-|---|---|---|
-| `notify-friend-free` | Database Webhook on `free_transitions` INSERT | Fan out to friends, rate-limit, push |
-| `morning-prompt` | pg_cron every 15 min via pg_net | Dispatch daily 9am local prompts |
-| `notify-plan-invite` | (existing) | One-line change to filter invalidated tokens |
-
-### New Postgres Triggers & Cron Jobs
-
-| Name | On | Action |
-|---|---|---|
-| `statuses_record_history` | BEFORE INSERT/UPDATE `statuses` | Append to `status_history`, stamp `set_at` |
-| `statuses_capture_free_transition` | AFTER UPDATE `statuses` | Insert into `free_transitions` if new status = free |
-| pg_cron `expire-statuses` | `*/15 * * * *` | Reset expired statuses to maybe |
-| pg_cron `morning-prompt-dispatch` | `*/15 * * * *` | Call `morning-prompt` Edge Function |
-| pg_cron `reap-push-tokens` | `0 3 * * 0` | Mark stale tokens invalidated |
-
-### New Hooks / Stores
-
-| File | Purpose |
-|---|---|
-| `src/hooks/useStatus.ts` (modified) | Return `expiresAt`, `isStale`, thread `set_source` through updates |
-| `src/hooks/useSquadStreak.ts` (new) | Fetch `get_squad_streak` RPC, compute streak |
-| `src/hooks/usePushNotifications.ts` (modified) | New upsert shape with `device_id`, iOS category registration, notification response routing |
-| `src/stores/useStatusBannerStore.ts` (new, optional) | Zustand flag for in-memory banner dismissal |
-
-### New UI Components
-
-| File | Purpose |
-|---|---|
-| `src/components/home/ExpiredStatusBanner.tsx` | Renders when own status is stale, taps to set |
-| `src/components/home/HomeFriendCard.tsx` (modified) | Wrap in Pressable, navigate to DM |
-| `src/components/squad/StreakCard.tsx` | "N weeks in a row" display for Goals sub-tab |
-
-### Integration Points (file paths)
-
-| Change | File |
-|---|---|
-| Session-ready push registration | `src/app/(tabs)/_layout.tsx` |
-| Notification response handler (morning_status actions, friend-free taps) | `src/app/(tabs)/_layout.tsx` |
-| Banner slot above Free/Other lists | `src/screens/home/HomeScreen.tsx:115` |
-| Tappable friend card | `src/components/home/HomeFriendCard.tsx` |
-| Token registration, iOS categories, delete-on-toggle-off | `src/hooks/usePushNotifications.ts` |
-| Timezone capture on first launch | wherever session bootstrap runs (likely `src/stores/useAuthStore.ts`) |
-| Goals sub-tab render | `src/app/(tabs)/squad.tsx` (streak section) |
-| Invalidated-token filter | `supabase/functions/notify-plan-invite/index.ts` |
-
----
-
-## Patterns to Follow
-
-### Pattern 1 — Queue Table for Webhook-Triggered Work
-**What:** Trigger writes to a tiny audit/queue table; the Database Webhook fires on that table's INSERT; the Edge Function marks `processed_at` when done.
-**When:** Any time a Postgres event should fan out to external HTTP.
-**Why:** Idempotency, retry visibility, rate-limiting seam, decouples trigger latency from HTTP latency.
-
-### Pattern 2 — Timezone as IANA String on Profile
-**What:** Store `America/Los_Angeles`, not `-08:00`.
-**When:** Any scheduled feature that respects "user's local morning / evening / week."
-**Why:** Numeric offsets break across DST. IANA strings are what `Intl` and `AT TIME ZONE` both speak.
-
-### Pattern 3 — Client Filters by `expires_at` Regardless of Cron
-**What:** Don't trust the cron to have run — always filter `statuses` queries with `expires_at IS NULL OR expires_at > now()` on read.
-**When:** Anywhere TTL matters.
-**Why:** 15-min cron granularity means up to 15 minutes of stale "Free" otherwise. Defense in depth.
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1 — `pg_net` from Inside a Business Trigger
-**What:** Calling an Edge Function via `pg_net.http_post` directly from a trigger on `statuses` UPDATE.
-**Why bad:** Couples transaction latency to HTTP round-trip; no retry; no audit trail; silent failures.
-**Instead:** Trigger writes to a queue table, Database Webhook on the queue table fires.
-
-### Anti-Pattern 2 — Client-Side Daily Reset
-**What:** `useEffect` in App.tsx that checks "has it been >24h? reset my status."
-**Why bad:** Only runs when the user opens the app. Friends see stale Free until then. Breaks the "Free" promise.
-**Instead:** Server-side pg_cron, client-side read-time filter as belt-and-suspenders.
-
-### Anti-Pattern 3 — Public Signed-Token Endpoint for Status Changes
-**What:** `set-status-from-push` Edge Function that accepts a signed JWT in the notification payload.
-**Why bad:** New attack surface for a problem that doesn't exist. Notification action handlers already run inside the authenticated app.
-**Instead:** Let the tap open the app, have the in-app handler do a normal authenticated `UPDATE statuses`.
-
-### Anti-Pattern 4 — `last_free_notified_at` as a Column on `profiles`
-**What:** Single scalar on profile to rate-limit "Friend went Free" notifications.
-**Why bad:** Rate limiting is (recipient × sender) pairwise, not per-recipient. Silences Alice about all friends just because Bob pinged once.
-**Instead:** `free_notifications_sent (recipient_id, sender_id, sent_at)` table.
+## Integration Points — New vs Modified
+
+### New Components
+
+| File | What it does | Integration seam |
+|------|-------------|-----------------|
+| `StatusPill.tsx` | Shows own mood pill + heartbeat indicator | Rendered in HomeScreen header row, replaces the bare `ScreenHeader` |
+| `ViewToggle.tsx` | Two-segment control (Radar / Cards) | Rendered below header, reads/writes `useHomeStore.viewMode` |
+| `RadarView.tsx` | Spatial bubble canvas | Rendered in HomeScreen body when `viewMode === 'radar'`; receives `friends[]` |
+| `CardStackView.tsx` | Swipeable card deck | Rendered in HomeScreen body when `viewMode === 'cards'`; receives `friends[]` |
+| `StatusPickerSheet.tsx` | Modal bottom sheet wrapping MoodPicker | Rendered at HomeScreen root (outside ScrollView), controlled by `sheetVisible` local state |
+| `lib/viewMode.ts` | AsyncStorage helpers for view mode | Used by `useHomeScreen` on mount; by `useHomeStore.setViewMode` on write |
+
+### Modified Components
+
+| File | What changes | What stays the same |
+|------|-------------|---------------------|
+| `HomeScreen.tsx` | Removes MoodPicker, ReEngagementBanner, freeFriends/otherFriends FlatLists, scroll-to-picker logic; adds StatusPill, ViewToggle, RadarView/CardStackView switch, StatusPickerSheet | FAB, RefreshControl, error state, empty state |
+| `MoodPicker.tsx` | Adds optional `onCommit?: () => void` prop; called after successful window commit | All existing mood/preset/window logic unchanged |
+| `useHomeStore.ts` | Adds `viewMode: 'radar' | 'cards'` field + `setViewMode(mode)` action | Existing `friends`, `lastActiveAt`, `lastFetchedAt`, `setFriends` unchanged |
+| `useHomeScreen.ts` | Adds one-time AsyncStorage read on mount to hydrate `viewMode` | All friend fetching, realtime, refresh logic unchanged |
+
+### Removed from HomeScreen (not deleted — just no longer rendered there)
+
+| Asset | Disposition |
+|-------|------------|
+| `<MoodPicker />` | Moved inside `StatusPickerSheet` |
+| `<ReEngagementBanner />` | Removed entirely — the StatusPill's FADING visual state (opacity ring, different color) replaces this prompt. The pill is always visible, so the heartbeat state is always communicated. |
+| `freeFriends` / `otherFriends` FlatLists | Replaced by `RadarView` and `CardStackView` |
+| `scrollRef` + `moodPickerYRef` scroll-to-picker logic | Obsolete once MoodPicker is in the sheet |
+| `deadOnOpenRef` / `showDeadHeading` | Obsolete — the pill communicates DEAD state directly |
+| 60s `setHeartbeatTick` interval | Keep in HomeScreen — RadarView and CardStackView still need heartbeat re-evaluation |
 
 ---
 
 ## Build Order (Dependency-Aware)
 
-The roadmapper should decompose v1.3 into phases in roughly this order. Each phase is independently shippable once its predecessors are in.
+Dependencies flow in one direction. Each step is independently shippable once its prerequisites are done.
 
-1. **Phase A — `push_tokens` evolution + session-ready registration.**
-   Migrates the table, rewires `usePushNotifications.ts`, wires registration into the tabs layout.
-   *Unblocks:* everything that sends pushes (plan invites, friend-free, morning prompt).
-   *Delivers:* plan-invite notifications actually arriving on fresh installs (Feature 5 gap closed).
+### Step 1 — Status Pill + Sheet (no friends view changes yet)
 
-2. **Phase B — Status TTL schema + daily reset + expired banner.**
-   Migration for `statuses` columns, `status_history`, pg_cron expire job, trigger, `ExpiredStatusBanner`, `useStatus` changes.
-   *Depends on:* nothing external.
-   *Unblocks:* Feature 3 (free transitions need the new status pipeline to be clean) and Feature 4 (morning prompt relates to TTL semantically).
+**Builds:** `StatusPill.tsx`, `StatusPickerSheet.tsx`, `MoodPicker.tsx` (add `onCommit`).
 
-3. **Phase C — "Friend went Free" fan-out.**
-   `free_transitions` queue, `capture_free_transition` trigger, `free_notifications_sent` rate-limit table, `notify-friend-free` Edge Function, Database Webhook wiring, in-app notification response handler.
-   *Depends on:* Phase A (tokens) and Phase B (clean status pipeline).
-   *Delivers:* the headline v1.3 feature.
+**Changes to HomeScreen:** Add StatusPill to header area. Add StatusPickerSheet at root. Wire `sheetVisible` local state. Remove inline `<MoodPicker />`. Remove `ReEngagementBanner`.
 
-4. **Phase D — Morning status prompt.**
-   `profiles.timezone`, `morning_prompt_log`, pg_cron dispatch, `morning-prompt` Edge Function, iOS notification category registration, response handler.
-   *Depends on:* Phase A (tokens), Phase B (TTL — prompt is triggered by stale status + time-of-day).
-   *Note:* The "stale status = needs prompt" and "9am = needs prompt" logics can be unified or kept separate.
+**Why first:** The pill and sheet replace two of the three major existing components (`MoodPicker` + `ReEngagementBanner`). Once this is done, the HomeScreen is simplified and the remaining work (views) can land on top of a cleaner base. The sheet also establishes the Modal animation pattern that is reusable.
 
-5. **Phase E — DM entry point.**
-   One-file change to `HomeFriendCard`. Pure client.
-   *Depends on:* nothing. Could ship in any phase, even as a sneak-in during Phase A.
+**Validation:** Tapping the pill opens the sheet. Committing a status closes the sheet and updates the pill. FADING/DEAD states visible in the pill.
 
-6. **Phase F — Squad Goals streak.**
-   `get_squad_streak` RPC, `useSquadStreak` hook, `StreakCard` component.
-   *Depends on:* nothing. Pure read-path feature.
+### Step 2 — View Toggle + Radar View
 
-**Suggested grouping for roadmap decomposition:**
+**Builds:** `ViewToggle.tsx`, `RadarView.tsx`, `lib/viewMode.ts`.
 
-- **Phase 13 — Push Infrastructure:** A + E (small, high-value unblock)
-- **Phase 14 — Status Liveness:** B (standalone, big UX win)
-- **Phase 15 — Friend Went Free:** C (flagship)
-- **Phase 16 — Morning Prompt + Streak:** D + F (both "daily engagement" polish)
+**Changes to:** `useHomeStore.ts` (add `viewMode`), `useHomeScreen.ts` (hydrate from AsyncStorage), `HomeScreen.tsx` (remove FlatList sections, add ViewToggle + conditional RadarView).
+
+**Why second:** Radar view is the primary new visual. It depends on Step 1 having cleaned up the HomeScreen structure. The existing `friends[]` data is already available — no new data fetching.
+
+**Validation:** Radar renders top-6 friends as bubbles. Overflow in horizontal scroll. Heartbeat states (alive = full opacity, fading = dimmed, dead = greyed). Tapping a bubble → DM (same `HomeFriendCard` tap logic, reproduced in the bubble).
+
+### Step 3 — Card Stack View
+
+**Builds:** `CardStackView.tsx`.
+
+**Changes to:** `HomeScreen.tsx` (add `CardStackView` to the conditional render).
+
+**Why third:** Depends on Step 2 having wired the ViewToggle and conditional render switch. The card stack is a new visual over the same data — it doesn't change data fetching or the store.
+
+**Validation:** Toggle to Cards. Swipe right = Nudge (send DM). Swipe left = Skip (dismiss card, next friend visible). All friends cycle through.
+
+---
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Installing @gorhom/bottom-sheet
+
+**What people do:** Reach for `@gorhom/bottom-sheet` as the default "bottom sheet" library.
+
+**Why it's wrong:** As of April 2026, v5 (latest) supports Reanimated v1–3. This project runs Reanimated v4.2.1 (Expo SDK 55). The library is non-functional on this stack — the sheet either doesn't open or crashes with worklet API errors.
+
+**Do this instead:** Custom `Modal` + `Animated.timing` (described in Pattern 1). Expo's `react-native-gesture-handler` (already installed, Expo Go compatible) can add drag-to-dismiss in a later iteration.
+
+### Anti-Pattern 2: New Supabase Queries for RadarView or CardStackView
+
+**What people do:** Treat each view as requiring its own data hook.
+
+**Why it's wrong:** `useHomeScreen` already fetches all friends with status. RadarView and CardStackView are purely visual representations of the same array. New queries add round-trips, Realtime connection pressure, and split caching logic.
+
+**Do this instead:** Pass `friends: FriendWithStatus[]` from `HomeScreen` as a prop to both views. Zero new hooks.
+
+### Anti-Pattern 3: Storing View Mode in React Local State Only
+
+**What people do:** `const [viewMode, setViewMode] = useState<'radar' | 'cards'>('radar')` in HomeScreen.
+
+**Why it's wrong:** Local state is lost when HomeScreen unmounts (user navigates to Squad tab and back). Users would reset to the default on every tab switch.
+
+**Do this instead:** Zustand slice in `useHomeStore` (survives unmount within session) + AsyncStorage write (survives app restart). Same pattern as the existing notification toggle preference.
+
+### Anti-Pattern 4: Deleting MoodPicker Instead of Relocating It
+
+**What people do:** Rebuild the mood/preset/window selection UI from scratch inside `StatusPickerSheet`.
+
+**Why it's wrong:** `MoodPicker` has 228 lines of tested logic including LayoutAnimation, haptics, Zustand sync, error handling, preset chips, and window chips. Rebuilding from scratch introduces bugs and dev time.
+
+**Do this instead:** Render `<MoodPicker onCommit={onClose} />` inside `StatusPickerSheet`. The only addition is the `onCommit` prop (3–5 lines in MoodPicker).
+
+### Anti-Pattern 5: Removing the 60s Heartbeat Interval from HomeScreen
+
+**What people do:** Clean up the `setHeartbeatTick` interval because the scroll-based UI is gone.
+
+**Why it's wrong:** RadarView and CardStackView both compute `heartbeatState` per-render via `computeHeartbeatState`. Without the 60s tick forcing a re-render, FADING → DEAD transitions won't update visually without a data refetch.
+
+**Do this instead:** Keep the existing 60s interval in HomeScreen. It's a cheap `setState` with no side effects.
 
 ---
 
 ## Scalability Considerations
 
-| Concern | At 100 users | At 10K users | At 1M users |
-|---|---|---|---|
-| `free_transitions` queue | No issue | Add partial index prune | Partition by week |
-| Morning prompt cron (every 15 min) | 1 query per tick | Still one query, ~15K rows | Shard by timezone |
-| `notify-friend-free` fan-out | 1–15 pushes per event | 15–200 per event | Batch per recipient, defer via queue |
-| `status_history` growth | Trivial | ~5 rows/user/day = 50KB/user/year | Move >90d to cold storage |
-| Realtime connections (free tier 200 cap) | Fine | Fine (one channel per device) | Exceeds tier — upgrade |
+| Concern | At 3–15 friends (target) | At 50+ friends |
+|---------|--------------------------|----------------|
+| Radar top-6 slice | Trivially cheap | Same — always slices to 6 |
+| CardStackView cycling | One card at a time, no perf issue | Consider `FlatList`-based virtualization if >30 cards |
+| ViewToggle AsyncStorage | Single key read/write | No change |
+| StatusPill re-renders | One Zustand subscription | No change |
+| `useHomeScreen` Realtime | Single channel, user_id filter | Already designed for this (OVR-07 in existing code) |
 
-Free tier (500 MB DB) can comfortably hold 10K+ users at v1.3 data shapes. The binding constraint is realtime connections, unchanged from v1.2.
-
----
-
-## Confidence Assessment
-
-| Area | Confidence | Reason |
-|---|---|---|
-| Existing code inventory | HIGH | Read actual files; quoted line numbers |
-| Status TTL schema | HIGH | Standard Postgres pattern, mirrors existing conventions |
-| `push_tokens` evolution | HIGH | Current schema read; migration is additive |
-| Friend-free queue pattern | MEDIUM-HIGH | Pattern is sound; exact rate-limit tuning needs real usage data |
-| Morning prompt timezone handling | HIGH | `AT TIME ZONE` + IANA is standard |
-| pg_cron on Supabase free tier | HIGH | Documented Supabase feature |
-| DM entry point option | HIGH | Verified `HomeFriendCard` is not currently tappable |
-| Squad streak query | MEDIUM | Query shape is correct; exact UX of "counts as streak week" may need product tuning |
-
-## Open Questions for Roadmap
-
-- Does the DM route `/dm/[id]` already exist, or does Phase E also need to create it? (Look at `src/app/` to confirm.)
-- Should the morning prompt also fire if the user manually set status yesterday (stale but not expired)? Product call.
-- Rate-limit window for "Friend went Free": 2 hours is a guess. Could be 30 min, could be "once per day per pair." Product call.
-- Does the Goals sub-tab streak need a "longest ever" stat or just "current"? Scope question.
+The app's stated group size is 3–15 people. Scalability beyond that is explicitly out of scope per `PROJECT.md`.
 
 ---
 
 ## Sources
 
-- `/Users/iulian/Develop/campfire/supabase/migrations/0001_init.sql` — schema, RLS patterns, helper functions
-- `/Users/iulian/Develop/campfire/supabase/migrations/0003_push_tokens.sql` — current push_tokens schema
-- `/Users/iulian/Develop/campfire/supabase/functions/notify-plan-invite/index.ts` — existing Edge Function pattern
-- `/Users/iulian/Develop/campfire/src/hooks/usePushNotifications.ts` — current registration helper
-- `/Users/iulian/Develop/campfire/src/hooks/useStatus.ts` — current status hook shape
-- `/Users/iulian/Develop/campfire/src/hooks/useHomeScreen.ts` — realtime subscription pattern
-- `/Users/iulian/Develop/campfire/src/app/(tabs)/_layout.tsx` — tab structure
-- `/Users/iulian/Develop/campfire/.planning/PROJECT.md` — v1.3 scope
-- Supabase docs (training data, HIGH confidence): pg_cron, Database Webhooks, Edge Functions, RLS with SECURITY DEFINER
+- `/Users/iulian/Develop/campfire/src/screens/home/HomeScreen.tsx` — current render tree
+- `/Users/iulian/Develop/campfire/src/components/home/HomeFriendCard.tsx` — card interactions
+- `/Users/iulian/Develop/campfire/src/components/status/MoodPicker.tsx` — status picker logic
+- `/Users/iulian/Develop/campfire/src/components/home/ReEngagementBanner.tsx` — banner to be removed
+- `/Users/iulian/Develop/campfire/src/hooks/useStatus.ts` — status hook interface
+- `/Users/iulian/Develop/campfire/src/hooks/useHomeScreen.ts` — friend data + realtime
+- `/Users/iulian/Develop/campfire/src/stores/useStatusStore.ts` — status Zustand store
+- `/Users/iulian/Develop/campfire/src/stores/useHomeStore.ts` — home Zustand store
+- `/Users/iulian/Develop/campfire/src/lib/heartbeat.ts` — heartbeat computation
+- `/Users/iulian/Develop/campfire/src/app/(tabs)/_layout.tsx` — tab layout + AppState pattern
+- `/Users/iulian/Develop/campfire/package.json` — confirmed library versions
+- [gorhom/react-native-bottom-sheet GitHub](https://github.com/gorhom/react-native-bottom-sheet) — v5.2.9 "Compatible with Reanimated v1-3" (April 8, 2026 release)
+- [Issue #2600 — Feature Request: Support Reanimated v4](https://github.com/gorhom/react-native-bottom-sheet/issues/2600) — confirmed v4 incompatibility
+- [React Native Reanimated Bottom Sheet example](https://docs.swmansion.com/react-native-reanimated/examples/bottomsheet/) — recommends @gorhom but acknowledges no built-in component
+
+---
+
+*Architecture research for: Campfire v1.3.5 Homescreen Redesign*
+*Researched: 2026-04-10*
