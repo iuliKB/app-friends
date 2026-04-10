@@ -66,8 +66,8 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 - [x] **MORN-04**: Tapping an action opens the app and sets the user's status via the existing authenticated Supabase session (RLS protects — no public endpoint, no signed token)
 - [x] **MORN-05**: Action button payload includes `valid_until` so a tap >12h after the prompt fired no-ops gracefully (does not retroactively set status)
 - [x] **MORN-06**: Morning prompt does not fire if user's heartbeat state is ALIVE or FADING (skip-if-active logic — only DEAD triggers the prompt).
-- [ ] **MORN-07**: User can disable morning prompt via a Profile toggle alongside the other notification toggles
-- [ ] **MORN-08**: User can pick the prompt time from a settings row (default 9am)
+- [x] **MORN-07**: User can disable morning prompt via a Profile toggle alongside the other notification toggles
+- [x] **MORN-08**: User can pick the prompt time from a settings row (default 9am)
 
 ### Squad Goals (Streak)
 
@@ -172,8 +172,8 @@ Explicitly excluded.
 | MORN-04 | Phase 4 | Complete |
 | MORN-05 | Phase 4 | Complete |
 | MORN-06 | Phase 4 | Complete |
-| MORN-07 | Phase 4 | Pending |
-| MORN-08 | Phase 4 | Pending |
+| MORN-07 | Phase 4 | Complete |
+| MORN-08 | Phase 4 | Complete |
 | STREAK-01 | Phase 4 | Pending |
 | STREAK-02 | Phase 4 | Complete |
 | STREAK-03 | Phase 4 | Complete |
