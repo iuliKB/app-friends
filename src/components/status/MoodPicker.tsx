@@ -29,7 +29,11 @@ const MOOD_ROWS: { value: StatusValue; label: string; color: string }[] = [
   { value: 'busy', label: 'Busy', color: COLORS.status.busy },
 ];
 
-export function MoodPicker() {
+interface MoodPickerProps {
+  onCommit?: () => void;
+}
+
+export function MoodPicker({ onCommit }: MoodPickerProps) {
   const { currentStatus, saving, setStatus } = useStatus();
   const [expandedMood, setExpandedMood] = useState<StatusValue | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -67,6 +71,7 @@ export function MoodPicker() {
       return;
     }
     // Commit successful — Zustand sync will collapse the picker via the effect above
+    onCommit?.();
   }
 
   const windowOptions = expandedMood ? getWindowOptions(new Date()) : [];
