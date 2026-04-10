@@ -72,12 +72,12 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 ### Squad Goals (Streak)
 
 - [ ] **STREAK-01**: Squad → Goals tab replaces the "Coming soon" stub with a `StreakCard` showing the squad's current weekly streak count
-- [ ] **STREAK-02**: A week is **active** if ≥1 plan with ≥2 confirmed attendees was completed in that week
-- [ ] **STREAK-03**: Week boundaries are Mon 00:00 → Sun 23:59 (squad creator's timezone)
-- [ ] **STREAK-04**: Streak survives 1 grace week per 4-week window (one missed week is allowed; visibility of remaining grace TBD in implementation)
-- [ ] **STREAK-05**: Streak breaks only after 2 consecutive missed weeks within a 4-week window
-- [ ] **STREAK-06**: "Best: N weeks" record is preserved permanently across breaks
-- [ ] **STREAK-07**: Streak data is computed via `get_squad_streak(tz)` SQL function (computed view, NOT materialized — at 3-15 person squads the query is trivial)
+- [x] **STREAK-02**: A week is **active** if ≥1 plan with ≥2 confirmed attendees was completed in that week
+- [x] **STREAK-03**: Week boundaries are Mon 00:00 → Sun 23:59 (squad creator's timezone)
+- [x] **STREAK-04**: Streak survives 1 grace week per 4-week window (one missed week is allowed; visibility of remaining grace TBD in implementation)
+- [x] **STREAK-05**: Streak breaks only after 2 consecutive missed weeks within a 4-week window
+- [x] **STREAK-06**: "Best: N weeks" record is preserved permanently across breaks
+- [x] **STREAK-07**: Streak data is computed via `get_squad_streak(tz)` SQL function (computed view, NOT materialized — at 3-15 person squads the query is trivial)
 - [ ] **STREAK-08**: Copy is positive-only — celebratory framing, no countdown / hourglass / "you're about to lose it" UI; copy reviewed by a non-engineer before ship
 
 ## v1.4 Requirements (Deferred)
@@ -175,12 +175,12 @@ Explicitly excluded.
 | MORN-07 | Phase 4 | Pending |
 | MORN-08 | Phase 4 | Pending |
 | STREAK-01 | Phase 4 | Pending |
-| STREAK-02 | Phase 4 | Pending |
-| STREAK-03 | Phase 4 | Pending |
-| STREAK-04 | Phase 4 | Pending |
-| STREAK-05 | Phase 4 | Pending |
-| STREAK-06 | Phase 4 | Pending |
-| STREAK-07 | Phase 4 | Pending |
+| STREAK-02 | Phase 4 | Complete |
+| STREAK-03 | Phase 4 | Complete |
+| STREAK-04 | Phase 4 | Complete |
+| STREAK-05 | Phase 4 | Complete |
+| STREAK-06 | Phase 4 | Complete |
+| STREAK-07 | Phase 4 | Complete |
 | STREAK-08 | Phase 4 | Pending |
 
 **Coverage:**
