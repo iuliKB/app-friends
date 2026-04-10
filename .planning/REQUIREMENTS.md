@@ -60,12 +60,12 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 
 ### Morning Status Prompt
 
-- [ ] **MORN-01**: User receives a daily local push at user-configurable time (default 9:00am local) prompting "☀️ What's your status today?". Fires only when heartbeat state is DEAD at the scheduled fire time.
-- [ ] **MORN-02**: Morning prompt is scheduled **on-device** via `Notifications.scheduleNotificationAsync({ hour, minute, repeats: true })` — no server cron, no `profiles.timezone` column
-- [ ] **MORN-03**: Notification shows three action buttons: Free / Busy / Maybe
-- [ ] **MORN-04**: Tapping an action opens the app and sets the user's status via the existing authenticated Supabase session (RLS protects — no public endpoint, no signed token)
-- [ ] **MORN-05**: Action button payload includes `valid_until` so a tap >12h after the prompt fired no-ops gracefully (does not retroactively set status)
-- [ ] **MORN-06**: Morning prompt does not fire if user's heartbeat state is ALIVE or FADING (skip-if-active logic — only DEAD triggers the prompt).
+- [x] **MORN-01**: User receives a daily local push at user-configurable time (default 9:00am local) prompting "☀️ What's your status today?". Fires only when heartbeat state is DEAD at the scheduled fire time.
+- [x] **MORN-02**: Morning prompt is scheduled **on-device** via `Notifications.scheduleNotificationAsync({ hour, minute, repeats: true })` — no server cron, no `profiles.timezone` column
+- [x] **MORN-03**: Notification shows three action buttons: Free / Busy / Maybe
+- [x] **MORN-04**: Tapping an action opens the app and sets the user's status via the existing authenticated Supabase session (RLS protects — no public endpoint, no signed token)
+- [x] **MORN-05**: Action button payload includes `valid_until` so a tap >12h after the prompt fired no-ops gracefully (does not retroactively set status)
+- [x] **MORN-06**: Morning prompt does not fire if user's heartbeat state is ALIVE or FADING (skip-if-active logic — only DEAD triggers the prompt).
 - [ ] **MORN-07**: User can disable morning prompt via a Profile toggle alongside the other notification toggles
 - [ ] **MORN-08**: User can pick the prompt time from a settings row (default 9am)
 
@@ -166,12 +166,12 @@ Explicitly excluded.
 | FREE-10 | Phase 3 | Complete |
 | FREE-11 | Phase 3 | Pending |
 | EXPIRY-01 | Phase 3 | Complete |
-| MORN-01 | Phase 4 | Pending |
-| MORN-02 | Phase 4 | Pending |
-| MORN-03 | Phase 4 | Pending |
-| MORN-04 | Phase 4 | Pending |
-| MORN-05 | Phase 4 | Pending |
-| MORN-06 | Phase 4 | Pending |
+| MORN-01 | Phase 4 | Complete |
+| MORN-02 | Phase 4 | Complete |
+| MORN-03 | Phase 4 | Complete |
+| MORN-04 | Phase 4 | Complete |
+| MORN-05 | Phase 4 | Complete |
+| MORN-06 | Phase 4 | Complete |
 | MORN-07 | Phase 4 | Pending |
 | MORN-08 | Phase 4 | Pending |
 | STREAK-01 | Phase 4 | Pending |

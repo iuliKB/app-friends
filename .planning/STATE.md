@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Liveness & Notifications
 status: executing
-stopped_at: Completed 04-01-PLAN.md (squad streak migration authored)
-last_updated: "2026-04-10T07:04:22.476Z"
+stopped_at: Completed 04-03-PLAN.md (morning prompt client primitives)
+last_updated: "2026-04-10T07:09:00.004Z"
 last_activity: 2026-04-10
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 30
-  completed_plans: 25
-  percent: 83
+  completed_plans: 26
+  percent: 87
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 Milestone: v1.3 Liveness & Notifications
 Phase: 04 (morning-prompt-squad-goals-streak) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-04-10
 
@@ -49,6 +49,7 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 | Phase 03 P06 | 2 | 2 tasks | 2 files |
 | Phase 03 P07 | 1 | 1 tasks | 1 files |
 | Phase 04 P01 | 2 | 1 tasks | 1 files |
+| Phase 04 P03 | 8 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 - [Phase Phase 03]: Explicit setProfile field destructuring used when adding notify_friend_free to SELECT to avoid widening existing profile state type
 - [Phase 04]: plan_members column is 'rsvp' (not 'rsvp_status'); the type is public.rsvp_status but column name differs from plan interface docs
 - [Phase 04]: get_squad_streak uses PL/pgSQL while-loop with boolean[] rolling window over generate_series/CTE for clearer sliding miss reset logic
+- [Phase 04]: Payload carries only { kind: 'morning_prompt' } — 12h guard derives from OS response.notification.date, not from payload (D-24, T-04-11)
+- [Phase 04]: Stable literal identifier 'campfire:morning_prompt' enables cancel-by-id without AsyncStorage round-trip on cold launch (T-04-12)
+- [Phase 04]: Body-tap on morning_prompt navigates to Home with no status mutation; tap-time DEAD heartbeat guard prevents silent status flip (D-27, MORN-06)
 
 ### Pending Todos
 
@@ -97,5 +101,5 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 
 ## Session Continuity
 
-Last session: 2026-04-10T07:04:22.471Z
-Stopped at: Completed 04-01-PLAN.md (squad streak migration authored)
+Last session: 2026-04-10T07:09:00.000Z
+Stopped at: Completed 04-03-PLAN.md (morning prompt client primitives)
