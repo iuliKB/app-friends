@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -13,6 +14,9 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
@@ -24,6 +28,8 @@ import {
   unregisterForPushNotifications,
   getNotificationsEnabled,
 } from '@/hooks/usePushNotifications';
+import { ensureMorningPromptScheduled, cancelMorningPrompt } from '@/lib/morningPrompt';
+import { PrePromptModal } from '@/components/notifications/PrePromptModal';
 
 export default function ProfileScreen() {
   const session = useAuthStore((s) => s.session);
@@ -38,6 +44,12 @@ export default function ProfileScreen() {
   } | null>(null);
   const [notificationsEnabled, setNotificationsEnabledState] = useState(true);
   const [friendFreeEnabled, setFriendFreeEnabled] = useState(true);
+  const [morningEnabled, setMorningEnabled] = useState(true);
+  const [morningHour, setMorningHour] = useState(9);
+  const [morningMinute, setMorningMinute] = useState(0);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showMorningPrePrompt, setShowMorningPrePrompt] = useState(false);
+  const [morningDeniedHint, setMorningDeniedHint] = useState(false);
 
   // Refetch profile every time Profile tab comes into focus
   useFocusEffect(
@@ -69,6 +81,20 @@ export default function ProfileScreen() {
   async function loadNotificationsEnabled() {
     const enabled = await getNotificationsEnabled();
     setNotificationsEnabledState(enabled);
+
+    // Phase 4 D-34 — hydrate morning prompt config from AsyncStorage with defaults.
+    try {
+      const mEnabled = (await AsyncStorage.getItem('campfire:morning_prompt_enabled')) ?? 'true';
+      const mHourRaw = (await AsyncStorage.getItem('campfire:morning_prompt_hour')) ?? '9';
+      const mMinuteRaw = (await AsyncStorage.getItem('campfire:morning_prompt_minute')) ?? '0';
+      setMorningEnabled(mEnabled === 'true');
+      const mHour = Number(mHourRaw);
+      const mMinute = Number(mMinuteRaw);
+      if (Number.isFinite(mHour)) setMorningHour(mHour);
+      if (Number.isFinite(mMinute)) setMorningMinute(mMinute);
+    } catch {
+      // AsyncStorage unavailable — use defaults already in state.
+    }
   }
 
   async function handleToggleNotifications(value: boolean) {
@@ -108,6 +134,69 @@ export default function ProfileScreen() {
       setFriendFreeEnabled(!value);
       Alert.alert('Update failed', error.message);
     }
+  }
+
+  async function handleToggleMorning(value: boolean) {
+    setMorningEnabled(value);
+    setMorningDeniedHint(false);
+    await AsyncStorage.setItem('campfire:morning_prompt_enabled', value ? 'true' : 'false');
+
+    if (!value) {
+      await cancelMorningPrompt();
+      return;
+    }
+
+    // Toggling ON — check permission state first (D-30).
+    const perms = await Notifications.getPermissionsAsync().catch(() => ({
+      status: 'undetermined' as const,
+    }));
+    if (perms.status === 'granted') {
+      await ensureMorningPromptScheduled();
+      return;
+    }
+    if (perms.status === 'undetermined') {
+      setShowMorningPrePrompt(true);
+      return;
+    }
+    // perms.status === 'denied'
+    setMorningEnabled(false);
+    setMorningDeniedHint(true);
+    await AsyncStorage.setItem('campfire:morning_prompt_enabled', 'false');
+  }
+
+  async function handleMorningPrePromptAccept() {
+    setShowMorningPrePrompt(false);
+    const result = await Notifications.requestPermissionsAsync().catch(() => ({
+      status: 'denied' as const,
+    }));
+    if (result.status === 'granted') {
+      await ensureMorningPromptScheduled();
+    } else {
+      setMorningEnabled(false);
+      setMorningDeniedHint(true);
+      await AsyncStorage.setItem('campfire:morning_prompt_enabled', 'false');
+    }
+  }
+
+  async function handleMorningPrePromptDecline() {
+    setShowMorningPrePrompt(false);
+    setMorningEnabled(false);
+    await AsyncStorage.setItem('campfire:morning_prompt_enabled', 'false');
+  }
+
+  function handleMorningTimeChange(_event: DateTimePickerEvent, selectedDate?: Date) {
+    if (Platform.OS === 'android') setShowTimePicker(false);
+    if (!selectedDate) return;
+    const h = selectedDate.getHours();
+    const m = selectedDate.getMinutes();
+    setMorningHour(h);
+    setMorningMinute(m);
+    AsyncStorage.multiSet([
+      ['campfire:morning_prompt_hour', String(h)],
+      ['campfire:morning_prompt_minute', String(m)],
+    ])
+      .then(() => ensureMorningPromptScheduled())
+      .catch(() => {});
   }
 
   async function handleLogout() {
@@ -236,6 +325,61 @@ export default function ProfileScreen() {
         />
       </View>
 
+      {/* Morning prompt section (Phase 4 / MORN-07, MORN-08) */}
+      <Text style={styles.sectionHeader}>MORNING PROMPT</Text>
+
+      <View style={styles.row}>
+        <Ionicons
+          name="sunny-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>Morning prompt</Text>
+        <Switch
+          value={morningEnabled}
+          onValueChange={handleToggleMorning}
+          trackColor={{ false: COLORS.border, true: COLORS.interactive.accent + '40' }}
+          thumbColor={morningEnabled ? COLORS.interactive.accent : COLORS.border}
+        />
+      </View>
+
+      <TouchableOpacity
+        style={[styles.row, !morningEnabled && styles.rowDisabled]}
+        onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
+        disabled={!morningEnabled}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="time-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>Time</Text>
+        <Text style={styles.rowTrailingText}>
+          {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+        </Text>
+      </TouchableOpacity>
+
+      {showTimePicker && (
+        <DateTimePicker
+          value={new Date(2000, 0, 1, morningHour, morningMinute)}
+          mode="time"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleMorningTimeChange}
+        />
+      )}
+
+      {morningDeniedHint && (
+        <Text style={styles.morningHint}>
+          Enable notifications in iOS Settings to receive morning prompts.
+        </Text>
+      )}
+
       {/* Logout row per UI-SPEC: full width, 52px, destructive color */}
       <TouchableOpacity style={styles.logoutRow} onPress={handleLogout} disabled={loggingOut}>
         {loggingOut ? (
@@ -246,6 +390,12 @@ export default function ProfileScreen() {
       </TouchableOpacity>
 
       <Text style={styles.versionText}>Campfire v{Constants.expoConfig?.version ?? ''}</Text>
+
+      <PrePromptModal
+        visible={showMorningPrePrompt}
+        onAccept={handleMorningPrePromptAccept}
+        onDecline={handleMorningPrePromptDecline}
+      />
     </ScrollView>
   );
 }
@@ -341,5 +491,19 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     textAlign: 'center',
     marginTop: SPACING.xxl,
+  },
+  rowDisabled: {
+    opacity: 0.4,
+  },
+  rowTrailingText: {
+    fontSize: FONT_SIZE.md,
+    color: COLORS.text.secondary,
+  },
+  morningHint: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.text.secondary,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
   },
 });
