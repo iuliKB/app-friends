@@ -4,7 +4,7 @@
 // Writes: public.statuses table (views are not writable).
 // Cross-screen sync: Zustand useStatusStore (replaces D-25 react-query plan).
 // Debounce: module-scope lastTouchAt ref, 60s floor (D-34, T-02-15 mitigation).
-// Signout: module-scope useAuthStore.subscribe clears store (T-02-16 mitigation).
+// Signout: module-scope auth subscriber clears store (T-02-16 mitigation).
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -15,6 +15,7 @@ import { computeWindowExpiry } from '@/lib/windows';
 import type { StatusValue, WindowId, CurrentStatus, HeartbeatState } from '@/types/app';
 import { markPushPromptEligible } from '@/hooks/usePushNotifications';
 import { scheduleExpiryNotification, cancelExpiryNotification } from '@/lib/expiryScheduler';
+import { cancelMorningPrompt } from '@/lib/morningPrompt';
 
 // ---------------------------------------------------------------------------
 // Auth listener (module scope) — clears cached status on signout.
@@ -30,6 +31,8 @@ function installAuthListenerOnce() {
       useStatusStore.getState().clear();
       // Phase 3 EXPIRY-01 — tear down scheduled expiry notification on signout
       cancelExpiryNotification().catch(() => {});
+      // Phase 4 D-33 — tear down scheduled morning prompt on signout
+      cancelMorningPrompt().catch(() => {});
     }
   });
 }
