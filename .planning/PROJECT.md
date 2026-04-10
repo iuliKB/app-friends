@@ -2,24 +2,15 @@
 
 ## What This Is
 
-Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1.2 shipped with a dedicated Squad tab for friend management, restructured navigation (Home|Squad|Explore|Chats|Profile), and a simplified Profile screen with account details.
+Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1.3 adds status liveness (heartbeat-based freshness with TTL windows), real push delivery with token lifecycle management, the "Friend went Free" notification loop, a daily morning status prompt, and Squad Goals streaks — making the app worth opening every day.
 
 ## Core Value
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone: v1.3 Liveness & Notifications
+## Current Milestone
 
-**Goal:** Make Campfire worth opening every day — add status TTL/freshness, real push delivery, and the "Friend went Free" loop that drives spontaneous plans.
-
-**Target features:**
-- Status liveness (TTL, daily reset, expired banner, status_history)
-- Push notification infrastructure (expo-notifications, push_tokens table w/ RLS)
-- "Friend went Free" notification (Postgres trigger + Edge Function fan-out, batched/rate-limited)
-- Morning status prompt (daily local push with Free/Busy/Maybe action buttons)
-- Plan invite push (verify + complete existing wiring)
-- DM entry point fix (compose icon or tappable Home friend cards)
-- Squad Goals: shared streak ("N weeks in a row")
+Next milestone not yet planned. Run `/gsd-new-milestone` to start.
 
 ## Requirements
 
@@ -58,15 +49,24 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ Chat tab renamed to Chats with chatbubbles icon — v1.2
 - ✓ Profile simplified: @username, ACCOUNT section (email + member since), app version — v1.2
 - ✓ Pending request badge migrated from Profile to Squad tab — v1.2
+- ✓ Push token lifecycle (register on launch, foreground re-register, invalidation) — v1.3
+- ✓ Tappable HomeFriendCard DM entry point — v1.3
+- ✓ Status Liveness: Mood + Context + Window composer with heartbeat freshness (ALIVE/FADING/DEAD) — v1.3
+- ✓ effective_status view as source of truth for status freshness — v1.3
+- ✓ ReEngagementBanner when own heartbeat is FADING — v1.3
+- ✓ status_history audit table with SECURITY DEFINER trigger — v1.3
+- ✓ Friend Went Free notification loop with outbox queue + Edge Function + 8-stage rate-limit gauntlet — v1.3
+- ✓ Expiry warning push with Keep it / Heads down action buttons — v1.3
+- ✓ Profile toggles for Plan invites, Friend availability notifications — v1.3
+- ✓ On-device morning prompt scheduler with Free/Busy/Maybe action buttons — v1.3
+- ✓ Configurable morning prompt time in Profile — v1.3
+- ✓ Squad Goals streak with get_squad_streak SQL (sliding 4-week grace window) — v1.3
+- ✓ StreakCard in Goals tab with pull-to-refresh — v1.3
+- ✓ Positive-only streak copy, non-engineer reviewed — v1.3
 
 ### Active
 
-- ◆ v1.3 Phase 1 (Push Infrastructure & DM Entry Point) — in progress
-- ✓ v1.3 Phase 2 (Status Liveness & TTL) — shipped 2026-04-08: Mood + Context + Window + Heartbeat model live; migration 0009 applied; 10 UI behaviors deferred to Phase 5 Hardware Verification Gate
-- ✓ v1.3 Phase 3 (Friend Went Free Loop) — shipped 2026-04-09: migration 0010 applied; notify-friend-free Edge Function with 8-stage rate-limit gauntlet authored; client primitives (window_id, nextLargerWindow, expiryScheduler) + useStatus wiring + notification categories/response dispatcher + profile toggle all live; monitoring + smoke-test docs authored; hardware checks deferred to Phase 5
-- ✓ v1.3 Phase 4 (Morning Prompt + Squad Goals Streak) — shipped 2026-04-10: on-device morning prompt scheduler with action buttons; get_squad_streak SQL function (SECURITY DEFINER, sliding 4-week grace window); StreakCard in Goals tab with pull-to-refresh; Profile morning prompt toggle + time picker; STREAK-08 copy review gate passed
-
-(Remaining phases — see Current Milestone section below)
+(None — next milestone not yet planned)
 
 ### Out of Scope
 
@@ -84,19 +84,20 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ## Context
 
-Shipped v1.2 Squad & Navigation with 12 phases total (6 v1.0 + 3 v1.1 + 3 v1.2), 89 requirements delivered.
-Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage), Zustand.
+Shipped v1.3 Liveness & Notifications with 20 phases total across 4 milestones (v1.0–v1.3), 44 v1.3 requirements delivered.
+Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage + Edge Functions), Zustand.
 
-Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend). Profile is account-focused (@username, email, member since, settings, QR code).
+Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config).
 Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
-Playwright visual regression baselines for all 7 screens updated for v1.2 tab layout.
+Supabase migrations: 0001–0011 (v1.3 added 0009 status liveness, 0010 friend-free loop, 0011 squad streak).
+Edge Functions: `notify-plan-invite`, `notify-friend-free` (rate-limited fan-out).
 
 Known technical considerations:
 - Apple Sign-In works in Expo Go but needs validation on EAS builds
 - Supabase free-tier Realtime limited to 200 concurrent connections
-- Push notifications require EAS development build for remote push on Android
-- Nudge mechanic deferred to v2 (DM infrastructure covers the use case)
-- 35 `eslint-disable-next-line` suppressions for values with no exact token match (e.g., fontSize: 48 emoji, paddingVertical: 14)
+- EAS dev build required for push action buttons and Android channels — deferred until Apple Dev account acquired
+- TTL-08 retention rollup deferred (pg_cron not enabled on free tier)
+- 35 `eslint-disable-next-line` suppressions for values with no exact token match
 
 ## Constraints
 
@@ -142,6 +143,11 @@ Known technical considerations:
 | Mood + Context + Window composer (v1.3 Phase 2) | Two-stage commit (mood row → preset chip + window chip) with 15 preset context tags; every status has non-null expires_at | ✓ Good |
 | `effective_status` view with `security_invoker=true` (v1.3 Phase 2) | View-computed freshness: NULL when expired OR last_active_at >8h stale; friends never see stale data | ✓ Good |
 | TTL-08 retention rollup deferred to v1.4 | pg_cron not enabled; at v1.3 scale (~120 rows/user/month) status_history doesn't need active management | ✓ Good |
+| Outbox queue for Friend-Went-Free fan-out (v1.3 Phase 3) | Never call pg_net inside a business trigger; outbox + Database Webhook keeps user writes <100ms | ✓ Good |
+| Pairwise rate-limit table over profile scalars (v1.3 Phase 3) | Dedicated `free_notifications_sent` table enables multi-dimensional throttling (pairwise 15min, per-recipient 5min, daily ~3, quiet hours) | ✓ Good |
+| On-device morning prompt via scheduleNotificationAsync (v1.3 Phase 4) | Eliminates profiles.timezone column and server cron; works offline | ✓ Good |
+| Anti-Snapchat streak mechanics (v1.3 Phase 4) | Grace week per 4-week window, breaks on 2 consecutive misses, positive-only copy — avoids streak anxiety | ✓ Good |
+| Hardware verification gate as final phase (v1.3 Phase 5) | Solo dev without Apple Dev account; consolidates all manual smoke tests into one session when account acquired | ✓ Good |
 
 ---
-*Last updated: 2026-04-10 after v1.3 Phase 4 completion*
+*Last updated: 2026-04-10 after v1.3 milestone completion*
