@@ -699,21 +699,16 @@ useEffect(() => {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **display_name source for empty-state pill (PILL-07)**
-   - What we know: `useAuthStore` has Supabase `Session` but not profile fields. No `useProfile` hook exists. ProfileScreen fetches directly each mount.
-   - What's unclear: Should a shared hook be created? Or can we derive from `session.user.user_metadata`?
-   - Recommendation: Check `session.user.user_metadata.full_name` and `session.user.user_metadata.name` for Google OAuth users. For email users these may be empty. Safest: create a minimal `useOwnDisplayName` hook (one-time Supabase fetch, module-scope cache).
+1. **display_name source for empty-state pill (PILL-07)** — RESOLVED
+   - Decision: Derive from `session.user.user_metadata.display_name` via `useAuthStore`. Falls back to "You" if empty. No extra DB fetch needed.
 
-2. **Sheet height — full-height or partial?**
-   - What we know: MoodPicker expands vertically when a mood is selected (preset chips + window chips rows). On small screens (SE), full expansion may push below the fold.
-   - What's unclear: Whether the sheet needs a fixed max-height with internal ScrollView, or if the content naturally fits.
-   - Recommendation (Claude's Discretion): Set sheet to `maxHeight: screenHeight * 0.75` with the MoodPicker content inside a ScrollView. This is a safe default.
+2. **Sheet height — full-height or partial?** — RESOLVED
+   - Decision: `maxHeight: screenHeight * 0.75` with inner ScrollView. Claude's discretion.
 
-3. **Initial `translateY` value for StatusPickerSheet**
-   - What we know: FriendActionSheet starts at 300; the content is ~180px tall (3 rows). StatusPickerSheet is taller (MoodPicker expands).
-   - Recommendation: Start at 600 (full screen height buffer) to ensure the sheet is off-screen on all device sizes before the animation.
+3. **Initial `translateY` value for StatusPickerSheet** — RESOLVED
+   - Decision: Use 600 (not 300 like FriendActionSheet) since MoodPicker content is taller. Initial value and swipe-dismiss target both use 600.
 
 ---
 
