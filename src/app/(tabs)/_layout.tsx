@@ -7,6 +7,7 @@ import { COLORS, FONT_SIZE } from '@/theme';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useInvitationCount } from '@/hooks/useInvitationCount';
 import { useStatus } from '@/hooks/useStatus';
+import { ensureMorningPromptScheduled } from '@/lib/morningPrompt';
 import { useAuthStore } from '@/stores/useAuthStore';
 import {
   registerForPushNotifications,
@@ -33,11 +34,12 @@ export default function TabsLayout() {
   useEffect(() => {
     if (!userId) return;
 
-    // Initial register + cold-launch touch (HEART-02)
+    // Initial register + cold-launch touch (HEART-02) + morning prompt schedule (Phase 4 D-22 point 1)
     registerForPushNotifications(userId)
       .then((result) => setRegisterState(result))
       .catch(() => {});
     touch().catch(() => {});
+    ensureMorningPromptScheduled().catch(() => {});
 
     // Foreground re-register + touch (HEART-02 on AppState 'active') — OVR-04:
     // single AppState listener; do NOT add a second one for touch.
