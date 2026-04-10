@@ -11,6 +11,7 @@ import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeWindowExpiry, nextLargerWindow } from '@/lib/windows';
+import { computeHeartbeatState } from '@/lib/heartbeat';
 import type { WindowId } from '@/types/app';
 
 SplashScreen.preventAutoHideAsync();
@@ -121,6 +122,67 @@ async function handleNotificationResponse(
       }
       return;
     }
+  }
+
+  // --- Morning prompt action buttons (MORN-01..06 / D-24..D-28) ---
+  if (category === 'morning_prompt') {
+    // D-24: 12h validity guard derived from notification fire time (NOT payload).
+    // response.notification.date is Unix ms per Expo SDK 55 typings.
+    const firedAt = response.notification.date;
+    if (Date.now() - firedAt > 12 * 60 * 60 * 1000) return;
+
+    // D-27: body-tap opens Home, never mutates status.
+    if (action === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+      router.push('/(tabs)/' as never);
+      return;
+    }
+
+    // D-25: resolve mood from lowercase action identifiers (see notifications-init.ts).
+    const mood =
+      action === 'free' ? 'free' :
+      action === 'busy' ? 'busy' :
+      action === 'maybe' ? 'maybe' : null;
+    if (!mood) return;
+
+    // D-25 / MORN-06: tap-time DEAD check. If user is already ALIVE or FADING, no-op.
+    const current = useStatusStore.getState().currentStatus;
+    const heartbeat = current
+      ? computeHeartbeatState(current.status_expires_at, current.last_active_at)
+      : 'dead';
+    if (heartbeat !== 'dead') return;
+
+    // D-25: resolve userId via existing authenticated session (MORN-04 — no public endpoint).
+    const { data: session } = await supabase.auth.getSession();
+    const userId = session.session?.user.id;
+    if (!userId) return;
+
+    // D-26: window_id='rest_of_day', context_tag=null. Nuance happens in MoodPicker later.
+    const now = new Date();
+    const expiry = computeWindowExpiry('rest_of_day', now);
+    const nowIso = now.toISOString();
+    const expiryIso = expiry.toISOString();
+
+    const { error: upsertErr } = await supabase.from('statuses').upsert(
+      {
+        user_id: userId,
+        status: mood,
+        context_tag: null,
+        status_expires_at: expiryIso,
+        last_active_at: nowIso,
+      },
+      { onConflict: 'user_id' }
+    );
+    if (!upsertErr) {
+      // D-28: optimistic store update on success; silent on failure.
+      useStatusStore.getState().setCurrentStatus({
+        status: mood,
+        context_tag: null,
+        status_expires_at: expiryIso,
+        last_active_at: nowIso,
+        window_id: 'rest_of_day',
+      });
+    }
+    return;
   }
 }
 
