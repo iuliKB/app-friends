@@ -9,13 +9,13 @@ Requirements for v1.3.5 milestone. Each maps to exactly one phase.
 
 ### Status Pill & Bottom Sheet
 
-- [ ] **PILL-01**: User sees a compact status pill in the header showing their current mood + context tag + window (e.g., "Free · grab a coffee · until 6pm")
+- [x] **PILL-01**: User sees a compact status pill in the header showing their current mood + context tag + window (e.g., "Free · grab a coffee · until 6pm")
 - [x] **PILL-02**: User can tap the status pill to open a bottom sheet containing the full MoodPicker (mood selection, preset chips, window chips)
 - [x] **PILL-03**: Selecting a window in the bottom sheet commits the status and auto-dismisses the sheet
-- [ ] **PILL-04**: Status pill shows an edit icon (✎) as a permanent visual affordance indicating it's tappable
-- [ ] **PILL-05**: New users (first 2-3 sessions with no active status) see a subtle pulse animation on the pill to draw attention
-- [ ] **PILL-06**: Status pill displays a heartbeat-colored dot (green=ALIVE, yellow=FADING, gray=DEAD/no status)
-- [ ] **PILL-07**: When no status is set, pill shows user's name + "Tap to set your status"
+- [x] **PILL-04**: Status pill shows an edit icon (✎) as a permanent visual affordance indicating it's tappable
+- [x] **PILL-05**: New users (first 2-3 sessions with no active status) see a subtle pulse animation on the pill to draw attention
+- [x] **PILL-06**: Status pill displays a heartbeat-colored dot (green=ALIVE, yellow=FADING, gray=DEAD/no status)
+- [x] **PILL-07**: When no status is set, pill shows user's name + "Tap to set your status"
 
 ### Radar View
 
@@ -79,13 +79,13 @@ Explicitly excluded.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PILL-01 | Phase 1 | Pending |
+| PILL-01 | Phase 1 | Complete |
 | PILL-02 | Phase 1 | Complete |
 | PILL-03 | Phase 1 | Complete |
-| PILL-04 | Phase 1 | Pending |
-| PILL-05 | Phase 1 | Pending |
-| PILL-06 | Phase 1 | Pending |
-| PILL-07 | Phase 1 | Pending |
+| PILL-04 | Phase 1 | Complete |
+| PILL-05 | Phase 1 | Complete |
+| PILL-06 | Phase 1 | Complete |
+| PILL-07 | Phase 1 | Complete |
 | HOME-03 | Phase 1 | Pending |
 | HOME-04 | Phase 1 | Pending |
 | RADAR-01 | Phase 2 | Pending |

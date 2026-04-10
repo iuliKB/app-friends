@@ -74,7 +74,7 @@
 **Plans**: 3 plans
 Plans:
 - [x] 01-01-PLAN.md — StatusPickerSheet bottom sheet + MoodPicker onCommit prop
-- [ ] 01-02-PLAN.md — OwnStatusPill component with pulse animation and session gate
+- [x] 01-02-PLAN.md — OwnStatusPill component with pulse animation and session gate
 - [ ] 01-03-PLAN.md — HomeScreen wiring: remove dead code, add pill + sheet
 **UI hint**: yes
 

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-04-10T22:32:40.715Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-04-10T22:34:51.132Z"
 last_activity: 2026-04-10
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 Milestone: v1.3.5 Homescreen Redesign
 Phase: 01 (status-pill-bottom-sheet) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-10
 
@@ -63,6 +63,8 @@ Requirements covered: 23/23 mapped
 - [v1.3.5]: display_name sourced from session.user.user_metadata.display_name (no extra DB fetch needed for pill empty state)
 - [v1.3.5]: Session count module-level flag (sessionIncrementedThisLaunch) guards against double-increment on tab switch remount
 - [Phase 01-status-pill-bottom-sheet]: StatusPickerSheet translateY starts at 600 (not 300) to guarantee off-screen initial position for taller MoodPicker content
+- [Phase 01-status-pill-bottom-sheet]: sessionCount comes from parent props (HomeScreen reads AsyncStorage, passes down) — keeps OwnStatusPill pure and testable
+- [Phase 01-status-pill-bottom-sheet]: display_name from session.user.user_metadata avoids extra Supabase query at OwnStatusPill render time
 
 ### Pending Todos
 
@@ -74,5 +76,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-10T22:32:40.711Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-04-10T22:34:51.128Z
+Stopped at: Completed 01-02-PLAN.md
