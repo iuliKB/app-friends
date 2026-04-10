@@ -11,21 +11,16 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { useStatus } from '@/hooks/useStatus';
-import { OwnStatusPill } from '@/components/status/OwnStatusPill';
+import { OwnStatusCard } from '@/components/status/OwnStatusCard';
 import { StatusPickerSheet } from '@/components/status/StatusPickerSheet';
 import { HomeFriendCard } from '@/components/home/HomeFriendCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import type { FriendWithStatus } from '@/hooks/useFriends';
-
-const SESSION_COUNT_KEY = 'campfire:session_count';
-// Module-level flag prevents double-increment on tab switch remount (D-09)
-let sessionIncrementedThisLaunch = false;
 
 export function HomeScreen() {
   const router = useRouter();
@@ -46,19 +41,6 @@ export function HomeScreen() {
   }, []);
 
   const [sheetVisible, setSheetVisible] = useState(false);
-  const [sessionCount, setSessionCount] = useState(0);
-
-  // Session count effect (once per app launch, not per tab switch):
-  useEffect(() => {
-    if (sessionIncrementedThisLaunch) return;
-    sessionIncrementedThisLaunch = true;
-    void (async () => {
-      const raw = await AsyncStorage.getItem(SESSION_COUNT_KEY);
-      const next = Math.min((raw ? parseInt(raw, 10) : 0) + 1, 10);
-      await AsyncStorage.setItem(SESSION_COUNT_KEY, String(next));
-      setSessionCount(next);
-    })();
-  }, []);
 
   useEffect(() => {
     if (prevCountRef.current !== freeFriends.length) {
@@ -96,15 +78,10 @@ export function HomeScreen() {
       >
         {/* Screen title */}
         <View style={styles.headerContainer}>
-          <ScreenHeader
-            title="Campfire"
-            rightAction={
-              <OwnStatusPill
-                onPress={() => setSheetVisible(true)}
-                sessionCount={sessionCount}
-              />
-            }
-          />
+          <ScreenHeader title="Campfire" />
+        </View>
+        <View style={styles.statusCardContainer}>
+          <OwnStatusCard onPress={() => setSheetVisible(true)} />
         </View>
 
         {/* Error state */}
@@ -192,6 +169,10 @@ const styles = StyleSheet.create({
   headerContainer: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.sm,
+  },
+  statusCardContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
   errorText: {
     color: COLORS.text.secondary,
