@@ -165,8 +165,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — expo_go track (11 checks: UAT-01..10 + DM-01) + v1.0-v1.2 regression walkthrough + STREAK-08 gate clearance
-- [ ] 05-02-PLAN.md — eas_build track (22 checks: PUSH-01..10, SMOKE-01..09, MORN-01..03) — DEFERRED until Apple Developer account acquired
+- [x] 05-01-PLAN.md — expo_go track (11 checks: UAT-01..10 + DM-01) + v1.0-v1.2 regression walkthrough + STREAK-08 gate clearance
+- [x] 05-02-PLAN.md — eas_build track (22 checks: PUSH-01..10, SMOKE-01..09, MORN-01..03) — DEFERRED until Apple Developer account acquired
 
 **Consolidated checklist:** `.planning/phases/05-hardware-verification-gate/05-CHECKLIST.md` (all 33 checks, tagged by track)
 
