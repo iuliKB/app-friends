@@ -71,7 +71,11 @@
   3. User with no active status sees pill text "Tap to set your status" and a first-session pulse animation draws their eye
   4. Pill dot color matches liveness state (green=ALIVE, yellow=FADING, gray=DEAD/none) and an edit icon is always visible as a tap affordance
   5. Inline MoodPicker and ReEngagementBanner are not visible anywhere on the homescreen
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — StatusPickerSheet bottom sheet + MoodPicker onCommit prop
+- [ ] 01-02-PLAN.md — OwnStatusPill component with pulse animation and session gate
+- [ ] 01-03-PLAN.md — HomeScreen wiring: remove dead code, add pill + sheet
 **UI hint**: yes
 
 ### Phase 2: Radar View & View Toggle
@@ -103,9 +107,9 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Status Pill & Bottom Sheet | 0/? | Not started | - |
+| 1. Status Pill & Bottom Sheet | 0/3 | In progress | - |
 | 2. Radar View & View Toggle | 0/? | Not started | - |
 | 3. Card Stack View | 0/? | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-10 — v1.3.5 Homescreen Redesign phases added*
+*Roadmap updated: 2026-04-11 — Phase 1 plans created (3 plans, 2 waves)*
