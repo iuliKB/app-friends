@@ -46,12 +46,21 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
   // Auto-dismiss when a status is committed via MoodPicker (belt-and-braces for Zustand tick).
   const currentStatus = useStatusStore((s) => s.currentStatus);
   const prevStatusRef = useRef(currentStatus);
+
+  // Reset ref when sheet opens so we only react to changes made while visible.
   useEffect(() => {
+    if (visible) {
+      prevStatusRef.current = currentStatus;
+    }
+  }, [visible, currentStatus]);
+
+  useEffect(() => {
+    if (!visible) return;
     if (prevStatusRef.current !== currentStatus && currentStatus !== null) {
       onClose();
     }
     prevStatusRef.current = currentStatus;
-  }, [currentStatus, onClose]);
+  }, [visible, currentStatus, onClose]);
 
   // PanResponder — swipe-down gesture dismiss.
   // Attached to the drag handle only so the MoodPicker's ScrollView keeps its own scroll.
