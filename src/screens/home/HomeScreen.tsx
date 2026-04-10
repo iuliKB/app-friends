@@ -11,21 +11,26 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { useStatus } from '@/hooks/useStatus';
-import { MoodPicker } from '@/components/status/MoodPicker';
-import { ReEngagementBanner } from '@/components/home/ReEngagementBanner';
+import { OwnStatusPill } from '@/components/status/OwnStatusPill';
+import { StatusPickerSheet } from '@/components/status/StatusPickerSheet';
 import { HomeFriendCard } from '@/components/home/HomeFriendCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
+const SESSION_COUNT_KEY = 'campfire:session_count';
+// Module-level flag prevents double-increment on tab switch remount (D-09)
+let sessionIncrementedThisLaunch = false;
+
 export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { heartbeatState, currentStatus, loading: statusLoading } = useStatus();
+  const { loading: statusLoading } = useStatus();
   const { friends, freeFriends, otherFriends, error, refreshing, handleRefresh } = useHomeScreen();
 
   const countScale = useRef(new Animated.Value(1)).current;
@@ -40,25 +45,20 @@ export function HomeScreen() {
     return () => clearInterval(id);
   }, []);
 
-  // D-27: "What's your status today?" heading appears only when the user opens
-  // Home with own heartbeat already DEAD. Once they commit anything in this
-  // session (or it flips back to alive/fading), the heading is suppressed for
-  // the rest of the session.
-  const deadOnOpenRef = useRef(heartbeatState === 'dead');
-  const [hasCommittedThisSession, setHasCommittedThisSession] = useState(false);
-  useEffect(() => {
-    if (currentStatus && heartbeatState !== 'dead') {
-      setHasCommittedThisSession(true);
-    }
-  }, [currentStatus, heartbeatState]);
-  const showDeadHeading = deadOnOpenRef.current && !hasCommittedThisSession;
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [sessionCount, setSessionCount] = useState(0);
 
-  // ReEngagementBanner "Update" → scroll the MoodPicker into view (T-02-28 accept).
-  const scrollRef = useRef<ScrollView>(null);
-  const moodPickerYRef = useRef(0);
-  function handleUpdatePressed() {
-    scrollRef.current?.scrollTo({ y: moodPickerYRef.current, animated: false });
-  }
+  // Session count effect (once per app launch, not per tab switch):
+  useEffect(() => {
+    if (sessionIncrementedThisLaunch) return;
+    sessionIncrementedThisLaunch = true;
+    void (async () => {
+      const raw = await AsyncStorage.getItem(SESSION_COUNT_KEY);
+      const next = Math.min((raw ? parseInt(raw, 10) : 0) + 1, 10);
+      await AsyncStorage.setItem(SESSION_COUNT_KEY, String(next));
+      setSessionCount(next);
+    })();
+  }, []);
 
   useEffect(() => {
     if (prevCountRef.current !== freeFriends.length) {
@@ -84,7 +84,6 @@ export function HomeScreen() {
   return (
     <View style={styles.root}>
       <ScrollView
-        ref={scrollRef}
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + SPACING.sm }]}
         refreshControl={
@@ -97,23 +96,15 @@ export function HomeScreen() {
       >
         {/* Screen title */}
         <View style={styles.headerContainer}>
-          <ScreenHeader title="Campfire" />
-        </View>
-
-        {/* Re-engagement banner (FADING heartbeat) */}
-        <ReEngagementBanner onUpdatePressed={handleUpdatePressed} />
-
-        {/* DEAD heading on cold open (D-27) */}
-        {showDeadHeading && <Text style={styles.deadHeading}>{"What's your status today?"}</Text>}
-
-        {/* Mood picker */}
-        <View
-          style={styles.toggleContainer}
-          onLayout={(e) => {
-            moodPickerYRef.current = e.nativeEvent.layout.y;
-          }}
-        >
-          <MoodPicker />
+          <ScreenHeader
+            title="Campfire"
+            rightAction={
+              <OwnStatusPill
+                onPress={() => setSheetVisible(true)}
+                sessionCount={sessionCount}
+              />
+            }
+          />
         </View>
 
         {/* Error state */}
@@ -170,6 +161,11 @@ export function HomeScreen() {
         )}
       </ScrollView>
 
+      <StatusPickerSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+      />
+
       {/* FAB */}
       <FAB
         icon={<Ionicons name="add" size={20} color={COLORS.surface.base} />}
@@ -196,17 +192,6 @@ const styles = StyleSheet.create({
   headerContainer: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.sm,
-  },
-  toggleContainer: {
-    paddingTop: 0,
-    paddingBottom: SPACING.lg,
-  },
-  deadHeading: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
   },
   errorText: {
     color: COLORS.text.secondary,
