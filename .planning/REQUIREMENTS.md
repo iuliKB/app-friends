@@ -38,8 +38,8 @@ Requirements for v1.3.5 milestone. Each maps to exactly one phase.
 
 - [ ] **HOME-01**: User can switch between Radar and Cards views via a segmented toggle control
 - [ ] **HOME-02**: View preference (Radar or Cards) persists across sessions via AsyncStorage
-- [ ] **HOME-03**: Inline MoodPicker is removed from the homescreen (status setting only via bottom sheet)
-- [ ] **HOME-04**: ReEngagementBanner is removed (status pill replaces its function)
+- [x] **HOME-03**: Inline MoodPicker is removed from the homescreen (status setting only via bottom sheet)
+- [x] **HOME-04**: ReEngagementBanner is removed (status pill replaces its function)
 - [ ] **HOME-05**: Two-section friend split (Free grid + Everyone Else) is replaced by the unified Radar/Cards views
 
 ## v1.4 Requirements (Deferred)
@@ -86,8 +86,8 @@ Explicitly excluded.
 | PILL-05 | Phase 1 | Complete |
 | PILL-06 | Phase 1 | Complete |
 | PILL-07 | Phase 1 | Complete |
-| HOME-03 | Phase 1 | Pending |
-| HOME-04 | Phase 1 | Pending |
+| HOME-03 | Phase 1 | Complete |
+| HOME-04 | Phase 1 | Complete |
 | RADAR-01 | Phase 2 | Pending |
 | RADAR-02 | Phase 2 | Pending |
 | RADAR-03 | Phase 2 | Pending |

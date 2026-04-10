@@ -55,7 +55,7 @@
 
 ## v1.3.5 Homescreen Redesign — Active Phases
 
-- [ ] **Phase 1: Status Pill & Bottom Sheet** - Replace inline MoodPicker with header pill + custom bottom sheet picker
+- [x] **Phase 1: Status Pill & Bottom Sheet** - Replace inline MoodPicker with header pill + custom bottom sheet picker (completed 2026-04-10)
 - [ ] **Phase 2: Radar View & View Toggle** - Spatial bubble layout with segmented Radar/Cards toggle and persistent preference
 - [ ] **Phase 3: Card Stack View** - Swipeable friend card deck with Nudge/Skip actions slotting into Phase 2 toggle
 
@@ -75,7 +75,7 @@
 Plans:
 - [x] 01-01-PLAN.md — StatusPickerSheet bottom sheet + MoodPicker onCommit prop
 - [x] 01-02-PLAN.md — OwnStatusPill component with pulse animation and session gate
-- [ ] 01-03-PLAN.md — HomeScreen wiring: remove dead code, add pill + sheet
+- [x] 01-03-PLAN.md — HomeScreen wiring: remove dead code, add pill + sheet
 **UI hint**: yes
 
 ### Phase 2: Radar View & View Toggle
@@ -107,7 +107,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Status Pill & Bottom Sheet | 1/3 | In Progress|  |
+| 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
 | 2. Radar View & View Toggle | 0/? | Not started | - |
 | 3. Card Stack View | 0/? | Not started | - |
 
