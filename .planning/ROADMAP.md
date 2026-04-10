@@ -162,15 +162,19 @@ Plans:
 4. No regressions in shipped v1.0–v1.2 features (login, status set, plan create, chat send, friend add, squad view).
 5. Phase 5 SUMMARY.md documents any gap-closure plans that were needed and their disposition.
 
-**Plans:** TBD — at least one: `05-01-PLAN.md` consolidating and executing all accumulated smoke-test checklists.
+**Plans:** 2 plans
 
-**Inputs to this phase (append as phases are planned):**
-- `.planning/phases/01-push-infrastructure-dm-entry-point/SMOKE-TEST.md` (Phase 1, 11 checks)
-- Phase 2 hardware checks — to be added during `/gsd-plan-phase 2`
-- `.planning/phases/03-friend-went-free-loop/03-SMOKE-TEST.md` (Phase 3, 9 checks)
-- Phase 4 hardware checks — to be added during `/gsd-plan-phase 4`
+Plans:
+- [ ] 05-01-PLAN.md — expo_go track (11 checks: UAT-01..10 + DM-01) + v1.0-v1.2 regression walkthrough + STREAK-08 gate clearance
+- [ ] 05-02-PLAN.md — eas_build track (22 checks: PUSH-01..10, SMOKE-01..09, MORN-01..03) — DEFERRED until Apple Developer account acquired
 
-**Planner rule for Phases 2-4:** Any manual smoke-test check that requires a real device should be authored into the phase's own `SMOKE-TEST.md` but NOT gate phase completion. Instead, append the file path to this phase's "Inputs" list above. Phase 5 will consolidate and execute them all.
+**Consolidated checklist:** `.planning/phases/05-hardware-verification-gate/05-CHECKLIST.md` (all 33 checks, tagged by track)
+
+**Inputs to this phase:**
+- `.planning/phases/01-push-infrastructure-dm-entry-point/SMOKE-TEST.md` (Phase 1, 11 checks — DM-01 expo_go, PUSH-01..10 eas_build)
+- `.planning/phases/02-status-liveness-ttl/02-HUMAN-UAT.md` (Phase 2, 10 checks — all expo_go)
+- `.planning/phases/03-friend-went-free-loop/03-SMOKE-TEST.md` (Phase 3, 9 checks — all eas_build)
+- `.planning/phases/04-morning-prompt-squad-goals-streak/04-VALIDATION.md` (Phase 4, 3 checks — all eas_build)
 
 ---
 
@@ -182,7 +186,7 @@ Plans:
 | 2. Status Liveness & TTL | 0/? | Not started | - |
 | 3. Friend Went Free Loop | 8/8 | Complete   | 2026-04-09 |
 | 4. Morning Prompt + Squad Goals Streak | 6/6 | Complete   | 2026-04-10 |
-| 5. Hardware Verification Gate | 0/? | Deferred (awaits Apple Dev account) | - |
+| 5. Hardware Verification Gate | 0/2 | Planned (expo_go ready; eas_build deferred) | - |
 
 ## Coverage (v1.3)
 
