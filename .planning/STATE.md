@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Liveness & Notifications
 status: executing
-stopped_at: Completed 04-05-PLAN.md (morning prompt UI wiring)
-last_updated: "2026-04-10T07:16:41.858Z"
+stopped_at: Completed 04-04-PLAN.md (squad goals streak UI)
+last_updated: "2026-04-10T07:34:16.887Z"
 last_activity: 2026-04-10
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 30
-  completed_plans: 27
-  percent: 90
+  completed_plans: 29
+  percent: 97
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 Milestone: v1.3 Liveness & Notifications
 Phase: 04 (morning-prompt-squad-goals-streak) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-04-10
 
@@ -51,6 +51,7 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 | Phase 04 P01 | 2 | 1 tasks | 1 files |
 | Phase 04 P03 | 8 | 3 tasks | 3 files |
 | Phase 04 P05 | 7 | 2 tasks | 2 files |
+| Phase 04 P04 | 5 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 - [Phase 04]: Body-tap on morning_prompt navigates to Home with no status mutation; tap-time DEAD heartbeat guard prevents silent status flip (D-27, MORN-06)
 - [Phase 04]: PrePromptModal reused for morning-prompt undetermined permission flow — same modal, different accept/decline handlers
 - [Phase 04]: handleLogout left untouched — Plan 03 Task 3 auth subscriber handles sign-out; cancelMorningPrompt not added to avoid double-fire
+- [Phase 04]: StreakCard accepts streak prop (not internal hook) — screen owns the single hook instance to avoid double-fetch
+- [Phase 04]: FONT_WEIGHT.semibold used for StreakCard bigNumber (theme has no bold token); FONT_SIZE.xxl used (no xxxl token)
 
 ### Pending Todos
 
@@ -104,5 +107,5 @@ Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 
 ## Session Continuity
 
-Last session: 2026-04-10T07:16:41.854Z
-Stopped at: Completed 04-05-PLAN.md (morning prompt UI wiring)
+Last session: 2026-04-10T07:34:16.882Z
+Stopped at: Completed 04-04-PLAN.md (squad goals streak UI)

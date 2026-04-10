@@ -71,7 +71,7 @@ Requirements for v1.3 milestone. Each maps to exactly one phase.
 
 ### Squad Goals (Streak)
 
-- [ ] **STREAK-01**: Squad → Goals tab replaces the "Coming soon" stub with a `StreakCard` showing the squad's current weekly streak count
+- [x] **STREAK-01**: Squad → Goals tab replaces the "Coming soon" stub with a `StreakCard` showing the squad's current weekly streak count
 - [x] **STREAK-02**: A week is **active** if ≥1 plan with ≥2 confirmed attendees was completed in that week
 - [x] **STREAK-03**: Week boundaries are Mon 00:00 → Sun 23:59 (squad creator's timezone)
 - [x] **STREAK-04**: Streak survives 1 grace week per 4-week window (one missed week is allowed; visibility of remaining grace TBD in implementation)
@@ -174,7 +174,7 @@ Explicitly excluded.
 | MORN-06 | Phase 4 | Complete |
 | MORN-07 | Phase 4 | Complete |
 | MORN-08 | Phase 4 | Complete |
-| STREAK-01 | Phase 4 | Pending |
+| STREAK-01 | Phase 4 | Complete |
 | STREAK-02 | Phase 4 | Complete |
 | STREAK-03 | Phase 4 | Complete |
 | STREAK-04 | Phase 4 | Complete |

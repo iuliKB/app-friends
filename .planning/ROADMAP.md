@@ -137,9 +137,9 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — Author migration 0011 get_squad_streak (SECURITY DEFINER + sliding 4-week window)
-- [ ] 04-02-PLAN.md — [BLOCKING] Apply migration 0011 via supabase db push + 4-SELECT attestation
+- [x] 04-02-PLAN.md — [BLOCKING] Apply migration 0011 via supabase db push + 4-SELECT attestation
 - [x] 04-03-PLAN.md — Morning prompt client primitives: scheduler module + response handler branch + signout cancel
-- [ ] 04-04-PLAN.md — Squad streak UI: useStreakData hook + StreakCard + Goals tab integration + pull-to-refresh
+- [x] 04-04-PLAN.md — Squad streak UI: useStreakData hook + StreakCard + Goals tab integration + pull-to-refresh
 - [x] 04-05-PLAN.md — Profile Morning prompt section (Switch + time picker + permission flow) + cold-launch schedule
 - [ ] 04-06-PLAN.md — [BLOCKING] Copy review gate (STREAK-08 non-engineer approval checkpoint)
 
@@ -181,7 +181,7 @@ Plans:
 | 1. Push Infrastructure & DM Entry Point | 10/10 | Code complete (hardware gate → Phase 5) | 2026-04-07 |
 | 2. Status Liveness & TTL | 0/? | Not started | - |
 | 3. Friend Went Free Loop | 8/8 | Complete   | 2026-04-09 |
-| 4. Morning Prompt + Squad Goals Streak | 3/6 | In Progress|  |
+| 4. Morning Prompt + Squad Goals Streak | 5/6 | In Progress|  |
 | 5. Hardware Verification Gate | 0/? | Deferred (awaits Apple Dev account) | - |
 
 ## Coverage (v1.3)
