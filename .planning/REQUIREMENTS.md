@@ -79,34 +79,35 @@ Explicitly excluded.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PILL-01 | - | Pending |
-| PILL-02 | - | Pending |
-| PILL-03 | - | Pending |
-| PILL-04 | - | Pending |
-| PILL-05 | - | Pending |
-| PILL-06 | - | Pending |
-| PILL-07 | - | Pending |
-| RADAR-01 | - | Pending |
-| RADAR-02 | - | Pending |
-| RADAR-03 | - | Pending |
-| RADAR-04 | - | Pending |
-| RADAR-05 | - | Pending |
-| RADAR-06 | - | Pending |
-| CARD-01 | - | Pending |
-| CARD-02 | - | Pending |
-| CARD-03 | - | Pending |
-| CARD-04 | - | Pending |
-| CARD-05 | - | Pending |
-| HOME-01 | - | Pending |
-| HOME-02 | - | Pending |
-| HOME-03 | - | Pending |
-| HOME-04 | - | Pending |
-| HOME-05 | - | Pending |
+| PILL-01 | Phase 1 | Pending |
+| PILL-02 | Phase 1 | Pending |
+| PILL-03 | Phase 1 | Pending |
+| PILL-04 | Phase 1 | Pending |
+| PILL-05 | Phase 1 | Pending |
+| PILL-06 | Phase 1 | Pending |
+| PILL-07 | Phase 1 | Pending |
+| HOME-03 | Phase 1 | Pending |
+| HOME-04 | Phase 1 | Pending |
+| RADAR-01 | Phase 2 | Pending |
+| RADAR-02 | Phase 2 | Pending |
+| RADAR-03 | Phase 2 | Pending |
+| RADAR-04 | Phase 2 | Pending |
+| RADAR-05 | Phase 2 | Pending |
+| RADAR-06 | Phase 2 | Pending |
+| HOME-01 | Phase 2 | Pending |
+| HOME-02 | Phase 2 | Pending |
+| HOME-05 | Phase 2 | Pending |
+| CARD-01 | Phase 3 | Pending |
+| CARD-02 | Phase 3 | Pending |
+| CARD-03 | Phase 3 | Pending |
+| CARD-04 | Phase 3 | Pending |
+| CARD-05 | Phase 3 | Pending |
 
 **Coverage:**
 - v1.3.5 requirements: 23 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 23
+- Mapped to phases: 23
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-11*
+*Traceability updated: 2026-04-10*
