@@ -49,10 +49,10 @@ completed: 2026-04-11
 
 ## Performance
 
-- **Duration:** ~2 min
+- **Duration:** ~30 min (including user manual DB push)
 - **Started:** 2026-04-11T18:55:40Z
-- **Completed:** 2026-04-11T18:57:43Z
-- **Tasks:** 1 of 3 complete (Task 2 blocked on auth gate; Task 3 is human checkpoint)
+- **Completed:** 2026-04-11
+- **Tasks:** 3 of 3 complete
 - **Files modified:** 2
 
 ## Accomplishments
@@ -61,14 +61,16 @@ completed: 2026-04-11
 - Added `usePlans()` call in HomeScreen body to populate `usePlansStore` before UpcomingEventsSection mounts
 - Added `NSPhotoLibraryUsageDescription` to `app.config.ts` ios.infoPlist block, unblocking Plan 04 image picker on iOS devices
 - TypeScript compiles clean (tsc --noEmit exits 0)
+- cover_image_url column applied to live Supabase plans table via `supabase db push` (migration 0013)
+- Human visual verification approved: section header, empty state, and navigation confirmed working in Expo Go
 
 ## Task Commits
 
 1. **Task 1: Wire UpcomingEventsSection into HomeScreen + add iOS permission** — `dbdab66` (feat)
-2. **Task 2: Apply Supabase schema migration** — BLOCKED (auth gate — requires `supabase login`)
-3. **Task 3: Human verification checkpoint** — PENDING (awaiting Task 2 + human verify)
+2. **Task 2: Apply Supabase schema migration** — completed by user (`supabase db push` applied 0013_cover_image_url.sql)
+3. **Task 3: Human verification checkpoint** — approved by user
 
-**Plan metadata:** see final commit hash after checkpoint approved
+**Plan metadata:** `56fa30f` (docs: complete plan — HomeScreen integration + checkpoint pending db push)
 
 ## Files Created/Modified
 
@@ -86,7 +88,7 @@ None — Task 1 executed exactly as specified. Task 2 blocked on auth gate (not 
 
 ## Issues Encountered
 
-**Task 2 — Auth gate:** `supabase db push` requires authenticated session. The `supabase` CLI was not found on PATH; `npx supabase db push` found the CLI but requires `supabase login` or `SUPABASE_ACCESS_TOKEN`. Neither was available in `.env` or `.env.local`. Docker daemon also not running (rules out local Supabase). User must run `supabase login` and then `npx supabase db push` to apply migration 0013_cover_image_url.sql.
+**Task 2 — Auth gate:** `supabase db push` required authenticated session. The agent could not run `supabase login` interactively, so the user ran `supabase db push` manually. This was anticipated in the plan and resolved immediately.
 
 ## Known Stubs
 
@@ -94,19 +96,14 @@ None — UpcomingEventsSection is fully wired. The section renders real data fro
 
 ## User Setup Required
 
-**Task 2 requires manual action before the human-verify checkpoint can be tested:**
-
-1. Run `supabase login` (opens browser for Supabase authentication)
-2. Run `npx supabase db push` from the project root
-3. Expected output: migration `0013_cover_image_url.sql` applied (or "No schema changes" if already applied)
-4. Then proceed to the human-verify checkpoint steps
+None - all tasks complete. DB migration applied by user; no additional configuration required.
 
 ## Next Phase Readiness
 
-- HomeScreen now renders UpcomingEventsSection below the Radar/Cards area
-- iOS photo library permission declared — Plan 04 (image picker) is unblocked
-- Pending: `supabase db push` to apply cover_image_url column to live DB (required for Plan 04 uploads to persist)
-- Human verification checkpoint needed to confirm visual rendering in Expo Go
+- HomeScreen renders UpcomingEventsSection below the Radar/Cards area — visually verified
+- cover_image_url column live in Supabase plans table — Plan 04 uploads will persist
+- iOS photo library permission declared — Plan 04 (expo-image-picker) is fully unblocked
+- All EVT-01 through EVT-06 requirements completed
 
 ---
 *Phase: 04-upcoming-events-section*
