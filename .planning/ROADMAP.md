@@ -107,7 +107,7 @@ Plans:
   4. A counter ("2 more free") is visible above the deck and updates accurately as the user skips through
 **Plans**: 4 plans
 Plans:
-- [ ] 03-01-PLAN.md — GestureHandlerRootView prerequisite + Playwright test scaffold
+- [x] 03-01-PLAN.md — GestureHandlerRootView prerequisite + Playwright test scaffold
 - [ ] 03-02-PLAN.md — FriendSwipeCard: gesture, visual design, Nudge/Skip buttons
 - [ ] 03-03-PLAN.md — CardStackView: deck logic, counter, depth effect, loop, undo
 - [ ] 03-04-PLAN.md — HomeScreen wiring: replace placeholder with CardStackView
