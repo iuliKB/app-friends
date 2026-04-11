@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
-status: executing
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-04-11T22:33:25.369Z"
+status: verifying
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-04-11T22:37:02.219Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 05 (database-migrations) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-11
 
 Progress: [░░░░░░░░░░] 0%
@@ -103,6 +103,7 @@ Requirements covered: 12/12 mapped
 - [Phase 05-01]: plans.iou_notes renamed to general_notes atomically with client code update to prevent silent data loss
 - [Phase 05-02]: Birthday columns nullable (no NOT NULL, no DEFAULT) — birthday is optional; existing profile rows require no backfill
 - [Phase 05-02]: get_upcoming_birthdays() uses LANGUAGE sql STABLE SECURITY DEFINER; Feb 29 leap-year guard applied in both this-year and next-year branches of days_until calculation
+- [Phase 05-database-migrations]: Migration push is remote-only — 0015 and 0016 applied to Supabase project zqmaauaopyolutfoizgq; seed.sql was last iou_notes holdout, updated to general_notes with IOU and birthday test data
 
 ### Roadmap Evolution
 
@@ -123,5 +124,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:33:25.365Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-04-11T22:37:02.213Z
+Stopped at: Completed 05-03-PLAN.md

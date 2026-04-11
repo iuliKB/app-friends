@@ -66,7 +66,7 @@
 
 ## v1.4 Squad Dashboard & Social Tools — Active Phases
 
-- [ ] **Phase 5: Database Migrations** - IOU tables + birthday columns + RPCs; schema foundation for all v1.4 client work
+- [x] **Phase 5: Database Migrations** - IOU tables + birthday columns + RPCs; schema foundation for all v1.4 client work (completed 2026-04-11)
 - [ ] **Phase 6: Birthday Profile Field** - Birthday month/day input in profile edit; save/load round-trip verified
 - [ ] **Phase 7: Birthday Calendar Feature** - Upcoming birthdays hook, list screen, and dashboard card
 - [ ] **Phase 8: IOU Create & Detail** - Atomic expense creation, even/custom split, per-expense detail, settle action
@@ -88,7 +88,7 @@
 Plans:
 - [x] 05-01-PLAN.md — Migration 0015 SQL (IOU tables, RPCs, iou_notes rename) + 7 client file updates
 - [x] 05-02-PLAN.md — Migration 0016 SQL (birthday columns + get_upcoming_birthdays RPC)
-- [ ] 05-03-PLAN.md — supabase db push [BLOCKING] + seed.sql extension
+- [x] 05-03-PLAN.md — supabase db push [BLOCKING] + seed.sql extension
 
 ### Phase 6: Birthday Profile Field
 **Goal**: Users can add their birthday (month + day) to their profile and friends can see it — the new columns are exercised by real client code before dependent screens are built
@@ -156,7 +156,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 5. Database Migrations | 2/3 | In Progress|  |
+| 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
 | 6. Birthday Profile Field | 0/TBD | Not started | - |
 | 7. Birthday Calendar Feature | 0/TBD | Not started | - |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
