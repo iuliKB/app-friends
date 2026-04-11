@@ -41,8 +41,12 @@ Declared values — sourced from `src/theme/spacing.ts`:
 | xxl | 32px | Screen-level vertical breathing room above deck |
 
 Exceptions:
-- Card touch targets for Nudge and Skip buttons: minimum 44×44px per touch-target-size rule (ui-ux-pro-max skill)
-- Stack offset for depth cards: 8px vertical offset and 4px horizontal shrink per depth level (Claude discretion — see Stack Depth section)
+
+| Exception | Value | Justification |
+|-----------|-------|---------------|
+| `md` token (card internal section gaps) | 12px | Established project token in `src/theme/spacing.ts`. Provides a tighter gap tier between 8px and 16px for card-internal density. 12px is a multiple of 4; the deviation from the standard set {4, 8, 16, 24, 32, 48, 64} is intentional and pre-existing. |
+| Card touch targets (Nudge and Skip buttons) | 44×44px minimum | Minimum touch target per touch-target-size rule (ui-ux-pro-max skill). Actual button size is 56px, exceeding this floor. |
+| Stack offset for depth cards | 8px vertical offset and 4px horizontal shrink per depth level | Claude discretion — see Stack Depth section in Component Inventory. |
 
 ---
 
@@ -61,6 +65,7 @@ Sourced from `src/theme/typography.ts`. This phase uses 4 of the 6 declared size
 Notes:
 - No heading-level text in this component — it slots inside the HomeScreen scroll context
 - Counter uses `COLORS.text.secondary` to remain subordinate to the deck
+- **13px vs 14px adjacency (checker flag):** Both sizes are established tokens from `src/theme/typography.ts` (`sm` and `md`). The 1px difference is acceptable here because the two roles that use them (last-active/button labels at 13px, mood/context at 14px) are always visually separated by layout position and color (`text.secondary` vs `text.primary`), not solely by size. No hierarchy collapse risk in this specific context.
 
 ---
 
