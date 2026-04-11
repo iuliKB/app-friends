@@ -6,9 +6,8 @@
 // CardStackView mounts/unmounts this component as the front card changes.
 // Each mount starts with fresh useSharedValue(0) state — no manual reset needed.
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Alert,
   Dimensions,
   Pressable,
   StyleSheet,
@@ -26,12 +25,10 @@ import Animated from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
-import { supabase } from '@/lib/supabase';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 // --- Screen metrics ---
@@ -68,17 +65,15 @@ const BUTTON_SIZE = 56; // action button circle diameter (not a spacing token)
 
 export interface SwipeCardProps {
   friend: FriendWithStatus;
-  onSkip: () => void; // called after fly-off animation completes
+  onSkip: () => void; // called after fly-off animation completes (swipe left)
+  onNudge: () => void; // called after fly-off animation completes (swipe right)
   // width controlled by parent (CardStackView passes 80% screen width per D-01)
   width: number;
 }
 
 // --- FriendSwipeCard ---
 
-export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
-  const router = useRouter();
-  const [nudgeLoading, setNudgeLoading] = useState(false);
-
+export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardProps) {
   // Reanimated shared values — fresh on each mount (no reset needed)
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -93,7 +88,7 @@ export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
   const moodLabel = MOOD_LABEL[friend.status] ?? friend.status;
   const gradientColors = CARD_GRADIENT_COLORS[friend.status] ?? ['transparent', 'transparent'];
 
-  // --- Animated style ---
+  // --- Animated styles ---
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -101,6 +96,17 @@ export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
       { translateY: translateY.value },
       { rotate: `${rotate.value}deg` },
     ],
+  }));
+
+  // Visual tint overlay: orange when dragging right (nudge), neutral when dragging left (skip)
+  const nudgeTintStyle = useAnimatedStyle(() => ({
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    opacity: translateX.value > 0 ? Math.min(translateX.value / SWIPE_THRESHOLD, 0.25) : 0,
+  }));
+
+  const skipTintStyle = useAnimatedStyle(() => ({
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    opacity: translateX.value < 0 ? Math.min(-translateX.value / SWIPE_THRESHOLD, 0.15) : 0,
   }));
 
   // --- Pan gesture (RNGH v2 API — NOT PanGestureHandler) ---
@@ -117,9 +123,10 @@ export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
     .onEnd((e) => {
       if (Math.abs(e.translationX) > SWIPE_THRESHOLD) {
         const dir = e.translationX > 0 ? 1 : -1;
+        const callback = e.translationX > 0 ? onNudge : onSkip;
         // eslint-disable-next-line campfire/no-hardcoded-styles
         translateX.value = withTiming(dir * SCREEN_WIDTH * 1.5, { duration: 280 }, () => {
-          runOnJS(onSkip)(); // MUST use runOnJS — worklet→JS thread boundary
+          runOnJS(callback)(); // MUST use runOnJS — worklet→JS thread boundary
         });
       } else {
         translateX.value = withSpring(0);
@@ -143,28 +150,18 @@ export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
     );
   }
 
-  // --- Nudge button (DM navigation via get_or_create_dm_channel RPC) ---
+  // --- Nudge button (sends nudge ping via onNudge callback) ---
 
-  async function handleNudge() {
-    setNudgeLoading(true);
-    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: friend.friend_id,
-    });
-    setNudgeLoading(false);
-    if (error || !data) {
-      Alert.alert('Error', "Couldn't open chat. Try again.");
-      return;
-    }
-    router.push(
-      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(friend.display_name)}` as never
-    );
+  function handleNudgeButton() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    onNudge();
   }
 
   // --- Accessibility ---
 
   const accessibilityLabel = `${friend.display_name}, ${moodLabel}${
     friend.context_tag ? ` · ${friend.context_tag}` : ''
-  }. Active ${formatDistanceToNow(friend.last_active_at)}. Swipe to skip or tap Nudge to message.`;
+  }. Active ${formatDistanceToNow(friend.last_active_at)}. Swipe left to skip, swipe right or tap Nudge to send a nudge.`;
 
   // --- Render ---
 
@@ -190,6 +187,26 @@ export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={[StyleSheet.absoluteFill, { borderRadius: RADII.xl }]}
+          />
+
+          {/* Swipe-right tint: orange nudge hint */}
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFill,
+              { borderRadius: RADII.xl, backgroundColor: COLORS.interactive.accent },
+              nudgeTintStyle,
+            ]}
+            pointerEvents="none"
+          />
+
+          {/* Swipe-left tint: dim skip hint */}
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFill,
+              { borderRadius: RADII.xl, backgroundColor: COLORS.surface.base },
+              skipTintStyle,
+            ]}
+            pointerEvents="none"
           />
 
           {/* Content row: avatar + info */}
@@ -231,13 +248,9 @@ export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
             {/* Nudge button — accent circle */}
             <View style={styles.buttonWrapper}>
               <Pressable
-                style={[styles.nudgeButton, nudgeLoading && styles.nudgeButtonDisabled]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                  void handleNudge();
-                }}
-                disabled={nudgeLoading}
-                accessibilityLabel={`Nudge ${friend.display_name} — open DM`}
+                style={styles.nudgeButton}
+                onPress={handleNudgeButton}
+                accessibilityLabel={`Nudge ${friend.display_name} — send a ping`}
                 accessibilityRole="button"
               >
                 <Ionicons name="chatbubble" size={24} color={COLORS.text.primary} />
@@ -322,10 +335,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.interactive.accent,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  nudgeButtonDisabled: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    opacity: 0.5, // loading state — no opacity token
   },
   nudgeLabel: {
     fontSize: FONT_SIZE.sm,

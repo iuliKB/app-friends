@@ -475,6 +475,13 @@ export type Database = {
           best_weeks: number;
         }[];
       };
+      // Phase 03 v1.3.5 (migration 0012) — lightweight nudge ping, rate-limited
+      send_nudge: {
+        Args: {
+          receiver_id: string;
+        };
+        Returns: string;
+      };
       // Phase 3 v1.3 (migration 0010) — returns full candidate set for friend-free push
       get_friend_free_candidates: {
         Args: {

@@ -7,9 +7,10 @@
 // which friend to hand to it and maintains deck-level state.
 
 import React, { useState } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Alert, Dimensions, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { computeHeartbeatState } from '@/lib/heartbeat';
+import { supabase } from '@/lib/supabase';
 import { FriendSwipeCard } from './FriendSwipeCard';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
@@ -65,6 +66,23 @@ export function CardStackView({ friends }: CardStackViewProps) {
     });
   }
 
+  // --- Nudge handler: send nudge ping via RPC, then advance card ---
+  async function handleNudge(friendId: string) {
+    const { error } = await supabase.rpc('send_nudge', {
+      receiver_id: friendId,
+    });
+    if (error) {
+      if (error.message.includes('rate limited')) {
+        Alert.alert('Hold on', 'You already nudged them — wait a few minutes.');
+      } else {
+        Alert.alert('Error', "Couldn't send nudge. Try again.");
+      }
+      return;
+    }
+    // Advance to next card after successful nudge
+    handleSkip();
+  }
+
   // --- Stack rendering (D-06) ---
   // Render in reverse order (lowest zIndex first) so the front card lands on top.
   const cardsToRender = Math.min(STACK_CONFIGS.length, deck.length);
@@ -96,6 +114,7 @@ export function CardStackView({ friends }: CardStackViewProps) {
                   <FriendSwipeCard
                     friend={friend}
                     onSkip={handleSkip}
+                    onNudge={() => void handleNudge(friend.friend_id)}
                     width={CARD_WIDTH}
                   />
                 </View>
