@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
  * D-15: Uses Supabase Storage for image hosting.
  * Returns the public URL on success, or null on failure.
  *
- * Pattern: fetch(localUri) → blob → arrayBuffer (avoids base64-arraybuffer dep)
+ * Pattern: fetch(localUri) → blob → upload directly (Supabase JS v2 accepts Blob)
  * upsert: true allows safe re-upload when editing an existing plan's cover.
  */
 export async function uploadPlanCover(
@@ -15,14 +15,13 @@ export async function uploadPlanCover(
   try {
     const response = await fetch(localUri);
     const blob = await response.blob();
-    const arrayBuffer = await blob.arrayBuffer();
 
     const path = `${planId}/cover.jpg`;
 
     const { error: uploadError } = await supabase.storage
       .from('plan-covers')
-      .upload(path, arrayBuffer, {
-        contentType: 'image/jpeg',
+      .upload(path, blob, {
+        contentType: blob.type || 'image/jpeg',
         upsert: true, // allow re-upload on plan edit
       });
 
