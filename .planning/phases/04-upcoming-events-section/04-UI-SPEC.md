@@ -1,7 +1,7 @@
 ---
 phase: 4
 slug: upcoming-events-section
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-04-11
@@ -39,6 +39,8 @@ Project tokens from `src/theme/spacing.ts`:
 | lg | 16px | Card internal padding; section horizontal padding |
 | xl | 24px | SectionHeader `paddingTop` (existing component) |
 | xxl | 32px | SectionHeader `paddingTop` at top of section (existing behavior) |
+
+**Exception: `SPACING.md = 12px`** — Pre-existing project token from `src/theme/spacing.ts`, not a value introduced by this phase. 12 = 4×3, grid-aligned. The project's 8-point-adjacent scale includes this intermediate step for tighter spacing needs and is used throughout the existing codebase.
 
 Exceptions:
 - Event card width: 200px (not a spacing token — card dimension). Source: CONTEXT.md D-01.
@@ -254,11 +256,11 @@ No shadcn, no third-party registries. All components are custom React Native wit
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: FLAG (13px/14px proximity — non-blocking)
+- [x] Dimension 5 Spacing: PASS (12px exception accepted)
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved (2026-04-11)
