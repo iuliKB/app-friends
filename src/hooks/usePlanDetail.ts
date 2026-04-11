@@ -13,6 +13,7 @@ export function usePlanDetail(planId: string): {
     title?: string;
     scheduled_for?: string;
     location?: string | null;
+    cover_image_url?: string | null;
   }) => Promise<{ error: Error | null }>;
   deletePlan: () => Promise<{ error: Error | null }>;
 } {
@@ -86,6 +87,7 @@ export function usePlanDetail(planId: string): {
         iou_notes: planRow.iou_notes as string | null,
         created_at: planRow.created_at as string,
         updated_at: planRow.updated_at as string,
+        cover_image_url: planRow.cover_image_url as string | null,
         members: assembledMembers,
       };
 
@@ -115,6 +117,7 @@ export function usePlanDetail(planId: string): {
     title?: string;
     scheduled_for?: string;
     location?: string | null;
+    cover_image_url?: string | null; // D-14 edit cover image
   }): Promise<{ error: Error | null }> {
     if (!session?.user) return { error: new Error('Not authenticated') };
 

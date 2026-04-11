@@ -10,6 +10,7 @@ interface CreatePlanInput {
   scheduledFor: Date;
   location: string;
   invitedFriendIds: string[];
+  coverImageUrl?: string; // D-16 optional cover image URL
 }
 
 export function usePlans(): {
@@ -160,6 +161,7 @@ export function usePlans(): {
         scheduled_for: input.scheduledFor.toISOString(),
         location: input.location || null,
         created_by: session.user.id,
+        cover_image_url: input.coverImageUrl ?? null,
       })
       .select('id')
       .single();
