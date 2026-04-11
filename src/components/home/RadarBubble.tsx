@@ -16,10 +16,10 @@ import type { FriendWithStatus } from '@/hooks/useFriends';
 // --- Size map (exported for use in RadarView layout) ---
 
 export const BubbleSizeMap: Record<string, number> = {
-  free: 64,
-  maybe: 48,
-  busy: 36,
-  dead: 36,
+  free: 80,
+  maybe: 64,
+  busy: 48,
+  dead: 44,
 };
 
 // --- Status color map ---

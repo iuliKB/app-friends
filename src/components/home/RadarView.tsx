@@ -3,7 +3,7 @@
 // with positions derived from onLayout (never Dimensions.get). Friends 7+ appear
 // in a horizontal overflow FlatList below the container.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
 import { RadarBubble, BubbleSizeMap } from '@/components/home/RadarBubble';
@@ -33,8 +33,11 @@ function computeScatterPositions(
   containerWidth: number,
   radarHeight: number
 ): BubblePosition[] {
-  const cellWidth = containerWidth / 3;
-  const cellHeight = radarHeight / 2;
+  const rows = friends.length <= 3 ? 1 : 2;
+  const cols = Math.min(friends.length, 3);
+  const cellWidth = containerWidth / cols;
+  const cellHeight = radarHeight / rows;
+  const margin = 4; // tight margin for compact feel
 
   return friends.map((friend, index) => {
     const heartbeat = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
@@ -42,30 +45,23 @@ function computeScatterPositions(
     const bubbleSize = BubbleSizeMap[status] ?? 36;
     const bubbleRadius = bubbleSize / 2;
 
-    const cellCol = index % 3;
-    const cellRow = Math.floor(index / 3);
+    const cellCol = index % cols;
+    const cellRow = Math.floor(index / cols);
     const cellOriginX = cellCol * cellWidth;
     const cellOriginY = cellRow * cellHeight;
 
-    // Random placement within cell with 8px safety margin
-    const minX = cellOriginX + bubbleRadius + 8;
-    const maxX = cellOriginX + cellWidth - bubbleRadius - 8;
-    const minY = cellOriginY + bubbleRadius + 8;
-    const maxY = cellOriginY + cellHeight - bubbleRadius - 8;
+    // Random jitter within cell (small offset for organic feel)
+    const jitterX = (Math.random() - 0.5) * (cellWidth - bubbleSize - margin * 2) * 0.4;
+    const jitterY = (Math.random() - 0.5) * (cellHeight - bubbleSize - margin * 2) * 0.4;
 
-    // Clamp to guard against very small cells (shouldn't happen with 3 columns)
-    const centerX = minX < maxX
-      ? minX + Math.random() * (maxX - minX)
-      : cellOriginX + cellWidth / 2;
-    const centerY = minY < maxY
-      ? minY + Math.random() * (maxY - minY)
-      : cellOriginY + cellHeight / 2;
+    const centerX = cellOriginX + cellWidth / 2 + jitterX;
+    const centerY = cellOriginY + cellHeight / 2 + jitterY;
 
-    const upperHalf = centerY < radarHeight / 2;
+    const upperHalf = rows > 1 && centerY < radarHeight / 2;
 
     return {
-      left: centerX - bubbleRadius,
-      top: centerY - bubbleRadius,
+      left: Math.max(margin, Math.min(centerX - bubbleRadius, containerWidth - bubbleSize - margin)),
+      top: Math.max(margin, Math.min(centerY - bubbleRadius, radarHeight - bubbleSize - margin)),
       depthScale: upperHalf ? 0.92 : 1.0,
       depthOpacity: upperHalf ? 0.85 : 1.0,
     };
@@ -75,11 +71,14 @@ function computeScatterPositions(
 // --- RadarView ---
 
 export function RadarView({ friends }: RadarViewProps) {
-  const RADAR_HEIGHT = 320;
+  // Adaptive height: compact for few friends, taller for 4-6
+  const radarRows = friends.length <= 3 ? 1 : 2;
+  const RADAR_HEIGHT = radarRows === 1 ? 160 : 260;
 
   // Split: up to 6 in the radar grid, rest in overflow row
-  const radarFriends = friends.slice(0, 6);
-  const overflowFriends = friends.slice(6);
+  // useMemo prevents new array references on every render (avoids infinite useEffect loop)
+  const radarFriends = useMemo(() => friends.slice(0, 6), [friends]);
+  const overflowFriends = useMemo(() => friends.slice(6), [friends]);
 
   // Container width from onLayout — never from Dimensions.get (RADAR-06)
   const [containerWidth, setContainerWidth] = useState(0);
@@ -87,20 +86,24 @@ export function RadarView({ friends }: RadarViewProps) {
   // Scatter positions for each radar bubble
   const [positions, setPositions] = useState<BubblePosition[]>([]);
 
-  // Recompute positions whenever container width or friends list changes.
-  // radarFriends in deps: content can change (status updates), not just length.
+  // Stable key: only re-scatter when the set of friends changes, not on every render.
+  // Keyed on friend IDs so status-only updates don't trigger a re-scatter (D-03: randomize per mount).
+  const radarKey = useMemo(
+    () => radarFriends.map((f) => f.friend_id).join(','),
+    [radarFriends]
+  );
+
   useEffect(() => {
     if (containerWidth === 0) return;
     const computed = computeScatterPositions(radarFriends, containerWidth, RADAR_HEIGHT);
     setPositions(computed);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerWidth, radarFriends]);
+  }, [containerWidth, radarKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={styles.wrapper}>
       {/* Radar container */}
       <View
-        style={styles.radarContainer}
+        style={[styles.radarContainer, { height: RADAR_HEIGHT }]}
         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       >
         {radarFriends.length === 0 && (
@@ -151,7 +154,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   radarContainer: {
-    height: 320,
+    // height set dynamically via inline style
     backgroundColor: COLORS.surface.base,
     borderRadius: RADII.lg,
     position: 'relative',
