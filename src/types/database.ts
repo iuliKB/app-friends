@@ -140,6 +140,7 @@ export type Database = {
           iou_notes: string | null;
           created_at: string;
           updated_at: string;
+          cover_image_url: string | null;
         };
         Insert: {
           id?: string;
@@ -151,6 +152,7 @@ export type Database = {
           iou_notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          cover_image_url?: string | null;
         };
         Update: {
           id?: string;
@@ -162,6 +164,7 @@ export type Database = {
           iou_notes?: string | null;
           created_at?: string;
           updated_at?: string;
+          cover_image_url?: string | null;
         };
         Relationships: [
           {

@@ -8,6 +8,7 @@ export interface Plan {
   iou_notes: string | null;
   created_at: string;
   updated_at: string;
+  cover_image_url?: string | null;
 }
 
 export interface PlanMember {

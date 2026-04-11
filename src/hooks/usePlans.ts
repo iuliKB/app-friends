@@ -134,6 +134,7 @@ export function usePlans(): {
         iou_notes: p.iou_notes as string | null,
         created_at: p.created_at as string,
         updated_at: p.updated_at as string,
+        cover_image_url: p.cover_image_url as string | null,
         members: membersMap.get(p.id as string) ?? [],
       }));
 
