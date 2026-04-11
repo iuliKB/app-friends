@@ -90,7 +90,7 @@ Plans:
   5. Tapping any radar bubble or overflow chip navigates directly to a DM with that friend; the old Free grid / Everyone Else two-section layout is gone
 **Plans**: 4 plans
 Plans:
-- [ ] 02-01-PLAN.md — RadarViewToggle component + useViewPreference hook
+- [x] 02-01-PLAN.md — RadarViewToggle component + useViewPreference hook
 - [ ] 02-02-PLAN.md — RadarBubble (with PulseRing) + OverflowChip components
 - [ ] 02-03-PLAN.md — RadarView container with scatter algorithm and overflow row
 - [ ] 02-04-PLAN.md — HomeScreen wiring: remove old grid, add toggle + radar + crossfade
