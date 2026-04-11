@@ -93,7 +93,7 @@ Plans:
 - [x] 02-01-PLAN.md — RadarViewToggle component + useViewPreference hook
 - [x] 02-02-PLAN.md — RadarBubble (with PulseRing) + OverflowChip components
 - [x] 02-03-PLAN.md — RadarView container with scatter algorithm and overflow row
-- [ ] 02-04-PLAN.md — HomeScreen wiring: remove old grid, add toggle + radar + crossfade
+- [x] 02-04-PLAN.md — HomeScreen wiring: remove old grid, add toggle + radar + crossfade
 **UI hint**: yes
 
 ### Phase 3: Card Stack View
