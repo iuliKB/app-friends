@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
 status: executing
-stopped_at: Completed 03-card-stack-view/03-01-PLAN.md
-last_updated: "2026-04-11T11:54:07.697Z"
+stopped_at: Completed 03-card-stack-view/03-02-PLAN.md
+last_updated: "2026-04-11T11:57:22.610Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 8
-  percent: 73
+  completed_plans: 9
+  percent: 82
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 Milestone: v1.3.5 Homescreen Redesign
 Phase: 03 (card-stack-view) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -75,6 +75,8 @@ Requirements covered: 23/23 mapped
 - [Phase 02-03]: Scatter clamp guard: if minX >= maxX fall back to cell center to handle degenerate tiny cells
 - [Phase 03-card-stack-view]: GestureHandlerRootView replaces root View in _layout.tsx — transparent wrapper, identical style prop, unblocks Gesture.Pan() in FriendSwipeCard
 - [Phase 03-card-stack-view]: Card stack test scaffold uses same login/screenshot pattern as design-system.spec.ts; tests intentionally fail until CardStackView implemented in Plans 02-03
+- [Phase 03-02]: FADING opacity applied via static wrapper View (not useSharedValue) to avoid useNativeDriver conflict with animated transforms
+- [Phase 03-02]: nudgeLoading state disables Nudge button during async RPC call to prevent double-tap spam (T-03-04 DoS mitigation)
 
 ### Pending Todos
 
@@ -86,5 +88,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T11:54:07.693Z
-Stopped at: Completed 03-card-stack-view/03-01-PLAN.md
+Last session: 2026-04-11T11:57:22.606Z
+Stopped at: Completed 03-card-stack-view/03-02-PLAN.md

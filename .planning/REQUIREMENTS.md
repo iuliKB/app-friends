@@ -28,9 +28,9 @@ Requirements for v1.3.5 milestone. Each maps to exactly one phase.
 
 ### Card Stack View
 
-- [ ] **CARD-01**: User sees a swipeable card deck showing friend details (avatar, name, mood, context tag, last active time)
-- [ ] **CARD-02**: Each card has a "Nudge" button that opens the DM conversation with that friend
-- [ ] **CARD-03**: Each card has a "Skip" button that animates the card away and reveals the next friend
+- [x] **CARD-01**: User sees a swipeable card deck showing friend details (avatar, name, mood, context tag, last active time)
+- [x] **CARD-02**: Each card has a "Nudge" button that opens the DM conversation with that friend
+- [x] **CARD-03**: Each card has a "Skip" button that animates the card away and reveals the next friend
 - [ ] **CARD-04**: Card deck only contains ALIVE and FADING friends (DEAD friends are excluded to avoid skip fatigue)
 - [ ] **CARD-05**: Card shows remaining count ("2 more free") updating as user skips through
 
@@ -97,9 +97,9 @@ Explicitly excluded.
 | HOME-01 | Phase 2 | Complete |
 | HOME-02 | Phase 2 | Complete |
 | HOME-05 | Phase 2 | Pending |
-| CARD-01 | Phase 3 | Pending |
-| CARD-02 | Phase 3 | Pending |
-| CARD-03 | Phase 3 | Pending |
+| CARD-01 | Phase 3 | Complete |
+| CARD-02 | Phase 3 | Complete |
+| CARD-03 | Phase 3 | Complete |
 | CARD-04 | Phase 3 | Pending |
 | CARD-05 | Phase 3 | Pending |
 

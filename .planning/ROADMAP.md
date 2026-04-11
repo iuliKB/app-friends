@@ -108,7 +108,7 @@ Plans:
 **Plans**: 4 plans
 Plans:
 - [x] 03-01-PLAN.md — GestureHandlerRootView prerequisite + Playwright test scaffold
-- [ ] 03-02-PLAN.md — FriendSwipeCard: gesture, visual design, Nudge/Skip buttons
+- [x] 03-02-PLAN.md — FriendSwipeCard: gesture, visual design, Nudge/Skip buttons
 - [ ] 03-03-PLAN.md — CardStackView: deck logic, counter, depth effect, loop, undo
 - [ ] 03-04-PLAN.md — HomeScreen wiring: replace placeholder with CardStackView
 **UI hint**: yes
