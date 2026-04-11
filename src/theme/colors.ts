@@ -7,21 +7,21 @@ export const COLORS = {
 
   // Surfaces
   surface: {
-    base: '#1a1a1a',       // app background (was: dominant)
-    card: '#2a2a2a',       // cards, inputs, tab bar (was: secondary)
-    overlay: '#ffffff14',  // (was: surfaceOverlay)
+    base: '#1a1a1a', // app background (was: dominant)
+    card: '#2a2a2a', // cards, inputs, tab bar (was: secondary)
+    overlay: '#ffffff14', // (was: surfaceOverlay)
   },
 
   // Interactive
   interactive: {
-    accent: '#f97316',      // campfire orange — primary CTA
+    accent: '#f97316', // campfire orange — primary CTA
     destructive: '#ef4444', // inline errors, destructive actions
   },
 
   // Feedback / indicators
   feedback: {
-    info: '#3b82f6',       // notification/indicator blue (was undeclared #3b82f6 in ChatListRow)
-    error: '#ef4444',      // same as destructive — semantic alias
+    info: '#3b82f6', // notification/indicator blue (was undeclared #3b82f6 in ChatListRow)
+    error: '#ef4444', // same as destructive — semantic alias
   },
 
   // Status
@@ -33,6 +33,9 @@ export const COLORS = {
 
   // Borders
   border: '#3f3f46',
+
+  // Overlays
+  overlay: 'rgba(0,0,0,0.5)',
 
   // Shadows
   shadow: '#000000',

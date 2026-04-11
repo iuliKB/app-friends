@@ -93,7 +93,6 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       {/* Backdrop */}
       <TouchableWithoutFeedback onPress={onClose}>
-        {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
         <View style={[StyleSheet.absoluteFillObject, styles.backdrop]} />
       </TouchableWithoutFeedback>
 
@@ -111,8 +110,7 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
 
 const styles = StyleSheet.create({
   backdrop: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)', // no exact token — modal scrim
+    backgroundColor: COLORS.overlay,
   },
   sheet: {
     position: 'absolute',

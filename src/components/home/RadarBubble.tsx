@@ -25,18 +25,18 @@ export const BubbleSizeMap: Record<string, number> = {
 // --- Status color map ---
 
 const STATUS_COLORS: Record<string, string> = {
-  free: COLORS.status.free,   // #22c55e
+  free: COLORS.status.free, // #22c55e
   maybe: COLORS.status.maybe, // #eab308
-  busy: COLORS.status.busy,   // #ef4444
+  busy: COLORS.status.busy, // #ef4444
 };
 
 // --- Gradient color map (center color → transparent) ---
 // expo-linear-gradient is linear (not radial); start/end gives a center-to-corner feel.
 
 const GRADIENT_COLORS: Record<string, readonly [string, string]> = {
-  free:  ['rgba(34,197,94,0.30)', 'transparent'],
+  free: ['rgba(34,197,94,0.30)', 'transparent'],
   maybe: ['rgba(234,179,8,0.25)', 'transparent'],
-  busy:  ['rgba(239,68,68,0.20)', 'transparent'],
+  busy: ['rgba(239,68,68,0.20)', 'transparent'],
 };
 
 const MOOD_LABEL: Record<string, string> = {
@@ -111,7 +111,7 @@ interface RadarBubbleProps {
   friend: FriendWithStatus;
   // Depth effect multipliers — computed by parent RadarView from Y position.
   // 1.0/1.0 = no effect (lower half). 0.92/0.85 = upper half (D-07).
-  depthScale?: number;   // default 1.0
+  depthScale?: number; // default 1.0
   depthOpacity?: number; // default 1.0
 }
 
@@ -139,8 +139,9 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
   const finalScale = depthScale;
 
   // 5. Status resize animation (D-05).
-  //    NOTE: useNativeDriver: false is required here — width/height layout props
-  //    cannot be driven by the native driver, only transform/opacity can.
+  //    useNativeDriver: false is required — width/height are layout props that can't
+  //    be driven natively. This is acceptable: the animation only fires on status changes
+  //    (rare), not during gestures or scrolling.
   const sizeAnim = useRef(new Animated.Value(targetSize)).current;
   const prevSizeRef = useRef(targetSize);
 
@@ -151,7 +152,7 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
       toValue: targetSize,
       duration: 300,
       easing: Easing.inOut(Easing.ease),
-      useNativeDriver: false, // width/height cannot use native driver
+      useNativeDriver: false,
       isInteraction: false,
     }).start();
   }, [targetSize, sizeAnim]);
@@ -187,17 +188,13 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
       },
       {
         label: `Plan with ${firstName}...`,
-        onPress: () =>
-          router.push(`/plan-create?preselect_friend_id=${friend.friend_id}` as never),
+        onPress: () => router.push(`/plan-create?preselect_friend_id=${friend.friend_id}` as never),
       },
     ]);
   }
 
   // 9. hitSlop — ensure minimum 44px effective touch area for small bubbles
-  const hitSlop =
-    targetSize < 44
-      ? { top: 4, bottom: 4, left: 4, right: 4 }
-      : undefined;
+  const hitSlop = targetSize < 44 ? { top: 4, bottom: 4, left: 4, right: 4 } : undefined;
 
   // 10. Accessibility label
   const accessibilityLabel =
@@ -206,15 +203,11 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
       : `${friend.display_name}, ${moodLabel}. Tap to message, hold for more.`;
 
   // 11. Name label color
-  const nameLabelColor =
-    heartbeatState === 'fading' ? COLORS.text.secondary : COLORS.text.primary;
+  const nameLabelColor = heartbeatState === 'fading' ? COLORS.text.secondary : COLORS.text.primary;
 
   return (
     <Animated.View
-      style={[
-        styles.outerWrapper,
-        { opacity: finalOpacity, transform: [{ scale: finalScale }] },
-      ]}
+      style={[styles.outerWrapper, { opacity: finalOpacity, transform: [{ scale: finalScale }] }]}
     >
       <Pressable
         onPress={handlePress}
@@ -224,22 +217,14 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
       >
-        <Animated.View
-          style={[
-            styles.bubbleContainer,
-            { width: sizeAnim, height: sizeAnim },
-          ]}
-        >
+        <Animated.View style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}>
           {isAlive && <PulseRing size={targetSize} statusColor={statusColor} />}
           {showGradient && (
             <LinearGradient
               colors={gradientColors as [string, string]}
               start={{ x: 0.5, y: 0.5 }}
               end={{ x: 1, y: 1 }}
-              style={[
-                StyleSheet.absoluteFill,
-                { borderRadius: targetSize / 2 },
-              ]}
+              style={[StyleSheet.absoluteFill, { borderRadius: targetSize / 2 }]}
             />
           )}
           <AvatarCircle
@@ -250,10 +235,7 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
         </Animated.View>
       </Pressable>
       <Text
-        style={[
-          styles.nameLabel,
-          { maxWidth: targetSize + 16, color: nameLabelColor },
-        ]}
+        style={[styles.nameLabel, { maxWidth: targetSize + 16, color: nameLabelColor }]}
         numberOfLines={1}
       >
         {friend.display_name}

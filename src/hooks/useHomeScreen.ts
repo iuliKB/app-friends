@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useHomeStore } from '@/stores/useHomeStore';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 import type { StatusValue } from '@/types/app';
-import { computeHeartbeatState } from '@/lib/heartbeat';
 
 // Single source of truth for status sort order, imported by useFriends as well (OVR-07).
 // Order matches MoodPicker row order: free → maybe → busy.
@@ -16,7 +15,7 @@ export const STATUS_SORT_ORDER: Record<StatusValue, number> = {
 
 export function useHomeScreen() {
   const session = useAuthStore((s) => s.session);
-  const { friends, lastActiveAt, setFriends } = useHomeStore();
+  const { friends, setFriends } = useHomeStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -145,33 +144,6 @@ export function useHomeScreen() {
     };
   }, [session?.user?.id]);
 
-  // HEART-04 partition: ALIVE/FADING free → freeFriends; everything else (including
-  // DEAD regardless of stored mood) → otherFriends. Sort free by last_active_at DESC
-  // per OVR-07 (freshness, not updated_at).
-  const freeFriends = friends
-    .filter((f) => {
-      const hb = computeHeartbeatState(f.status_expires_at, f.last_active_at);
-      return f.status === 'free' && (hb === 'alive' || hb === 'fading');
-    })
-    .sort((a, b) => {
-      const aActive = lastActiveAt[a.friend_id] ?? '';
-      const bActive = lastActiveAt[b.friend_id] ?? '';
-      return bActive.localeCompare(aActive);
-    });
-
-  const otherFriends = friends
-    .filter((f) => {
-      const hb = computeHeartbeatState(f.status_expires_at, f.last_active_at);
-      // Everyone Else: any DEAD friend (regardless of stored mood) plus all
-      // ALIVE/FADING non-free friends.
-      return hb === 'dead' || f.status !== 'free';
-    })
-    .sort((a, b) => {
-      const orderDiff = STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status];
-      if (orderDiff !== 0) return orderDiff;
-      return a.display_name.localeCompare(b.display_name);
-    });
-
   async function handleRefresh() {
     setRefreshing(true);
     await fetchAllFriends();
@@ -180,8 +152,6 @@ export function useHomeScreen() {
 
   return {
     friends,
-    freeFriends,
-    otherFriends,
     loading,
     error,
     refreshing,

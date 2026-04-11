@@ -7,13 +7,7 @@
 // Each mount starts with fresh useSharedValue(0) state — no manual reset needed.
 
 import React from 'react';
-import {
-  Dimensions,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -26,7 +20,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII, SHADOWS } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
@@ -80,10 +74,7 @@ export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardPro
   const rotate = useSharedValue(0);
 
   // Heartbeat state for opacity
-  const heartbeatState = computeHeartbeatState(
-    friend.status_expires_at,
-    friend.last_active_at
-  );
+  const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
 
   const moodLabel = MOOD_LABEL[friend.status] ?? friend.status;
   const gradientColors = CARD_GRADIENT_COLORS[friend.status] ?? ['transparent', 'transparent'];
@@ -173,11 +164,7 @@ export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardPro
     <View style={{ opacity: fadingOpacity }}>
       <GestureDetector gesture={pan}>
         <Animated.View
-          style={[
-            styles.card,
-            { width },
-            animatedStyle,
-          ]}
+          style={[styles.card, { width }, animatedStyle]}
           accessibilityLabel={accessibilityLabel}
           accessibilityRole="none"
         >
@@ -270,15 +257,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.surface.card,
     borderRadius: RADII.xl,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    shadowColor: COLORS.shadow,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    shadowRadius: 12, // design spec shadow — no token equivalent
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    shadowOpacity: 0.4, // design spec shadow — no token equivalent
-    shadowOffset: { width: 0, height: 4 },
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    elevation: 8, // Android shadow — no token equivalent
+    ...SHADOWS.swipeCard,
     overflow: 'hidden',
   },
   contentRow: {

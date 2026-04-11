@@ -24,6 +24,18 @@ interface BubblePosition {
   depthOpacity: number;
 }
 
+// --- Deterministic hash for stable jitter ---
+// Simple string hash → [0,1) float. Same friend_id always produces the same offset,
+// so bubbles don't shift on heartbeat ticks or re-renders.
+
+function hashToFloat(str: string, seed: number): number {
+  let h = seed;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  }
+  return ((h & 0x7fffffff) % 10000) / 10000; // [0, 1)
+}
+
 // --- Scatter algorithm (pure, outside component) ---
 // Implements the 3×2 grid-cell scatter from UI-SPEC with 8px safety margin.
 // Called on mount and whenever containerWidth or radarFriends list changes.
@@ -50,9 +62,11 @@ function computeScatterPositions(
     const cellOriginX = cellCol * cellWidth;
     const cellOriginY = cellRow * cellHeight;
 
-    // Random jitter within cell (small offset for organic feel)
-    const jitterX = (Math.random() - 0.5) * (cellWidth - bubbleSize - margin * 2) * 0.4;
-    const jitterY = (Math.random() - 0.5) * (cellHeight - bubbleSize - margin * 2) * 0.4;
+    // Deterministic jitter from friend_id (stable across re-renders)
+    const jitterX =
+      (hashToFloat(friend.friend_id, 1) - 0.5) * (cellWidth - bubbleSize - margin * 2) * 0.4;
+    const jitterY =
+      (hashToFloat(friend.friend_id, 2) - 0.5) * (cellHeight - bubbleSize - margin * 2) * 0.4;
 
     const centerX = cellOriginX + cellWidth / 2 + jitterX;
     const centerY = cellOriginY + cellHeight / 2 + jitterY;
@@ -60,7 +74,10 @@ function computeScatterPositions(
     const upperHalf = rows > 1 && centerY < radarHeight / 2;
 
     return {
-      left: Math.max(margin, Math.min(centerX - bubbleRadius, containerWidth - bubbleSize - margin)),
+      left: Math.max(
+        margin,
+        Math.min(centerX - bubbleRadius, containerWidth - bubbleSize - margin)
+      ),
       top: Math.max(margin, Math.min(centerY - bubbleRadius, radarHeight - bubbleSize - margin)),
       depthScale: upperHalf ? 0.92 : 1.0,
       depthOpacity: upperHalf ? 0.85 : 1.0,
@@ -88,10 +105,7 @@ export function RadarView({ friends }: RadarViewProps) {
 
   // Stable key: only re-scatter when the set of friends changes, not on every render.
   // Keyed on friend IDs so status-only updates don't trigger a re-scatter (D-03: randomize per mount).
-  const radarKey = useMemo(
-    () => radarFriends.map((f) => f.friend_id).join(','),
-    [radarFriends]
-  );
+  const radarKey = useMemo(() => radarFriends.map((f) => f.friend_id).join(','), [radarFriends]);
 
   useEffect(() => {
     if (containerWidth === 0) return;

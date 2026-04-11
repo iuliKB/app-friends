@@ -5,6 +5,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeHeartbeatState } from '@/lib/heartbeat';
@@ -19,9 +20,7 @@ function formatUntil(expiresAt: string): string {
   const m = d.getMinutes();
   const period = h >= 12 ? 'pm' : 'am';
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  return m === 0
-    ? `until ${h12}${period}`
-    : `until ${h12}:${String(m).padStart(2, '0')}${period}`;
+  return m === 0 ? `until ${h12}${period}` : `until ${h12}:${String(m).padStart(2, '0')}${period}`;
 }
 
 const STATUS_DOT_COLOR: Record<string, string> = {
@@ -37,7 +36,7 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
   const currentStatus = useStatusStore((s) => s.currentStatus);
   const heartbeatState = computeHeartbeatState(
     currentStatus?.status_expires_at ?? null,
-    currentStatus?.last_active_at ?? null,
+    currentStatus?.last_active_at ?? null
   );
   const hasActiveStatus = currentStatus !== null && heartbeatState !== 'dead';
 
@@ -70,9 +69,10 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
   }, [hasActiveStatus, pulseAnim]);
 
   // 3. Dot color — matches status when active, gray when inactive
-  const dotColor = hasActiveStatus && currentStatus
-    ? STATUS_DOT_COLOR[currentStatus.status] ?? COLORS.text.secondary
-    : COLORS.text.secondary;
+  const dotColor =
+    hasActiveStatus && currentStatus
+      ? (STATUS_DOT_COLOR[currentStatus.status] ?? COLORS.text.secondary)
+      : COLORS.text.secondary;
 
   // 4. Text content
   let titleText: string;
@@ -100,10 +100,7 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
       <View style={styles.topRow}>
         <Text style={styles.label}>{'YOUR STATUS'}</Text>
         <Animated.View
-          style={[
-            styles.dot,
-            { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] },
-          ]}
+          style={[styles.dot, { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] }]}
         />
       </View>
       <View style={styles.bottomRow}>
@@ -112,10 +109,12 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
             {titleText}
           </Text>
           {subtitleText !== null && (
-            <Text style={styles.subtitle} numberOfLines={1}>{subtitleText}</Text>
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {subtitleText}
+            </Text>
           )}
         </View>
-        <Text style={styles.editIcon}>{'✎'}</Text>
+        <Ionicons name="pencil" size={18} color={COLORS.text.secondary} style={styles.editIcon} />
       </View>
     </TouchableOpacity>
   );
@@ -158,8 +157,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontWeight: '700' as const, // no bold token — semibold is 600, design spec requires 700
+    fontWeight: FONT_WEIGHT.bold,
     color: COLORS.text.primary,
   },
   titleInactive: {
@@ -171,8 +169,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   editIcon: {
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.secondary,
     marginLeft: SPACING.md,
   },
 });

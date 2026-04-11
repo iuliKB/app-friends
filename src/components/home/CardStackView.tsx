@@ -7,17 +7,12 @@
 // which friend to hand to it and maintains deck-level state.
 
 import React, { useState } from 'react';
-import { Alert, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { supabase } from '@/lib/supabase';
 import { FriendSwipeCard } from './FriendSwipeCard';
 import type { FriendWithStatus } from '@/hooks/useFriends';
-
-// --- Card width: 80% of screen width (D-01) ---
-
-// eslint-disable-next-line campfire/no-hardcoded-styles
-const CARD_WIDTH = Dimensions.get('window').width * 0.8;
 
 // --- Stack depth config (D-06 — UI-SPEC Component Inventory: StackDepthEffect) ---
 
@@ -39,6 +34,11 @@ export interface CardStackViewProps {
 // --- CardStackView ---
 
 export function CardStackView({ friends }: CardStackViewProps) {
+  // Container width from onLayout — never from Dimensions.get (matches RadarView pattern)
+  const [containerWidth, setContainerWidth] = useState(0);
+  // eslint-disable-next-line campfire/no-hardcoded-styles
+  const cardWidth = containerWidth > 0 ? containerWidth * 0.8 : 0;
+
   // Deck: ALIVE + FADING only — DEAD friends never appear (CARD-04, D-13).
   // Computed at render time; HeartbeatTick in HomeScreen triggers re-renders to keep fresh.
   const deck = friends.filter(
@@ -48,15 +48,24 @@ export function CardStackView({ friends }: CardStackViewProps) {
   // Deck state
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Empty deck guard (T-03-06 — prevents % 0 crash when all friends are DEAD)
-  if (deck.length === 0) return null;
+  // Empty deck — show friendly message instead of blank screen
+  if (deck.length === 0) {
+    return (
+      <View
+        style={styles.emptyState}
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      >
+        <Text style={styles.emptyHeading}>No active friends right now</Text>
+        <Text style={styles.emptyBody}>Friends will appear here when they set their status.</Text>
+      </View>
+    );
+  }
 
   // --- Counter text (CARD-05, D-12, UI-SPEC Copywriting Contract) ---
   const aliveFriendCount = deck.filter(
     (f) => computeHeartbeatState(f.status_expires_at, f.last_active_at) === 'alive'
   ).length;
-  const counterText =
-    aliveFriendCount > 0 ? `${aliveFriendCount} more free` : 'Just you right now';
+  const counterText = aliveFriendCount > 0 ? `${aliveFriendCount} more free` : 'Just you right now';
 
   // --- Skip handler: advance index with auto-loop (D-11) ---
   function handleSkip() {
@@ -88,59 +97,58 @@ export function CardStackView({ friends }: CardStackViewProps) {
   const cardsToRender = Math.min(STACK_CONFIGS.length, deck.length);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
       {/* Counter above deck (CARD-05, D-12) */}
       <Text style={styles.counter}>{counterText}</Text>
 
-      {/* Stack area */}
-      <View style={styles.stackContainer}>
-        {STACK_CONFIGS.slice(0, cardsToRender)
-          .slice() // avoid mutating const
-          .reverse()
-          .map((config, reversedPos) => {
-            const stackPos = cardsToRender - 1 - reversedPos; // convert back to forward index
-            const friendIndex = (currentIndex + stackPos) % deck.length;
-            const friend = deck[friendIndex]!;
+      {/* Stack area — wait for layout measurement */}
+      {cardWidth > 0 && (
+        <View style={[styles.stackContainer, { width: cardWidth }]}>
+          {STACK_CONFIGS.slice(0, cardsToRender)
+            .slice() // avoid mutating const
+            .reverse()
+            .map((config, reversedPos) => {
+              const stackPos = cardsToRender - 1 - reversedPos; // convert back to forward index
+              const friendIndex = (currentIndex + stackPos) % deck.length;
+              const friend = deck[friendIndex]!;
 
-            if (stackPos === 0) {
-              // Front card — animated FriendSwipeCard.
-              // Keyed by friend_id (not index) so each new front card mounts fresh (RESEARCH Pitfall 5).
-              // FriendSwipeCard has no style prop — wrap in View for zIndex.
+              if (stackPos === 0) {
+                // Front card — animated FriendSwipeCard.
+                // Keyed by friend_id (not index) so each new front card mounts fresh (RESEARCH Pitfall 5).
+                // FriendSwipeCard has no style prop — wrap in View for zIndex.
+                return (
+                  <View
+                    key={friend.friend_id}
+                    style={{ zIndex: config.zIndex, position: 'absolute', top: 0 }}
+                  >
+                    <FriendSwipeCard
+                      friend={friend}
+                      onSkip={handleSkip}
+                      onNudge={() => void handleNudge(friend.friend_id)}
+                      width={cardWidth}
+                    />
+                  </View>
+                );
+              }
+
+              // Background depth cards — plain View, no gesture, no gradient
               return (
                 <View
-                  key={friend.friend_id}
-                  style={{ zIndex: config.zIndex, position: 'absolute', top: 0 }}
-                >
-                  <FriendSwipeCard
-                    friend={friend}
-                    onSkip={handleSkip}
-                    onNudge={() => void handleNudge(friend.friend_id)}
-                    width={CARD_WIDTH}
-                  />
-                </View>
+                  key={`depth-${stackPos}-${friend.friend_id}`}
+                  style={[
+                    styles.depthCard,
+                    {
+                      width: cardWidth,
+                      zIndex: config.zIndex,
+                      opacity: config.opacity,
+                      transform: [{ translateY: config.translateY }, { scale: config.scale }],
+                    },
+                  ]}
+                />
               );
-            }
-
-            // Background depth cards — plain View, no gesture, no gradient
-            return (
-              <View
-                key={`depth-${stackPos}-${friend.friend_id}`}
-                style={[
-                  styles.depthCard,
-                  {
-                    width: CARD_WIDTH,
-                    zIndex: config.zIndex,
-                    opacity: config.opacity,
-                    transform: [
-                      { translateY: config.translateY },
-                      { scale: config.scale },
-                    ],
-                  },
-                ]}
-              />
-            );
-          })}
-      </View>
+            })}
+        </View>
+      )}
     </View>
   );
 }
@@ -162,7 +170,7 @@ const styles = StyleSheet.create({
     // Height accommodates front card (~160px) + deepest depth offset (16px) + buffer
     // eslint-disable-next-line campfire/no-hardcoded-styles
     height: 200,
-    width: CARD_WIDTH,
+    // width set dynamically via inline style from onLayout
     position: 'relative',
   },
   depthCard: {
@@ -172,5 +180,20 @@ const styles = StyleSheet.create({
     height: 160, // matches front card content height
     backgroundColor: COLORS.surface.card,
     borderRadius: RADII.xl,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.xxl,
+  },
+  emptyHeading: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.xs,
+  },
+  emptyBody: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.text.secondary,
   },
 });
