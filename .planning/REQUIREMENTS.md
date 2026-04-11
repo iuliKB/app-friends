@@ -42,6 +42,15 @@ Requirements for v1.3.5 milestone. Each maps to exactly one phase.
 - [x] **HOME-04**: ReEngagementBanner is removed (status pill replaces its function)
 - [x] **HOME-05**: Two-section friend split (Free grid + Everyone Else) is replaced by the unified Radar/Cards views
 
+### Upcoming Events Section
+
+- [ ] **EVT-01**: User sees an "Upcoming events" section below the Radar/Cards view in the homescreen, showing a horizontally scrollable row of event cards
+- [ ] **EVT-02**: Event cards display title, formatted date ("Mon 15, Aug · in 2 days"), attendee avatar stack, and optional cover image or pastel background
+- [ ] **EVT-03**: Section only shows plans where the user is the creator or has RSVP'd "going"; future plans only; capped at 5, soonest first
+- [ ] **EVT-04**: Tapping an event card navigates to the plan detail screen
+- [ ] **EVT-05**: When no upcoming events exist, a placeholder card shows "No plans yet — start one!" that links to plan creation
+- [ ] **EVT-06**: Users can optionally add a cover image to a plan during creation or from the plan detail screen (camera roll only, stored in Supabase Storage)
+
 ## v1.4 Requirements (Deferred)
 
 Tracked but not in current roadmap.
@@ -102,12 +111,18 @@ Explicitly excluded.
 | CARD-03 | Phase 3 | Complete |
 | CARD-04 | Phase 3 | Complete |
 | CARD-05 | Phase 3 | Complete |
+| EVT-01 | Phase 4 | Planned |
+| EVT-02 | Phase 4 | Planned |
+| EVT-03 | Phase 4 | Planned |
+| EVT-04 | Phase 4 | Planned |
+| EVT-05 | Phase 4 | Planned |
+| EVT-06 | Phase 4 | Planned |
 
 **Coverage:**
-- v1.3.5 requirements: 23 total
-- Mapped to phases: 23
+- v1.3.5 requirements: 29 total
+- Mapped to phases: 29
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-11*
-*Traceability updated: 2026-04-10*
+*Traceability updated: 2026-04-11 — Phase 4 EVT-01 through EVT-06 added*

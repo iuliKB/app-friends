@@ -6,7 +6,7 @@
 - ✅ **v1.1 UI/UX Design System** — Phases 7-9 (shipped 2026-03-25)
 - ✅ **v1.2 Squad & Navigation** — Phases 10-12 (shipped 2026-04-04)
 - ✅ **v1.3 Liveness & Notifications** — Phases 1-5 (shipped 2026-04-10)
-- 🔄 **v1.3.5 Homescreen Redesign** — Phases 1-3 (in progress)
+- 🔄 **v1.3.5 Homescreen Redesign** — Phases 1-4 (in progress)
 
 ## Archived Milestones
 
@@ -58,6 +58,7 @@
 - [x] **Phase 1: Status Pill & Bottom Sheet** - Replace inline MoodPicker with header pill + custom bottom sheet picker (completed 2026-04-10)
 - [ ] **Phase 2: Radar View & View Toggle** - Spatial bubble layout with segmented Radar/Cards toggle and persistent preference
 - [x] **Phase 3: Card Stack View** - Swipeable friend card deck with Nudge/Skip actions slotting into Phase 2 toggle (completed 2026-04-11)
+- [ ] **Phase 4: Upcoming Events Section** - Horizontal event card row on homescreen with optional plan cover images
 
 ## Phase Details
 
@@ -113,6 +114,24 @@ Plans:
 - [x] 03-04-PLAN.md — HomeScreen wiring: replace placeholder with CardStackView
 **UI hint**: yes
 
+### Phase 4: Upcoming Events Section
+**Goal**: Users see a horizontally scrollable row of upcoming event cards below the Radar/Cards view on the homescreen, and can optionally add a cover image to any plan
+**Depends on**: Phase 3
+**Requirements**: EVT-01, EVT-02, EVT-03, EVT-04, EVT-05, EVT-06
+**Success Criteria** (what must be TRUE):
+  1. Homescreen shows "Upcoming events" section below Radar/Cards with horizontal scroll of event cards (future plans the user created or RSVP'd going, max 5, soonest first)
+  2. Each event card shows title, formatted date ("Mon 15, Aug · in 2 days"), avatar stack of attendees, and a cover image or deterministic pastel background
+  3. Tapping an event card navigates to the plan detail screen; tapping "See all" navigates to the Explore tab
+  4. When no upcoming events exist, a placeholder card shows with a CTA to create a plan
+  5. Users can add a cover image to a plan from the creation form and edit it from the plan detail screen
+**Plans**: 4 plans
+Plans:
+- [ ] 04-01-PLAN.md — DB migration + types + formatEventCardDate utility + useUpcomingEvents hook
+- [ ] 04-02-PLAN.md — EventCard + UpcomingEventsSection components
+- [ ] 04-03-PLAN.md — HomeScreen wiring + iOS permission + supabase db push
+- [ ] 04-04-PLAN.md — uploadPlanCover utility + cover image picker in create/edit
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -120,6 +139,7 @@ Plans:
 | 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
 | 2. Radar View & View Toggle | 0/4 | Not started | - |
 | 3. Card Stack View | 4/4 | Complete   | 2026-04-11 |
+| 4. Upcoming Events Section | 0/4 | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-11 — Phase 3 plans created (4 plans, 4 waves)*
+*Roadmap updated: 2026-04-11 — Phase 4 plans created (4 plans, 4 waves)*
