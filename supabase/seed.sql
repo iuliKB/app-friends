@@ -171,7 +171,7 @@ INSERT INTO friendships (id, requester_id, addressee_id, status, created_at, upd
 -- Created by alex, friends invited
 -- =============================================================
 
-INSERT INTO plans (id, created_by, title, scheduled_for, location, link_dump, iou_notes, created_at, updated_at)
+INSERT INTO plans (id, created_by, title, scheduled_for, location, link_dump, general_notes, created_at, updated_at)
 VALUES (
   plan_a_id,
   alex_id,
@@ -205,7 +205,7 @@ INSERT INTO messages (id, plan_id, dm_channel_id, sender_id, body, created_at) V
 -- Tests the plan dashboard detail view
 -- =============================================================
 
-INSERT INTO plans (id, created_by, title, scheduled_for, location, link_dump, iou_notes, created_at, updated_at)
+INSERT INTO plans (id, created_by, title, scheduled_for, location, link_dump, general_notes, created_at, updated_at)
 VALUES (
   plan_b_id,
   jamie_id,
@@ -250,6 +250,47 @@ INSERT INTO messages (id, plan_id, dm_channel_id, sender_id, body, created_at) V
   (gen_random_uuid(), null, dm_id, alex_id,  'yeah probably around 7',        now() - interval '2 hours' + interval '50 minutes'),
   (gen_random_uuid(), null, dm_id, jamie_id, 'cool I''ll nudge the group',    now() - interval '2 hours' + interval '45 minutes'),
   (gen_random_uuid(), null, dm_id, alex_id,  'already did haha, check plans', now() - interval '2 hours' + interval '40 minutes');
+
+-- =============================================================
+-- IOU SEED DATA (v1.4)
+-- Two expense groups with iou_members rows — one settled per payer,
+-- others unsettled so get_iou_summary() returns non-zero balances.
+-- All monetary values are integer cents (D-08: no floats).
+-- =============================================================
+
+INSERT INTO public.iou_groups (id, created_by, title, total_amount_cents, split_mode, created_at, updated_at)
+VALUES
+  ('00000000-0000-0000-0000-000000000010', alex_id,  'Dinner at Noma',   12000, 'even',   now() - interval '3 days', now() - interval '3 days'),
+  ('00000000-0000-0000-0000-000000000011', jamie_id, 'Camping supplies',  7500, 'custom', now() - interval '1 day',  now() - interval '1 day');
+
+-- Alex paid 120.00 for dinner, split evenly among alex/jamie/morgan (40.00 each).
+-- Alex (payer) is marked settled; jamie and morgan owe 40.00.
+INSERT INTO public.iou_members (iou_group_id, user_id, share_amount_cents, settled_at, settled_by)
+VALUES
+  ('00000000-0000-0000-0000-000000000010', alex_id,   4000, now() - interval '3 days', alex_id),
+  ('00000000-0000-0000-0000-000000000010', jamie_id,  4000, NULL,                      NULL),
+  ('00000000-0000-0000-0000-000000000010', morgan_id, 4000, NULL,                      NULL);
+
+-- Jamie paid 75.00 for camping supplies, custom split among jamie/alex/riley.
+-- Jamie (payer) is marked settled; alex owes 25.00, riley owes 20.00.
+INSERT INTO public.iou_members (iou_group_id, user_id, share_amount_cents, settled_at, settled_by)
+VALUES
+  ('00000000-0000-0000-0000-000000000011', jamie_id, 3000, now() - interval '1 day', jamie_id),
+  ('00000000-0000-0000-0000-000000000011', alex_id,  2500, NULL,                     NULL),
+  ('00000000-0000-0000-0000-000000000011', riley_id, 2000, NULL,                     NULL);
+
+
+-- =============================================================
+-- BIRTHDAY SEED DATA (v1.4)
+-- Spread across the calendar year so get_upcoming_birthdays()
+-- returns varied days_until values during testing.
+-- =============================================================
+
+UPDATE public.profiles SET birthday_month = 3,  birthday_day = 15 WHERE id = alex_id;
+UPDATE public.profiles SET birthday_month = 7,  birthday_day = 4  WHERE id = jamie_id;
+UPDATE public.profiles SET birthday_month = 11, birthday_day = 28 WHERE id = morgan_id;
+UPDATE public.profiles SET birthday_month = 1,  birthday_day = 20 WHERE id = riley_id;
+UPDATE public.profiles SET birthday_month = 9,  birthday_day = 5  WHERE id = casey_id;
 
 END $$;
 
