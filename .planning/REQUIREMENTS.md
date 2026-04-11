@@ -16,11 +16,11 @@ Requirements for v1.4 milestone. Each maps to exactly one phase.
 
 ### IOU Expense Splitting
 
-- [ ] **IOU-01**: User can create an expense with title, amount, and select friends to split with
-- [ ] **IOU-02**: User can split an expense evenly or set custom amounts per person
-- [ ] **IOU-03**: User can view net balance per friend across all expenses (who owes whom)
-- [ ] **IOU-04**: User can mark a debt as settled (manual "mark as paid")
-- [ ] **IOU-05**: User can view expense history (list of past expenses with payer, participants, amounts)
+- [x] **IOU-01**: User can create an expense with title, amount, and select friends to split with
+- [x] **IOU-02**: User can split an expense evenly or set custom amounts per person
+- [x] **IOU-03**: User can view net balance per friend across all expenses (who owes whom)
+- [x] **IOU-04**: User can mark a debt as settled (manual "mark as paid")
+- [x] **IOU-05**: User can view expense history (list of past expenses with payer, participants, amounts)
 
 ### Birthday Calendar
 
@@ -76,11 +76,11 @@ Explicitly excluded.
 | DASH-02 | Phase 10 | Pending |
 | DASH-03 | Phase 10 | Pending |
 | DASH-04 | Phase 10 | Pending |
-| IOU-01 | Phase 8 | Pending |
-| IOU-02 | Phase 8 | Pending |
-| IOU-03 | Phase 9 | Pending |
-| IOU-04 | Phase 8 | Pending |
-| IOU-05 | Phase 9 | Pending |
+| IOU-01 | Phase 8 | Complete |
+| IOU-02 | Phase 8 | Complete |
+| IOU-03 | Phase 9 | Complete |
+| IOU-04 | Phase 8 | Complete |
+| IOU-05 | Phase 9 | Complete |
 | BDAY-01 | Phase 6 | Pending |
 | BDAY-02 | Phase 7 | Pending |
 | BDAY-03 | Phase 7 | Pending |

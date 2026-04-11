@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-04-11T22:21:18.788Z"
-last_activity: 2026-04-11 -- Phase 5 planning complete
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-11T22:30:41.649Z"
+last_activity: 2026-04-11
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** v1.4 Squad Dashboard & Social Tools — roadmap created, ready for phase planning
+**Current focus:** Phase 05 — database-migrations
 
 ## Current Position
 
 Milestone: v1.4 Squad Dashboard & Social Tools
-Phase: Not started (roadmap created)
-Plan: —
+Phase: 05 (database-migrations) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-11 -- Phase 5 planning complete
+Last activity: 2026-04-11
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -98,6 +98,9 @@ Requirements covered: 12/12 mapped
 - [v1.4 Roadmap]: Squad dashboard uses single outer FlatList with feature cards in ListFooterComponent — FlatList inside ScrollView breaks Android scroll silently
 - [v1.4 Roadmap]: Dashboard assembled last (Phase 10) from pre-built, independently verified cards — minimizes integration blast radius
 - [v1.4 Roadmap]: Zero new npm dependencies required — datetimepicker already installed, Intl.NumberFormat built into Hermes on Expo SDK 55
+- [Phase 05-01]: iou_groups and iou_members use SECURITY DEFINER helpers to prevent RLS self-recursion on iou_members SELECT policy
+- [Phase 05-01]: Relationships: [] required in TypeScript table types — omitting collapses all supabase-js Insert/Update types to never
+- [Phase 05-01]: plans.iou_notes renamed to general_notes atomically with client code update to prevent silent data loss
 
 ### Roadmap Evolution
 
@@ -118,5 +121,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:01:50.878Z
-Stopped at: Phase 5 UI-SPEC approved
+Last session: 2026-04-11T22:30:41.646Z
+Stopped at: Completed 05-01-PLAN.md

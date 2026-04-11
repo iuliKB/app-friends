@@ -86,7 +86,7 @@
   4. `supabase db push` completes without errors and migration history shows 0015 and 0016 applied
 **Plans**: 3 plans
 Plans:
-- [ ] 05-01-PLAN.md — Migration 0015 SQL (IOU tables, RPCs, iou_notes rename) + 7 client file updates
+- [x] 05-01-PLAN.md — Migration 0015 SQL (IOU tables, RPCs, iou_notes rename) + 7 client file updates
 - [ ] 05-02-PLAN.md — Migration 0016 SQL (birthday columns + get_upcoming_birthdays RPC)
 - [ ] 05-03-PLAN.md — supabase db push [BLOCKING] + seed.sql extension
 
@@ -156,7 +156,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 5. Database Migrations | 0/3 | Not started | - |
+| 5. Database Migrations | 1/3 | In Progress|  |
 | 6. Birthday Profile Field | 0/TBD | Not started | - |
 | 7. Birthday Calendar Feature | 0/TBD | Not started | - |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
