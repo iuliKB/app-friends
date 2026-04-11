@@ -1,37 +1,37 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3.5
-milestone_name: Homescreen Redesign — Active Phases
-status: verifying
-stopped_at: Completed 04-04-PLAN.md — all tasks done, phase 04 complete
-last_updated: "2026-04-11T20:06:02.601Z"
-last_activity: 2026-04-11
+milestone: v1.4
+milestone_name: Squad Dashboard & Social Tools
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-12T00:00:00.000Z"
+last_activity: 2026-04-12
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-10)
+See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 04 — Upcoming Events Section
+**Current focus:** Defining requirements for v1.4
 
 ## Current Position
 
-Milestone: v1.3.5 Homescreen Redesign
-Phase: 04
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-11
+Milestone: v1.4 Squad Dashboard & Social Tools
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-12 — Milestone v1.4 started
 
-Progress: [░░░░░░░░░░] 0% (0/3 phases)
+Progress: [░░░░░░░░░░] 0%
 
 ## Wave Structure
 

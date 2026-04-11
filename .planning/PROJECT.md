@@ -8,16 +8,14 @@ Campfire is a "friendship OS" — an all-in-one social coordination app for clos
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone: v1.3.5 Homescreen Redesign
+## Current Milestone: v1.4 Squad Dashboard & Social Tools
 
-**Goal:** Transform the homescreen from a static friend list into a dynamic pulse dashboard with cleaner status UX.
+**Goal:** Transform Squad tab into a scrollable dashboard with friends list and feature cards, plus two new social features: group expense splitting (IOUs) and birthday calendar.
 
 **Target features:**
-- Status pill in header with bottom sheet picker (replaces inline MoodPicker)
-- Unified friends section with Radar/Cards view toggle
-- Radar view: spatial bubble layout (top 6 + horizontal scroll overflow)
-- Card stack view: swipeable cards with Nudge (DM) / Skip actions
-- Remove old two-section friend split (Free grid + Everyone Else)
+- Squad Dashboard: friends list at top, feature cards below (Streaks, IOUs, Birthdays) replacing underline tab switcher
+- IOU Expense Splitting: group bill splitting (even/custom amounts), per-person balances, manual settle
+- Birthday Calendar: birthday field in profile (shared with friends), upcoming birthdays card, birthday list screen
 
 ## Requirements
 
@@ -70,10 +68,19 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ Squad Goals streak with get_squad_streak SQL (sliding 4-week grace window) — v1.3
 - ✓ StreakCard in Goals tab with pull-to-refresh — v1.3
 - ✓ Positive-only streak copy, non-engineer reviewed — v1.3
+- ✓ Status pill in header with bottom sheet picker (replaces inline MoodPicker) — v1.3.5
+- ✓ Radar view: spatial bubble layout with heartbeat freshness indicators — v1.3.5
+- ✓ Card stack view: swipeable cards with Nudge (DM) / Skip actions — v1.3.5
+- ✓ Unified friends section with Radar/Cards view toggle — v1.3.5
+- ✓ Upcoming events section with horizontal scroll event cards — v1.3.5
+- ✓ Cover image support for plans (expo-image-picker + Supabase Storage) — v1.3.5
 
 ### Active
 
-(None — next milestone not yet planned)
+- [ ] Squad Dashboard with friends list + feature cards (replaces tab switcher)
+- [ ] IOU group expense splitting with per-person balances and manual settlement
+- [ ] Birthday field in profile, shared with friends
+- [ ] Upcoming birthdays dashboard card and birthday list screen
 
 ### Out of Scope
 
@@ -96,7 +103,7 @@ Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase 
 
 Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config).
 Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
-Supabase migrations: 0001–0011 (v1.3 added 0009 status liveness, 0010 friend-free loop, 0011 squad streak).
+Supabase migrations: 0001–0014 (v1.3 added 0009–0011, v1.3.5 added 0012 nudges, 0013 cover_image_url, 0014 plan-covers storage bucket).
 Edge Functions: `notify-plan-invite`, `notify-friend-free` (rate-limited fan-out).
 
 Known technical considerations:
@@ -157,4 +164,4 @@ Known technical considerations:
 | Hardware verification gate as final phase (v1.3 Phase 5) | Solo dev without Apple Dev account; consolidates all manual smoke tests into one session when account acquired | ✓ Good |
 
 ---
-*Last updated: 2026-04-10 after v1.3 milestone completion*
+*Last updated: 2026-04-12 after v1.4 milestone start*
