@@ -1,6 +1,6 @@
 // Phase 03 v1.3.5 — FriendSwipeCard (CARD-01, CARD-02, CARD-03).
 // Single animated card unit: visual layout (D-01 to D-05), pan gesture handler
-// (D-07, D-08, D-09, D-10), Nudge/Skip action buttons (D-14, D-15, D-16),
+// (D-07, D-08, D-09), Nudge/Skip action buttons (D-14, D-15, D-16),
 // and scroll conflict resolution.
 //
 // CardStackView mounts/unmounts this component as the front card changes.
@@ -42,10 +42,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // eslint-disable-next-line campfire/no-hardcoded-styles
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.35; // ~137px on 390px screen
 // eslint-disable-next-line campfire/no-hardcoded-styles
-const UNDO_THRESHOLD_Y = 80; // px downward before undo triggers
-// eslint-disable-next-line campfire/no-hardcoded-styles
-const UNDO_VELOCITY_Y = 500; // min velocity for undo
-// eslint-disable-next-line campfire/no-hardcoded-styles
 const MAX_ROTATE_DEG = 15; // degrees max rotation at screen edge
 
 // --- Gradient colors (left-to-right wash per D-04, 15-18% opacity) ---
@@ -73,14 +69,13 @@ const BUTTON_SIZE = 56; // action button circle diameter (not a spacing token)
 export interface SwipeCardProps {
   friend: FriendWithStatus;
   onSkip: () => void; // called after fly-off animation completes
-  onUndo: () => void; // called on downward swipe undo gesture
   // width controlled by parent (CardStackView passes 80% screen width per D-01)
   width: number;
 }
 
 // --- FriendSwipeCard ---
 
-export function FriendSwipeCard({ friend, onSkip, onUndo, width }: SwipeCardProps) {
+export function FriendSwipeCard({ friend, onSkip, width }: SwipeCardProps) {
   const router = useRouter();
   const [nudgeLoading, setNudgeLoading] = useState(false);
 
@@ -126,11 +121,6 @@ export function FriendSwipeCard({ friend, onSkip, onUndo, width }: SwipeCardProp
         translateX.value = withTiming(dir * SCREEN_WIDTH * 1.5, { duration: 280 }, () => {
           runOnJS(onSkip)(); // MUST use runOnJS — worklet→JS thread boundary
         });
-      } else if (e.translationY > UNDO_THRESHOLD_Y && e.velocityY > UNDO_VELOCITY_Y) {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-        rotate.value = withSpring(0);
-        runOnJS(onUndo)();
       } else {
         translateX.value = withSpring(0);
         translateY.value = withSpring(0);

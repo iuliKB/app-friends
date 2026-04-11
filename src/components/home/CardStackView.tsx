@@ -1,5 +1,5 @@
 // Phase 03 v1.3.5 — CardStackView (CARD-01, CARD-04, CARD-05).
-// Deck container: manages currentIndex + dismissedStack state, filters ALIVE/FADING
+// Deck container: manages currentIndex state, filters ALIVE/FADING
 // friends (CARD-04), renders 2-card stack depth effect (D-06), and displays the
 // counter label above the deck (CARD-05, D-12).
 //
@@ -46,7 +46,6 @@ export function CardStackView({ friends }: CardStackViewProps) {
 
   // Deck state
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [dismissedStack, setDismissedStack] = useState<FriendWithStatus[]>([]);
 
   // Empty deck guard (T-03-06 — prevents % 0 crash when all friends are DEAD)
   if (deck.length === 0) return null;
@@ -60,22 +59,9 @@ export function CardStackView({ friends }: CardStackViewProps) {
 
   // --- Skip handler: advance index with auto-loop (D-11) ---
   function handleSkip() {
-    if (deck.length > 0) {
-      setDismissedStack((prev) => [...prev, deck[currentIndex]!]);
-    }
     setCurrentIndex((prev) => {
       if (deck.length === 0) return 0;
       return (prev + 1) % deck.length; // modulo wrap — auto-loop at end
-    });
-  }
-
-  // --- Undo handler: restore previous card (D-10) ---
-  function handleUndo() {
-    if (dismissedStack.length === 0) return;
-    setDismissedStack((prev) => prev.slice(0, -1));
-    setCurrentIndex((prev) => {
-      if (deck.length === 0) return 0;
-      return (prev - 1 + deck.length) % deck.length;
     });
   }
 
@@ -110,7 +96,6 @@ export function CardStackView({ friends }: CardStackViewProps) {
                   <FriendSwipeCard
                     friend={friend}
                     onSkip={handleSkip}
-                    onUndo={handleUndo}
                     width={CARD_WIDTH}
                   />
                 </View>
