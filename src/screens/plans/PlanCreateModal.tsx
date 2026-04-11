@@ -17,6 +17,7 @@ import { Image } from 'expo-image';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
+import { usePlansStore } from '@/stores/usePlansStore';
 import { useFriends } from '@/hooks/useFriends';
 import { supabase } from '@/lib/supabase';
 import { uploadPlanCover } from '@/lib/uploadPlanCover';
@@ -142,6 +143,13 @@ export function PlanCreateModal() {
           .from('plans')
           .update({ cover_image_url: publicUrl })
           .eq('id', planId);
+        // Sync store so EventCard shows the image immediately
+        const store = usePlansStore.getState();
+        store.setPlans(
+          store.plans.map((p) =>
+            p.id === planId ? { ...p, cover_image_url: publicUrl } : p
+          )
+        );
       }
       setUploadingCover(false);
     }
