@@ -84,7 +84,7 @@ export function usePlanDetail(planId: string): {
         scheduled_for: planRow.scheduled_for as string | null,
         location: planRow.location as string | null,
         link_dump: planRow.link_dump as string | null,
-        iou_notes: planRow.iou_notes as string | null,
+        general_notes: planRow.general_notes as string | null,
         created_at: planRow.created_at as string,
         updated_at: planRow.updated_at as string,
         cover_image_url: planRow.cover_image_url as string | null,

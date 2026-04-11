@@ -351,7 +351,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
 
       {/* IOU Notes Section */}
       <View style={styles.section}>
-        <IOUNotesField planId={planId} initialValue={plan.iou_notes} />
+        <IOUNotesField planId={planId} initialValue={plan.general_notes} />
       </View>
 
       {/* Open Chat Button */}

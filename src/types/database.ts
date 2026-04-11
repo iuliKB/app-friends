@@ -137,7 +137,7 @@ export type Database = {
           scheduled_for: string | null;
           location: string | null;
           link_dump: string | null;
-          iou_notes: string | null;
+          general_notes: string | null;
           created_at: string;
           updated_at: string;
           cover_image_url: string | null;
@@ -149,7 +149,7 @@ export type Database = {
           scheduled_for?: string | null;
           location?: string | null;
           link_dump?: string | null;
-          iou_notes?: string | null;
+          general_notes?: string | null;
           created_at?: string;
           updated_at?: string;
           cover_image_url?: string | null;
@@ -161,7 +161,7 @@ export type Database = {
           scheduled_for?: string | null;
           location?: string | null;
           link_dump?: string | null;
-          iou_notes?: string | null;
+          general_notes?: string | null;
           created_at?: string;
           updated_at?: string;
           cover_image_url?: string | null;
@@ -410,6 +410,61 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      // Phase 5 v1.4 (migration 0015) — IOU expense splitting tables
+      iou_groups: {
+        Row: {
+          id: string;
+          created_by: string;
+          title: string;
+          total_amount_cents: number;
+          split_mode: 'even' | 'custom';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          created_by: string;
+          title: string;
+          total_amount_cents: number;
+          split_mode?: 'even' | 'custom';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          created_by?: string;
+          title?: string;
+          total_amount_cents?: number;
+          split_mode?: 'even' | 'custom';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      iou_members: {
+        Row: {
+          iou_group_id: string;
+          user_id: string;
+          share_amount_cents: number;
+          settled_at: string | null;
+          settled_by: string | null;
+        };
+        Insert: {
+          iou_group_id: string;
+          user_id: string;
+          share_amount_cents: number;
+          settled_at?: string | null;
+          settled_by?: string | null;
+        };
+        Update: {
+          iou_group_id?: string;
+          user_id?: string;
+          share_amount_cents?: number;
+          settled_at?: string | null;
+          settled_by?: string | null;
+        };
+        Relationships: [];
       };
     };
     Views: {

@@ -132,7 +132,7 @@ export function usePlans(): {
         scheduled_for: p.scheduled_for as string | null,
         location: p.location as string | null,
         link_dump: p.link_dump as string | null,
-        iou_notes: p.iou_notes as string | null,
+        general_notes: p.general_notes as string | null,
         created_at: p.created_at as string,
         updated_at: p.updated_at as string,
         cover_image_url: p.cover_image_url as string | null,

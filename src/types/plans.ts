@@ -5,7 +5,7 @@ export interface Plan {
   scheduled_for: string | null;
   location: string | null;
   link_dump: string | null;
-  iou_notes: string | null;
+  general_notes: string | null;
   created_at: string;
   updated_at: string;
   cover_image_url?: string | null;

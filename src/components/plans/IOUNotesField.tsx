@@ -31,7 +31,7 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
     setSaving(true);
     const { error } = await supabase
       .from('plans')
-      .update({ iou_notes: localText || null })
+      .update({ general_notes: localText || null })
       .eq('id', planId);
     setSaving(false);
     if (error) {
@@ -54,7 +54,7 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
             size={20}
             color={COLORS.text.secondary}
           />
-          <Text style={styles.headerTitle}>{'IOU Notes'}</Text>
+          <Text style={styles.headerTitle}>{'Notes'}</Text>
         </View>
         {saving && <ActivityIndicator size="small" color={COLORS.text.secondary} />}
       </TouchableOpacity>
@@ -67,7 +67,7 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
             value={localText}
             onChangeText={setLocalText}
             onBlur={handleBlur}
-            placeholder="Who owes who?"
+            placeholder="Add notes for this plan..."
             placeholderTextColor={COLORS.text.secondary}
             textAlignVertical="top"
           />
