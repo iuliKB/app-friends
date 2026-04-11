@@ -12,10 +12,14 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
 import { useFriends } from '@/hooks/useFriends';
+import { supabase } from '@/lib/supabase';
+import { uploadPlanCover } from '@/lib/uploadPlanCover';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { StatusPill } from '@/components/friends/StatusPill';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
@@ -57,6 +61,8 @@ export function PlanCreateModal() {
   const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(new Set());
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [coverImageUri, setCoverImageUri] = useState<string | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     fetchFriends().then(({ data }) => {
@@ -96,6 +102,19 @@ export function PlanCreateModal() {
     }
   }
 
+  async function pickCoverImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'], // D-15: camera roll only, no camera capture
+      allowsEditing: true,
+      aspect: [200, 140], // match EventCard aspect ratio
+      quality: 0.8, // compress before upload
+    });
+    const asset = result.assets?.[0];
+    if (!result.canceled && asset) {
+      setCoverImageUri(asset.uri);
+    }
+  }
+
   async function handleCreate() {
     if (!title.trim()) return;
 
@@ -111,6 +130,20 @@ export function PlanCreateModal() {
     if (error || !planId) {
       Alert.alert('Error', `Couldn't create plan. ${error?.message ?? 'Unknown error'}`);
       return;
+    }
+
+    // Upload cover image if selected (D-14)
+    if (coverImageUri && planId) {
+      setUploadingCover(true);
+      const publicUrl = await uploadPlanCover(planId, coverImageUri);
+      if (publicUrl) {
+        // Update the plan with the cover URL
+        await supabase
+          .from('plans')
+          .update({ cover_image_url: publicUrl })
+          .eq('id', planId);
+      }
+      setUploadingCover(false);
     }
 
     router.back();
@@ -166,6 +199,32 @@ export function PlanCreateModal() {
             placeholderTextColor={COLORS.text.secondary}
             autoCapitalize="words"
           />
+        </View>
+
+        {/* Cover image picker — D-14: optional */}
+        <View style={styles.fieldGroup}>
+          <Text style={styles.fieldLabel}>Cover Image (optional)</Text>
+          <TouchableOpacity
+            style={styles.coverImagePicker}
+            onPress={pickCoverImage}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={coverImageUri ? 'Change cover image' : 'Add cover image'}
+          >
+            {coverImageUri ? (
+              <Image
+                source={{ uri: coverImageUri }}
+                // eslint-disable-next-line campfire/no-hardcoded-styles
+                style={{ width: '100%', height: '100%', borderRadius: RADII.md }}
+                contentFit="cover"
+              />
+            ) : (
+              <View style={styles.coverImagePlaceholder}>
+                <Ionicons name="image-outline" size={28} color={COLORS.text.secondary} />
+                <Text style={styles.coverImagePlaceholderText}>Tap to add cover image</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Time field */}
@@ -229,8 +288,8 @@ export function PlanCreateModal() {
           <PrimaryButton
             title="Create Plan"
             onPress={handleCreate}
-            loading={creating}
-            disabled={!title.trim()}
+            loading={creating || uploadingCover}
+            disabled={!title.trim() || uploadingCover}
           />
         </View>
       </ScrollView>
@@ -282,6 +341,25 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
+  },
+  coverImagePicker: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    height: 100,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.surface.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: 'hidden',
+  },
+  coverImagePlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.xs,
+  },
+  coverImagePlaceholderText: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.text.secondary,
   },
   timeRow: {
     flexDirection: 'row',

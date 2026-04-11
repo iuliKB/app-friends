@@ -10,11 +10,14 @@ import {
 } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { usePlansStore } from '@/stores/usePlansStore';
+import { uploadPlanCover } from '@/lib/uploadPlanCover';
 import { RSVPButtons } from '@/components/plans/RSVPButtons';
 import { MemberList } from '@/components/plans/MemberList';
 import { LinkDumpField } from '@/components/plans/LinkDumpField';
@@ -43,6 +46,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [respondingInvite, setRespondingInvite] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   // Sync navigation header
   useEffect(() => {
@@ -121,6 +125,32 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
     ]);
   }
 
+  async function pickAndUploadCoverImage() {
+    if (!plan) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [200, 140],
+      quality: 0.8,
+    });
+    const asset = result.assets?.[0];
+    if (result.canceled || !asset) return;
+
+    setUploadingCover(true);
+    const publicUrl = await uploadPlanCover(plan.id, asset.uri);
+    if (publicUrl) {
+      const { error: updateError } = await updatePlanDetails({ cover_image_url: publicUrl });
+      if (updateError) {
+        Alert.alert('Error', "Couldn't update cover image.");
+      } else {
+        await refetch(); // Refresh plan data to show new cover
+      }
+    } else {
+      Alert.alert('Error', "Couldn't upload image. Please try again.");
+    }
+    setUploadingCover(false);
+  }
+
   if (loading && !plan) {
     return <LoadingIndicator />;
   }
@@ -140,6 +170,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const currentUserRsvp =
     plan.members.find((m) => m.user_id === session?.user?.id)?.rsvp ?? 'invited';
   const isInvited = currentUserRsvp === 'invited';
+  const isCreator = session?.user?.id === plan.created_by;
 
   async function handleAcceptInvite() {
     setRespondingInvite(true);
@@ -191,6 +222,39 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
           </View>
         </View>
       )}
+
+      {/* Cover image display and edit (creator only) — D-14 */}
+      {plan.cover_image_url ? (
+        <View style={styles.coverImageContainer}>
+          <Image
+            source={{ uri: plan.cover_image_url }}
+            style={styles.coverImage}
+            contentFit="cover"
+          />
+          {isCreator && (
+            <TouchableOpacity
+              style={styles.editCoverButton}
+              onPress={pickAndUploadCoverImage}
+              disabled={uploadingCover}
+              accessibilityLabel="Change cover image"
+            >
+              <Ionicons name="camera-outline" size={18} color={COLORS.text.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : isCreator ? (
+        <TouchableOpacity
+          style={styles.addCoverButton}
+          onPress={pickAndUploadCoverImage}
+          disabled={uploadingCover}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Add cover image"
+        >
+          <Ionicons name="image-outline" size={20} color={COLORS.text.secondary} />
+          <Text style={styles.addCoverButtonText}>Add cover image</Text>
+        </TouchableOpacity>
+      ) : null}
 
       {/* Details Section */}
       <View style={styles.section}>
@@ -321,6 +385,41 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     textAlign: 'center',
     paddingHorizontal: SPACING.xxl,
+  },
+  coverImageContainer: {
+    position: 'relative',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    height: 160,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: RADII.lg,
+  },
+  editCoverButton: {
+    position: 'absolute',
+    top: SPACING.sm,
+    right: SPACING.sm,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: RADII.full,
+    padding: SPACING.sm,
+  },
+  addCoverButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  addCoverButtonText: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.text.secondary,
   },
   section: {
     paddingHorizontal: SPACING.lg,
