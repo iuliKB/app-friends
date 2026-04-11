@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
 status: executing
-stopped_at: Completed 03-card-stack-view/03-02-PLAN.md
-last_updated: "2026-04-11T11:57:22.610Z"
+stopped_at: Completed 03-card-stack-view/03-03-PLAN.md
+last_updated: "2026-04-11T12:00:21.055Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 9
-  percent: 82
+  completed_plans: 10
+  percent: 91
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 Milestone: v1.3.5 Homescreen Redesign
 Phase: 03 (card-stack-view) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -77,6 +77,8 @@ Requirements covered: 23/23 mapped
 - [Phase 03-card-stack-view]: Card stack test scaffold uses same login/screenshot pattern as design-system.spec.ts; tests intentionally fail until CardStackView implemented in Plans 02-03
 - [Phase 03-02]: FADING opacity applied via static wrapper View (not useSharedValue) to avoid useNativeDriver conflict with animated transforms
 - [Phase 03-02]: nudgeLoading state disables Nudge button during async RPC call to prevent double-tap spam (T-03-04 DoS mitigation)
+- [Phase 03-card-stack-view]: FriendSwipeCard wrapped in View for zIndex — SwipeCardProps has no style prop; plan anticipated this pattern
+- [Phase 03-card-stack-view]: STACK_CONFIGS rendered in reverse order (lowest zIndex first) so front card paints on top in absolute stack
 
 ### Pending Todos
 
@@ -88,5 +90,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T11:57:22.606Z
-Stopped at: Completed 03-card-stack-view/03-02-PLAN.md
+Last session: 2026-04-11T12:00:21.051Z
+Stopped at: Completed 03-card-stack-view/03-03-PLAN.md
