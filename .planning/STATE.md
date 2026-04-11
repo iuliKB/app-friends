@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-04-11T22:30:41.649Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-04-11T22:33:25.369Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 05 (database-migrations) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -101,6 +101,8 @@ Requirements covered: 12/12 mapped
 - [Phase 05-01]: iou_groups and iou_members use SECURITY DEFINER helpers to prevent RLS self-recursion on iou_members SELECT policy
 - [Phase 05-01]: Relationships: [] required in TypeScript table types — omitting collapses all supabase-js Insert/Update types to never
 - [Phase 05-01]: plans.iou_notes renamed to general_notes atomically with client code update to prevent silent data loss
+- [Phase 05-02]: Birthday columns nullable (no NOT NULL, no DEFAULT) — birthday is optional; existing profile rows require no backfill
+- [Phase 05-02]: get_upcoming_birthdays() uses LANGUAGE sql STABLE SECURITY DEFINER; Feb 29 leap-year guard applied in both this-year and next-year branches of days_until calculation
 
 ### Roadmap Evolution
 
@@ -121,5 +123,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:30:41.646Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-04-11T22:33:25.365Z
+Stopped at: Completed 05-02-PLAN.md

@@ -24,9 +24,9 @@ Requirements for v1.4 milestone. Each maps to exactly one phase.
 
 ### Birthday Calendar
 
-- [ ] **BDAY-01**: User can add their birthday (month + day) to their profile, visible to friends
-- [ ] **BDAY-02**: User can view a list of friends' birthdays sorted by next occurrence
-- [ ] **BDAY-03**: Squad dashboard shows an upcoming birthdays card with count and nearest birthday
+- [x] **BDAY-01**: User can add their birthday (month + day) to their profile, visible to friends
+- [x] **BDAY-02**: User can view a list of friends' birthdays sorted by next occurrence
+- [x] **BDAY-03**: Squad dashboard shows an upcoming birthdays card with count and nearest birthday
 
 ## v1.5 Requirements (Deferred)
 
@@ -81,9 +81,9 @@ Explicitly excluded.
 | IOU-03 | Phase 9 | Complete |
 | IOU-04 | Phase 8 | Complete |
 | IOU-05 | Phase 9 | Complete |
-| BDAY-01 | Phase 6 | Pending |
-| BDAY-02 | Phase 7 | Pending |
-| BDAY-03 | Phase 7 | Pending |
+| BDAY-01 | Phase 6 | Complete |
+| BDAY-02 | Phase 7 | Complete |
+| BDAY-03 | Phase 7 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 12 total
