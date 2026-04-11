@@ -1,413 +1,542 @@
-# Architecture Research
+# Architecture: v1.4 Squad Dashboard & Social Tools
 
-**Domain:** React Native homescreen redesign — adding bottom sheet picker, Radar view, Card Stack view, view toggle, and status pill to an existing Expo + Supabase app
-**Researched:** 2026-04-10
-**Confidence:** HIGH (grounded entirely in repo inspection and verified library research)
-
----
-
-## Context: What Already Exists
-
-All findings verified by reading the actual codebase.
-
-| Asset | Status | Key facts |
-|-------|--------|-----------|
-| `HomeScreen.tsx` | EXISTS, 238 lines | ScrollView wrapper; renders `ReEngagementBanner`, `MoodPicker`, `freeFriends` FlatList, `otherFriends` FlatList |
-| `HomeFriendCard.tsx` | EXISTS, 149 lines | Grid card — handles tap → DM, long-press → action sheet |
-| `MoodPicker.tsx` | EXISTS, 228 lines | Inline 3-row mood selector with LayoutAnimation expand; calls `useStatus().setStatus()` |
-| `ReEngagementBanner.tsx` | EXISTS, 150 lines | Animated height banner when heartbeat is FADING; reads `useStatus()` |
-| `useStatus.ts` | EXISTS, 210 lines | Hydrates from `effective_status` view; exposes `currentStatus`, `heartbeatState`, `setStatus`, `touch` |
-| `useHomeScreen.ts` | EXISTS, 191 lines | Fetches `friends` array, computes `freeFriends`/`otherFriends` partitions, Realtime subscription |
-| `useStatusStore.ts` | EXISTS | Zustand — owns `currentStatus`, `setCurrentStatus`, `updateLastActive`, `clear` |
-| `useHomeStore.ts` | EXISTS | Zustand — owns `friends[]`, `lastActiveAt`, `lastFetchedAt` |
-| `heartbeat.ts` | EXISTS | Pure `computeHeartbeatState(expiresAt, lastActiveAt)` — mirrors SQL view logic |
-| `windows.ts` | EXISTS | `getWindowOptions()`, `computeWindowExpiry()`, `formatWindowLabel()` |
-| `src/theme/` | EXISTS | 6 token files: colors, spacing, radii, shadows, typography, barrel export |
-| `react-native-reanimated` | v4.2.1 (Expo SDK 55) | Already installed, pre-bundled in Expo Go |
-| `react-native-gesture-handler` | v2.30.0 | Already installed, pre-bundled in Expo Go |
-| `AsyncStorage` | EXISTS | Used for notification toggle preference — established pattern for per-device persistence |
-
-**Critical library finding:** `@gorhom/bottom-sheet` v5 (the current release as of April 2026) supports Reanimated v1–3 only. It is NOT compatible with Reanimated v4. The project runs Reanimated v4.2.1. Installing `@gorhom/bottom-sheet` would create a version conflict with no working resolution. The correct approach is a custom `Modal`-based bottom sheet — which also satisfies the existing "no UI libraries" constraint.
+**Project:** Campfire v1.4
+**Researched:** 2026-04-11
+**Scope:** IOU expense splitting, birthday calendar, Squad dashboard redesign
 
 ---
 
-## Standard Architecture
+## Existing Architecture Baseline
 
-### System Overview
+### File-system conventions (established)
+
+- `src/app/(tabs)/` — Expo Router tab screens (one file per tab)
+- `src/screens/` — Full screen components rendered by app/ route files
+- `src/components/<domain>/` — Domain-bucketed presentational components
+- `src/hooks/use<Feature>.ts` — Data hooks; direct Supabase queries, no shared cache layer
+- `src/stores/use<Name>Store.ts` — Zustand, ephemeral UI state only (never server data)
+- `src/types/app.ts` — All shared TypeScript types
+
+### Existing tables (migrations 0001–0014)
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         HomeScreen.tsx                               │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │  Header row: ScreenHeader title + StatusPill (tappable)      │   │
-│  ├──────────────────────────────────────────────────────────────┤   │
-│  │  ViewToggle (Radar | Cards) — persisted to AsyncStorage      │   │
-│  ├──────────────────────────────────────────────────────────────┤   │
-│  │  RadarView  OR  CardStackView                                │   │
-│  │  (both receive same friends[] from useHomeScreen)            │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │  StatusPickerSheet (Modal, rendered at root level)           │   │
-│  │  Contains: MoodPicker logic (lifted into sheet)              │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────────────────────┤
-│                           Hooks Layer                                │
-│  useHomeScreen  ──→  useHomeStore  (friends[], lastActiveAt)        │
-│  useStatus      ──→  useStatusStore (currentStatus, heartbeatState) │
-│  useViewMode    ──→  useHomeStore extended (viewMode, setViewMode)  │
-├─────────────────────────────────────────────────────────────────────┤
-│                        Supabase / AsyncStorage                       │
-│  effective_status view  ·  statuses table  ·  AsyncStorage (mode)  │
-└─────────────────────────────────────────────────────────────────────┘
+profiles          id, username, display_name, avatar_url, created_at, updated_at
+friendships       id, requester_id, addressee_id, status, created_at, updated_at
+statuses          user_id, status, context_tag, updated_at
+plans             id, created_by, title, scheduled_for, location, link_dump,
+                  iou_notes, cover_image_url, created_at, updated_at
+plan_members      plan_id, user_id, rsvp, joined_at
+dm_channels       id, user_a, user_b, created_at
+messages          id, plan_id|dm_channel_id, sender_id, body, created_at
+push_tokens       (push token lifecycle)
+free_notifications_sent  (rate-limit table)
+squad_streaks     (streak tracking)
+nudges            (nudge tracking)
 ```
 
-### Component Responsibilities
-
-| Component | Responsibility | New or Modified |
-|-----------|----------------|-----------------|
-| `HomeScreen.tsx` | Orchestrator — composes header, toggle, active view, sheet | Modified (major) |
-| `StatusPill.tsx` | Header element showing own mood + heartbeat ring; tap → open sheet | New |
-| `ViewToggle.tsx` | Two-button segment (Radar / Cards); reads + writes `viewMode` | New |
-| `RadarView.tsx` | Spatial bubble layout using absolute positioning; top 6 + overflow scroll | New |
-| `CardStackView.tsx` | Swipeable card-per-friend with Nudge / Skip actions | New |
-| `StatusPickerSheet.tsx` | Modal-based bottom sheet wrapping MoodPicker logic | New |
-| `MoodPicker.tsx` | Unchanged internals — either deleted from HomeScreen or lifted into sheet | Modified (location only) |
-| `ReEngagementBanner.tsx` | Remove from HomeScreen; its FADING-state nudge is handled by the pill | Removed |
-| `HomeFriendCard.tsx` | Used inside RadarView bubbles and potentially CardStackView cards | Unchanged or minor |
+Established patterns (must be followed in new migrations):
+- SECURITY DEFINER RPCs for cross-table queries that would cause RLS recursion
+- `least()/greatest()` canonical pairs for symmetric relationships
+- `update_updated_at()` trigger reused on every table with `updated_at`
+- All hooks call Supabase directly — no abstraction layer, no shared cache
+- Stores hold only ephemeral UI state, never server data
+- RLS enabled on every table immediately after CREATE TABLE
+- `(SELECT auth.uid())` — not bare `auth.uid()` — in all policy predicates
 
 ---
 
-## Recommended Project Structure
+## Feature 1: Squad Dashboard Redesign
+
+### What changes
+
+The current `squad.tsx` renders a `SquadTabSwitcher` (Friends | Goals tabs) and conditionally mounts `FriendsList` or `StreakCard`. v1.4 replaces the tab switcher with a single scrollable dashboard.
+
+### New layout structure
 
 ```
-src/
-├── screens/
-│   └── home/
-│       └── HomeScreen.tsx          # rewritten orchestrator
-├── components/
-│   └── home/
-│       ├── HomeFriendCard.tsx      # existing — unchanged
-│       ├── ReEngagementBanner.tsx  # existing — DELETED from HomeScreen render
-│       ├── StatusPill.tsx          # NEW
-│       ├── ViewToggle.tsx          # NEW
-│       ├── RadarView.tsx           # NEW
-│       └── CardStackView.tsx       # NEW
-├── components/
-│   └── status/
-│       ├── MoodPicker.tsx          # existing — rendered inside sheet, not inline
-│       └── StatusPickerSheet.tsx   # NEW
-├── hooks/
-│   └── useHomeScreen.ts            # existing — unchanged (still provides friends[])
-├── stores/
-│   └── useHomeStore.ts             # modified — add viewMode + setViewMode
-└── lib/
-    └── viewMode.ts                 # NEW — AsyncStorage key + read/write helpers
+Squad tab (squad.tsx)
+  SquadDashboardScreen
+    ScrollView (full-screen)
+      FriendsBar                (horizontal avatar+name scroll)
+      StreakCard                (existing component, unchanged)
+      IOUDashboardCard          (new — net balance summary + "View all" tap)
+      BirthdayDashboardCard     (new — next birthday + "View all" tap)
 ```
 
-### Structure Rationale
+The tab switcher (`SquadTabSwitcher.tsx`) is removed. The Goals concept dissolves into feature cards within the dashboard.
 
-- **`components/home/`** owns all home-specific visual components; Radar and Cards live here alongside the existing `HomeFriendCard`.
-- **`components/status/`** already holds `MoodPicker` and mood presets; `StatusPickerSheet` belongs there as it is the status-setting surface.
-- **`stores/useHomeStore`** is the natural place for `viewMode` since it already owns the home screen's data state and is the only store `useHomeScreen` writes to.
-- **`lib/viewMode.ts`** isolates AsyncStorage key and serialization — same pattern as `lib/morningPrompt.ts` and `lib/expiryScheduler.ts`.
+### Modified files
+
+| File | Change |
+|------|--------|
+| `src/app/(tabs)/squad.tsx` | Full rewrite: remove tab state, mount `SquadDashboardScreen` |
+
+### Deleted files
+
+| File | Reason |
+|------|--------|
+| `src/components/squad/SquadTabSwitcher.tsx` | No longer needed |
+
+### New files
+
+| File | Purpose |
+|------|---------|
+| `src/screens/squad/SquadDashboardScreen.tsx` | Owns scroll + all section hook instances, passes data to cards |
+| `src/components/squad/FriendRowCompact.tsx` | Horizontal-scroll avatar+name chip for friends bar |
+| `src/components/squad/IOUDashboardCard.tsx` | Summary card: net balance display, taps to IOU list |
+| `src/components/squad/BirthdayDashboardCard.tsx` | Summary card: next birthday name+date, taps to birthday list |
+
+### Data ownership
+
+`SquadDashboardScreen` is the single owner of all hooks:
+- `useFriends()` — friends bar (existing hook, already written)
+- `useStreakData()` — streak card (existing hook, already written)
+- `useIOUSummary()` — IOU summary (new hook, see Feature 2)
+- `useUpcomingBirthdays()` — birthday card (new hook, see Feature 3)
+
+Data flows down as props. No new Zustand stores needed.
 
 ---
 
-## Architectural Patterns
+## Feature 2: IOU Expense Splitting
 
-### Pattern 1: Custom Modal-Based Bottom Sheet (no third-party library)
+### Data model
 
-**What:** A `Modal` component wrapping a `View` that slides up with `Animated.timing`. Backdrop is a semi-transparent `Pressable` that dismisses on tap. The sheet is rendered at the root of `HomeScreen` (outside the `ScrollView`) so it overlays everything including the tab bar.
+**New migration: `0015_iou_groups.sql`**
 
-**When to use:** Any time `@gorhom/bottom-sheet` would be the instinct — but the project runs Reanimated v4 which is incompatible with that library's current release.
+```sql
+-- An IOU group represents one expense split event.
+-- Not plan-scoped — this is a squad-level feature.
+CREATE TABLE public.iou_groups (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_by   uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title        text NOT NULL,
+  total_amount numeric(10,2) NOT NULL CHECK (total_amount > 0),
+  currency     text NOT NULL DEFAULT 'USD',
+  split_mode   text NOT NULL DEFAULT 'even'
+               CHECK (split_mode IN ('even', 'custom')),
+  settled      boolean NOT NULL DEFAULT false,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.iou_groups ENABLE ROW LEVEL SECURITY;
 
-**Trade-offs:** Less polish than `@gorhom/bottom-sheet` (no spring-physics snap, no drag-to-dismiss gesture) but zero dependency risk, works in Expo Go, fits the "no UI libraries" constraint. Drag-to-dismiss can be added later using the existing `react-native-gesture-handler` (already installed).
-
-**Example shape:**
-
-```typescript
-// src/components/status/StatusPickerSheet.tsx
-interface StatusPickerSheetProps {
-  visible: boolean;
-  onClose: () => void;
-}
-
-export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) {
-  const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
-
-  useEffect(() => {
-    Animated.timing(translateY, {
-      toValue: visible ? 0 : SHEET_HEIGHT,
-      duration: 280,
-      useNativeDriver: true,
-    }).start();
-  }, [visible]);
-
-  return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      {/* Backdrop */}
-      <Pressable style={styles.backdrop} onPress={onClose} />
-      {/* Sheet */}
-      <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
-        <MoodPicker onCommit={onClose} />
-      </Animated.View>
-    </Modal>
-  );
-}
+-- One row per participant.
+-- amount_owed = what this person owes to the payer (creator).
+-- amount_owed = 0 for the creator (they paid, owe nothing to themselves).
+CREATE TABLE public.iou_members (
+  iou_group_id  uuid NOT NULL REFERENCES public.iou_groups(id) ON DELETE CASCADE,
+  user_id       uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  amount_owed   numeric(10,2) NOT NULL DEFAULT 0 CHECK (amount_owed >= 0),
+  settled       boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (iou_group_id, user_id)
+);
+ALTER TABLE public.iou_members ENABLE ROW LEVEL SECURITY;
 ```
 
-`MoodPicker` needs one new optional prop `onCommit?: () => void` — called after `handleWindowPress` succeeds so the sheet auto-closes on commit. This is a minimal addition to the existing component.
+**RLS policies:**
 
-### Pattern 2: Radar View — Pre-Computed Absolute Positioning
-
-**What:** A fixed-height `View` (e.g., 320dp) with `position: 'relative'`. Each friend bubble is a `View` with `position: 'absolute'` and pre-computed `top`/`left` values. The first 6 friends fill designated "orbits"; overflow friends appear in a horizontal `FlatList` below.
-
-**When to use:** Any spatial "who's around" layout that doesn't need physics or drag. Status-freshness rings can be done with `borderColor` + `opacity` using existing `computeHeartbeatState`.
-
-**Trade-offs:** Simple, no library. Positions are deterministic (not physics-simulated), which means consistent layout that doesn't "jitter" on re-render. If animated placement is wanted later, Reanimated shared values can replace the static `top`/`left`.
-
-**Example coordinate scheme (6 positions):**
-
-```typescript
-// Positions relative to a 320×300 canvas, centre = (160, 150)
-const RADAR_SLOTS: { top: number; left: number }[] = [
-  { top: 20,  left: 130 },  // top centre
-  { top: 80,  left: 230 },  // top right
-  { top: 180, left: 230 },  // bottom right
-  { top: 220, left: 130 },  // bottom centre
-  { top: 180, left: 30  },  // bottom left
-  { top: 80,  left: 30  },  // top left
-];
+```
+iou_groups  SELECT: EXISTS (iou_members where iou_group_id = id AND user_id = auth.uid())
+iou_groups  INSERT: created_by = (SELECT auth.uid())
+iou_groups  UPDATE: created_by = (SELECT auth.uid())  -- only creator edits title/amount/settled
+iou_members SELECT: EXISTS (same subquery as above — any member sees all members of their groups)
+iou_members UPDATE: user_id = (SELECT auth.uid())     -- own settled flag only
 ```
 
-The `friends` array from `useHomeScreen` is sliced to `friends.slice(0, 6)` for the radar. Remaining friends go into a `FlatList` with `horizontal` below the canvas.
+**Triggers:**
+- `update_updated_at` on `iou_groups` (reuse existing function — no new function needed)
+- No auto-settle trigger: mark `iou_groups.settled` manually (creator action). Automatic settling adds trigger complexity for marginal UX gain.
 
-### Pattern 3: View Toggle State — Zustand Slice + AsyncStorage Persistence
+**RPC: `get_iou_summary()`** — SECURITY DEFINER required because the SELECT policy on `iou_groups` uses an `iou_members` subquery, and a view would cause RLS recursion in the same way `get_friends()` was needed.
 
-**What:** Add `viewMode: 'radar' | 'cards'` and `setViewMode(mode)` to `useHomeStore`. On app start, `useHomeScreen` (or a dedicated `useViewMode` hook) reads the persisted value from AsyncStorage and hydrates the store. On change, `setViewMode` writes to AsyncStorage.
+```sql
+-- Returns one row per group the caller is a member of.
+-- net_balance > 0: caller is owed money (they are the creator/payer).
+-- net_balance < 0: caller owes money.
+-- net_balance = 0: caller's row has amount_owed = 0 and they are the payer.
+CREATE OR REPLACE FUNCTION public.get_iou_summary()
+RETURNS TABLE (
+  iou_group_id  uuid,
+  title         text,
+  total_amount  numeric,
+  currency      text,
+  net_balance   numeric,
+  settled       boolean,
+  created_at    timestamptz
+)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT
+    g.id AS iou_group_id,
+    g.title,
+    g.total_amount,
+    g.currency,
+    -- If caller is creator: what others owe them (sum of others' amounts_owed)
+    -- If caller is participant: negative of their own amount_owed
+    CASE
+      WHEN g.created_by = (SELECT auth.uid()) THEN
+        COALESCE((
+          SELECT SUM(m2.amount_owed)
+          FROM public.iou_members m2
+          WHERE m2.iou_group_id = g.id
+            AND m2.user_id <> (SELECT auth.uid())
+            AND NOT m2.settled
+        ), 0)
+      ELSE
+        -m.amount_owed
+    END AS net_balance,
+    g.settled,
+    g.created_at
+  FROM public.iou_groups g
+  JOIN public.iou_members m ON m.iou_group_id = g.id AND m.user_id = (SELECT auth.uid())
+  ORDER BY g.created_at DESC;
+$$;
+```
 
-**When to use:** Any UI preference that should survive app restarts but doesn't need server sync.
+**Indexes:**
+```sql
+CREATE INDEX idx_iou_members_user ON public.iou_members(user_id);
+CREATE INDEX idx_iou_members_group ON public.iou_members(iou_group_id);
+CREATE INDEX idx_iou_groups_created_by ON public.iou_groups(created_by);
+```
 
-**Trade-offs:** Synchronous Zustand reads are fast; AsyncStorage writes are fire-and-forget. The first render uses the Zustand default (e.g., `'radar'`); the hydrated value arrives within a few milliseconds before any user interaction. No flicker risk in practice at this app's scale.
+### Hooks: new
 
-**Why not local state in HomeScreen:** The view mode should survive navigation away and back (e.g., user visits Squad, returns to Home — the toggle should stay where they left it). Zustand persists across React unmounts within the session; AsyncStorage persists across restarts.
+| Hook | Returns | Source |
+|------|---------|--------|
+| `useIOUSummary()` | `{ totalOwed, totalOwing, groups[], loading, error, refetch }` | `get_iou_summary()` RPC |
+| `useIOUDetail(groupId: string)` | `{ group, members[], loading, error, refetch }` | Direct table + join query |
 
-**Why not a separate `useViewModeStore`:** `useHomeStore` already owns home screen UI state (`lastFetchedAt`, `lastActiveAt`). Adding two fields there keeps the store count flat and follows the existing pattern.
+`useIOUSummary` is consumed by `SquadDashboardScreen` for `IOUDashboardCard`.
+`useIOUDetail` is consumed by the IOU detail screen.
 
-### Pattern 4: Status Pill — Direct useStatusStore Read
+Neither hook uses Realtime — IOU writes are low-frequency, pull-to-refresh is sufficient.
 
-**What:** A header-area component that reads `currentStatus` and `heartbeatState` directly from `useStatusStore` (not via `useStatus` hook — no Supabase calls needed, store is already hydrated). Tapping the pill calls a local `setSheetVisible(true)` in `HomeScreen`.
+### Screens: new
 
-**When to use:** Any component that needs to display already-cached status without triggering a refetch.
+| Route | File | Purpose |
+|-------|------|---------|
+| `/squad/ious` | `src/app/squad/ious/index.tsx` | FlatList of all IOUs with net balance per group |
+| `/squad/ious/[id]` | `src/app/squad/ious/[id].tsx` | Group detail: members, amounts, settle actions |
+| `/squad/ious/create` | `src/app/squad/ious/create.tsx` | Create IOU: title, amount, split mode, members |
 
-**Trade-offs:** The pill is purely display. It stays reactive because Zustand subscriptions are fine-grained — any `setCurrentStatus` call from anywhere (profile screen, notification handler) updates the pill instantly.
+These are stack routes under `src/app/squad/` — same pattern as `src/app/friends/`.
+
+```
+src/app/squad/
+  ious/
+    _layout.tsx    (Stack layout)
+    index.tsx
+    [id].tsx
+    create.tsx
+```
+
+### Components: new
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| `IOUDashboardCard` | `src/components/squad/IOUDashboardCard.tsx` | Summary on dashboard: "You're owed $X / You owe $Y" |
+| `IOUGroupRow` | `src/components/squad/IOUGroupRow.tsx` | FlatList row: title, net balance, settled badge |
+| `IOUMemberRow` | `src/components/squad/IOUMemberRow.tsx` | Detail row: avatar, name, amount, settle toggle |
+| `IOUSplitField` | `src/components/squad/IOUSplitField.tsx` | Amount input + split mode toggle (even/custom) during create |
+
+### Interaction patterns
+
+**Creating an IOU:**
+1. Creator picks friends from `useFriends()` result (checkbox list — reuse `AvatarCircle`)
+2. Enters total amount and title
+3. Chooses split mode (even or custom per-person)
+4. On submit: INSERT `iou_groups`, then INSERT `iou_members` for each person in a single transaction (wrap in RPC or sequential inserts with error handling)
+5. Dashboard refetches on screen focus via `useCallback` + `useFocusEffect` (same pattern as existing screens)
+
+**Even split calculation:** `total_amount / participant_count`, rounded to 2 decimal places. Any cent remainder (from rounding) is absorbed by the creator's own row (displayed as $0.00 owed since they paid). Calculate on client, store computed values in `amount_owed`.
+
+**Custom split:** Creator enters each person's amount. Client validates that the sum equals `total_amount` before submit. Show inline error if mismatch.
+
+**Settling:** Each member can mark their own `iou_members.settled = true` (UPDATE on own row). Creator can mark `iou_groups.settled = true` to close the whole group. No payment processing — manual acknowledgment only.
+
+### IOU and existing `iou_notes` field
+
+The current `plans.iou_notes` free-text field in `PlanDashboardScreen` is not replaced. It remains as-is. Structured IOUs are squad-level, not plan-scoped. Both coexist; no migration to `iou_notes` is needed.
 
 ---
 
-## Data Flow
+## Feature 3: Birthday Calendar
 
-### Status Update Flow (new — via bottom sheet)
+### Data model
 
-```
-User taps StatusPill
-    ↓
-HomeScreen sets sheetVisible = true
-    ↓
-StatusPickerSheet renders (Modal slides up)
-    ↓
-User selects mood + tag + window in MoodPicker
-    ↓
-MoodPicker.handleWindowPress → useStatus().setStatus(mood, tag, windowId)
-    ↓
-supabase.from('statuses').upsert(...)  [server confirmation]
-    ↓
-setCurrentStatus({...}) updates useStatusStore
-    ↓
-StatusPill re-renders with new mood (Zustand subscription)
-MoodPicker collapses via existing useEffect on currentStatus change
-MoodPicker calls onCommit() → sheet closes
+**New migration: `0016_birthdays.sql`**
+
+```sql
+-- Birthday stored as month + day only.
+-- Year is optional and private (not exposed to friends — no age disclosure).
+ALTER TABLE public.profiles
+  ADD COLUMN birthday_month smallint CHECK (birthday_month BETWEEN 1 AND 12),
+  ADD COLUMN birthday_day   smallint CHECK (birthday_day BETWEEN 1 AND 31),
+  ADD COLUMN birthday_year  smallint;  -- optional, private
 ```
 
-### Friend List → View Rendering Flow
+No new table. Birthday lives in `profiles`.
 
-```
-useHomeScreen (unchanged)
-    ↓
-friends: FriendWithStatus[]  (stored in useHomeStore)
-    ↓
-HomeScreen reads viewMode from useHomeStore
-    ↓
-viewMode === 'radar'  →  <RadarView friends={friends} />
-viewMode === 'cards'  →  <CardStackView friends={friends} />
+**Existing RLS coverage (no new policies needed):**
+- `profiles_select_authenticated`: any authenticated user can read all profiles — already covers the new columns.
+- `profiles_update_own`: user can only update own row — birthday columns are protected automatically.
+- `birthday_year` is readable by friends (same policy), but the UI never displays it to them — it is for potential future "age" features. If privacy is a concern, `birthday_year` can be excluded from any RPC that fans data to friends.
+
+**RPC: `get_upcoming_birthdays(days_ahead int DEFAULT 30)`** — SECURITY DEFINER because it joins `profiles` (public, fine) with `friendships` (would cause RLS recursion if done in a view).
+
+```sql
+-- Returns friends whose birthday (month+day only) falls within the next N days.
+-- Handles year wrap-around (Dec 25 to Jan 3 is 9 days, not 351 days).
+CREATE OR REPLACE FUNCTION public.get_upcoming_birthdays(days_ahead int DEFAULT 30)
+RETURNS TABLE (
+  friend_id      uuid,
+  display_name   text,
+  avatar_url     text,
+  birthday_month smallint,
+  birthday_day   smallint,
+  days_until     int
+)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = ''
+AS $$
+  WITH friends AS (
+    SELECT
+      CASE WHEN f.requester_id = (SELECT auth.uid()) THEN f.addressee_id
+           ELSE f.requester_id END AS friend_id
+    FROM public.friendships f
+    WHERE (f.requester_id = (SELECT auth.uid()) OR f.addressee_id = (SELECT auth.uid()))
+      AND f.status = 'accepted'
+  ),
+  birthday_dates AS (
+    SELECT
+      p.id AS friend_id,
+      p.display_name,
+      p.avatar_url,
+      p.birthday_month,
+      p.birthday_day,
+      -- This year's birthday
+      make_date(EXTRACT(YEAR FROM now())::int, p.birthday_month, p.birthday_day) AS this_year_bday
+    FROM public.profiles p
+    JOIN friends f ON f.friend_id = p.id
+    WHERE p.birthday_month IS NOT NULL AND p.birthday_day IS NOT NULL
+  )
+  SELECT
+    friend_id,
+    display_name,
+    avatar_url,
+    birthday_month,
+    birthday_day,
+    -- If this year's birthday already passed, use next year's
+    CASE
+      WHEN this_year_bday >= CURRENT_DATE THEN (this_year_bday - CURRENT_DATE)
+      ELSE (make_date(EXTRACT(YEAR FROM now())::int + 1, birthday_month, birthday_day) - CURRENT_DATE)
+    END AS days_until
+  FROM birthday_dates
+  WHERE
+    CASE
+      WHEN this_year_bday >= CURRENT_DATE THEN (this_year_bday - CURRENT_DATE)
+      ELSE (make_date(EXTRACT(YEAR FROM now())::int + 1, birthday_month, birthday_day) - CURRENT_DATE)
+    END <= days_ahead
+  ORDER BY days_until ASC;
+$$;
 ```
 
-Both views receive the same `friends[]` array. No new Supabase queries. No new hooks for data fetching.
+Note: `make_date` with Feb 29 birthdays in non-leap years will error. Handle this with a `EXCEPTION WHEN` block or by normalizing Feb 29 → Feb 28 at insert time (simpler: restrict `birthday_day` to 28 if `birthday_month = 2` in client validation).
 
-### View Mode Persistence Flow
+### Hooks: new
 
-```
-App start
-    ↓
-useHomeScreen mounts → reads AsyncStorage('home_view_mode')
-    ↓
-Calls useHomeStore.setViewMode(persisted | 'radar')
-    ↓
-HomeScreen renders correct view immediately
-    ↓
-User taps ViewToggle
-    ↓
-useHomeStore.setViewMode(newMode) → AsyncStorage.setItem (fire-and-forget)
-```
+| Hook | Returns | Source |
+|------|---------|--------|
+| `useUpcomingBirthdays(daysAhead?: number)` | `{ birthdays[], loading, error, refetch }` | `get_upcoming_birthdays()` RPC |
+
+### Screens: new
+
+| Route | File | Purpose |
+|-------|------|---------|
+| `/squad/birthdays` | `src/app/squad/birthdays/index.tsx` | Full birthday list, chronological (days until) |
+
+### Components: new
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| `BirthdayDashboardCard` | `src/components/squad/BirthdayDashboardCard.tsx` | Shows next 1–2 birthdays on dashboard |
+| `BirthdayRow` | `src/components/squad/BirthdayRow.tsx` | FlatList row: avatar, name, "Month Day" or "Today!" |
+
+### Profile edit integration
+
+Birthday is added to `src/app/profile/edit.tsx`:
+- Month (1–12) and Day (1–31) number inputs, clearly labeled
+- Optional — user can clear by setting both to null
+- No birth year field in the UI (omit to avoid age disclosure)
+- Save writes `birthday_month` and `birthday_day` to `profiles` alongside existing `display_name` + `avatar_url` updates
+- `FormField` from `src/components/common/FormField.tsx` handles the input wrapper
+
+**Modified file:** `src/app/profile/edit.tsx` — add birthday month/day fields below display name section. No new component needed.
 
 ---
 
-## Integration Points — New vs Modified
+## Navigation Integration
 
-### New Components
+### New route directories
 
-| File | What it does | Integration seam |
-|------|-------------|-----------------|
-| `StatusPill.tsx` | Shows own mood pill + heartbeat indicator | Rendered in HomeScreen header row, replaces the bare `ScreenHeader` |
-| `ViewToggle.tsx` | Two-segment control (Radar / Cards) | Rendered below header, reads/writes `useHomeStore.viewMode` |
-| `RadarView.tsx` | Spatial bubble canvas | Rendered in HomeScreen body when `viewMode === 'radar'`; receives `friends[]` |
-| `CardStackView.tsx` | Swipeable card deck | Rendered in HomeScreen body when `viewMode === 'cards'`; receives `friends[]` |
-| `StatusPickerSheet.tsx` | Modal bottom sheet wrapping MoodPicker | Rendered at HomeScreen root (outside ScrollView), controlled by `sheetVisible` local state |
-| `lib/viewMode.ts` | AsyncStorage helpers for view mode | Used by `useHomeScreen` on mount; by `useHomeStore.setViewMode` on write |
+Expo Router file-based routing. Follows the same pattern as `src/app/friends/`.
 
-### Modified Components
+```
+src/app/squad/
+  ious/
+    _layout.tsx      Stack layout for IOU sub-routes
+    index.tsx        IOU list
+    [id].tsx         IOU detail
+    create.tsx       Create IOU
+  birthdays/
+    index.tsx        Birthday list
+```
 
-| File | What changes | What stays the same |
-|------|-------------|---------------------|
-| `HomeScreen.tsx` | Removes MoodPicker, ReEngagementBanner, freeFriends/otherFriends FlatLists, scroll-to-picker logic; adds StatusPill, ViewToggle, RadarView/CardStackView switch, StatusPickerSheet | FAB, RefreshControl, error state, empty state |
-| `MoodPicker.tsx` | Adds optional `onCommit?: () => void` prop; called after successful window commit | All existing mood/preset/window logic unchanged |
-| `useHomeStore.ts` | Adds `viewMode: 'radar' | 'cards'` field + `setViewMode(mode)` action | Existing `friends`, `lastActiveAt`, `lastFetchedAt`, `setFriends` unchanged |
-| `useHomeScreen.ts` | Adds one-time AsyncStorage read on mount to hydrate `viewMode` | All friend fetching, realtime, refresh logic unchanged |
+### Tab badge
 
-### Removed from HomeScreen (not deleted — just no longer rendered there)
-
-| Asset | Disposition |
-|-------|------------|
-| `<MoodPicker />` | Moved inside `StatusPickerSheet` |
-| `<ReEngagementBanner />` | Removed entirely — the StatusPill's FADING visual state (opacity ring, different color) replaces this prompt. The pill is always visible, so the heartbeat state is always communicated. |
-| `freeFriends` / `otherFriends` FlatLists | Replaced by `RadarView` and `CardStackView` |
-| `scrollRef` + `moodPickerYRef` scroll-to-picker logic | Obsolete once MoodPicker is in the sheet |
-| `deadOnOpenRef` / `showDeadHeading` | Obsolete — the pill communicates DEAD state directly |
-| 60s `setHeartbeatTick` interval | Keep in HomeScreen — RadarView and CardStackView still need heartbeat re-evaluation |
+The Squad tab badge currently shows pending friend request count via `usePendingRequestsCount`. No new badge is needed for IOUs or birthdays. These are passive information features, not action items requiring a badge.
 
 ---
 
-## Build Order (Dependency-Aware)
+## Build Order
 
-Dependencies flow in one direction. Each step is independently shippable once its prerequisites are done.
+Dependencies drive order. Each stage produces something the next can consume.
 
-### Step 1 — Status Pill + Sheet (no friends view changes yet)
+**Stage 1: Database migrations (prerequisite for all client work)**
 
-**Builds:** `StatusPill.tsx`, `StatusPickerSheet.tsx`, `MoodPicker.tsx` (add `onCommit`).
+1. `0015_iou_groups.sql` — IOU tables, RLS, indexes, `get_iou_summary()` RPC
+2. `0016_birthdays.sql` — Add birthday columns to profiles, `get_upcoming_birthdays()` RPC
 
-**Changes to HomeScreen:** Add StatusPill to header area. Add StatusPickerSheet at root. Wire `sheetVisible` local state. Remove inline `<MoodPicker />`. Remove `ReEngagementBanner`.
+Apply both before any client code changes. No client code depends on the other migration's order.
 
-**Why first:** The pill and sheet replace two of the three major existing components (`MoodPicker` + `ReEngagementBanner`). Once this is done, the HomeScreen is simplified and the remaining work (views) can land on top of a cleaner base. The sheet also establishes the Modal animation pattern that is reusable.
+**Stage 2: Birthday field in Profile Edit**
 
-**Validation:** Tapping the pill opens the sheet. Committing a status closes the sheet and updates the pill. FADING/DEAD states visible in the pill.
+- `0016_birthdays.sql` already applied (Stage 1)
+- Add month/day inputs to `src/app/profile/edit.tsx`
+- Verify save/load round-trip in isolation
 
-### Step 2 — View Toggle + Radar View
+No hooks, screens, or navigation changes required. Validates the column works before building the calendar view.
 
-**Builds:** `ViewToggle.tsx`, `RadarView.tsx`, `lib/viewMode.ts`.
+**Stage 3: Birthday calendar feature**
 
-**Changes to:** `useHomeStore.ts` (add `viewMode`), `useHomeScreen.ts` (hydrate from AsyncStorage), `HomeScreen.tsx` (remove FlatList sections, add ViewToggle + conditional RadarView).
+- `useUpcomingBirthdays()` hook
+- `BirthdayRow` component
+- `src/app/squad/birthdays/index.tsx` screen
+- `BirthdayDashboardCard` component
 
-**Why second:** Radar view is the primary new visual. It depends on Step 1 having cleaned up the HomeScreen structure. The existing `friends[]` data is already available — no new data fetching.
+**Stage 4: IOU detail and create**
 
-**Validation:** Radar renders top-6 friends as bubbles. Overflow in horizontal scroll. Heartbeat states (alive = full opacity, fading = dimmed, dead = greyed). Tapping a bubble → DM (same `HomeFriendCard` tap logic, reproduced in the bubble).
+- `useIOUDetail()` hook
+- `IOUMemberRow`, `IOUSplitField` components
+- `src/app/squad/ious/create.tsx` screen
+- `src/app/squad/ious/[id].tsx` screen and `src/app/squad/ious/_layout.tsx`
 
-### Step 3 — Card Stack View
+**Stage 5: IOU list and summary**
 
-**Builds:** `CardStackView.tsx`.
+- `useIOUSummary()` hook
+- `IOUGroupRow` component
+- `src/app/squad/ious/index.tsx` screen
+- `IOUDashboardCard` component
 
-**Changes to:** `HomeScreen.tsx` (add `CardStackView` to the conditional render).
+**Stage 6: Squad Dashboard**
 
-**Why third:** Depends on Step 2 having wired the ViewToggle and conditional render switch. The card stack is a new visual over the same data — it doesn't change data fetching or the store.
+- `FriendRowCompact` component
+- `SquadDashboardScreen`
+- Rewrite `src/app/(tabs)/squad.tsx` to mount `SquadDashboardScreen`
+- Delete `SquadTabSwitcher.tsx`
 
-**Validation:** Toggle to Cards. Swipe right = Nudge (send DM). Swipe left = Skip (dismiss card, next friend visible). All friends cycle through.
-
----
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1: Installing @gorhom/bottom-sheet
-
-**What people do:** Reach for `@gorhom/bottom-sheet` as the default "bottom sheet" library.
-
-**Why it's wrong:** As of April 2026, v5 (latest) supports Reanimated v1–3. This project runs Reanimated v4.2.1 (Expo SDK 55). The library is non-functional on this stack — the sheet either doesn't open or crashes with worklet API errors.
-
-**Do this instead:** Custom `Modal` + `Animated.timing` (described in Pattern 1). Expo's `react-native-gesture-handler` (already installed, Expo Go compatible) can add drag-to-dismiss in a later iteration.
-
-### Anti-Pattern 2: New Supabase Queries for RadarView or CardStackView
-
-**What people do:** Treat each view as requiring its own data hook.
-
-**Why it's wrong:** `useHomeScreen` already fetches all friends with status. RadarView and CardStackView are purely visual representations of the same array. New queries add round-trips, Realtime connection pressure, and split caching logic.
-
-**Do this instead:** Pass `friends: FriendWithStatus[]` from `HomeScreen` as a prop to both views. Zero new hooks.
-
-### Anti-Pattern 3: Storing View Mode in React Local State Only
-
-**What people do:** `const [viewMode, setViewMode] = useState<'radar' | 'cards'>('radar')` in HomeScreen.
-
-**Why it's wrong:** Local state is lost when HomeScreen unmounts (user navigates to Squad tab and back). Users would reset to the default on every tab switch.
-
-**Do this instead:** Zustand slice in `useHomeStore` (survives unmount within session) + AsyncStorage write (survives app restart). Same pattern as the existing notification toggle preference.
-
-### Anti-Pattern 4: Deleting MoodPicker Instead of Relocating It
-
-**What people do:** Rebuild the mood/preset/window selection UI from scratch inside `StatusPickerSheet`.
-
-**Why it's wrong:** `MoodPicker` has 228 lines of tested logic including LayoutAnimation, haptics, Zustand sync, error handling, preset chips, and window chips. Rebuilding from scratch introduces bugs and dev time.
-
-**Do this instead:** Render `<MoodPicker onCommit={onClose} />` inside `StatusPickerSheet`. The only addition is the `onCommit` prop (3–5 lines in MoodPicker).
-
-### Anti-Pattern 5: Removing the 60s Heartbeat Interval from HomeScreen
-
-**What people do:** Clean up the `setHeartbeatTick` interval because the scroll-based UI is gone.
-
-**Why it's wrong:** RadarView and CardStackView both compute `heartbeatState` per-render via `computeHeartbeatState`. Without the 60s tick forcing a re-render, FADING → DEAD transitions won't update visually without a data refetch.
-
-**Do this instead:** Keep the existing 60s interval in HomeScreen. It's a cheap `setState` with no side effects.
+The dashboard is assembled last from pre-built, independently tested cards. This minimises integration risk: every card works standalone before the dashboard wires them together.
 
 ---
 
-## Scalability Considerations
+## Component Boundaries Summary
 
-| Concern | At 3–15 friends (target) | At 50+ friends |
-|---------|--------------------------|----------------|
-| Radar top-6 slice | Trivially cheap | Same — always slices to 6 |
-| CardStackView cycling | One card at a time, no perf issue | Consider `FlatList`-based virtualization if >30 cards |
-| ViewToggle AsyncStorage | Single key read/write | No change |
-| StatusPill re-renders | One Zustand subscription | No change |
-| `useHomeScreen` Realtime | Single channel, user_id filter | Already designed for this (OVR-07 in existing code) |
-
-The app's stated group size is 3–15 people. Scalability beyond that is explicitly out of scope per `PROJECT.md`.
-
----
-
-## Sources
-
-- `/Users/iulian/Develop/campfire/src/screens/home/HomeScreen.tsx` — current render tree
-- `/Users/iulian/Develop/campfire/src/components/home/HomeFriendCard.tsx` — card interactions
-- `/Users/iulian/Develop/campfire/src/components/status/MoodPicker.tsx` — status picker logic
-- `/Users/iulian/Develop/campfire/src/components/home/ReEngagementBanner.tsx` — banner to be removed
-- `/Users/iulian/Develop/campfire/src/hooks/useStatus.ts` — status hook interface
-- `/Users/iulian/Develop/campfire/src/hooks/useHomeScreen.ts` — friend data + realtime
-- `/Users/iulian/Develop/campfire/src/stores/useStatusStore.ts` — status Zustand store
-- `/Users/iulian/Develop/campfire/src/stores/useHomeStore.ts` — home Zustand store
-- `/Users/iulian/Develop/campfire/src/lib/heartbeat.ts` — heartbeat computation
-- `/Users/iulian/Develop/campfire/src/app/(tabs)/_layout.tsx` — tab layout + AppState pattern
-- `/Users/iulian/Develop/campfire/package.json` — confirmed library versions
-- [gorhom/react-native-bottom-sheet GitHub](https://github.com/gorhom/react-native-bottom-sheet) — v5.2.9 "Compatible with Reanimated v1-3" (April 8, 2026 release)
-- [Issue #2600 — Feature Request: Support Reanimated v4](https://github.com/gorhom/react-native-bottom-sheet/issues/2600) — confirmed v4 incompatibility
-- [React Native Reanimated Bottom Sheet example](https://docs.swmansion.com/react-native-reanimated/examples/bottomsheet/) — recommends @gorhom but acknowledges no built-in component
+| Component | Props In | Navigation Out |
+|-----------|----------|----------------|
+| `SquadDashboardScreen` | — (owns all hooks) | — |
+| `FriendRowCompact` | `friend: FriendWithStatus` | tap → DM (existing pattern) |
+| `StreakCard` | `streak: StreakData` (existing shape — unchanged) | tap → /plan-create |
+| `IOUDashboardCard` | `totalOwed`, `totalOwing`, `onPress` | tap → /squad/ious |
+| `BirthdayDashboardCard` | `birthdays: UpcomingBirthday[]`, `onPress` | tap → /squad/birthdays |
+| `IOUGroupRow` | `group`, `netBalance`, `currency`, `settled`, `onPress` | tap → /squad/ious/[id] |
+| `IOUMemberRow` | `member`, `amountOwed`, `settled`, `canSettle`, `onSettle` | settle toggle (inline) |
+| `IOUSplitField` | `totalAmount`, `splitMode`, `participants`, `onChange` | — |
+| `BirthdayRow` | `friendId`, `displayName`, `avatarUrl`, `month`, `day`, `daysUntil` | — |
 
 ---
 
-*Architecture research for: Campfire v1.3.5 Homescreen Redesign*
-*Researched: 2026-04-10*
+## Modified Files Summary
+
+| File | Change Type | Reason |
+|------|-------------|--------|
+| `src/app/(tabs)/squad.tsx` | Full rewrite | Replace tab switcher with dashboard screen |
+| `src/app/profile/edit.tsx` | Add fields | birthday_month + birthday_day inputs |
+| `src/components/squad/SquadTabSwitcher.tsx` | Delete | Superseded by scrollable dashboard |
+
+---
+
+## New Files Summary
+
+**Database migrations**
+- `supabase/migrations/0015_iou_groups.sql`
+- `supabase/migrations/0016_birthdays.sql`
+
+**Hooks**
+- `src/hooks/useIOUSummary.ts`
+- `src/hooks/useIOUDetail.ts`
+- `src/hooks/useUpcomingBirthdays.ts`
+
+**Screens**
+- `src/screens/squad/SquadDashboardScreen.tsx`
+- `src/screens/squad/IOUListScreen.tsx`
+- `src/screens/squad/IOUDetailScreen.tsx`
+- `src/screens/squad/IOUCreateScreen.tsx`
+- `src/screens/squad/BirthdayListScreen.tsx`
+
+**App routes (Expo Router)**
+- `src/app/squad/ious/_layout.tsx`
+- `src/app/squad/ious/index.tsx`
+- `src/app/squad/ious/[id].tsx`
+- `src/app/squad/ious/create.tsx`
+- `src/app/squad/birthdays/index.tsx`
+
+**Components**
+- `src/components/squad/FriendRowCompact.tsx`
+- `src/components/squad/IOUDashboardCard.tsx`
+- `src/components/squad/IOUGroupRow.tsx`
+- `src/components/squad/IOUMemberRow.tsx`
+- `src/components/squad/IOUSplitField.tsx`
+- `src/components/squad/BirthdayDashboardCard.tsx`
+- `src/components/squad/BirthdayRow.tsx`
+
+---
+
+## Constraints Adherence
+
+| Constraint | How v1.4 Features Comply |
+|------------|--------------------------|
+| FlatList for all lists | IOU list, IOU member list, birthday list all use FlatList |
+| No UI libraries | All new components use StyleSheet + design tokens only |
+| RLS is security | All new tables have RLS enabled; client never relies on client-side filtering |
+| UUIDs everywhere | `iou_groups.id` UUID PK; `iou_members` uses composite PK (no integer IDs) |
+| SECURITY DEFINER RPCs | `get_iou_summary()` and `get_upcoming_birthdays()` use SECURITY DEFINER to avoid RLS recursion when joining friendships |
+| Free tier budget | No new Realtime subscriptions; IOU writes are low-frequency; birthday columns are negligible storage |
+| TypeScript strict | New types (`UpcomingBirthday`, `IOUSummaryGroup`, `IOUMember`) added to `src/types/app.ts` before use |
+| No Redux / React Query | All new hooks use direct Supabase queries + local useState, same as existing hooks |
+
+---
+
+## Confidence Assessment
+
+| Area | Confidence | Basis |
+|------|------------|-------|
+| Squad Dashboard redesign | HIGH | Existing squad.tsx is simple; StreakCard already card-shaped; clear precedent |
+| IOU data model | HIGH | Standard split-bill schema; follows established migration conventions exactly |
+| Birthday data model | HIGH | Simple column addition; existing RLS already covers it; verified against 0001_init.sql |
+| `get_iou_summary()` RPC | HIGH | Pattern mirrors `get_friends()` exactly; net balance logic is straightforward SQL |
+| `get_upcoming_birthdays()` RPC | MEDIUM | Year-wrap-around arithmetic is correct conceptually; Feb 29 edge case needs explicit handling; test with Dec/Jan boundary before shipping |
+| IOU even-split rounding | MEDIUM | Client-side; deterministic if rule ("remainder to creator") is documented and consistently applied |
+| Navigation (squad/ sub-routes) | HIGH | Follows `src/app/friends/` pattern exactly; no unknowns |
