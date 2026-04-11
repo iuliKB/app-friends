@@ -1,57 +1,34 @@
-# Requirements: Campfire v1.3.5 Homescreen Redesign
+# Requirements: Campfire v1.4 Squad Dashboard & Social Tools
 
-**Defined:** 2026-04-11
+**Defined:** 2026-04-12
 **Core Value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
 
-## v1.3.5 Requirements
+## v1.4 Requirements
 
-Requirements for v1.3.5 milestone. Each maps to exactly one phase.
+Requirements for v1.4 milestone. Each maps to exactly one phase.
 
-### Status Pill & Bottom Sheet
+### Squad Dashboard
 
-- [x] **PILL-01**: User sees a compact status pill in the header showing their current mood + context tag + window (e.g., "Free · grab a coffee · until 6pm")
-- [x] **PILL-02**: User can tap the status pill to open a bottom sheet containing the full MoodPicker (mood selection, preset chips, window chips)
-- [x] **PILL-03**: Selecting a window in the bottom sheet commits the status and auto-dismisses the sheet
-- [x] **PILL-04**: Status pill shows an edit icon (✎) as a permanent visual affordance indicating it's tappable
-- [x] **PILL-05**: New users (first 2-3 sessions with no active status) see a subtle pulse animation on the pill to draw attention
-- [x] **PILL-06**: Status pill displays a heartbeat-colored dot (green=ALIVE, yellow=FADING, gray=DEAD/no status)
-- [x] **PILL-07**: When no status is set, pill shows user's name + "Tap to set your status"
+- [ ] **DASH-01**: User sees Squad tab as a scrollable dashboard with friends list at top and feature cards below
+- [ ] **DASH-02**: Each feature card shows a glanceable summary (e.g. "2 unsettled", "birthday in 3 days")
+- [ ] **DASH-03**: Dashboard cards animate in with smooth entrance transitions on load
+- [ ] **DASH-04**: Existing Streaks card is preserved and displayed on the dashboard
 
-### Radar View
+### IOU Expense Splitting
 
-- [x] **RADAR-01**: User sees a spatial bubble layout with up to 6 friends, sized by status (Free=large with colored gradient, Busy/Maybe=smaller, DEAD=smallest+muted)
-- [x] **RADAR-02**: ALIVE friends display pulsing concentric ring animations around their avatar bubble
-- [x] **RADAR-03**: FADING friends display at reduced opacity (60%) with no ring animation
-- [x] **RADAR-04**: When more than 6 friends exist, overflow friends appear in a horizontal scroll row below the radar with smaller avatar chips
-- [x] **RADAR-05**: Tapping any friend bubble or overflow chip opens a DM with that friend
-- [x] **RADAR-06**: Bubble positions are computed from container onLayout dimensions (not fixed Dimensions.get), adapting to all screen sizes
+- [ ] **IOU-01**: User can create an expense with title, amount, and select friends to split with
+- [ ] **IOU-02**: User can split an expense evenly or set custom amounts per person
+- [ ] **IOU-03**: User can view net balance per friend across all expenses (who owes whom)
+- [ ] **IOU-04**: User can mark a debt as settled (manual "mark as paid")
+- [ ] **IOU-05**: User can view expense history (list of past expenses with payer, participants, amounts)
 
-### Card Stack View
+### Birthday Calendar
 
-- [x] **CARD-01**: User sees a swipeable card deck showing friend details (avatar, name, mood, context tag, last active time)
-- [x] **CARD-02**: Each card has a "Nudge" button that opens the DM conversation with that friend
-- [x] **CARD-03**: Each card has a "Skip" button that animates the card away and reveals the next friend
-- [x] **CARD-04**: Card deck only contains ALIVE and FADING friends (DEAD friends are excluded to avoid skip fatigue)
-- [x] **CARD-05**: Card shows remaining count ("2 more free") updating as user skips through
+- [ ] **BDAY-01**: User can add their birthday (month + day) to their profile, visible to friends
+- [ ] **BDAY-02**: User can view a list of friends' birthdays sorted by next occurrence
+- [ ] **BDAY-03**: Squad dashboard shows an upcoming birthdays card with count and nearest birthday
 
-### Homescreen General
-
-- [x] **HOME-01**: User can switch between Radar and Cards views via a segmented toggle control
-- [x] **HOME-02**: View preference (Radar or Cards) persists across sessions via AsyncStorage
-- [x] **HOME-03**: Inline MoodPicker is removed from the homescreen (status setting only via bottom sheet)
-- [x] **HOME-04**: ReEngagementBanner is removed (status pill replaces its function)
-- [x] **HOME-05**: Two-section friend split (Free grid + Everyone Else) is replaced by the unified Radar/Cards views
-
-### Upcoming Events Section
-
-- [x] **EVT-01**: User sees an "Upcoming events" section below the Radar/Cards view in the homescreen, showing a horizontally scrollable row of event cards
-- [x] **EVT-02**: Event cards display title, formatted date ("Mon 15, Aug · in 2 days"), attendee avatar stack, and optional cover image or pastel background
-- [x] **EVT-03**: Section only shows plans where the user is the creator or has RSVP'd "going"; future plans only; capped at 5, soonest first
-- [x] **EVT-04**: Tapping an event card navigates to the plan detail screen
-- [x] **EVT-05**: When no upcoming events exist, a placeholder card shows "No plans yet — start one!" that links to plan creation
-- [x] **EVT-06**: Users can optionally add a cover image to a plan during creation or from the plan detail screen (camera roll only, stored in Supabase Storage)
-
-## v1.4 Requirements (Deferred)
+## v1.5 Requirements (Deferred)
 
 Tracked but not in current roadmap.
 
@@ -66,7 +43,17 @@ Tracked but not in current roadmap.
 
 ### Status Enhancements
 
-- **LOCK-01**: True lock-screen action buttons that mutate status WITHOUT opening the app (requires HMAC/JWT-signed public Edge Function)
+- **LOCK-01**: True lock-screen action buttons that mutate status WITHOUT opening the app
+
+### Birthday Enhancements
+
+- **BDAY-04**: User receives push notification reminder for upcoming friend birthdays
+- **BDAY-05**: Month-grid calendar view for birthdays
+
+### IOU Enhancements
+
+- **IOU-06**: Link expense to a plan (pre-populate participants from attendees)
+- **IOU-07**: Debt simplification (minimize transactions across group)
 
 ## Out of Scope
 
@@ -74,55 +61,35 @@ Explicitly excluded.
 
 | Feature | Reason |
 |---------|--------|
-| Force-directed / physics bubble layout | Non-deterministic, breaks visual regression, expensive on JS thread |
-| Auto-send DM on swipe | Accidental swipes send unexpected messages — anti-feature |
-| DEAD friends in card deck | Skip fatigue; deck should only show actionable friends |
-| Stacked bottom sheets | NN/g flags as navigation anti-pattern |
-| @gorhom/bottom-sheet | Broken on Reanimated v4 (5+ GitHub issues, no fix timeline) |
-| Stat strip widgets | Deferred to v1.4 |
-| Habits / IOUs widgets | v2+ features from mockup |
-| Navigation tab changes | Keep current 5-tab layout |
-| New npm dependencies for bottom sheet | Custom implementation using existing Reanimated + Gesture Handler |
+| Payment integration (Venmo, PayPal) | Adds liability and complexity; manual settle sufficient for friend groups |
+| Debt simplification / graph algorithm | Pairwise balances sufficient for 3-15 person groups |
+| Float/decimal currency storage | Integer cents only — float arithmetic causes phantom debts |
+| Birthday year display to friends | Privacy concern; month+day sufficient for birthday features |
+| IOU categories/tags | Unnecessary complexity for v1.4; expense title is sufficient |
+| Calendar sync for birthdays | Deferred to v1.5+; requires native calendar APIs |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PILL-01 | Phase 1 | Complete |
-| PILL-02 | Phase 1 | Complete |
-| PILL-03 | Phase 1 | Complete |
-| PILL-04 | Phase 1 | Complete |
-| PILL-05 | Phase 1 | Complete |
-| PILL-06 | Phase 1 | Complete |
-| PILL-07 | Phase 1 | Complete |
-| HOME-03 | Phase 1 | Complete |
-| HOME-04 | Phase 1 | Complete |
-| RADAR-01 | Phase 2 | Complete |
-| RADAR-02 | Phase 2 | Complete |
-| RADAR-03 | Phase 2 | Complete |
-| RADAR-04 | Phase 2 | Complete |
-| RADAR-05 | Phase 2 | Complete |
-| RADAR-06 | Phase 2 | Complete |
-| HOME-01 | Phase 2 | Complete |
-| HOME-02 | Phase 2 | Complete |
-| HOME-05 | Phase 2 | Complete |
-| CARD-01 | Phase 3 | Complete |
-| CARD-02 | Phase 3 | Complete |
-| CARD-03 | Phase 3 | Complete |
-| CARD-04 | Phase 3 | Complete |
-| CARD-05 | Phase 3 | Complete |
-| EVT-01 | Phase 4 | Planned |
-| EVT-02 | Phase 4 | Planned |
-| EVT-03 | Phase 4 | Planned |
-| EVT-04 | Phase 4 | Planned |
-| EVT-05 | Phase 4 | Planned |
-| EVT-06 | Phase 4 | Planned |
+| DASH-01 | TBD | Pending |
+| DASH-02 | TBD | Pending |
+| DASH-03 | TBD | Pending |
+| DASH-04 | TBD | Pending |
+| IOU-01 | TBD | Pending |
+| IOU-02 | TBD | Pending |
+| IOU-03 | TBD | Pending |
+| IOU-04 | TBD | Pending |
+| IOU-05 | TBD | Pending |
+| BDAY-01 | TBD | Pending |
+| BDAY-02 | TBD | Pending |
+| BDAY-03 | TBD | Pending |
 
 **Coverage:**
-- v1.3.5 requirements: 29 total
-- Mapped to phases: 29
-- Unmapped: 0
+- v1.4 requirements: 12 total
+- Mapped to phases: 0
+- Unmapped: 12 ⚠️
 
 ---
-*Requirements defined: 2026-04-11*
-*Traceability updated: 2026-04-11 — Phase 4 EVT-01 through EVT-06 added*
+*Requirements defined: 2026-04-12*
+*Last updated: 2026-04-12 after initial definition*
