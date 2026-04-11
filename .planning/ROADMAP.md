@@ -127,7 +127,7 @@ Plans:
 **Plans**: 4 plans
 Plans:
 - [x] 04-01-PLAN.md — DB migration + types + formatEventCardDate utility + useUpcomingEvents hook
-- [ ] 04-02-PLAN.md — EventCard + UpcomingEventsSection components
+- [x] 04-02-PLAN.md — EventCard + UpcomingEventsSection components
 - [ ] 04-03-PLAN.md — HomeScreen wiring + iOS permission + supabase db push
 - [ ] 04-04-PLAN.md — uploadPlanCover utility + cover image picker in create/edit
 **UI hint**: yes
