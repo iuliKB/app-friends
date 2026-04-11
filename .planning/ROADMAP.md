@@ -88,7 +88,12 @@ Plans:
   3. ALIVE friend bubbles show pulsing concentric ring animations; FADING bubbles render at 60% opacity with no ring
   4. When more than 6 friends exist, overflow friends appear in a horizontal scroll row below the radar with smaller avatar chips
   5. Tapping any radar bubble or overflow chip navigates directly to a DM with that friend; the old Free grid / Everyone Else two-section layout is gone
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 02-01-PLAN.md — RadarViewToggle component + useViewPreference hook
+- [ ] 02-02-PLAN.md — RadarBubble (with PulseRing) + OverflowChip components
+- [ ] 02-03-PLAN.md — RadarView container with scatter algorithm and overflow row
+- [ ] 02-04-PLAN.md — HomeScreen wiring: remove old grid, add toggle + radar + crossfade
 **UI hint**: yes
 
 ### Phase 3: Card Stack View
@@ -108,8 +113,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
-| 2. Radar View & View Toggle | 0/? | Not started | - |
+| 2. Radar View & View Toggle | 0/4 | Not started | - |
 | 3. Card Stack View | 0/? | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-11 — Phase 1 plans created (3 plans, 2 waves)*
+*Roadmap updated: 2026-04-11 — Phase 2 plans created (4 plans, 3 waves)*
