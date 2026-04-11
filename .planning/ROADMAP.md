@@ -84,7 +84,11 @@
   2. Migration 0016 applies cleanly: `birthday_month` and `birthday_day` smallint columns exist on `profiles`, `get_upcoming_birthdays()` RPC returns friends sorted by next occurrence with year-wrap arithmetic
   3. All RLS policies on new tables pass smoke-test queries (owner reads own data, friends read friend data, non-friends get no rows)
   4. `supabase db push` completes without errors and migration history shows 0015 and 0016 applied
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 05-01-PLAN.md — Migration 0015 SQL (IOU tables, RPCs, iou_notes rename) + 7 client file updates
+- [ ] 05-02-PLAN.md — Migration 0016 SQL (birthday columns + get_upcoming_birthdays RPC)
+- [ ] 05-03-PLAN.md — supabase db push [BLOCKING] + seed.sql extension
 
 ### Phase 6: Birthday Profile Field
 **Goal**: Users can add their birthday (month + day) to their profile and friends can see it — the new columns are exercised by real client code before dependent screens are built
@@ -152,7 +156,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 5. Database Migrations | 0/TBD | Not started | - |
+| 5. Database Migrations | 0/3 | Not started | - |
 | 6. Birthday Profile Field | 0/TBD | Not started | - |
 | 7. Birthday Calendar Feature | 0/TBD | Not started | - |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
@@ -160,4 +164,4 @@
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-12 — v1.4 phases 5-10 created (12 requirements, 100% coverage)*
+*Roadmap updated: 2026-04-12 — Phase 5 planned (3 plans, 2 waves)*
