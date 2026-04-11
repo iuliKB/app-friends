@@ -3,6 +3,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
@@ -277,7 +278,7 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.surface.base }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: COLORS.surface.base }}>
       <OfflineBanner />
       <Stack
         screenOptions={{
@@ -300,7 +301,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
       </Stack>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
