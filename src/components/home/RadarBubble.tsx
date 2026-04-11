@@ -1,0 +1,284 @@
+// Phase 02 v1.3.5 — RadarBubble with embedded PulseRing (RADAR-01, RADAR-02, RADAR-03, RADAR-05).
+// Renders a friend as a sized bubble with optional pulse ring (ALIVE only),
+// status gradient (ALIVE non-FADING only), depth effect, and tap/long-press interactions.
+
+import React, { useEffect, useRef } from 'react';
+import { Alert, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { computeHeartbeatState } from '@/lib/heartbeat';
+import { showActionSheet } from '@/lib/action-sheet';
+import { supabase } from '@/lib/supabase';
+import type { FriendWithStatus } from '@/hooks/useFriends';
+
+// --- Size map (exported for use in RadarView layout) ---
+
+export const BubbleSizeMap: Record<string, number> = {
+  free: 64,
+  maybe: 48,
+  busy: 36,
+  dead: 36,
+};
+
+// --- Status color map ---
+
+const STATUS_COLORS: Record<string, string> = {
+  free: COLORS.status.free,   // #22c55e
+  maybe: COLORS.status.maybe, // #eab308
+  busy: COLORS.status.busy,   // #ef4444
+};
+
+// --- Gradient color map (center color → transparent) ---
+// expo-linear-gradient is linear (not radial); start/end gives a center-to-corner feel.
+
+const GRADIENT_COLORS: Record<string, readonly [string, string]> = {
+  free:  ['rgba(34,197,94,0.30)', 'transparent'],
+  maybe: ['rgba(234,179,8,0.25)', 'transparent'],
+  busy:  ['rgba(239,68,68,0.20)', 'transparent'],
+};
+
+const MOOD_LABEL: Record<string, string> = {
+  free: 'free',
+  maybe: 'maybe',
+  busy: 'busy',
+};
+
+// --- PulseRing sub-component ---
+// Only rendered for ALIVE friends (caller's responsibility).
+// Uses useNativeDriver: true with transform scale to stay on the native thread.
+
+interface PulseRingProps {
+  size: number;
+  statusColor: string;
+}
+
+function PulseRing({ size, statusColor }: PulseRingProps) {
+  const scaleAnim = useRef(new Animated.Value(1.0)).current;
+  const opacityAnim = useRef(new Animated.Value(0.7)).current;
+
+  useEffect(() => {
+    scaleAnim.setValue(1.0);
+    opacityAnim.setValue(0.7);
+
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(scaleAnim, {
+            toValue: 1.7,
+            duration: 1200,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+            isInteraction: false, // D-04: never block JS thread / FlatList rendering
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 0,
+            duration: 1200,
+            useNativeDriver: true,
+            isInteraction: false,
+          }),
+        ]),
+        Animated.delay(600),
+      ])
+    );
+
+    loop.start();
+    return () => loop.stop();
+  }, [scaleAnim, opacityAnim]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.pulseRing,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderColor: statusColor,
+          transform: [{ scale: scaleAnim }],
+          opacity: opacityAnim,
+        },
+      ]}
+      pointerEvents="none"
+    />
+  );
+}
+
+// --- RadarBubble ---
+
+interface RadarBubbleProps {
+  friend: FriendWithStatus;
+  // Depth effect multipliers — computed by parent RadarView from Y position.
+  // 1.0/1.0 = no effect (lower half). 0.92/0.85 = upper half (D-07).
+  depthScale?: number;   // default 1.0
+  depthOpacity?: number; // default 1.0
+}
+
+export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: RadarBubbleProps) {
+  const router = useRouter();
+
+  // 1. Compute heartbeat state each render
+  const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
+
+  // 2. Bubble size
+  const targetSize = heartbeatState === 'dead' ? 36 : (BubbleSizeMap[friend.status] ?? 36);
+
+  // 3. Outer opacity
+  let baseOpacity: number;
+  if (heartbeatState === 'dead') {
+    baseOpacity = 0.5;
+  } else if (heartbeatState === 'fading') {
+    baseOpacity = 0.6; // FADING: opacity 0.6
+  } else {
+    baseOpacity = 1.0;
+  }
+  const finalOpacity = baseOpacity * depthOpacity;
+
+  // 4. Scale from depth
+  const finalScale = depthScale;
+
+  // 5. Status resize animation (D-05).
+  //    NOTE: useNativeDriver: false is required here — width/height layout props
+  //    cannot be driven by the native driver, only transform/opacity can.
+  const sizeAnim = useRef(new Animated.Value(targetSize)).current;
+  const prevSizeRef = useRef(targetSize);
+
+  useEffect(() => {
+    if (prevSizeRef.current === targetSize) return;
+    prevSizeRef.current = targetSize;
+    Animated.timing(sizeAnim, {
+      toValue: targetSize,
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false, // width/height cannot use native driver
+      isInteraction: false,
+    }).start();
+  }, [targetSize, sizeAnim]);
+
+  // 6. Derived flags
+  const isAlive = heartbeatState === 'alive';
+  const showGradient = isAlive; // Gradient only for ALIVE (not FADING)
+  const statusColor = STATUS_COLORS[friend.status] ?? COLORS.text.secondary;
+  const gradientColors = GRADIENT_COLORS[friend.status] ?? ['transparent', 'transparent'];
+  const moodLabel = MOOD_LABEL[friend.status] ?? friend.status;
+
+  // 7. Tap handler — DM navigation
+  async function handlePress() {
+    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
+      other_user_id: friend.friend_id,
+    });
+    if (error || !data) {
+      Alert.alert('Error', "Couldn't open chat. Try again.");
+      return;
+    }
+    router.push(
+      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(friend.display_name)}` as never
+    );
+  }
+
+  // 8. Long-press handler — action sheet
+  function handleLongPress() {
+    const firstName = friend.display_name.split(' ')[0] ?? friend.display_name;
+    showActionSheet(friend.display_name, [
+      {
+        label: 'View profile',
+        onPress: () => router.push(`/friends/${friend.friend_id}` as never),
+      },
+      {
+        label: `Plan with ${firstName}...`,
+        onPress: () =>
+          router.push(`/plan-create?preselect_friend_id=${friend.friend_id}` as never),
+      },
+    ]);
+  }
+
+  // 9. hitSlop — ensure minimum 44px effective touch area for small bubbles
+  const hitSlop =
+    targetSize < 44
+      ? { top: 4, bottom: 4, left: 4, right: 4 }
+      : undefined;
+
+  // 10. Accessibility label
+  const accessibilityLabel =
+    heartbeatState === 'fading'
+      ? `${friend.display_name}, ${moodLabel}, fading. Tap to message, hold for more.`
+      : `${friend.display_name}, ${moodLabel}. Tap to message, hold for more.`;
+
+  // 11. Name label color
+  const nameLabelColor =
+    heartbeatState === 'fading' ? COLORS.text.secondary : COLORS.text.primary;
+
+  return (
+    <Animated.View
+      style={[
+        styles.outerWrapper,
+        { opacity: finalOpacity, transform: [{ scale: finalScale }] },
+      ]}
+    >
+      <Pressable
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        delayLongPress={400}
+        hitSlop={hitSlop}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+      >
+        <Animated.View
+          style={[
+            styles.bubbleContainer,
+            { width: sizeAnim, height: sizeAnim },
+          ]}
+        >
+          {isAlive && <PulseRing size={targetSize} statusColor={statusColor} />}
+          {showGradient && (
+            <LinearGradient
+              colors={gradientColors as [string, string]}
+              start={{ x: 0.5, y: 0.5 }}
+              end={{ x: 1, y: 1 }}
+              style={[
+                StyleSheet.absoluteFill,
+                { borderRadius: targetSize / 2 },
+              ]}
+            />
+          )}
+          <AvatarCircle
+            size={targetSize}
+            imageUri={friend.avatar_url}
+            displayName={friend.display_name}
+          />
+        </Animated.View>
+      </Pressable>
+      <Text
+        style={[
+          styles.nameLabel,
+          { maxWidth: targetSize + 16, color: nameLabelColor },
+        ]}
+        numberOfLines={1}
+      >
+        {friend.display_name}
+      </Text>
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  outerWrapper: {
+    alignItems: 'center',
+  },
+  bubbleContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pulseRing: {
+    position: 'absolute',
+    borderWidth: 2,
+  },
+  nameLabel: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    textAlign: 'center',
+    marginTop: SPACING.xs,
+  },
+});
