@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
-status: executing
-stopped_at: Completed 03-card-stack-view/03-04-PLAN.md Task 1; awaiting human-verify checkpoint
-last_updated: "2026-04-11T12:03:00.266Z"
+status: verifying
+stopped_at: Completed 03-card-stack-view/03-04-PLAN.md; swipe-down undo conflict deferred to gap closure
+last_updated: "2026-04-11T14:41:21.246Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 3
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 Milestone: v1.3.5 Homescreen Redesign
 Phase: 03 (card-stack-view) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-11
 
 Progress: [░░░░░░░░░░] 0% (0/3 phases)
@@ -80,6 +80,7 @@ Requirements covered: 23/23 mapped
 - [Phase 03-card-stack-view]: FriendSwipeCard wrapped in View for zIndex — SwipeCardProps has no style prop; plan anticipated this pattern
 - [Phase 03-card-stack-view]: STACK_CONFIGS rendered in reverse order (lowest zIndex first) so front card paints on top in absolute stack
 - [Phase 03-card-stack-view]: FONT_SIZE, FONT_WEIGHT, RADII removed from HomeScreen theme import after placeholder styles deleted
+- [Phase 03-card-stack-view]: FONT_SIZE, FONT_WEIGHT, RADII removed from HomeScreen theme import after placeholder styles deleted
 
 ### Pending Todos
 
@@ -87,9 +88,11 @@ Requirements covered: 23/23 mapped
 
 ### Blockers/Concerns
 
-(None active)
+(active)
+
+- Swipe-down undo non-functional: ScrollView RefreshControl intercepts vertical pan before FriendSwipeCard onEnd. Deferred to gap closure.
 
 ## Session Continuity
 
-Last session: 2026-04-11T12:02:56.690Z
-Stopped at: Completed 03-card-stack-view/03-04-PLAN.md Task 1; awaiting human-verify checkpoint
+Last session: 2026-04-11T14:41:05.202Z
+Stopped at: Completed 03-card-stack-view/03-04-PLAN.md; swipe-down undo conflict deferred to gap closure

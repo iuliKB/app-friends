@@ -57,7 +57,7 @@
 
 - [x] **Phase 1: Status Pill & Bottom Sheet** - Replace inline MoodPicker with header pill + custom bottom sheet picker (completed 2026-04-10)
 - [ ] **Phase 2: Radar View & View Toggle** - Spatial bubble layout with segmented Radar/Cards toggle and persistent preference
-- [ ] **Phase 3: Card Stack View** - Swipeable friend card deck with Nudge/Skip actions slotting into Phase 2 toggle
+- [x] **Phase 3: Card Stack View** - Swipeable friend card deck with Nudge/Skip actions slotting into Phase 2 toggle (completed 2026-04-11)
 
 ## Phase Details
 
@@ -119,7 +119,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
 | 2. Radar View & View Toggle | 0/4 | Not started | - |
-| 3. Card Stack View | 0/4 | Not started | - |
+| 3. Card Stack View | 4/4 | Complete   | 2026-04-11 |
 
 ---
 *Roadmap updated: 2026-04-11 — Phase 3 plans created (4 plans, 4 waves)*
