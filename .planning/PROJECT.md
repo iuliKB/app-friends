@@ -103,7 +103,7 @@ Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase 
 
 Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config).
 Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
-Supabase migrations: 0001–0014 (v1.3 added 0009–0011, v1.3.5 added 0012 nudges, 0013 cover_image_url, 0014 plan-covers storage bucket).
+Supabase migrations: 0001–0016 (v1.3 added 0009–0011, v1.3.5 added 0012 nudges, 0013 cover_image_url, 0014 plan-covers storage bucket, v1.4 added 0015 IOU tables/RPCs + general_notes rename, 0016 birthday columns + get_upcoming_birthdays RPC).
 Edge Functions: `notify-plan-invite`, `notify-friend-free` (rate-limited fan-out).
 
 Known technical considerations:
@@ -164,4 +164,4 @@ Known technical considerations:
 | Hardware verification gate as final phase (v1.3 Phase 5) | Solo dev without Apple Dev account; consolidates all manual smoke tests into one session when account acquired | ✓ Good |
 
 ---
-*Last updated: 2026-04-12 after v1.4 milestone start*
+*Last updated: 2026-04-12 after Phase 5 (Database Migrations) complete — schema foundation for v1.4*
