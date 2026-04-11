@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   Animated,
-  FlatList,
+  Easing,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -11,29 +11,24 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
-import { useStatus } from '@/hooks/useStatus';
 import { OwnStatusCard } from '@/components/status/OwnStatusCard';
 import { StatusPickerSheet } from '@/components/status/StatusPickerSheet';
-import { HomeFriendCard } from '@/components/home/HomeFriendCard';
-import { EmptyState } from '@/components/common/EmptyState';
-import type { FriendWithStatus } from '@/hooks/useFriends';
+import { RadarViewToggle } from '@/components/home/RadarViewToggle';
+import { RadarView } from '@/components/home/RadarView';
+import { useViewPreference } from '@/hooks/useViewPreference';
 
 export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { loading: statusLoading } = useStatus();
-  const { friends, freeFriends, otherFriends, error, refreshing, handleRefresh } = useHomeScreen();
-
-  const countScale = useRef(new Animated.Value(1)).current;
-  const prevCountRef = useRef(freeFriends.length);
+  const { friends, error, refreshing, handleRefresh } = useHomeScreen();
 
   // OVR-06: 60s tick to force heartbeat re-evaluation across own + friend rows
   // without a refetch. setHeartbeatTick is enough to trigger a re-render that
-  // recomputes computeHeartbeatState() in HomeFriendCard + the partition above.
+  // recomputes computeHeartbeatState() in RadarBubble + the partition above.
   const [, setHeartbeatTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setHeartbeatTick((t) => t + 1), 60_000);
@@ -42,26 +37,50 @@ export function HomeScreen() {
 
   const [sheetVisible, setSheetVisible] = useState(false);
 
+  const [view, setView, prefLoading] = useViewPreference();
+
+  // Crossfade animated values — radar starts visible, cards hidden
+  const radarOpacity = useRef(new Animated.Value(1)).current;
+  const cardsOpacity = useRef(new Animated.Value(0)).current;
+
+  // Crossfade effect — runs when view changes
   useEffect(() => {
-    if (prevCountRef.current !== freeFriends.length) {
-      prevCountRef.current = freeFriends.length;
-      Animated.sequence([
-        Animated.timing(countScale, {
-          toValue: 1.15,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(countScale, {
+    if (view === 'radar') {
+      Animated.parallel([
+        Animated.timing(radarOpacity, {
           toValue: 1,
-          duration: 150,
+          duration: 250,
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
+          isInteraction: false,
+        }),
+        Animated.timing(cardsOpacity, {
+          toValue: 0,
+          duration: 250,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+          isInteraction: false,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(radarOpacity, {
+          toValue: 0,
+          duration: 250,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+          isInteraction: false,
+        }),
+        Animated.timing(cardsOpacity, {
+          toValue: 1,
+          duration: 250,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+          isInteraction: false,
         }),
       ]).start();
     }
-  }, [freeFriends.length, countScale]);
-
-  const countHeading =
-    freeFriends.length > 0 ? `${freeFriends.length} friends free now` : 'No friends free right now';
+  }, [view, radarOpacity, cardsOpacity]);
 
   return (
     <View style={styles.root}>
@@ -89,53 +108,28 @@ export function HomeScreen() {
           <Text style={styles.errorText}>{"Couldn't load friends. Pull down to try again."}</Text>
         )}
 
-        {/* Empty state */}
-        {friends.length === 0 && !statusLoading && (
-          <EmptyState
-            icon="🔥"
-            heading="Nobody's free right now"
-            body="When friends set their status to Free, they'll show up here."
-          />
+        {/* View toggle */}
+        {!prefLoading && (
+          <View style={styles.toggleContainer}>
+            <RadarViewToggle value={view} onValueChange={setView} />
+          </View>
         )}
 
-        {/* Count heading */}
-        {friends.length > 0 && (
-          <Animated.Text
-            style={[styles.countHeading, { transform: [{ scale: countScale }] }]}
-            accessibilityRole="header"
+        {/* Radar / Cards crossfade */}
+        <View style={styles.viewSwitcher}>
+          <Animated.View style={{ opacity: radarOpacity }} pointerEvents={view === 'radar' ? 'auto' : 'none'}>
+            <RadarView friends={friends} />
+          </Animated.View>
+          <Animated.View
+            style={[styles.absoluteFill, { opacity: cardsOpacity }]}
+            pointerEvents={view === 'cards' ? 'auto' : 'none'}
           >
-            {countHeading}
-          </Animated.Text>
-        )}
-
-        {/* Free friends grid */}
-        {freeFriends.length > 0 && (
-          <FlatList<FriendWithStatus>
-            data={freeFriends}
-            keyExtractor={(item) => item.friend_id}
-            numColumns={3}
-            scrollEnabled={false}
-            renderItem={({ item }) => <HomeFriendCard friend={item} />}
-            columnWrapperStyle={styles.columnWrapper}
-            contentContainerStyle={styles.gridContent}
-          />
-        )}
-
-        {/* Everyone Else section */}
-        {otherFriends.length > 0 && (
-          <>
-            <Text style={styles.sectionLabel}>{'Everyone Else'}</Text>
-            <FlatList<FriendWithStatus>
-              data={otherFriends}
-              keyExtractor={(item) => item.friend_id}
-              numColumns={3}
-              scrollEnabled={false}
-              renderItem={({ item }) => <HomeFriendCard friend={item} />}
-              columnWrapperStyle={styles.columnWrapper}
-              contentContainerStyle={styles.gridContent}
-            />
-          </>
-        )}
+            <View style={styles.cardsPlaceholder}>
+              <Text style={styles.placeholderHeading}>Cards View</Text>
+              <Text style={styles.placeholderBody}>Coming in the next update.</Text>
+            </View>
+          </Animated.View>
+        </View>
       </ScrollView>
 
       <StatusPickerSheet
@@ -179,26 +173,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.sm,
   },
-  countHeading: {
-    fontSize: FONT_SIZE.xxl,
+  toggleContainer: {
+    marginTop: SPACING.xl,
+  },
+  viewSwitcher: {
+    position: 'relative',
+  },
+  absoluteFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  cardsPlaceholder: {
+    height: 320,
+    backgroundColor: COLORS.surface.base,
+    borderRadius: RADII.lg,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderHeading: {
+    fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.semibold,
     color: COLORS.text.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
+    marginBottom: SPACING.xs,
   },
-  columnWrapper: {
-    paddingHorizontal: SPACING.sm,
-  },
-  gridContent: {
-    paddingHorizontal: SPACING.sm,
-  },
-  sectionLabel: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 18, // no exact token
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
-    paddingBottom: SPACING.lg,
+  placeholderBody: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.text.secondary,
   },
 });
