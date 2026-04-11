@@ -15,6 +15,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.campfire.app',
+    infoPlist: {
+      NSPhotoLibraryUsageDescription:
+        'Campfire uses your photo library to set a cover image for your plans.',
+    },
   },
   android: {
     adaptiveIcon: {

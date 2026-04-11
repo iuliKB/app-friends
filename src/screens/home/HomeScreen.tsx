@@ -21,11 +21,14 @@ import { RadarViewToggle } from '@/components/home/RadarViewToggle';
 import { RadarView } from '@/components/home/RadarView';
 import { CardStackView } from '@/components/home/CardStackView';
 import { useViewPreference } from '@/hooks/useViewPreference';
+import { usePlans } from '@/hooks/usePlans';
+import { UpcomingEventsSection } from '@/components/home/UpcomingEventsSection';
 
 export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { friends, error, refreshing, handleRefresh } = useHomeScreen();
+  usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
 
   // OVR-06: 60s tick to force heartbeat re-evaluation across own + friend rows
   // without a refetch. setHeartbeatTick is enough to trigger a re-render that
@@ -128,6 +131,10 @@ export function HomeScreen() {
             <CardStackView friends={friends} />
           </Animated.View>
         </View>
+
+        {/* D-09: Upcoming events section — below Radar/Cards view */}
+        <UpcomingEventsSection />
+
       </ScrollView>
 
       <StatusPickerSheet
