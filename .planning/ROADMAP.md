@@ -104,8 +104,13 @@ Plans:
   1. Switching to Cards view presents a swipeable deck containing only ALIVE and FADING friends (no DEAD friends), showing each friend's avatar, name, mood, context tag, and last-active time
   2. Tapping "Nudge" on any card opens a DM conversation with that friend
   3. Tapping "Skip" animates the card away and immediately reveals the next friend in the deck
-  4. A counter ("2 more free") is visible on the card and updates accurately as the user skips through the deck
-**Plans**: TBD
+  4. A counter ("2 more free") is visible above the deck and updates accurately as the user skips through
+**Plans**: 4 plans
+Plans:
+- [ ] 03-01-PLAN.md — GestureHandlerRootView prerequisite + Playwright test scaffold
+- [ ] 03-02-PLAN.md — FriendSwipeCard: gesture, visual design, Nudge/Skip buttons
+- [ ] 03-03-PLAN.md — CardStackView: deck logic, counter, depth effect, loop, undo
+- [ ] 03-04-PLAN.md — HomeScreen wiring: replace placeholder with CardStackView
 **UI hint**: yes
 
 ## Progress
@@ -114,7 +119,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
 | 2. Radar View & View Toggle | 0/4 | Not started | - |
-| 3. Card Stack View | 0/? | Not started | - |
+| 3. Card Stack View | 0/4 | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-11 — Phase 2 plans created (4 plans, 3 waves)*
+*Roadmap updated: 2026-04-11 — Phase 3 plans created (4 plans, 4 waves)*
