@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
 status: verifying
-stopped_at: Completed 04-03-PLAN.md — plan 04-03 fully done, human checkpoint approved
-last_updated: "2026-04-11T19:05:16.183Z"
+stopped_at: Completed 04-04-PLAN.md — all tasks done, phase 04 complete
+last_updated: "2026-04-11T19:10:01.119Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 15
-  completed_plans: 14
-  percent: 93
+  completed_plans: 15
+  percent: 100
 ---
 
 # Project State
@@ -88,6 +88,8 @@ Requirements covered: 23/23 mapped
 - [Phase 04-upcoming-events-section]: NSPhotoLibraryUsageDescription added to app.config.ts ios.infoPlist — required for expo-image-picker on iOS (RESEARCH.md Pitfall 2)
 - [Phase 04-upcoming-events-section]: usePlans() added to HomeScreen body to populate Zustand store for UpcomingEventsSection before it mounts
 - [Phase 04-upcoming-events-section]: NSPhotoLibraryUsageDescription added to app.config.ts ios.infoPlist — required for expo-image-picker on iOS (RESEARCH.md Pitfall 2)
+- [Phase 04]: Upload-after-create chosen for cover images: create plan first to get planId (required for storage path), then upload, then update cover_image_url — acceptable UX gap
+- [Phase 04]: noUncheckedIndexedAccess guard: assets?.[0] optional chain + null check required for TypeScript strict compliance with expo-image-picker results
 
 ### Roadmap Evolution
 
@@ -105,5 +107,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T19:05:16.179Z
-Stopped at: Completed 04-03-PLAN.md — plan 04-03 fully done, human checkpoint approved
+Last session: 2026-04-11T19:10:01.115Z
+Stopped at: Completed 04-04-PLAN.md — all tasks done, phase 04 complete

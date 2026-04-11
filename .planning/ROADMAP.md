@@ -58,7 +58,7 @@
 - [x] **Phase 1: Status Pill & Bottom Sheet** - Replace inline MoodPicker with header pill + custom bottom sheet picker (completed 2026-04-10)
 - [ ] **Phase 2: Radar View & View Toggle** - Spatial bubble layout with segmented Radar/Cards toggle and persistent preference
 - [x] **Phase 3: Card Stack View** - Swipeable friend card deck with Nudge/Skip actions slotting into Phase 2 toggle (completed 2026-04-11)
-- [ ] **Phase 4: Upcoming Events Section** - Horizontal event card row on homescreen with optional plan cover images
+- [x] **Phase 4: Upcoming Events Section** - Horizontal event card row on homescreen with optional plan cover images (completed 2026-04-11)
 
 ## Phase Details
 
@@ -129,7 +129,7 @@ Plans:
 - [x] 04-01-PLAN.md — DB migration + types + formatEventCardDate utility + useUpcomingEvents hook
 - [x] 04-02-PLAN.md — EventCard + UpcomingEventsSection components
 - [x] 04-03-PLAN.md — HomeScreen wiring + iOS permission + supabase db push
-- [ ] 04-04-PLAN.md — uploadPlanCover utility + cover image picker in create/edit
+- [x] 04-04-PLAN.md — uploadPlanCover utility + cover image picker in create/edit
 **UI hint**: yes
 
 ## Progress
@@ -139,7 +139,7 @@ Plans:
 | 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
 | 2. Radar View & View Toggle | 0/4 | Not started | - |
 | 3. Card Stack View | 4/4 | Complete   | 2026-04-11 |
-| 4. Upcoming Events Section | 3/4 | In Progress|  |
+| 4. Upcoming Events Section | 4/4 | Complete   | 2026-04-11 |
 
 ---
 *Roadmap updated: 2026-04-11 — Phase 4 plans created (4 plans, 4 waves)*
