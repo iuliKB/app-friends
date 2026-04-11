@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
@@ -112,6 +112,14 @@ export function HomeScreen() {
           <Text style={styles.errorText}>{"Couldn't load friends. Pull down to try again."}</Text>
         )}
 
+        {/* Friends status section header */}
+        <View style={styles.freeHeaderContainer}>
+          <Text style={styles.freeHeaderTitle}>Free right now 🔥</Text>
+          <Text style={styles.freeHeaderSubtitle}>
+            {friends.filter((f) => f.status === 'free').length} friends available
+          </Text>
+        </View>
+
         {/* View toggle */}
         {!prefLoading && (
           <View style={styles.toggleContainer}>
@@ -189,5 +197,21 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+  },
+  freeHeaderContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xxl,
+    paddingBottom: SPACING.sm,
+  },
+  freeHeaderTitle: {
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+  },
+  freeHeaderSubtitle: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
   },
 });
