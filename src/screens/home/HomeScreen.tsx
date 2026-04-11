@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { COLORS, SPACING } from '@/theme';
 import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
@@ -19,6 +19,7 @@ import { OwnStatusCard } from '@/components/status/OwnStatusCard';
 import { StatusPickerSheet } from '@/components/status/StatusPickerSheet';
 import { RadarViewToggle } from '@/components/home/RadarViewToggle';
 import { RadarView } from '@/components/home/RadarView';
+import { CardStackView } from '@/components/home/CardStackView';
 import { useViewPreference } from '@/hooks/useViewPreference';
 
 export function HomeScreen() {
@@ -124,10 +125,7 @@ export function HomeScreen() {
             style={[styles.absoluteFill, { opacity: cardsOpacity }]}
             pointerEvents={view === 'cards' ? 'auto' : 'none'}
           >
-            <View style={styles.cardsPlaceholder}>
-              <Text style={styles.placeholderHeading}>Cards View</Text>
-              <Text style={styles.placeholderBody}>Coming in the next update.</Text>
-            </View>
+            <CardStackView friends={friends} />
           </Animated.View>
         </View>
       </ScrollView>
@@ -184,24 +182,5 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-  },
-  cardsPlaceholder: {
-    height: 320,
-    backgroundColor: COLORS.surface.base,
-    borderRadius: RADII.lg,
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderHeading: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.xs,
-  },
-  placeholderBody: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
   },
 });
