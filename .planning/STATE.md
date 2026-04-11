@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-04-11T18:54:59.102Z"
+stopped_at: "Checkpoint: 04-03 Task 2 auth gate — supabase login required for db push"
+last_updated: "2026-04-11T18:57:29.182Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 Milestone: v1.3.5 Homescreen Redesign
 Phase: 04 (Upcoming Events Section) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -84,6 +84,8 @@ Requirements covered: 23/23 mapped
 - [Phase 04-upcoming-events-section]: cover_image_url nullable text column — nullable so existing plans are unaffected until images are uploaded
 - [Phase 04-upcoming-events-section]: useUpcomingEvents filters client-side from Zustand store — avoids extra Supabase query, acceptable given store already populated by usePlans
 - [Phase 04-upcoming-events-section]: expo-image used for cover images (caching + graceful URI fallback); height:140 on FlatList style prevents ScrollView height-collapse; ItemSeparatorComponent for card gaps
+- [Phase 04-upcoming-events-section]: usePlans() added to HomeScreen body to populate Zustand store for UpcomingEventsSection before it mounts
+- [Phase 04-upcoming-events-section]: NSPhotoLibraryUsageDescription added to app.config.ts ios.infoPlist — required for expo-image-picker on iOS (RESEARCH.md Pitfall 2)
 
 ### Roadmap Evolution
 
@@ -101,5 +103,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T18:54:59.098Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-04-11T18:57:29.178Z
+Stopped at: Checkpoint: 04-03 Task 2 auth gate — supabase login required for db push

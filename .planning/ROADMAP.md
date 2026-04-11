@@ -128,7 +128,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — DB migration + types + formatEventCardDate utility + useUpcomingEvents hook
 - [x] 04-02-PLAN.md — EventCard + UpcomingEventsSection components
-- [ ] 04-03-PLAN.md — HomeScreen wiring + iOS permission + supabase db push
+- [x] 04-03-PLAN.md — HomeScreen wiring + iOS permission + supabase db push
 - [ ] 04-04-PLAN.md — uploadPlanCover utility + cover image picker in create/edit
 **UI hint**: yes
 
@@ -139,7 +139,7 @@ Plans:
 | 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
 | 2. Radar View & View Toggle | 0/4 | Not started | - |
 | 3. Card Stack View | 4/4 | Complete   | 2026-04-11 |
-| 4. Upcoming Events Section | 0/4 | Not started | - |
+| 4. Upcoming Events Section | 3/4 | In Progress|  |
 
 ---
 *Roadmap updated: 2026-04-11 — Phase 4 plans created (4 plans, 4 waves)*
