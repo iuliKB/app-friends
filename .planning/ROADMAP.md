@@ -6,7 +6,8 @@
 - ✅ **v1.1 UI/UX Design System** — Phases 7-9 (shipped 2026-03-25)
 - ✅ **v1.2 Squad & Navigation** — Phases 10-12 (shipped 2026-04-04)
 - ✅ **v1.3 Liveness & Notifications** — Phases 1-5 (shipped 2026-04-10)
-- 🔄 **v1.3.5 Homescreen Redesign** — Phases 1-4 (in progress)
+- ✅ **v1.3.5 Homescreen Redesign** — Phases 1-4 (shipped 2026-04-11)
+- 🔄 **v1.4 Squad Dashboard & Social Tools** — Phases 5-10 (in progress)
 
 ## Archived Milestones
 
@@ -51,95 +52,112 @@
 
 </details>
 
+<details>
+<summary>✅ v1.3.5 Homescreen Redesign (Phases 1-4) — SHIPPED 2026-04-11</summary>
+
+- [x] Phase 1: Status Pill & Bottom Sheet (3/3 plans) — completed 2026-04-10
+- [x] Phase 2: Radar View & View Toggle (4/4 plans) — completed 2026-04-11
+- [x] Phase 3: Card Stack View (4/4 plans) — completed 2026-04-11
+- [x] Phase 4: Upcoming Events Section (4/4 plans) — completed 2026-04-11
+
+</details>
+
 ---
 
-## v1.3.5 Homescreen Redesign — Active Phases
+## v1.4 Squad Dashboard & Social Tools — Active Phases
 
-- [x] **Phase 1: Status Pill & Bottom Sheet** - Replace inline MoodPicker with header pill + custom bottom sheet picker (completed 2026-04-10)
-- [ ] **Phase 2: Radar View & View Toggle** - Spatial bubble layout with segmented Radar/Cards toggle and persistent preference
-- [x] **Phase 3: Card Stack View** - Swipeable friend card deck with Nudge/Skip actions slotting into Phase 2 toggle (completed 2026-04-11)
-- [x] **Phase 4: Upcoming Events Section** - Horizontal event card row on homescreen with optional plan cover images (completed 2026-04-11)
+- [ ] **Phase 5: Database Migrations** - IOU tables + birthday columns + RPCs; schema foundation for all v1.4 client work
+- [ ] **Phase 6: Birthday Profile Field** - Birthday month/day input in profile edit; save/load round-trip verified
+- [ ] **Phase 7: Birthday Calendar Feature** - Upcoming birthdays hook, list screen, and dashboard card
+- [ ] **Phase 8: IOU Create & Detail** - Atomic expense creation, even/custom split, per-expense detail, settle action
+- [ ] **Phase 9: IOU List & Summary** - Net balance view, expense history screen, IOU dashboard card
+- [ ] **Phase 10: Squad Dashboard** - Scrollable dashboard with friends list + feature cards replaces tab switcher
 
 ## Phase Details
 
-### Phase 1: Status Pill & Bottom Sheet
-**Goal**: Users set and view their status exclusively through a header pill and custom bottom sheet — the inline MoodPicker and ReEngagementBanner are gone
-**Depends on**: Nothing (first phase)
-**Requirements**: PILL-01, PILL-02, PILL-03, PILL-04, PILL-05, PILL-06, PILL-07, HOME-03, HOME-04
+### Phase 5: Database Migrations
+**Goal**: All new schema objects exist in Supabase so client code can be written against correct column types, RLS policies, and RPCs — no destructive re-migrations needed later
+**Depends on**: Phase 4 (v1.3.5 Upcoming Events Section — migrations 0012-0014 already applied)
+**Requirements**: IOU-01, IOU-02, IOU-03, IOU-04, IOU-05, BDAY-01, BDAY-02, BDAY-03
 **Success Criteria** (what must be TRUE):
-  1. User sees a compact pill in the homescreen header at all times, showing mood + context tag + window when a status is active
-  2. User taps the pill and a bottom sheet rises containing the full mood/context/window composer; selecting a window commits and dismisses the sheet automatically
-  3. User with no active status sees pill text "Tap to set your status" and a first-session pulse animation draws their eye
-  4. Pill dot color matches liveness state (green=ALIVE, yellow=FADING, gray=DEAD/none) and an edit icon is always visible as a tap affordance
-  5. Inline MoodPicker and ReEngagementBanner are not visible anywhere on the homescreen
-**Plans**: 3 plans
-Plans:
-- [x] 01-01-PLAN.md — StatusPickerSheet bottom sheet + MoodPicker onCommit prop
-- [x] 01-02-PLAN.md — OwnStatusPill component with pulse animation and session gate
-- [x] 01-03-PLAN.md — HomeScreen wiring: remove dead code, add pill + sheet
+  1. Migration 0015 applies cleanly: `iou_groups`, `iou_members` tables exist with INTEGER cents amounts, correct RLS (only expense creator can mark settled), `create_expense()` atomic RPC, and `get_iou_summary()` RPC
+  2. Migration 0016 applies cleanly: `birthday_month` and `birthday_day` smallint columns exist on `profiles`, `get_upcoming_birthdays()` RPC returns friends sorted by next occurrence with year-wrap arithmetic
+  3. All RLS policies on new tables pass smoke-test queries (owner reads own data, friends read friend data, non-friends get no rows)
+  4. `supabase db push` completes without errors and migration history shows 0015 and 0016 applied
+**Plans**: TBD
+
+### Phase 6: Birthday Profile Field
+**Goal**: Users can add their birthday (month + day) to their profile and friends can see it — the new columns are exercised by real client code before dependent screens are built
+**Depends on**: Phase 5
+**Requirements**: BDAY-01
+**Success Criteria** (what must be TRUE):
+  1. Profile edit screen shows a birthday date picker field; user can select a month and day (no year) and save successfully
+  2. Saved birthday round-trips correctly: reopening profile edit shows the previously saved month and day
+  3. Feb 29 input is normalized to Feb 28 at save time so the value is valid in non-leap years
+  4. Leaving birthday blank is valid; no error is shown for users who skip it
+**Plans**: TBD
 **UI hint**: yes
 
-### Phase 2: Radar View & View Toggle
-**Goal**: Users can switch between Radar and Cards views via a persistent toggle, and Radar correctly renders up to 6 spatial friend bubbles with overflow, adapting to any screen size
-**Depends on**: Phase 1
-**Requirements**: RADAR-01, RADAR-02, RADAR-03, RADAR-04, RADAR-05, RADAR-06, HOME-01, HOME-02, HOME-05
+### Phase 7: Birthday Calendar Feature
+**Goal**: Users can view a sorted list of friends' upcoming birthdays and the Squad dashboard shows a glanceable birthdays card
+**Depends on**: Phase 6
+**Requirements**: BDAY-02, BDAY-03
 **Success Criteria** (what must be TRUE):
-  1. User sees a segmented toggle on the homescreen and can switch between Radar and Cards views; their last-chosen view survives an app restart
-  2. Radar view displays up to 6 friends as avatar bubbles sized by status (Free=large+gradient, Busy/Maybe=smaller, DEAD=smallest+muted); layout adapts to all screen sizes via onLayout dimensions
-  3. ALIVE friend bubbles show pulsing concentric ring animations; FADING bubbles render at 60% opacity with no ring
-  4. When more than 6 friends exist, overflow friends appear in a horizontal scroll row below the radar with smaller avatar chips
-  5. Tapping any radar bubble or overflow chip navigates directly to a DM with that friend; the old Free grid / Everyone Else two-section layout is gone
-**Plans**: 4 plans
-Plans:
-- [x] 02-01-PLAN.md — RadarViewToggle component + useViewPreference hook
-- [x] 02-02-PLAN.md — RadarBubble (with PulseRing) + OverflowChip components
-- [x] 02-03-PLAN.md — RadarView container with scatter algorithm and overflow row
-- [x] 02-04-PLAN.md — HomeScreen wiring: remove old grid, add toggle + radar + crossfade
+  1. A birthday list screen shows all friends who have set a birthday, sorted by days until next occurrence, with "Today", "Tomorrow", or "N days" labels
+  2. Friends with no birthday set are omitted from the list; an appropriate empty state is shown when no friends have birthdays
+  3. The Squad dashboard displays an upcoming birthdays card showing the count of birthdays in the next 30 days and the name + days-remaining for the nearest one
+  4. The birthdays card shows an empty state copy when no friends have upcoming birthdays rather than disappearing
+**Plans**: TBD
 **UI hint**: yes
 
-### Phase 3: Card Stack View
-**Goal**: Users can swipe through a deck of ALIVE/FADING friends, nudge any of them into a DM, or skip to reveal the next card — the deck slots into the "Cards" branch of Phase 2's toggle
-**Depends on**: Phase 2
-**Requirements**: CARD-01, CARD-02, CARD-03, CARD-04, CARD-05
+### Phase 8: IOU Create & Detail
+**Goal**: Users can create a group expense (even or custom split), view its detail, and mark shares as settled — the core IOU write path works end-to-end with real data
+**Depends on**: Phase 5
+**Requirements**: IOU-01, IOU-02, IOU-04
 **Success Criteria** (what must be TRUE):
-  1. Switching to Cards view presents a swipeable deck containing only ALIVE and FADING friends (no DEAD friends), showing each friend's avatar, name, mood, context tag, and last-active time
-  2. Tapping "Nudge" on any card opens a DM conversation with that friend
-  3. Tapping "Skip" animates the card away and immediately reveals the next friend in the deck
-  4. A counter ("2 more free") is visible above the deck and updates accurately as the user skips through
-**Plans**: 4 plans
-Plans:
-- [x] 03-01-PLAN.md — GestureHandlerRootView prerequisite + Playwright test scaffold
-- [x] 03-02-PLAN.md — FriendSwipeCard: gesture, visual design, Nudge/Skip buttons
-- [x] 03-03-PLAN.md — CardStackView: deck logic, counter, depth effect, loop, undo
-- [x] 03-04-PLAN.md — HomeScreen wiring: replace placeholder with CardStackView
+  1. User can open an expense creation screen, enter a title and amount, select friends to split with, choose even or custom split, and submit — the expense is created atomically (no orphan records on network failure)
+  2. Even split divides the amount correctly using largest-remainder method (integer cents, no floating-point drift); custom split allows per-person amount overrides that must sum to the total
+  3. Expense detail screen shows the payer, all participants with their share amounts, and settled/unsettled status per participant
+  4. Only the expense creator can mark a participant's share as settled; a debtor cannot self-certify their own payment
+  5. Settle action triggers a haptic confirmation and the participant row updates to show settled state immediately
+**Plans**: TBD
 **UI hint**: yes
 
-### Phase 4: Upcoming Events Section
-**Goal**: Users see a horizontally scrollable row of upcoming event cards below the Radar/Cards view on the homescreen, and can optionally add a cover image to any plan
-**Depends on**: Phase 3
-**Requirements**: EVT-01, EVT-02, EVT-03, EVT-04, EVT-05, EVT-06
+### Phase 9: IOU List & Summary
+**Goal**: Users can see net balances per friend across all expenses and browse expense history — the IOU feature is fully usable without requiring the dashboard
+**Depends on**: Phase 8
+**Requirements**: IOU-03, IOU-05
 **Success Criteria** (what must be TRUE):
-  1. Homescreen shows "Upcoming events" section below Radar/Cards with horizontal scroll of event cards (future plans the user created or RSVP'd going, max 5, soonest first)
-  2. Each event card shows title, formatted date ("Mon 15, Aug · in 2 days"), avatar stack of attendees, and a cover image or deterministic pastel background
-  3. Tapping an event card navigates to the plan detail screen; tapping "See all" navigates to the Explore tab
-  4. When no upcoming events exist, a placeholder card shows with a CTA to create a plan
-  5. Users can add a cover image to a plan from the creation form and edit it from the plan detail screen
-**Plans**: 4 plans
-Plans:
-- [x] 04-01-PLAN.md — DB migration + types + formatEventCardDate utility + useUpcomingEvents hook
-- [x] 04-02-PLAN.md — EventCard + UpcomingEventsSection components
-- [x] 04-03-PLAN.md — HomeScreen wiring + iOS permission + supabase db push
-- [x] 04-04-PLAN.md — uploadPlanCover utility + cover image picker in create/edit
+  1. IOU index screen shows a per-friend net balance list: each row indicates who owes whom and the net amount, computed from all unsettled expenses
+  2. Expense history screen shows a chronological list of all past expenses the user is involved in (as payer or participant), with title, payer, total amount, and date
+  3. The IOU dashboard card shows an aggregate balance summary ("You're owed $34" or "You owe $12") with a count of unsettled items
+  4. The IOU dashboard card shows an appropriate empty state when no expenses exist
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 10: Squad Dashboard
+**Goal**: The Squad tab is a single scrollable dashboard with a compact friends list at top and feature cards (Streaks, IOUs, Birthdays) below — the underline tab switcher is gone
+**Depends on**: Phase 9
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04
+**Success Criteria** (what must be TRUE):
+  1. Squad tab renders a single scrollable screen: friends list at the top, followed by Streaks card, IOU card, and Birthdays card — no underline tab switcher or Goals/Friends tabs visible
+  2. Each feature card shows a glanceable summary (e.g. "2 unsettled", "birthday in 3 days", streak count) without requiring the user to drill into a sub-screen
+  3. Dashboard cards animate in with smooth entrance transitions on first load; the animation does not replay on pull-to-refresh
+  4. Existing Streaks card content and data are preserved exactly — streak count and copy are unchanged from v1.3
+  5. The outer scroll is a single FlatList with feature cards in ListFooterComponent; no FlatList is nested inside a ScrollView
+**Plans**: TBD
 **UI hint**: yes
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Status Pill & Bottom Sheet | 3/3 | Complete   | 2026-04-10 |
-| 2. Radar View & View Toggle | 0/4 | Not started | - |
-| 3. Card Stack View | 4/4 | Complete   | 2026-04-11 |
-| 4. Upcoming Events Section | 4/4 | Complete   | 2026-04-11 |
+| 5. Database Migrations | 0/TBD | Not started | - |
+| 6. Birthday Profile Field | 0/TBD | Not started | - |
+| 7. Birthday Calendar Feature | 0/TBD | Not started | - |
+| 8. IOU Create & Detail | 0/TBD | Not started | - |
+| 9. IOU List & Summary | 0/TBD | Not started | - |
+| 10. Squad Dashboard | 0/TBD | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-11 — Phase 4 plans created (4 plans, 4 waves)*
+*Roadmap updated: 2026-04-12 — v1.4 phases 5-10 created (12 requirements, 100% coverage)*

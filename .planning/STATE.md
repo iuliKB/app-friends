@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools
-status: defining_requirements
+status: roadmap_created
 stopped_at: null
 last_updated: "2026-04-12T00:00:00.000Z"
 last_activity: 2026-04-12
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,30 +21,34 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Defining requirements for v1.4
+**Current focus:** v1.4 Squad Dashboard & Social Tools — roadmap created, ready for phase planning
 
 ## Current Position
 
 Milestone: v1.4 Squad Dashboard & Social Tools
-Phase: Not started (defining requirements)
+Phase: Not started (roadmap created)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-12 — Milestone v1.4 started
+Status: Ready to plan Phase 5
+Last activity: 2026-04-12 — v1.4 roadmap created (6 phases, 12 requirements mapped)
 
 Progress: [░░░░░░░░░░] 0%
 
-## Wave Structure
+## Phase Structure
 
-| Wave | Plans | Notes |
-|------|-------|-------|
-| 1 | 01-01, 01-02 | Parallel — no file overlap |
-| 2 | 01-03 | Depends on 01-01 + 01-02; has checkpoint |
+| Phase | Goal | Requirements |
+|-------|------|--------------|
+| 5. Database Migrations | Schema foundation for all v1.4 client work | IOU-01–05, BDAY-01–03 |
+| 6. Birthday Profile Field | Birthday input in profile edit, save/load verified | BDAY-01 |
+| 7. Birthday Calendar Feature | Upcoming birthdays list screen + dashboard card | BDAY-02, BDAY-03 |
+| 8. IOU Create & Detail | Atomic expense creation, split, settle | IOU-01, IOU-02, IOU-04 |
+| 9. IOU List & Summary | Net balance view, expense history, IOU card | IOU-03, IOU-05 |
+| 10. Squad Dashboard | Scrollable dashboard replaces tab switcher | DASH-01–04 |
 
 ## Performance Metrics
 
 Plans executed this milestone: 0
-Phases completed: 0/3
-Requirements covered: 23/23 mapped
+Phases completed: 0/6
+Requirements covered: 12/12 mapped
 
 ## Accumulated Context
 
@@ -80,24 +84,31 @@ Requirements covered: 23/23 mapped
 - [Phase 03-card-stack-view]: FriendSwipeCard wrapped in View for zIndex — SwipeCardProps has no style prop; plan anticipated this pattern
 - [Phase 03-card-stack-view]: STACK_CONFIGS rendered in reverse order (lowest zIndex first) so front card paints on top in absolute stack
 - [Phase 03-card-stack-view]: FONT_SIZE, FONT_WEIGHT, RADII removed from HomeScreen theme import after placeholder styles deleted
-- [Phase 03-card-stack-view]: FONT_SIZE, FONT_WEIGHT, RADII removed from HomeScreen theme import after placeholder styles deleted
 - [Phase 04-upcoming-events-section]: cover_image_url nullable text column — nullable so existing plans are unaffected until images are uploaded
 - [Phase 04-upcoming-events-section]: useUpcomingEvents filters client-side from Zustand store — avoids extra Supabase query, acceptable given store already populated by usePlans
 - [Phase 04-upcoming-events-section]: expo-image used for cover images (caching + graceful URI fallback); height:140 on FlatList style prevents ScrollView height-collapse; ItemSeparatorComponent for card gaps
 - [Phase 04-upcoming-events-section]: usePlans() added to HomeScreen body to populate Zustand store for UpcomingEventsSection before it mounts
 - [Phase 04-upcoming-events-section]: NSPhotoLibraryUsageDescription added to app.config.ts ios.infoPlist — required for expo-image-picker on iOS (RESEARCH.md Pitfall 2)
-- [Phase 04-upcoming-events-section]: usePlans() added to HomeScreen body to populate Zustand store for UpcomingEventsSection before it mounts
-- [Phase 04-upcoming-events-section]: NSPhotoLibraryUsageDescription added to app.config.ts ios.infoPlist — required for expo-image-picker on iOS (RESEARCH.md Pitfall 2)
 - [Phase 04]: Upload-after-create chosen for cover images: create plan first to get planId (required for storage path), then upload, then update cover_image_url — acceptable UX gap
 - [Phase 04]: noUncheckedIndexedAccess guard: assets?.[0] optional chain + null check required for TypeScript strict compliance with expo-image-picker results
+- [v1.4 Roadmap]: IOU amounts stored as INTEGER cents — float arithmetic causes phantom debts, cannot be fixed after data is written
+- [v1.4 Roadmap]: create_expense() RPC is atomic — two chained supabase.from().insert() calls are not; network failure between them creates orphan records
+- [v1.4 Roadmap]: Only expense creator can mark shares settled — RLS UPDATE policy on iou_members restricts to created_by, not the participant
+- [v1.4 Roadmap]: Birthday stored as separate birthday_month + birthday_day smallint columns — TIMESTAMPTZ causes off-by-one-day errors in negative-UTC timezones
+- [v1.4 Roadmap]: Squad dashboard uses single outer FlatList with feature cards in ListFooterComponent — FlatList inside ScrollView breaks Android scroll silently
+- [v1.4 Roadmap]: Dashboard assembled last (Phase 10) from pre-built, independently verified cards — minimizes integration blast radius
+- [v1.4 Roadmap]: Zero new npm dependencies required — datetimepicker already installed, Intl.NumberFormat built into Hermes on Expo SDK 55
 
 ### Roadmap Evolution
 
-- Phase 4 added: Upcoming Events Section
+- v1.3.5 Phase 4 added: Upcoming Events Section
+- v1.4 roadmap created: 6 phases (5-10), 12 requirements, 100% coverage
 
 ### Pending Todos
 
 - Verify rn-swiper-list compatibility with Expo Go before committing to it in Phase 3 planning
+- Decide disposition of plans.iou_notes field before writing migration 0015 (rename to general_notes per PITFALLS.md recommendation)
+- Write explicit IOU settlement UX copy before Phase 8 (manual settle, no money moves — copy must set correct expectation)
 
 ### Blockers/Concerns
 
@@ -107,5 +118,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T19:10:01.115Z
-Stopped at: Completed 04-04-PLAN.md — all tasks done, phase 04 complete
+Last session: 2026-04-12T00:00:00.000Z
+Stopped at: v1.4 roadmap created — 6 phases (5-10), 12 requirements mapped, ready for /gsd-plan-phase 5

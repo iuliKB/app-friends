@@ -72,24 +72,26 @@ Explicitly excluded.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DASH-01 | TBD | Pending |
-| DASH-02 | TBD | Pending |
-| DASH-03 | TBD | Pending |
-| DASH-04 | TBD | Pending |
-| IOU-01 | TBD | Pending |
-| IOU-02 | TBD | Pending |
-| IOU-03 | TBD | Pending |
-| IOU-04 | TBD | Pending |
-| IOU-05 | TBD | Pending |
-| BDAY-01 | TBD | Pending |
-| BDAY-02 | TBD | Pending |
-| BDAY-03 | TBD | Pending |
+| DASH-01 | Phase 10 | Pending |
+| DASH-02 | Phase 10 | Pending |
+| DASH-03 | Phase 10 | Pending |
+| DASH-04 | Phase 10 | Pending |
+| IOU-01 | Phase 8 | Pending |
+| IOU-02 | Phase 8 | Pending |
+| IOU-03 | Phase 9 | Pending |
+| IOU-04 | Phase 8 | Pending |
+| IOU-05 | Phase 9 | Pending |
+| BDAY-01 | Phase 6 | Pending |
+| BDAY-02 | Phase 7 | Pending |
+| BDAY-03 | Phase 7 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0 ✓
+
+**Note on Phase 5:** Phase 5 (Database Migrations) creates the schema required by IOU-01 through IOU-05 and BDAY-01 through BDAY-03. Those requirements are assigned to the phases that deliver their client-facing behavior, not to the migration phase itself.
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after initial definition*
+*Last updated: 2026-04-12 — traceability complete after roadmap creation*
