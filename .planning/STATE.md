@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.3.5
 milestone_name: Homescreen Redesign — Active Phases
-status: verifying
-stopped_at: Phase 4 UI-SPEC approved
-last_updated: "2026-04-11T18:26:33.932Z"
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-11T18:51:51.298Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_plans: 15
+  completed_plans: 12
+  percent: 80
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 03 — card-stack-view
+**Current focus:** Phase 04 — Upcoming Events Section
 
 ## Current Position
 
 Milestone: v1.3.5 Homescreen Redesign
-Phase: 03 (card-stack-view) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
+Phase: 04 (Upcoming Events Section) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-04-11
 
 Progress: [░░░░░░░░░░] 0% (0/3 phases)
@@ -81,6 +81,8 @@ Requirements covered: 23/23 mapped
 - [Phase 03-card-stack-view]: STACK_CONFIGS rendered in reverse order (lowest zIndex first) so front card paints on top in absolute stack
 - [Phase 03-card-stack-view]: FONT_SIZE, FONT_WEIGHT, RADII removed from HomeScreen theme import after placeholder styles deleted
 - [Phase 03-card-stack-view]: FONT_SIZE, FONT_WEIGHT, RADII removed from HomeScreen theme import after placeholder styles deleted
+- [Phase 04-upcoming-events-section]: cover_image_url nullable text column — nullable so existing plans are unaffected until images are uploaded
+- [Phase 04-upcoming-events-section]: useUpcomingEvents filters client-side from Zustand store — avoids extra Supabase query, acceptable given store already populated by usePlans
 
 ### Roadmap Evolution
 
@@ -98,5 +100,5 @@ Requirements covered: 23/23 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T18:26:33.926Z
-Stopped at: Phase 4 UI-SPEC approved
+Last session: 2026-04-11T18:51:51.293Z
+Stopped at: Completed 04-01-PLAN.md

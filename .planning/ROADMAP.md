@@ -126,7 +126,7 @@ Plans:
   5. Users can add a cover image to a plan from the creation form and edit it from the plan detail screen
 **Plans**: 4 plans
 Plans:
-- [ ] 04-01-PLAN.md — DB migration + types + formatEventCardDate utility + useUpcomingEvents hook
+- [x] 04-01-PLAN.md — DB migration + types + formatEventCardDate utility + useUpcomingEvents hook
 - [ ] 04-02-PLAN.md — EventCard + UpcomingEventsSection components
 - [ ] 04-03-PLAN.md — HomeScreen wiring + iOS permission + supabase db push
 - [ ] 04-04-PLAN.md — uploadPlanCover utility + cover image picker in create/edit

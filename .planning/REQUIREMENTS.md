@@ -44,12 +44,12 @@ Requirements for v1.3.5 milestone. Each maps to exactly one phase.
 
 ### Upcoming Events Section
 
-- [ ] **EVT-01**: User sees an "Upcoming events" section below the Radar/Cards view in the homescreen, showing a horizontally scrollable row of event cards
-- [ ] **EVT-02**: Event cards display title, formatted date ("Mon 15, Aug · in 2 days"), attendee avatar stack, and optional cover image or pastel background
-- [ ] **EVT-03**: Section only shows plans where the user is the creator or has RSVP'd "going"; future plans only; capped at 5, soonest first
-- [ ] **EVT-04**: Tapping an event card navigates to the plan detail screen
-- [ ] **EVT-05**: When no upcoming events exist, a placeholder card shows "No plans yet — start one!" that links to plan creation
-- [ ] **EVT-06**: Users can optionally add a cover image to a plan during creation or from the plan detail screen (camera roll only, stored in Supabase Storage)
+- [x] **EVT-01**: User sees an "Upcoming events" section below the Radar/Cards view in the homescreen, showing a horizontally scrollable row of event cards
+- [x] **EVT-02**: Event cards display title, formatted date ("Mon 15, Aug · in 2 days"), attendee avatar stack, and optional cover image or pastel background
+- [x] **EVT-03**: Section only shows plans where the user is the creator or has RSVP'd "going"; future plans only; capped at 5, soonest first
+- [x] **EVT-04**: Tapping an event card navigates to the plan detail screen
+- [x] **EVT-05**: When no upcoming events exist, a placeholder card shows "No plans yet — start one!" that links to plan creation
+- [x] **EVT-06**: Users can optionally add a cover image to a plan during creation or from the plan detail screen (camera roll only, stored in Supabase Storage)
 
 ## v1.4 Requirements (Deferred)
 
