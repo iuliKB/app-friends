@@ -19,11 +19,11 @@ Requirements for v1.3.5 milestone. Each maps to exactly one phase.
 
 ### Radar View
 
-- [ ] **RADAR-01**: User sees a spatial bubble layout with up to 6 friends, sized by status (Free=large with colored gradient, Busy/Maybe=smaller, DEAD=smallest+muted)
-- [ ] **RADAR-02**: ALIVE friends display pulsing concentric ring animations around their avatar bubble
-- [ ] **RADAR-03**: FADING friends display at reduced opacity (60%) with no ring animation
+- [x] **RADAR-01**: User sees a spatial bubble layout with up to 6 friends, sized by status (Free=large with colored gradient, Busy/Maybe=smaller, DEAD=smallest+muted)
+- [x] **RADAR-02**: ALIVE friends display pulsing concentric ring animations around their avatar bubble
+- [x] **RADAR-03**: FADING friends display at reduced opacity (60%) with no ring animation
 - [ ] **RADAR-04**: When more than 6 friends exist, overflow friends appear in a horizontal scroll row below the radar with smaller avatar chips
-- [ ] **RADAR-05**: Tapping any friend bubble or overflow chip opens a DM with that friend
+- [x] **RADAR-05**: Tapping any friend bubble or overflow chip opens a DM with that friend
 - [ ] **RADAR-06**: Bubble positions are computed from container onLayout dimensions (not fixed Dimensions.get), adapting to all screen sizes
 
 ### Card Stack View
@@ -88,11 +88,11 @@ Explicitly excluded.
 | PILL-07 | Phase 1 | Complete |
 | HOME-03 | Phase 1 | Complete |
 | HOME-04 | Phase 1 | Complete |
-| RADAR-01 | Phase 2 | Pending |
-| RADAR-02 | Phase 2 | Pending |
-| RADAR-03 | Phase 2 | Pending |
+| RADAR-01 | Phase 2 | Complete |
+| RADAR-02 | Phase 2 | Complete |
+| RADAR-03 | Phase 2 | Complete |
 | RADAR-04 | Phase 2 | Pending |
-| RADAR-05 | Phase 2 | Pending |
+| RADAR-05 | Phase 2 | Complete |
 | RADAR-06 | Phase 2 | Pending |
 | HOME-01 | Phase 2 | Complete |
 | HOME-02 | Phase 2 | Complete |
