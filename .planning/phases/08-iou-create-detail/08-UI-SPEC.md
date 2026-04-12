@@ -41,7 +41,8 @@ Declared values from `src/theme/spacing.ts` (pre-existing):
 | xxl | 32px | Screen header top padding, top of create form |
 
 Exceptions:
-- Touch targets for the Settle button: minimum 44px height (accessibility minimum for tappable rows per iOS HIG; not a token — apply via `minHeight: 44` inline)
+- `md = 12px`: Pre-existing codebase token — not introduced by this phase; covered by future design token standardization.
+- Touch targets for the Mark Settled button: minimum 44px height (accessibility minimum for tappable rows per iOS HIG; not a token — apply via `minHeight: 44` inline)
 - All-settled banner: 48px height to give visual weight as a status-changing announcement
 
 **Source:** `src/theme/spacing.ts` — existing tokens, no new tokens needed.
@@ -55,14 +56,11 @@ All sizes from `src/theme/typography.ts` (pre-existing):
 | Role | Size | Weight | Line Height | Usage in this phase |
 |------|------|--------|-------------|---------------------|
 | Body | 16px (lg) | 400 (regular) | 1.5 | Participant names, form field input text, amount display |
-| Label | 14px (md) | 400 (regular) | 1.4 | Form field placeholder, share amounts, date/payer metadata, badge text |
+| Label | 14px (md) | 400 (regular) | 1.4 | Form field placeholder, share amounts, date/payer/creation-date metadata, badge text |
 | Heading | 20px (xl) | 600 (semibold) | 1.2 | Hero card expense title, create screen title |
 | Display | 24px (xxl) | 600 (semibold) | 1.2 | Hero card total amount (e.g. "$42.50") |
 
-Secondary label for captions:
-- 13px (sm) at weight 400, line-height 1.4 — used for creation date in hero card metadata
-
-**Source:** `src/theme/typography.ts` — `FONT_SIZE`, `FONT_WEIGHT`. No new sizes needed.
+**Source:** `src/theme/typography.ts` — `FONT_SIZE`, `FONT_WEIGHT`. No new sizes needed. Creation-date metadata uses the 14px label size (same as other hero card metadata fields).
 
 ---
 
@@ -101,8 +99,8 @@ Components to build (new) and reuse (existing):
 
 | Component | Props Contract | Behavior |
 |-----------|---------------|----------|
-| `ExpenseHeroCard` | `title: string`, `totalCents: number`, `payerName: string`, `createdAt: string`, `splitMode: 'even' \| 'custom'`, `allSettled: boolean` | Displays title at 20px/semibold, total at 24px/semibold in accent color, payer + date + split type at 13px/secondary. When `allSettled=true`, renders green "All settled!" banner above card. Background: `COLORS.surface.card`, radius: `RADII.lg`. |
-| `ParticipantRow` | `displayName: string`, `avatarUrl: string \| null`, `shareCents: number`, `isSettled: boolean`, `isPayerRow: boolean`, `isCreator: boolean`, `onSettle: () => void`, `settleLoading: boolean` | Avatar (AvatarCircle, 36px) + name at 16px/regular + share amount at 14px/secondary + badge. Settle button (44px min-height) appears only when `isCreator && !isPayerRow && !isSettled`. Badge: green "Settled" when settled, border-colored "Unsettled" when not. |
+| `ExpenseHeroCard` | `title: string`, `totalCents: number`, `payerName: string`, `createdAt: string`, `splitMode: 'even' \| 'custom'`, `allSettled: boolean` | Displays title at 20px/semibold, total at 24px/semibold in accent color, payer + date + split type at 14px/secondary. When `allSettled=true`, renders green "All settled!" banner above card. Background: `COLORS.surface.card`, radius: `RADII.lg`. |
+| `ParticipantRow` | `displayName: string`, `avatarUrl: string \| null`, `shareCents: number`, `isSettled: boolean`, `isPayerRow: boolean`, `isCreator: boolean`, `onSettle: () => void`, `settleLoading: boolean` | Avatar (AvatarCircle, 36px) + name at 16px/regular + share amount at 14px/secondary + badge. Mark Settled button (44px min-height) appears only when `isCreator && !isPayerRow && !isSettled`. Badge: green "Settled" when settled, border-colored "Unsettled" when not. |
 | `SplitModeControl` | `mode: 'even' \| 'custom'`, `onChange: (mode) => void` | Segmented control following `SegmentedControl.tsx` pattern. Two segments: "Even" and "Custom". Fires `Haptics.ImpactFeedbackStyle.Light` on selection change. |
 | `RemainingIndicator` | `totalCents: number`, `allocatedCents: number` | Shows "Remaining: $X.XX" when `totalCents > allocatedCents`; "Over by $X.XX" when `allocatedCents > totalCents` (both in `COLORS.interactive.destructive`); "Ready" (or hidden) when equal. Text at 14px/semibold. Only visible when split mode is "custom". |
 
@@ -140,6 +138,8 @@ ScrollView (background: COLORS.surface.base, padding: SPACING.lg)
   │   └── RemainingIndicator
   └── PrimaryButton "Create Expense" (disabled when: no title, amount = 0, no friends selected, custom mode remaining ≠ 0)
 ```
+
+Entry point: `ScreenHeader` `rightAction` '+' button (D-10) — apply `accessibilityLabel="Create expense"` to this Pressable.
 
 Keyboard behavior: ScrollView `keyboardShouldPersistTaps="handled"` to keep friend list tappable while keyboard is open.
 
@@ -184,11 +184,11 @@ Loading state: Render `ExpenseHeroCardSkeleton` (grey boxes at opacity 0.5, `COL
 
 ### Settle action (detail screen)
 
-1. Creator taps "Settle" button on a participant row
+1. Creator taps "Mark Settled" button on a participant row
 2. `settleLoading` state set to `true` on that row's button (spinner, button disabled)
 3. `supabase.from('iou_members').update(...)` called
 4. On success: `Haptics.impactAsync(ImpactFeedbackStyle.Medium).catch(() => {})` fires, row badge updates to "Settled" (green), settle button disappears
-5. On error: `settleLoading` resets, row unchanged, inline error shown below row at 13px/destructive
+5. On error: `settleLoading` resets, row unchanged, inline error shown below row at 14px/destructive
 
 ### Submit (create expense)
 
@@ -218,7 +218,7 @@ Loading state: Render `ExpenseHeroCardSkeleton` (grey boxes at opacity 0.5, `COL
 | All-settled banner | "All settled!" (16px/semibold, `COLORS.status.free`) |
 | Settled badge | "Settled" |
 | Unsettled badge | "Unsettled" |
-| Settle button label | "Settle" |
+| Settle button label | "Mark Settled" |
 | Detail payer label | "Paid by {name}" |
 | Detail date label | "{date}" (formatted as "Apr 12, 2026" — Intl.DateTimeFormat) |
 | Detail split type label | "Even split" or "Custom split" |
@@ -228,7 +228,7 @@ Loading state: Render `ExpenseHeroCardSkeleton` (grey boxes at opacity 0.5, `COL
 | Error — detail load failure | "Couldn't load expense. Pull down to refresh." |
 | Destructive action | None in this phase — settle is not destructive (it is reversible by the creator in future phases; no confirmation dialog required) |
 
-**Settlement copy note:** The app does NOT move money. The "Settle" action means "mark as paid outside the app." This must be clear from context (the settle button label and badge copy set the right expectation without needing extra disclaimer copy — per STATE.md Pending Todo: "Write explicit IOU settlement UX copy before Phase 8").
+**Settlement copy note:** The app does NOT move money. The "Mark Settled" action means "mark as paid outside the app." This must be clear from context (the settle button label and badge copy set the right expectation without needing extra disclaimer copy — per STATE.md Pending Todo: "Write explicit IOU settlement UX copy before Phase 8").
 
 ---
 
@@ -268,7 +268,7 @@ No third-party registries. All components are built from existing codebase patte
 | D-07: Haptic on create success and settle success | CONTEXT.md | Haptic map — Medium on both |
 | D-08: Skeleton loading on detail, spinner on submit | CONTEXT.md | `ExpenseHeroCardSkeleton` + `ParticipantRowSkeleton`, `PrimaryButton loading` prop |
 | D-09: Routes `/squad/expenses/create` and `/squad/expenses/[id]` | CONTEXT.md | Screen layout section |
-| D-10: Temporary '+' in squad header via ScreenHeader rightAction | CONTEXT.md | ScreenHeader `rightAction` prop (not `navigation.setOptions`) |
+| D-10: Temporary '+' in squad header via ScreenHeader rightAction | CONTEXT.md | ScreenHeader `rightAction` prop (not `navigation.setOptions`); `accessibilityLabel="Create expense"` applied |
 | Integer cents | STATE.md | All amount handling in cents, never floats |
 | Single screen creation | RESEARCH.md discretion | Inline friend checkboxes, single ScrollView |
 | Settle = tap button | RESEARCH.md discretion | `ParticipantRow` settle button, not swipe/long-press |
