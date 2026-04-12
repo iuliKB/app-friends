@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-04-12T09:52:08.527Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-04-12T09:55:24.469Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 12
-  completed_plans: 9
-  percent: 75
+  completed_plans: 10
+  percent: 83
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 08 (IOU Create & Detail) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -112,6 +112,9 @@ Requirements covered: 12/12 mapped
 - [Phase 07-02]: BirthdaysScreen fetches its own useUpcomingBirthdays instance — no route params carry birthday data (T-07-06 mitigated)
 - [Phase 07-birthday-calendar-feature]: BirthdayCard wired into squad.tsx goals tab via data-ownership pattern — hook in parent, prop to child; human visual verification approved
 - [Phase 08]: create_expense RPC typed in Functions section matching migration 0015 signature; IouGroup/IouMember follow Tables<T> alias pattern; test scaffold intentionally fails (RED state until Wave 2 screens built)
+- [Phase 08-02]: Intl.NumberFormat currency formatter avoids external library (zero new dependencies)
+- [Phase 08-02]: ParticipantRow settle button guard: isCreator && !isPayerRow && !isSettled — UI convenience only; RLS is authoritative enforcement
+- [Phase 08-02]: RemainingIndicator returns null at zero remaining (per UI-SPEC copywriting table)
 
 ### Roadmap Evolution
 
@@ -132,5 +135,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-12T09:52:08.523Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-04-12T09:55:24.464Z
+Stopped at: Completed 08-02-PLAN.md

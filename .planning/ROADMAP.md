@@ -132,7 +132,7 @@ Plans:
 **Plans**: 4 plans
 Plans:
 - [x] 08-01-PLAN.md — IOU type aliases in database.ts + Playwright test scaffold
-- [ ] 08-02-PLAN.md — currencyFormat utils + IOU components (ExpenseHeroCard, ParticipantRow, SplitModeControl, RemainingIndicator)
+- [x] 08-02-PLAN.md — currencyFormat utils + IOU components (ExpenseHeroCard, ParticipantRow, SplitModeControl, RemainingIndicator)
 - [ ] 08-03-PLAN.md — useExpenseCreate + useExpenseDetail hooks with settle action
 - [ ] 08-04-PLAN.md — Route screens (create + detail) + squad.tsx '+' button + human verify [BLOCKING]
 
@@ -168,7 +168,7 @@ Plans:
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
-| 8. IOU Create & Detail | 1/4 | In Progress|  |
+| 8. IOU Create & Detail | 2/4 | In Progress|  |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
