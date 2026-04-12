@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 
 import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
@@ -32,12 +33,16 @@ export default function EditProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const [birthdayMonth, setBirthdayMonth] = useState<number | null>(null);
+  const [birthdayDay, setBirthdayDay] = useState<number | null>(null);
+  const [originalBirthdayMonth, setOriginalBirthdayMonth] = useState<number | null>(null);
+  const [originalBirthdayDay, setOriginalBirthdayDay] = useState<number | null>(null);
 
   useEffect(() => {
     if (!session) return;
     supabase
       .from('profiles')
-      .select('display_name, avatar_url')
+      .select('display_name, avatar_url, birthday_month, birthday_day')
       .eq('id', session.user.id)
       .single()
       .then(({ data, error }) => {
@@ -46,6 +51,10 @@ export default function EditProfileScreen() {
           setAvatarUrl(data.avatar_url ?? null);
           setOriginalDisplayName(data.display_name ?? '');
           setOriginalAvatarUrl(data.avatar_url ?? null);
+          setBirthdayMonth(data.birthday_month ?? null);
+          setBirthdayDay(data.birthday_day ?? null);
+          setOriginalBirthdayMonth(data.birthday_month ?? null);
+          setOriginalBirthdayDay(data.birthday_day ?? null);
         }
         setLoading(false);
       });
@@ -120,11 +129,23 @@ export default function EditProfileScreen() {
   async function handleSave() {
     if (!session) return;
     setSaving(true);
+
+    // Feb 29 → Feb 28 normalization (D-02): DB allows birthday_day=29 for month=2,
+    // but business rule is to store Feb 28 so the value is valid in non-leap years.
+    const saveMonth = birthdayMonth;
+    const saveDay = birthdayMonth === 2 && birthdayDay === 29 ? 28 : birthdayDay;
+
+    // Partial birthday guard (Pitfall 5): if exactly one field is set, treat as no birthday.
+    const finalMonth = saveMonth !== null && saveDay !== null ? saveMonth : null;
+    const finalDay = saveMonth !== null && saveDay !== null ? saveDay : null;
+
     const { error } = await supabase
       .from('profiles')
       .update({
         display_name: displayName.trim(),
         avatar_url: avatarUrl,
+        birthday_month: finalMonth,
+        birthday_day: finalDay,
         updated_at: new Date().toISOString(),
       })
       .eq('id', session.user.id);
@@ -138,7 +159,11 @@ export default function EditProfileScreen() {
     router.back();
   }
 
-  const isDirty = displayName.trim() !== originalDisplayName || avatarUrl !== originalAvatarUrl;
+  const isDirty =
+    displayName.trim() !== originalDisplayName ||
+    avatarUrl !== originalAvatarUrl ||
+    birthdayMonth !== originalBirthdayMonth ||
+    birthdayDay !== originalBirthdayDay;
   const canSave = displayName.trim().length > 0 && isDirty && !saving;
 
   if (loading) {
@@ -192,6 +217,18 @@ export default function EditProfileScreen() {
       <Text style={styles.charCount}>
         {displayName.length}/{APP_CONFIG.displayNameMaxLength}
       </Text>
+
+      {/* Birthday field (D-03: below display name, above Save) */}
+      <Text style={styles.birthdayLabel}>Birthday</Text>
+      <BirthdayPicker
+        month={birthdayMonth}
+        day={birthdayDay}
+        onChange={(m, d) => {
+          setBirthdayMonth(m);
+          setBirthdayDay(d);
+        }}
+        disabled={saving}
+      />
 
       {/* Save button */}
       <View style={styles.buttonWrapper}>
@@ -264,6 +301,13 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     textAlign: 'right',
     marginTop: SPACING.xs,
+  },
+  birthdayLabel: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.sm,
   },
   buttonWrapper: {
     marginTop: SPACING.xl,
