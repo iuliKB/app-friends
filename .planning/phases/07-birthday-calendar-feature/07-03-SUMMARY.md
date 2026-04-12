@@ -22,9 +22,9 @@ decisions:
   - BirthdayCard rendered in goals tab ScrollView directly after StreakCard — data flows from parent hook call per data-ownership pattern
   - RefreshControl remains wired to streak only — birthdays hook manages its own loading state internally
 metrics:
-  duration_seconds: 180
+  duration_seconds: 420
   completed_date: "2026-04-12"
-  tasks_completed: 1
+  tasks_completed: 2
   tasks_total: 2
   files_created: 0
   files_modified: 1
@@ -32,14 +32,14 @@ metrics:
 
 # Phase 7 Plan 03: Birthday Calendar Integration Summary
 
-**One-liner:** BirthdayCard wired into squad.tsx goals tab below StreakCard via `useUpcomingBirthdays()` — completes the full birthday calendar feature integration pending human visual verification.
+**One-liner:** BirthdayCard wired into squad.tsx goals tab below StreakCard via `useUpcomingBirthdays()` — full birthday calendar feature integration complete, human-verified.
 
 ## Tasks Completed
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
 | 1 | Wire BirthdayCard into squad.tsx goals tab | de8d2ef | src/app/(tabs)/squad.tsx |
-| 2 | Human visual verification | — | AWAITING CHECKPOINT |
+| 2 | Human visual verification | approved | Visual checkpoint passed |
 
 ## Deviations from Plan
 

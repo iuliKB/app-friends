@@ -68,7 +68,7 @@
 
 - [x] **Phase 5: Database Migrations** - IOU tables + birthday columns + RPCs; schema foundation for all v1.4 client work (completed 2026-04-11)
 - [ ] **Phase 6: Birthday Profile Field** - Birthday month/day input in profile edit; save/load round-trip verified
-- [ ] **Phase 7: Birthday Calendar Feature** - Upcoming birthdays hook, list screen, and dashboard card
+- [x] **Phase 7: Birthday Calendar Feature** - Upcoming birthdays hook, list screen, and dashboard card (completed 2026-04-12)
 - [ ] **Phase 8: IOU Create & Detail** - Atomic expense creation, even/custom split, per-expense detail, settle action
 - [ ] **Phase 9: IOU List & Summary** - Net balance view, expense history screen, IOU dashboard card
 - [ ] **Phase 10: Squad Dashboard** - Scrollable dashboard with friends list + feature cards replaces tab switcher
@@ -163,7 +163,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
-| 7. Birthday Calendar Feature | 2/3 | In Progress|  |
+| 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
