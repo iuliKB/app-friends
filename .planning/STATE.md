@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Phase 7 UI-SPEC approved
-last_updated: "2026-04-12T08:07:37.949Z"
-last_activity: 2026-04-12 -- Phase 07 planning complete
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-04-12T08:17:52.943Z"
+last_activity: 2026-04-12
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 8
-  completed_plans: 5
-  percent: 63
+  completed_plans: 6
+  percent: 75
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 06 — birthday-profile-field
+**Current focus:** Phase 07 — birthday-calendar-feature
 
 ## Current Position
 
 Milestone: v1.4 Squad Dashboard & Social Tools
-Phase: 7
-Plan: Not started
+Phase: 07 (birthday-calendar-feature) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-12 -- Phase 07 planning complete
+Last activity: 2026-04-12
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -106,6 +106,8 @@ Requirements covered: 12/12 mapped
 - [Phase 05-database-migrations]: Migration push is remote-only — 0015 and 0016 applied to Supabase project zqmaauaopyolutfoizgq; seed.sql was last iou_notes holdout, updated to general_notes with IOU and birthday test data
 - [Phase 06-01]: BirthdayPicker uses FriendActionSheet Modal+Animated.timing pattern; getDaysInMonth returns 29 for Feb with normalization deferred to handleSave in Plan 02; day resets to null on invalid month change
 - [Phase 06-birthday-profile-field]: BirthdayPicker wired into edit.tsx with isDirty tracking, Feb 29 normalization at save time, and partial birthday guard saving null/null when only one field set
+- [Phase 07-01]: get_upcoming_birthdays RPC type added manually to database.ts — auto-generated types not used; migration 0016 already deployed
+- [Phase 07-01]: Intl.DateTimeFormat anchor year 2000 used for formatBirthdayDate — year irrelevant for display, avoids leap-year display edge cases
 
 ### Roadmap Evolution
 
@@ -126,5 +128,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-12T07:53:39.285Z
-Stopped at: Phase 7 UI-SPEC approved
+Last session: 2026-04-12T08:17:52.939Z
+Stopped at: Completed 07-01-PLAN.md
