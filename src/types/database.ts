@@ -574,6 +574,17 @@ export type Database = {
           days_until: number;
         }[];
       };
+      // Phase 8 v1.4 (migration 0015) — atomic expense creation RPC; largest-remainder split
+      create_expense: {
+        Args: {
+          p_title: string;
+          p_total_amount_cents: number;
+          p_participant_ids: string[];
+          p_split_mode?: 'even' | 'custom';
+          p_custom_cents?: number[] | null;
+        };
+        Returns: string; // uuid of new iou_groups row
+      };
     };
     CompositeTypes: Record<string, never>;
   };
@@ -608,3 +619,7 @@ export type RsvpStatus = Enums<'rsvp_status'>;
 // Phase 3 v1.3 row-type aliases
 export type FreeTransition = Tables<'free_transitions'>;
 export type FriendFreePush = Tables<'friend_free_pushes'>;
+
+// Phase 8 v1.4 row-type aliases for IOU tables
+export type IouGroup = Tables<'iou_groups'>;
+export type IouMember = Tables<'iou_members'>;
