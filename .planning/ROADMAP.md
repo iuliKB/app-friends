@@ -129,8 +129,12 @@ Plans:
   3. Expense detail screen shows the payer, all participants with their share amounts, and settled/unsettled status per participant
   4. Only the expense creator can mark a participant's share as settled; a debtor cannot self-certify their own payment
   5. Settle action triggers a haptic confirmation and the participant row updates to show settled state immediately
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 4 plans
+Plans:
+- [ ] 08-01-PLAN.md — IOU type aliases in database.ts + Playwright test scaffold
+- [ ] 08-02-PLAN.md — currencyFormat utils + IOU components (ExpenseHeroCard, ParticipantRow, SplitModeControl, RemainingIndicator)
+- [ ] 08-03-PLAN.md — useExpenseCreate + useExpenseDetail hooks with settle action
+- [ ] 08-04-PLAN.md — Route screens (create + detail) + squad.tsx '+' button + human verify [BLOCKING]
 
 ### Phase 9: IOU List & Summary
 **Goal**: Users can see net balances per friend across all expenses and browse expense history — the IOU feature is fully usable without requiring the dashboard
@@ -164,9 +168,9 @@ Plans:
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
-| 8. IOU Create & Detail | 0/TBD | Not started | - |
+| 8. IOU Create & Detail | 0/4 | Not started | - |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-12 — Phase 7 planned (3 plans, 3 waves)*
+*Roadmap updated: 2026-04-12 — Phase 8 planned (4 plans, 3 waves)*
