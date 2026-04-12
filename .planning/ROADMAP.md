@@ -69,7 +69,7 @@
 - [x] **Phase 5: Database Migrations** - IOU tables + birthday columns + RPCs; schema foundation for all v1.4 client work (completed 2026-04-11)
 - [ ] **Phase 6: Birthday Profile Field** - Birthday month/day input in profile edit; save/load round-trip verified
 - [x] **Phase 7: Birthday Calendar Feature** - Upcoming birthdays hook, list screen, and dashboard card (completed 2026-04-12)
-- [ ] **Phase 8: IOU Create & Detail** - Atomic expense creation, even/custom split, per-expense detail, settle action
+- [x] **Phase 8: IOU Create & Detail** - Atomic expense creation, even/custom split, per-expense detail, settle action (completed 2026-04-12)
 - [ ] **Phase 9: IOU List & Summary** - Net balance view, expense history screen, IOU dashboard card
 - [ ] **Phase 10: Squad Dashboard** - Scrollable dashboard with friends list + feature cards replaces tab switcher
 
@@ -134,7 +134,7 @@ Plans:
 - [x] 08-01-PLAN.md — IOU type aliases in database.ts + Playwright test scaffold
 - [x] 08-02-PLAN.md — currencyFormat utils + IOU components (ExpenseHeroCard, ParticipantRow, SplitModeControl, RemainingIndicator)
 - [x] 08-03-PLAN.md — useExpenseCreate + useExpenseDetail hooks with settle action
-- [ ] 08-04-PLAN.md — Route screens (create + detail) + squad.tsx '+' button + human verify [BLOCKING]
+- [x] 08-04-PLAN.md — Route screens (create + detail) + squad.tsx '+' button + human verify [BLOCKING]
 
 ### Phase 9: IOU List & Summary
 **Goal**: Users can see net balances per friend across all expenses and browse expense history — the IOU feature is fully usable without requiring the dashboard
@@ -168,7 +168,7 @@ Plans:
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
-| 8. IOU Create & Detail | 3/4 | In Progress|  |
+| 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
