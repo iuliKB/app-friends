@@ -18,6 +18,9 @@ export type Database = {
           // Phase 3 v1.3 (migration 0010) — timezone + friend-free toggle
           timezone: string | null;
           notify_friend_free: boolean;
+          // Phase 6 v1.4 (migration 0016) — birthday month/day columns
+          birthday_month: number | null;
+          birthday_day: number | null;
         };
         Insert: {
           id: string;
@@ -29,6 +32,9 @@ export type Database = {
           // Phase 3 v1.3 (migration 0010) — timezone + friend-free toggle
           timezone?: string | null;
           notify_friend_free?: boolean;
+          // Phase 6 v1.4 (migration 0016) — birthday month/day columns
+          birthday_month?: number | null;
+          birthday_day?: number | null;
         };
         Update: {
           id?: string;
@@ -40,6 +46,9 @@ export type Database = {
           // Phase 3 v1.3 (migration 0010) — timezone + friend-free toggle
           timezone?: string | null;
           notify_friend_free?: boolean;
+          // Phase 6 v1.4 (migration 0016) — birthday month/day columns
+          birthday_month?: number | null;
+          birthday_day?: number | null;
         };
         Relationships: [
           {
