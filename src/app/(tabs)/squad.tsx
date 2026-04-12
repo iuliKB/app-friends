@@ -9,6 +9,8 @@ import { FriendsList } from '@/screens/friends/FriendsList';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { StreakCard } from '@/components/squad/StreakCard';
 import { useStreakData } from '@/hooks/useStreakData';
+import { BirthdayCard } from '@/components/squad/BirthdayCard';
+import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 
 export default function SquadScreen() {
   const insets = useSafeAreaInsets();
@@ -16,6 +18,7 @@ export default function SquadScreen() {
   const { count: pendingCount } = usePendingRequestsCount();
   const [activeTab, setActiveTab] = useState<'friends' | 'goals'>('friends');
   const streak = useStreakData();
+  const birthdays = useUpcomingBirthdays();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -53,6 +56,7 @@ export default function SquadScreen() {
           }
         >
           <StreakCard streak={streak} />
+          <BirthdayCard birthdays={birthdays} />
         </ScrollView>
       )}
     </View>
