@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-04-12T08:17:52.943Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-04-12T08:22:08.216Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 07 (birthday-calendar-feature) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-12
 
@@ -108,6 +108,8 @@ Requirements covered: 12/12 mapped
 - [Phase 06-birthday-profile-field]: BirthdayPicker wired into edit.tsx with isDirty tracking, Feb 29 normalization at save time, and partial birthday guard saving null/null when only one field set
 - [Phase 07-01]: get_upcoming_birthdays RPC type added manually to database.ts — auto-generated types not used; migration 0016 already deployed
 - [Phase 07-01]: Intl.DateTimeFormat anchor year 2000 used for formatBirthdayDate — year irrelevant for display, avoids leap-year display edge cases
+- [Phase 07-02]: BirthdayCard receives UpcomingBirthdaysData prop from parent (data-ownership pattern matching StreakCard)
+- [Phase 07-02]: BirthdaysScreen fetches its own useUpcomingBirthdays instance — no route params carry birthday data (T-07-06 mitigated)
 
 ### Roadmap Evolution
 
@@ -128,5 +130,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-12T08:17:52.939Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-04-12T08:22:08.212Z
+Stopped at: Completed 07-02-PLAN.md

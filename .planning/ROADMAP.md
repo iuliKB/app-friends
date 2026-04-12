@@ -116,7 +116,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 07-01-PLAN.md — useUpcomingBirthdays hook + birthday formatters + Playwright test scaffold
-- [ ] 07-02-PLAN.md — squad/_layout.tsx + BirthdayCard component + BirthdaysScreen
+- [x] 07-02-PLAN.md — squad/_layout.tsx + BirthdayCard component + BirthdaysScreen
 - [ ] 07-03-PLAN.md — Wire BirthdayCard into squad.tsx + human verify checkpoint
 
 ### Phase 8: IOU Create & Detail
@@ -163,7 +163,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
-| 7. Birthday Calendar Feature | 1/3 | In Progress|  |
+| 7. Birthday Calendar Feature | 2/3 | In Progress|  |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
