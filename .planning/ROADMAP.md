@@ -99,8 +99,10 @@ Plans:
   2. Saved birthday round-trips correctly: reopening profile edit shows the previously saved month and day
   3. Feb 29 input is normalized to Feb 28 at save time so the value is valid in non-leap years
   4. Leaving birthday blank is valid; no error is shown for users who skip it
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — database.ts birthday types + BirthdayPicker component
+- [ ] 06-02-PLAN.md — Wire BirthdayPicker into edit.tsx + visual test
 
 ### Phase 7: Birthday Calendar Feature
 **Goal**: Users can view a sorted list of friends' upcoming birthdays and the Squad dashboard shows a glanceable birthdays card
@@ -157,11 +159,11 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
-| 6. Birthday Profile Field | 0/TBD | Not started | - |
+| 6. Birthday Profile Field | 0/2 | Not started | - |
 | 7. Birthday Calendar Feature | 0/TBD | Not started | - |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-12 — Phase 5 planned (3 plans, 2 waves)*
+*Roadmap updated: 2026-04-12 — Phase 6 planned (2 plans, 2 waves)*
