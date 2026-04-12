@@ -562,6 +562,18 @@ export type Database = {
           push_tokens: string[];
         }[];
       };
+      // Phase 7 v1.4 (migration 0016) — upcoming birthdays for authenticated user's accepted friends
+      get_upcoming_birthdays: {
+        Args: Record<string, never>;
+        Returns: {
+          friend_id: string;
+          display_name: string;
+          avatar_url: string | null;
+          birthday_month: number;
+          birthday_day: number;
+          days_until: number;
+        }[];
+      };
     };
     CompositeTypes: Record<string, never>;
   };
