@@ -36,7 +36,7 @@ decisions:
 metrics:
   duration_seconds: 113
   completed_date: "2026-04-12"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 2
   files_modified: 2
@@ -52,7 +52,7 @@ metrics:
 |------|-------------|--------|
 | 1 | Register expense screens in squad stack + build route shells | 00d7721 |
 | 2 | Add '+' entry point button to Squad tab (D-10) | 1007883 |
-| 3 | Visual verification checkpoint | PENDING |
+| 3 | Visual verification checkpoint | approved |
 
 ## What Was Built
 
@@ -94,7 +94,6 @@ None — all data is wired to live hooks (useExpenseCreate, useExpenseDetail).
 
 No new network endpoints or auth paths introduced. Route screens consume existing hooks which already have RLS enforcement at the Supabase layer (documented in T-08-P04-01 through T-08-P04-04 in plan threat model).
 
-## Self-Check: PARTIAL
+## Self-Check: PASSED
 
-Plan is at checkpoint — awaiting human visual verification (Task 3).
-Automated checks all pass: tsc exits 0, all files exist, all grep matches confirmed.
+All 3 tasks complete. Human visual verification approved. Automated checks passed: tsc exits 0, all files exist, all grep matches confirmed.
