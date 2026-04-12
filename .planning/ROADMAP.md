@@ -102,7 +102,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 06-01-PLAN.md — database.ts birthday types + BirthdayPicker component
-- [ ] 06-02-PLAN.md — Wire BirthdayPicker into edit.tsx + visual test
+- [x] 06-02-PLAN.md — Wire BirthdayPicker into edit.tsx + visual test
 
 ### Phase 7: Birthday Calendar Feature
 **Goal**: Users can view a sorted list of friends' upcoming birthdays and the Squad dashboard shows a glanceable birthdays card

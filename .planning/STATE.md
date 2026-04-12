@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
-status: executing
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-04-12T02:12:48.611Z"
+status: verifying
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-04-12T02:16:18.723Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 06 (birthday-profile-field) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-12
 
 Progress: [░░░░░░░░░░] 0%
@@ -105,6 +105,7 @@ Requirements covered: 12/12 mapped
 - [Phase 05-02]: get_upcoming_birthdays() uses LANGUAGE sql STABLE SECURITY DEFINER; Feb 29 leap-year guard applied in both this-year and next-year branches of days_until calculation
 - [Phase 05-database-migrations]: Migration push is remote-only — 0015 and 0016 applied to Supabase project zqmaauaopyolutfoizgq; seed.sql was last iou_notes holdout, updated to general_notes with IOU and birthday test data
 - [Phase 06-01]: BirthdayPicker uses FriendActionSheet Modal+Animated.timing pattern; getDaysInMonth returns 29 for Feb with normalization deferred to handleSave in Plan 02; day resets to null on invalid month change
+- [Phase 06-birthday-profile-field]: BirthdayPicker wired into edit.tsx with isDirty tracking, Feb 29 normalization at save time, and partial birthday guard saving null/null when only one field set
 
 ### Roadmap Evolution
 
@@ -125,5 +126,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-12T02:12:48.607Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-04-12T02:16:18.718Z
+Stopped at: Completed 06-02-PLAN.md
