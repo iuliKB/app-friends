@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
-status: verifying
-stopped_at: Phase 6 context gathered
-last_updated: "2026-04-11T22:57:18.383Z"
-last_activity: 2026-04-11
+status: executing
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-04-12T02:12:48.611Z"
+last_activity: 2026-04-12
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 100
+  total_plans: 5
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 05 — database-migrations
+**Current focus:** Phase 06 — birthday-profile-field
 
 ## Current Position
 
 Milestone: v1.4 Squad Dashboard & Social Tools
-Phase: 6
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-11
+Phase: 06 (birthday-profile-field) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-12
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -104,6 +104,7 @@ Requirements covered: 12/12 mapped
 - [Phase 05-02]: Birthday columns nullable (no NOT NULL, no DEFAULT) — birthday is optional; existing profile rows require no backfill
 - [Phase 05-02]: get_upcoming_birthdays() uses LANGUAGE sql STABLE SECURITY DEFINER; Feb 29 leap-year guard applied in both this-year and next-year branches of days_until calculation
 - [Phase 05-database-migrations]: Migration push is remote-only — 0015 and 0016 applied to Supabase project zqmaauaopyolutfoizgq; seed.sql was last iou_notes holdout, updated to general_notes with IOU and birthday test data
+- [Phase 06-01]: BirthdayPicker uses FriendActionSheet Modal+Animated.timing pattern; getDaysInMonth returns 29 for Feb with normalization deferred to handleSave in Plan 02; day resets to null on invalid month change
 
 ### Roadmap Evolution
 
@@ -124,5 +125,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:57:18.379Z
-Stopped at: Phase 6 context gathered
+Last session: 2026-04-12T02:12:48.607Z
+Stopped at: Completed 06-01-PLAN.md

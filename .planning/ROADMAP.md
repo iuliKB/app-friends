@@ -101,7 +101,7 @@ Plans:
   4. Leaving birthday blank is valid; no error is shown for users who skip it
 **Plans**: 2 plans
 Plans:
-- [ ] 06-01-PLAN.md — database.ts birthday types + BirthdayPicker component
+- [x] 06-01-PLAN.md — database.ts birthday types + BirthdayPicker component
 - [ ] 06-02-PLAN.md — Wire BirthdayPicker into edit.tsx + visual test
 
 ### Phase 7: Birthday Calendar Feature
@@ -159,7 +159,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
-| 6. Birthday Profile Field | 0/2 | Not started | - |
+| 6. Birthday Profile Field | 1/2 | In Progress|  |
 | 7. Birthday Calendar Feature | 0/TBD | Not started | - |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
