@@ -79,7 +79,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 - [ ] Squad Dashboard with friends list + feature cards (replaces tab switcher)
 - [ ] IOU group expense splitting with per-person balances and manual settlement
-- [ ] Birthday field in profile, shared with friends
+- [x] Birthday field in profile, shared with friends — Validated in Phase 6: Birthday Profile Field
 - [ ] Upcoming birthdays dashboard card and birthday list screen
 
 ### Out of Scope
@@ -164,4 +164,4 @@ Known technical considerations:
 | Hardware verification gate as final phase (v1.3 Phase 5) | Solo dev without Apple Dev account; consolidates all manual smoke tests into one session when account acquired | ✓ Good |
 
 ---
-*Last updated: 2026-04-12 after Phase 5 (Database Migrations) complete — schema foundation for v1.4*
+*Last updated: 2026-04-12 after Phase 6 (Birthday Profile Field) complete — birthday month+day picker wired into profile edit screen*
