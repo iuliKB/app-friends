@@ -41,7 +41,9 @@ All values from `src/theme/spacing.ts` (confirmed in codebase):
 | SPACING.xl | 24px | Section gap between birthday field and Save button |
 | SPACING.xxl | 32px | Screen paddingTop / paddingBottom (matches edit.tsx) |
 
-Exceptions: Dropdown trigger height matches existing TextInput height of 52px (not a SPACING token — preserves visual alignment with display name field above it).
+Exception — SPACING.md (12px): This is a pre-existing token in `src/theme/spacing.ts`, not introduced by this spec. It is used as the gap between the Month and Day dropdown triggers to create a tighter paired-input visual grouping than SPACING.lg (16px) would allow. The two dropdowns read as one compound field at 12px; at 16px they visually separate into independent fields.
+
+Exception — Dropdown trigger height (52px): Matches existing TextInput height in edit.tsx to preserve visual alignment with the display name field above. Not a SPACING token.
 
 Touch targets: All dropdown triggers are 52px tall, exceeding the 44px minimum touch target requirement.
 
@@ -72,7 +74,7 @@ All values from `src/theme/colors.ts` (confirmed in codebase):
 |------|-------|-----|-------|
 | Dominant (60%) — app background | COLORS.surface.base | #1a1a1a | Screen background (ScrollView background) |
 | Secondary (30%) — inputs and cards | COLORS.surface.card | #2a2a2a | Dropdown trigger background, dropdown modal sheet background, option rows |
-| Accent (10%) | COLORS.interactive.accent | #f97316 | "Change Photo" link, "Clear" birthday link ONLY |
+| Accent (10%) | COLORS.interactive.accent | #f97316 | "Change Photo" link, "Clear Birthday" link ONLY |
 | Destructive | COLORS.interactive.destructive | #ef4444 | Inline error if save fails (Alert fallback used in existing pattern) |
 | Primary text | COLORS.text.primary | #f5f5f5 | Selected dropdown value text, option item text |
 | Secondary text | COLORS.text.secondary | #9ca3af | Placeholder text ("Month", "Day"), field label text |
@@ -81,7 +83,7 @@ All values from `src/theme/colors.ts` (confirmed in codebase):
 
 Accent reserved for:
 - "Change Photo" link (already in edit.tsx — no change)
-- "Clear" birthday link (shown only when both month and day are set)
+- "Clear Birthday" link (shown only when both month and day are set)
 
 Accent is NOT used for:
 - Dropdown triggers (surface.card background, text.primary text)
@@ -127,12 +129,14 @@ Components used in this phase:
 [ Char count — right-aligned, 12px, COLORS.text.secondary ]
 
 [ "Birthday" field label — FONT_SIZE.md, COLORS.text.secondary ]
-[ BirthdayPicker — two dropdowns side by side ]
+[ BirthdayPicker — two dropdowns side by side ]        <-- FOCAL POINT
   [ Month dropdown trigger — flex 1 ]   [ gap: SPACING.md ]   [ Day dropdown trigger — flex 1 ]
-[ "Clear" link — shown only if both month and day are set ]
+[ "Clear Birthday" link — shown only if both month and day are set ]
 
 [ Save Changes button — marginTop: SPACING.xl ]
 ```
+
+Focal point: `BirthdayPicker` is the primary new UI element on this screen. It occupies the full content width as a two-column compound input and is the only new interactive element introduced in this phase. All supporting elements (label, clear link) serve to frame it.
 
 > Source: CONTEXT.md §D-03 — "Birthday field placed below the display name TextInput, above the Save button. Natural flow: avatar → name → birthday → save. No section dividers needed."
 
@@ -191,7 +195,7 @@ Use abbreviated month names (3 letters): Jan, Feb, Mar, Apr, May, Jun, Jul, Aug,
 
 ### Clear Birthday
 
-Show a small "Clear" text link below the dropdown row ONLY when both month and day are non-null. Tapping sends `onChange(null, null)`. Styled as: FONT_SIZE.sm (13px), COLORS.interactive.accent, textAlign right, marginTop SPACING.xs.
+Show a small "Clear Birthday" text link below the dropdown row ONLY when both month and day are non-null. Tapping sends `onChange(null, null)`. Styled as: FONT_SIZE.sm (13px), COLORS.interactive.accent, textAlign right, marginTop SPACING.xs. accessibilityLabel: "Clear birthday".
 
 > Source: RESEARCH.md §Open Questions — "Add a small 'Clear' link/button below the dropdowns if both fields are set."
 
@@ -229,7 +233,7 @@ The dropdown shows Feb with days 1–29. If user selects Feb 29, the dropdown sh
 | Field label | "Birthday" | CONTEXT.md §D-04 — no "(optional)" suffix |
 | Month placeholder | "Month" | CONTEXT.md §Claude's Discretion — placeholder makes optionality clear |
 | Day placeholder | "Day" | CONTEXT.md §Claude's Discretion |
-| Clear link | "Clear" | RESEARCH.md §Open Questions |
+| Clear link | "Clear Birthday" | Action target made unambiguous; accessibilityLabel: "Clear birthday" |
 | Primary CTA | "Save Changes" | edit.tsx existing — no change |
 | Save loading state | (PrimaryButton handles internally via `loading` prop) | edit.tsx existing pattern |
 | Upload avatar loading | "Uploading..." | edit.tsx existing — no change |
