@@ -117,7 +117,7 @@ Plans:
 Plans:
 - [x] 07-01-PLAN.md — useUpcomingBirthdays hook + birthday formatters + Playwright test scaffold
 - [x] 07-02-PLAN.md — squad/_layout.tsx + BirthdayCard component + BirthdaysScreen
-- [ ] 07-03-PLAN.md — Wire BirthdayCard into squad.tsx + human verify checkpoint
+- [x] 07-03-PLAN.md — Wire BirthdayCard into squad.tsx + human verify checkpoint
 
 ### Phase 8: IOU Create & Detail
 **Goal**: Users can create a group expense (even or custom split), view its detail, and mark shares as settled — the core IOU write path works end-to-end with real data
