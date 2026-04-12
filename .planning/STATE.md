@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
-status: verifying
-stopped_at: Phase 8 context gathered
-last_updated: "2026-04-12T09:08:14.123Z"
+status: executing
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-04-12T09:52:08.527Z"
 last_activity: 2026-04-12
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_plans: 12
+  completed_plans: 9
+  percent: 75
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 07 — birthday-calendar-feature
+**Current focus:** Phase 08 — IOU Create & Detail
 
 ## Current Position
 
 Milestone: v1.4 Squad Dashboard & Social Tools
-Phase: 8
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 08 (IOU Create & Detail) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-04-12
 
 Progress: [░░░░░░░░░░] 0%
@@ -111,6 +111,7 @@ Requirements covered: 12/12 mapped
 - [Phase 07-02]: BirthdayCard receives UpcomingBirthdaysData prop from parent (data-ownership pattern matching StreakCard)
 - [Phase 07-02]: BirthdaysScreen fetches its own useUpcomingBirthdays instance — no route params carry birthday data (T-07-06 mitigated)
 - [Phase 07-birthday-calendar-feature]: BirthdayCard wired into squad.tsx goals tab via data-ownership pattern — hook in parent, prop to child; human visual verification approved
+- [Phase 08]: create_expense RPC typed in Functions section matching migration 0015 signature; IouGroup/IouMember follow Tables<T> alias pattern; test scaffold intentionally fails (RED state until Wave 2 screens built)
 
 ### Roadmap Evolution
 
@@ -131,5 +132,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-12T09:08:14.118Z
-Stopped at: Phase 8 context gathered
+Last session: 2026-04-12T09:52:08.523Z
+Stopped at: Completed 08-01-PLAN.md
