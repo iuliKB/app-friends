@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { SquadTabSwitcher } from '@/components/squad/SquadTabSwitcher';
 import { FriendsList } from '@/screens/friends/FriendsList';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
@@ -22,6 +23,18 @@ export default function SquadScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScreenHeader
+        title=""
+        rightAction={
+          <TouchableOpacity
+            onPress={() => router.push('/squad/expenses/create' as never)}
+            accessibilityLabel="Create expense"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="add" size={FONT_SIZE.xxl} color={COLORS.interactive.accent} />
+          </TouchableOpacity>
+        }
+      />
       <SquadTabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === 'friends' ? (
