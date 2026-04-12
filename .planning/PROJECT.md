@@ -78,7 +78,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 ### Active
 
 - [ ] Squad Dashboard with friends list + feature cards (replaces tab switcher)
-- [ ] IOU group expense splitting with per-person balances and manual settlement
+- [x] IOU expense creation (even/custom split) and detail with settle — Validated in Phase 8: IOU Create & Detail
 - [x] Birthday field in profile, shared with friends — Validated in Phase 6: Birthday Profile Field
 - [x] Upcoming birthdays dashboard card and birthday list screen — Validated in Phase 7: Birthday Calendar Feature
 
@@ -104,6 +104,7 @@ Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase 
 Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config).
 Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
 Supabase migrations: 0001–0016 (v1.3 added 0009–0011, v1.3.5 added 0012 nudges, 0013 cover_image_url, 0014 plan-covers storage bucket, v1.4 added 0015 IOU tables/RPCs + general_notes rename, 0016 birthday columns + get_upcoming_birthdays RPC).
+IOU write path: Squad '+' → create screen (currency input, friend selection, even/custom split) → `create_expense` RPC → detail screen (hero card, participant rows, creator-only settle with haptic).
 Edge Functions: `notify-plan-invite`, `notify-friend-free` (rate-limited fan-out).
 
 Known technical considerations:
@@ -164,4 +165,4 @@ Known technical considerations:
 | Hardware verification gate as final phase (v1.3 Phase 5) | Solo dev without Apple Dev account; consolidates all manual smoke tests into one session when account acquired | ✓ Good |
 
 ---
-*Last updated: 2026-04-12 after Phase 7 (Birthday Calendar Feature) complete — upcoming birthdays dashboard card and birthday list screen*
+*Last updated: 2026-04-12 after Phase 8 (IOU Create & Detail) complete — expense creation with even/custom split, detail screen with creator-only settle*
