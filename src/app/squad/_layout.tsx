@@ -9,6 +9,9 @@ export default function SquadLayout() {
         headerTintColor: COLORS.text.primary,
         headerShadowVisible: false,
       }}
-    />
+    >
+      <Stack.Screen name="expenses/create" options={{ title: 'New Expense' }} />
+      <Stack.Screen name="expenses/[id]" options={{ title: 'Expense Detail' }} />
+    </Stack>
   );
 }
