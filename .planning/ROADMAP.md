@@ -113,8 +113,11 @@ Plans:
   2. Friends with no birthday set are omitted from the list; an appropriate empty state is shown when no friends have birthdays
   3. The Squad dashboard displays an upcoming birthdays card showing the count of birthdays in the next 30 days and the name + days-remaining for the nearest one
   4. The birthdays card shows an empty state copy when no friends have upcoming birthdays rather than disappearing
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 3 plans
+Plans:
+- [ ] 07-01-PLAN.md — useUpcomingBirthdays hook + birthday formatters + Playwright test scaffold
+- [ ] 07-02-PLAN.md — squad/_layout.tsx + BirthdayCard component + BirthdaysScreen
+- [ ] 07-03-PLAN.md — Wire BirthdayCard into squad.tsx + human verify checkpoint
 
 ### Phase 8: IOU Create & Detail
 **Goal**: Users can create a group expense (even or custom split), view its detail, and mark shares as settled — the core IOU write path works end-to-end with real data
@@ -160,10 +163,10 @@ Plans:
 |-------|----------------|--------|-----------|
 | 5. Database Migrations | 3/3 | Complete   | 2026-04-11 |
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
-| 7. Birthday Calendar Feature | 0/TBD | Not started | - |
+| 7. Birthday Calendar Feature | 0/3 | Not started | - |
 | 8. IOU Create & Detail | 0/TBD | Not started | - |
 | 9. IOU List & Summary | 0/TBD | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-12 — Phase 6 planned (2 plans, 2 waves)*
+*Roadmap updated: 2026-04-12 — Phase 7 planned (3 plans, 3 waves)*
