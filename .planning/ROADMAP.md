@@ -148,7 +148,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 09-01-PLAN.md — get_iou_summary type + useIOUSummary + useExpensesWithFriend + BalanceRow + ExpenseHistoryRow
-- [ ] 09-02-PLAN.md — IOUCard + _layout.tsx + balance index screen + per-friend history screen
+- [x] 09-02-PLAN.md — IOUCard + _layout.tsx + balance index screen + per-friend history screen
 - [ ] 09-03-PLAN.md — squad.tsx IOUCard integration + human verify [BLOCKING]
 
 ### Phase 10: Squad Dashboard
@@ -172,7 +172,7 @@ Plans:
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
 | 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
-| 9. IOU List & Summary | 1/3 | In Progress|  |
+| 9. IOU List & Summary | 2/3 | In Progress|  |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
 ---

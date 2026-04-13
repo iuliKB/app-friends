@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-04-13T11:21:26.565Z"
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-04-13T11:26:18.085Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 09 (iou-list-summary) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-13
 
@@ -122,6 +122,9 @@ Requirements covered: 12/12 mapped
 - [Phase 09-iou-list-summary]: get_iou_summary type added to database.ts Functions manually (same pattern as get_upcoming_birthdays in Phase 7)
 - [Phase 09-iou-list-summary]: useExpensesWithFriend uses 2 sequential membership checks then Promise.all for groups + members — correct RLS traversal order
 - [Phase 09-iou-list-summary]: ExpenseHistoryRow settled dimming: static View wrapper with opacity 0.45, no Animated — per UI-SPEC mandate
+- [Phase 09-02]: IOUCard receives IOUSummaryData prop from parent (data-ownership pattern matching BirthdayCard/StreakCard)
+- [Phase 09-02]: expenses/index Stack.Screen name (not expenses) required for Expo Router file-system routing of index.tsx
+- [Phase 09-02]: netAmountCents route param is display-only (T-09-P02-01 accept) — authoritative balance always from get_iou_summary() RPC
 
 ### Roadmap Evolution
 
@@ -142,5 +145,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-13T11:21:26.561Z
-Stopped at: Completed 09-01-PLAN.md
+Last session: 2026-04-13T11:26:18.081Z
+Stopped at: Completed 09-02-PLAN.md
