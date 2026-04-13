@@ -12,6 +12,8 @@ export default function SquadLayout() {
     >
       <Stack.Screen name="expenses/create" options={{ title: 'New Expense' }} />
       <Stack.Screen name="expenses/[id]" options={{ title: 'Expense Detail' }} />
+      <Stack.Screen name="expenses/index" options={{ title: 'Balances' }} />
+      <Stack.Screen name="expenses/friend/[id]" options={{ title: 'Expenses' }} />
     </Stack>
   );
 }
