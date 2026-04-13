@@ -41,6 +41,7 @@ Declared values from `src/theme/spacing.ts` (pre-existing, unchanged):
 | xxl | 32px | Card vertical padding (matches StreakCard/BirthdayCard paddingVertical) |
 
 Exceptions:
+- 12px: pre-existing project token (`md` in `src/theme/spacing.ts`), multiple of 4, used for card internal gaps where 8px is too tight and 16px is too loose; approved as project-level exception.
 - Touch targets for balance rows and history rows: minimum 44px height (iOS HIG accessibility minimum for tappable rows; apply via `minHeight: 44` inline, not a token)
 - Net balance summary strip at top of per-friend history screen: 48px height to match "All settled!" banner weight from Phase 8
 
@@ -55,15 +56,15 @@ All sizes from `src/theme/typography.ts` (pre-existing):
 | Role | Size | Weight | Line Height | Usage in this phase |
 |------|------|--------|-------------|---------------------|
 | Body | 16px (lg) | 400 (regular) | 1.5 | Friend names in balance rows, expense titles in history rows |
-| Label | 14px (md) | 400 (regular) | 1.4 | Secondary metadata: dates, "X unsettled", signed amount direction arrow text |
-| Heading | 20px (xl) | 600 (semibold) | 1.2 | Screen titles, IOUCard title "IOUs" |
+| Label | 14px (md) | 400 (regular) | 1.4 | Secondary metadata: dates, "X unsettled", signed amount direction arrow text, "Net balance" strip label, payer + date meta line in ExpenseHistoryRow |
+| Heading | 20px (xl) | 600 (semibold) | 1.2 | Screen titles, IOUCard title "IOUs", net balance strip signed amount |
 | Display | 24px (xxl) | 600 (semibold) | 1.2 | Net balance amount on IOUCard ("You're owed $34" amount), big balance number on per-friend header |
 
 Signed amount labels on the net balance index ("+$42 → you" / "-$18 ← you"):
 - Amount numeral: 16px (lg) / semibold (600)
-- Direction label (" → you" / " ← you"): 13px (sm) / regular (400)
+- Direction label (" → you" / " ← you"): 14px (md) / regular (400)
 
-**Source:** `src/theme/typography.ts` — `FONT_SIZE`, `FONT_WEIGHT`. No new sizes needed.
+**Source:** `src/theme/typography.ts` — `FONT_SIZE`, `FONT_WEIGHT`. No new sizes needed. 13px removed; consolidated into 14px (Label role) everywhere.
 
 ---
 
@@ -103,8 +104,8 @@ Semantic colors for this phase:
 | Component | File | Props Contract | Behavior |
 |-----------|------|----------------|----------|
 | `IOUCard` | `src/components/squad/IOUCard.tsx` | `summary: IOUSummaryData` (from `useIOUSummary`) | Matches StreakCard/BirthdayCard pattern: `Pressable` container, `backgroundColor: COLORS.surface.card`, `borderRadius: RADII.lg`, `paddingVertical: SPACING.xxl`, `paddingHorizontal: SPACING.xl`, `marginHorizontal: SPACING.lg`, `marginTop: SPACING.xl`. Card title "IOUs" at 16px/semibold. Big balance at 24px/semibold in green or red. Unsettled count sub-label at 14px/secondary. Empty state (no expenses) shows "All settled up!" at 14px/secondary. Skeleton: opacity 0.5 grey boxes. Tap → `/squad/expenses`. |
-| `BalanceRow` | `src/components/iou/BalanceRow.tsx` | `friendId: string`, `displayName: string`, `avatarUrl: string \| null`, `netAmountCents: number`, `unsettledCount: number`, `onPress: () => void` | Row: `AvatarCircle` (36px) + friend name at 16px/regular/primary + signed amount at 16px/semibold in green (positive) or red (negative) + direction arrow label at 13px/secondary. `minHeight: 44`. Tappable via `Pressable`. `pressed && { opacity: 0.75 }`. Separator: 1px `COLORS.border` row below each. |
-| `ExpenseHistoryRow` | `src/components/iou/ExpenseHistoryRow.tsx` | `title: string`, `totalCents: number`, `payerName: string`, `createdAt: string`, `isFullySettled: boolean`, `onPress: () => void` | Row: title at 16px/regular/primary + amount at 14px/semibold/primary (right-aligned) + payer + date at 13px/secondary below title. Fully settled rows: entire row `opacity: 0.45`. `minHeight: 44`. Tappable via `Pressable`. |
+| `BalanceRow` | `src/components/iou/BalanceRow.tsx` | `friendId: string`, `displayName: string`, `avatarUrl: string \| null`, `netAmountCents: number`, `unsettledCount: number`, `onPress: () => void` | Row: `AvatarCircle` (36px) + friend name at 16px/regular/primary + signed amount at 16px/semibold in green (positive) or red (negative) + direction arrow label at 14px/secondary. `minHeight: 44`. Tappable via `Pressable`. `pressed && { opacity: 0.75 }`. Separator: 1px `COLORS.border` row below each. |
+| `ExpenseHistoryRow` | `src/components/iou/ExpenseHistoryRow.tsx` | `title: string`, `totalCents: number`, `payerName: string`, `createdAt: string`, `isFullySettled: boolean`, `onPress: () => void` | Row: title at 16px/regular/primary + amount at 14px/semibold/primary (right-aligned) + payer + date at 14px/secondary below title. Fully settled rows: entire row `opacity: 0.45`. `minHeight: 44`. Tappable via `Pressable`. |
 
 ### New hooks
 
@@ -156,7 +157,7 @@ Structure:
 SafeAreaView (background: COLORS.surface.base)
   ScreenHeader title="Expenses with {friendName}"
   NetBalanceSummaryStrip (48px height, surface.card background)
-    ├── Left: "Net balance" label at 13px/secondary
+    ├── Left: "Net balance" label at 14px/secondary
     └── Right: signed amount at 20px/semibold in green or red
   [Loading] 3× ExpenseHistoryRowSkeleton (grey boxes, opacity 0.5)
   [Error] ErrorDisplay
@@ -259,8 +260,8 @@ Skeletons follow the Phase 7/8 established pattern: `opacity: 0.5`, boxes with `
 | Screen / Component | Skeleton Shape |
 |-------------------|---------------|
 | Balance index (initial load) | 4× BalanceRowSkeleton: avatar circle (36px) + name bar (120px wide, 16px tall) + amount bar (60px wide, 16px tall) |
-| Per-friend history (initial load) | 3× ExpenseHistoryRowSkeleton: title bar (160px, 16px) + amount bar (60px, 16px right-aligned) + meta bar (120px, 13px) |
-| IOUCard (loading) | Grey box 40px tall (amount placeholder) + grey box 80px wide × 13px tall (sub-label placeholder) |
+| Per-friend history (initial load) | 3× ExpenseHistoryRowSkeleton: title bar (160px, 16px) + amount bar (60px, 16px right-aligned) + meta bar (120px, 14px) |
+| IOUCard (loading) | Grey box 40px tall (amount placeholder) + grey box 80px wide × 14px tall (sub-label placeholder) |
 
 ---
 
@@ -298,6 +299,8 @@ No third-party registries. All components built from pre-existing codebase patte
 | `opacity: 0.45` for settled rows (no animation) | Discretion | Settled row dimming contract |
 | Net balance passed via route params, not second fetch | Discretion | Screen 2 layout — NetBalanceSummaryStrip |
 | Zero-balance friends hidden from index | Discretion (CONTEXT.md suggested) | Screen 1 FlatList filter |
+| 13px consolidated → 14px (checker revision 2026-04-13) | UI checker fix | Typography section, BalanceRow, ExpenseHistoryRow, NetBalanceSummaryStrip, skeleton contract |
+| 12px (`md` token) documented as explicit exception (checker revision 2026-04-13) | UI checker fix | Spacing Scale exceptions |
 
 ---
 
