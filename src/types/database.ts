@@ -585,6 +585,17 @@ export type Database = {
         };
         Returns: string; // uuid of new iou_groups row
       };
+      // Phase 9 v1.4 (migration 0015) — per-friend net balance summary; unsettled balances only
+      get_iou_summary: {
+        Args: Record<string, never>;
+        Returns: {
+          friend_id: string;
+          display_name: string;
+          avatar_url: string | null;
+          net_amount_cents: number;
+          unsettled_count: number;
+        }[];
+      };
     };
     CompositeTypes: Record<string, never>;
   };
