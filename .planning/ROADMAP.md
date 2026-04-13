@@ -145,8 +145,11 @@ Plans:
   2. Expense history screen shows a chronological list of all past expenses the user is involved in (as payer or participant), with title, payer, total amount, and date
   3. The IOU dashboard card shows an aggregate balance summary ("You're owed $34" or "You owe $12") with a count of unsettled items
   4. The IOU dashboard card shows an appropriate empty state when no expenses exist
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 3 plans
+Plans:
+- [ ] 09-01-PLAN.md — get_iou_summary type + useIOUSummary + useExpensesWithFriend + BalanceRow + ExpenseHistoryRow
+- [ ] 09-02-PLAN.md — IOUCard + _layout.tsx + balance index screen + per-friend history screen
+- [ ] 09-03-PLAN.md — squad.tsx IOUCard integration + human verify [BLOCKING]
 
 ### Phase 10: Squad Dashboard
 **Goal**: The Squad tab is a single scrollable dashboard with a compact friends list at top and feature cards (Streaks, IOUs, Birthdays) below — the underline tab switcher is gone
@@ -169,8 +172,8 @@ Plans:
 | 6. Birthday Profile Field | 1/2 | In Progress|  |
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
 | 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
-| 9. IOU List & Summary | 0/TBD | Not started | - |
+| 9. IOU List & Summary | 0/3 | Not started | - |
 | 10. Squad Dashboard | 0/TBD | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-12 — Phase 8 planned (4 plans, 3 waves)*
+*Roadmap updated: 2026-04-13 — Phase 9 planned (3 plans, 3 waves)*
