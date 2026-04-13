@@ -12,6 +12,8 @@ import { StreakCard } from '@/components/squad/StreakCard';
 import { useStreakData } from '@/hooks/useStreakData';
 import { BirthdayCard } from '@/components/squad/BirthdayCard';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
+import { IOUCard } from '@/components/squad/IOUCard';
+import { useIOUSummary } from '@/hooks/useIOUSummary';
 
 export default function SquadScreen() {
   const insets = useSafeAreaInsets();
@@ -20,6 +22,7 @@ export default function SquadScreen() {
   const [activeTab, setActiveTab] = useState<'friends' | 'goals'>('friends');
   const streak = useStreakData();
   const birthdays = useUpcomingBirthdays();
+  const iouSummary = useIOUSummary();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -69,6 +72,7 @@ export default function SquadScreen() {
           }
         >
           <StreakCard streak={streak} />
+          <IOUCard summary={iouSummary} />
           <BirthdayCard birthdays={birthdays} />
         </ScrollView>
       )}
