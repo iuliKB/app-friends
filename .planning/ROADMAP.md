@@ -149,7 +149,7 @@ Plans:
 Plans:
 - [x] 09-01-PLAN.md — get_iou_summary type + useIOUSummary + useExpensesWithFriend + BalanceRow + ExpenseHistoryRow
 - [x] 09-02-PLAN.md — IOUCard + _layout.tsx + balance index screen + per-friend history screen
-- [ ] 09-03-PLAN.md — squad.tsx IOUCard integration + human verify [BLOCKING]
+- [x] 09-03-PLAN.md — squad.tsx IOUCard integration + human verify [BLOCKING]
 
 ### Phase 10: Squad Dashboard
 **Goal**: The Squad tab is a single scrollable dashboard with a compact friends list at top and feature cards (Streaks, IOUs, Birthdays) below — the underline tab switcher is gone
