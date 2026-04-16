@@ -17,6 +17,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
+import { useChatStore } from '@/stores/useChatStore';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { WishListItem } from '@/components/squad/WishListItem';
 import { useFriendWishList } from '@/hooks/useFriendWishList';
@@ -28,6 +29,7 @@ export default function FriendBirthdayPage() {
   const friendId = id ?? '';
   const friendName = name ? decodeURIComponent(name) : 'Friend';
 
+  const invalidateChatList = useChatStore((s) => s.invalidateChatList);
   const { items, loading: wishListLoading, error: wishListError, refetch: refetchWishList, toggleClaim } = useFriendWishList(friendId);
   const { friends, loading: friendsLoading, error: friendsError, refetch: refetchFriends } = useFriendsOfFriend(friendId);
 
@@ -68,6 +70,9 @@ export default function FriendBirthdayPage() {
       console.warn('create_birthday_group failed', rpcErr);
       return;
     }
+
+    // Bust the chat list cache so the new group appears immediately when the user visits Chats
+    invalidateChatList();
 
     // Navigate to the group chat room using the existing chat UI (D-18)
     router.push(

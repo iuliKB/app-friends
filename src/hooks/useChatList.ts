@@ -119,6 +119,46 @@ export function useChatList(): {
       }
     }
 
+    // Step E2 — Get the user's group channel IDs + names
+    const { data: groupMemberRows } = await supabase
+      .from('group_channel_members')
+      .select('group_channel_id')
+      .eq('user_id', session.user.id);
+    const groupChannelIds = (groupMemberRows ?? []).map((r) => r.group_channel_id as string);
+
+    const groupNameMap = new Map<string, string>();
+    if (groupChannelIds.length > 0) {
+      const { data: groupRows } = await supabase
+        .from('group_channels')
+        .select('id, name')
+        .in('id', groupChannelIds);
+      for (const g of groupRows ?? []) {
+        groupNameMap.set(g.id as string, g.name as string);
+      }
+    }
+
+    // Step F2 — Fetch latest message per group channel
+    const groupLatestMap = new Map<string, { body: string; created_at: string; sender_id: string }>();
+    if (groupChannelIds.length > 0) {
+      const { data: groupMsgs } = await supabase
+        .from('messages')
+        .select('group_channel_id, body, created_at, sender_id')
+        .not('group_channel_id', 'is', null)
+        .in('group_channel_id', groupChannelIds)
+        .order('created_at', { ascending: false });
+
+      for (const msg of groupMsgs ?? []) {
+        const cid = msg.group_channel_id as string;
+        if (!groupLatestMap.has(cid)) {
+          groupLatestMap.set(cid, {
+            body: msg.body as string,
+            created_at: msg.created_at as string,
+            sender_id: msg.sender_id as string,
+          });
+        }
+      }
+    }
+
     // Step G — Check unread status via AsyncStorage
     async function checkUnread(chatId: string, lastMessageAt: string): Promise<boolean> {
       const lastRead = await AsyncStorage.getItem(`chat:last_read:${chatId}`);
@@ -163,6 +203,25 @@ export function useChatList(): {
         avatarUrl: profile.avatar_url,
         lastMessage: latest.body,
         lastMessageAt: latest.created_at,
+        hasUnread,
+      });
+    }
+
+    // Group chat items (show even without messages so newly created chats appear)
+    for (const channelId of groupChannelIds) {
+      const name = groupNameMap.get(channelId);
+      if (!name) continue;
+      const latest = groupLatestMap.get(channelId);
+      const hasUnread = latest
+        ? latest.sender_id !== currentUserId && (await checkUnread(channelId, latest.created_at))
+        : false;
+      items.push({
+        id: channelId,
+        type: 'group',
+        title: name,
+        avatarUrl: null,
+        lastMessage: latest?.body ?? 'No messages yet',
+        lastMessageAt: latest?.created_at ?? new Date(0).toISOString(),
         hasUnread,
       });
     }

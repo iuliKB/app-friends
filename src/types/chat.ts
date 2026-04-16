@@ -16,9 +16,9 @@ export interface MessageWithProfile extends Message {
 }
 
 export interface ChatListItem {
-  id: string; // plan_id or dm_channel_id
-  type: 'plan' | 'dm';
-  title: string; // plan title or friend name
+  id: string; // plan_id, dm_channel_id, or group_channel_id
+  type: 'plan' | 'dm' | 'group';
+  title: string; // plan title, friend name, or group channel name
   avatarUrl?: string | null; // for DMs
   lastMessage: string; // truncated body
   lastMessageAt: string; // ISO timestamp for sorting

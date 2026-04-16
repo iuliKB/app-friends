@@ -18,6 +18,13 @@ export function ChatListScreen() {
   function handleChatPress(item: ChatListItem) {
     if (item.type === 'plan') {
       router.push(('/chat/room?plan_id=' + item.id) as never);
+    } else if (item.type === 'group') {
+      router.push(
+        ('/chat/room?group_channel_id=' +
+          item.id +
+          '&friend_name=' +
+          encodeURIComponent(item.title)) as never
+      );
     } else {
       router.push(
         ('/chat/room?dm_channel_id=' +

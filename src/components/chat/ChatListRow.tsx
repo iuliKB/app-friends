@@ -27,6 +27,8 @@ export function ChatListRow({ item, onPress }: ChatListRowProps) {
       <View style={styles.iconContainer}>
         {item.type === 'plan' ? (
           <Text style={styles.emoji}>🏕️</Text>
+        ) : item.type === 'group' ? (
+          <Text style={styles.emoji}>🎂</Text>
         ) : (
           <AvatarCircle size={40} imageUri={item.avatarUrl} displayName={item.title} />
         )}
