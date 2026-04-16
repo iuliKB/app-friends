@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
+  Dimensions,
   FlatList,
+  Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADII } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { CompactFriendRow } from '@/components/squad/CompactFriendRow';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
@@ -27,28 +30,37 @@ import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
-// NOTE: The add-friend FAB (was inside FriendsList) is not present in this dashboard.
-// This is an intentional regression for v1.4. Add-friend is reachable via Profile > QR Code
-// or direct navigation to /friends/add. The "+" header button is reserved for create expense.
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const TABS = ['Squad', 'Activity'] as const;
 
 export default function SquadScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  // Tab state
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const pagerRef = useRef<ScrollView>(null);
+  const [activeTab, setActiveTab] = useState(0);
+
+  // Data hooks
   const { count: pendingCount } = usePendingRequestsCount();
   const { friends, fetchFriends, removeFriend } = useFriends();
-  const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
-  const [sheetVisible, setSheetVisible] = useState(false);
-  const [loadingDM, setLoadingDM] = useState(false);
   const streak = useStreakData();
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
 
-  // Entrance animation — fires only on first mount, NOT on pull-to-refresh
-  // Per STATE.md D-04: isInteraction: false avoids blocking JS thread
-  const streakAnim = useRef(new Animated.Value(0)).current;
-  const iouAnim = useRef(new Animated.Value(0)).current;
-  const birthdayAnim = useRef(new Animated.Value(0)).current;
-  const cardAnims = [streakAnim, iouAnim, birthdayAnim];
+  // Action sheet state
+  const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [loadingDM, setLoadingDM] = useState(false);
+
+  // Activity card entrance animations — fire once on mount, never on refresh
+  const cardAnims = useRef([
+    new Animated.Value(0), // StreakCard
+    new Animated.Value(0), // IOUCard
+    new Animated.Value(0), // BirthdayCard
+    new Animated.Value(0), // Coming Soon card
+  ]).current;
   const hasAnimated = useRef(false);
 
   useEffect(() => {
@@ -70,19 +82,47 @@ export default function SquadScreen() {
         })
       )
     ).start();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentional: fires once on mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [refreshing, setRefreshing] = useState(false);
-  async function handleRefresh() {
-    setRefreshing(true);
-    await Promise.all([
-      streak.refetch(),
-      iouSummary.refetch(),
-      birthdays.refetch(),
-      fetchFriends(),
-    ]);
-    setRefreshing(false);
-    // hasAnimated.current intentionally NOT reset — animations never replay on refresh (DASH-03)
+  // Underline indicator: translateX driven by scroll position on native thread
+  const indicatorTranslateX = scrollX.interpolate({
+    inputRange: [0, SCREEN_WIDTH],
+    outputRange: [0, SCREEN_WIDTH / 2],
+    extrapolate: 'clamp',
+  });
+
+  // Tab label opacity: active tab is full opacity, inactive is dimmed
+  // These use the same scrollX Animated.Value — no extra state needed for the visual
+  const tab0Opacity = scrollX.interpolate({
+    inputRange: [0, SCREEN_WIDTH],
+    outputRange: [1, 0.45],
+    extrapolate: 'clamp',
+  });
+  const tab1Opacity = scrollX.interpolate({
+    inputRange: [0, SCREEN_WIDTH],
+    outputRange: [0.45, 1],
+    extrapolate: 'clamp',
+  });
+
+  function goToTab(index: number) {
+    pagerRef.current?.scrollTo({ x: index * SCREEN_WIDTH, animated: true });
+    setActiveTab(index);
+  }
+
+  const [refreshingSquad, setRefreshingSquad] = useState(false);
+  const [refreshingActivity, setRefreshingActivity] = useState(false);
+
+  async function handleRefreshSquad() {
+    setRefreshingSquad(true);
+    await fetchFriends();
+    setRefreshingSquad(false);
+  }
+
+  async function handleRefreshActivity() {
+    setRefreshingActivity(true);
+    await Promise.all([streak.refetch(), iouSummary.refetch(), birthdays.refetch()]);
+    setRefreshingActivity(false);
+    // hasAnimated.current intentionally NOT reset — cards never re-animate on refresh
   }
 
   function handleCloseSheet() {
@@ -128,14 +168,7 @@ export default function SquadScreen() {
       <Animated.View
         style={{
           opacity: anim,
-          transform: [
-            {
-              translateY: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [16, 0],
-              }),
-            },
-          ],
+          transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
         }}
       >
         {children}
@@ -145,71 +178,133 @@ export default function SquadScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScreenHeader
-        title="Squad"
-        rightAction={
-          <TouchableOpacity
-            onPress={() => router.push('/squad/expenses/create' as never)}
-            accessibilityLabel="Create expense"
-            activeOpacity={0.7}
+      <ScreenHeader title="Squad" />
+
+      {/* Tab header */}
+      <View style={styles.tabHeader}>
+        {TABS.map((label, index) => (
+          <Pressable
+            key={label}
+            style={styles.tabButton}
+            onPress={() => goToTab(index)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === index }}
           >
-            <Ionicons name="add" size={FONT_SIZE.xxl} color={COLORS.interactive.accent} />
-          </TouchableOpacity>
-        }
-      />
-      <FlatList<FriendWithStatus>
-        data={friends}
-        keyExtractor={(item) => item.friend_id}
-        renderItem={({ item }) => (
-          <CompactFriendRow
-            friend={item}
-            onPress={() => {
-              setSelectedFriend(item);
-              setSheetVisible(true);
-            }}
-          />
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListHeaderComponent={
-          pendingCount > 0 ? (
-            <TouchableOpacity
-              style={styles.requestsRow}
-              onPress={() => router.push('/friends/requests')}
-              activeOpacity={0.7}
+            <Animated.Text
+              style={[
+                styles.tabLabel,
+                { opacity: index === 0 ? tab0Opacity : tab1Opacity },
+              ]}
             >
-              <Ionicons
-                name="person-add-outline"
-                size={FONT_SIZE.xl}
-                color={COLORS.text.secondary}
+              {label}
+            </Animated.Text>
+          </Pressable>
+        ))}
+        {/* Animated orange underline — slides on native thread */}
+        <Animated.View
+          style={[
+            styles.tabIndicator,
+            { transform: [{ translateX: indicatorTranslateX }] },
+          ]}
+        />
+      </View>
+
+      {/* Paged content */}
+      <Animated.ScrollView
+        ref={pagerRef}
+        horizontal
+        pagingEnabled
+        scrollEventThrottle={16}
+        showsHorizontalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: true }
+        )}
+        onMomentumScrollEnd={(e) => {
+          const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+          setActiveTab(page);
+        }}
+        style={styles.pager}
+      >
+        {/* ── Page 0: Squad tab ── */}
+        <View style={styles.page}>
+          <FlatList<FriendWithStatus>
+            data={friends}
+            keyExtractor={(item) => item.friend_id}
+            renderItem={({ item }) => (
+              <CompactFriendRow
+                friend={item}
+                onPress={() => {
+                  setSelectedFriend(item);
+                  setSheetVisible(true);
+                }}
               />
-              <Text style={styles.requestsLabel}>Friend Requests ({pendingCount})</Text>
-              <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
-            </TouchableOpacity>
-          ) : null
-        }
-        ListFooterComponent={
-          <View style={styles.cardsSection}>
-            <AnimatedCard anim={streakAnim}>
+            )}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListHeaderComponent={
+              pendingCount > 0 ? (
+                <TouchableOpacity
+                  style={styles.requestsRow}
+                  onPress={() => router.push('/friends/requests')}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="person-add-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} />
+                  <Text style={styles.requestsLabel}>Friend Requests ({pendingCount})</Text>
+                  <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+                </TouchableOpacity>
+              ) : null
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Ionicons name="people-outline" size={48} color={COLORS.border} />
+                <Text style={styles.emptyText}>No friends yet</Text>
+              </View>
+            }
+            contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshingSquad}
+                onRefresh={handleRefreshSquad}
+                tintColor={COLORS.interactive.accent}
+              />
+            }
+          />
+        </View>
+
+        {/* ── Page 1: Activity tab ── */}
+        <View style={styles.page}>
+          <ScrollView
+            contentContainerStyle={[styles.activityContent, { paddingBottom: insets.bottom + SPACING.xxl }]}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshingActivity}
+                onRefresh={handleRefreshActivity}
+                tintColor={COLORS.interactive.accent}
+              />
+            }
+          >
+            <AnimatedCard anim={cardAnims[0]!}>
               <StreakCard streak={streak} />
             </AnimatedCard>
-            <AnimatedCard anim={iouAnim}>
+            <AnimatedCard anim={cardAnims[1]!}>
               <IOUCard summary={iouSummary} />
             </AnimatedCard>
-            <AnimatedCard anim={birthdayAnim}>
+            <AnimatedCard anim={cardAnims[2]!}>
               <BirthdayCard birthdays={birthdays} />
             </AnimatedCard>
-            <View style={{ height: SPACING.xxl + insets.bottom }} />
-          </View>
-        }
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={COLORS.interactive.accent}
-          />
-        }
-        contentContainerStyle={styles.listContent}
-      />
+            {/* Coming Soon placeholder — future features slot */}
+            <AnimatedCard anim={cardAnims[3]!}>
+              <View style={styles.comingSoonCard}>
+                <Ionicons name="lock-closed-outline" size={28} color={COLORS.border} />
+                <Text style={styles.comingSoonTitle}>More coming soon</Text>
+                <Text style={styles.comingSoonBody}>New features will appear here</Text>
+              </View>
+            </AnimatedCard>
+          </ScrollView>
+        </View>
+      </Animated.ScrollView>
+
       <FriendActionSheet
         visible={sheetVisible}
         onClose={handleCloseSheet}
@@ -228,13 +323,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.surface.base,
   },
+
+  // Tab header
+  tabHeader: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    position: 'relative',
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: SPACING.md,
+  },
+  tabLabel: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '50%',        // exactly half — one tab's width
+    height: 2,
+    backgroundColor: COLORS.interactive.accent,
+    borderRadius: RADII.xs,
+  },
+
+  // Pager
+  pager: {
+    flex: 1,
+  },
+  page: {
+    width: SCREEN_WIDTH,
+    flex: 1,
+  },
+
+  // Squad tab
   listContent: {
     flexGrow: 1,
   },
   separator: {
     height: 1,
     backgroundColor: COLORS.border,
-    marginLeft: SPACING.lg + 36 + SPACING.md, // avatar width + gap — aligns with name text
+    marginLeft: SPACING.lg + 36 + SPACING.md,
   },
   requestsRow: {
     flexDirection: 'row',
@@ -251,8 +384,43 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.secondary,
   },
-  cardsSection: {
-    paddingTop: SPACING.xl,
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: SPACING.xxl * 2,
     gap: SPACING.md,
+  },
+  emptyText: {
+    fontSize: FONT_SIZE.lg,
+    color: COLORS.text.secondary,
+  },
+
+  // Activity tab
+  activityContent: {
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+
+  // Coming Soon card
+  comingSoonCard: {
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.md,
+    padding: SPACING.xl,
+    alignItems: 'center',
+    gap: SPACING.sm,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: COLORS.border,
+  },
+  comingSoonTitle: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
+  },
+  comingSoonBody: {
+    fontSize: FONT_SIZE.md,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
   },
 });
