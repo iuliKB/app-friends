@@ -147,7 +147,13 @@ Requirements covered: 12/12 mapped
 
 - Swipe-down undo non-functional: ScrollView RefreshControl intercepts vertical pan before FriendSwipeCard onEnd. Deferred to gap closure.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260416-w3y | Fix add-friend button missing and IOU add-expense broken | 2026-04-16 | 0f19ec9 | [260416-w3y-fix-add-friend-button-missing-and-iou-ad](./quick/260416-w3y-fix-add-friend-button-missing-and-iou-ad/) |
+
 ## Session Continuity
 
-Last session: 2026-04-16T18:11:06.183Z
-Stopped at: Completed 10-02-PLAN.md
+Last session: 2026-04-16T20:07:08.752Z
+Stopped at: Completed quick task 260416-w3y: Fix add-friend button missing and IOU add-expense broken
