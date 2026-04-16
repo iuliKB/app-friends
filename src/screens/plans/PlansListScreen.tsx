@@ -134,7 +134,7 @@ export function PlansListScreen() {
           <PlanCard plan={item} onPress={() => router.push(`/plans/${item.id}` as never)} />
         )}
         ListHeaderComponent={
-          <View style={{ paddingTop: insets.top + SPACING.sm }}>
+          <View style={{ paddingTop: insets.top + SPACING.sm, paddingHorizontal: SPACING.lg }}>
             <ScreenHeader title="Your Plans" />
             {inviteCount > 0 && (
               <TouchableOpacity

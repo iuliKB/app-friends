@@ -38,7 +38,7 @@ export function ChatListScreen() {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
       ListHeaderComponent={
-        <View style={{ paddingTop: insets.top, paddingHorizontal: SPACING.lg }}>
+        <View style={{ paddingTop: insets.top + SPACING.sm, paddingHorizontal: SPACING.lg }}>
           <ScreenHeader title="Chats" />
         </View>
       }
