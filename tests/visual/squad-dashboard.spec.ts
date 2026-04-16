@@ -30,7 +30,7 @@ test.describe("Squad Dashboard — DASH-01, DASH-02, DASH-03, DASH-04", () => {
   test("DASH-02: Feature cards show glanceable summaries", async ({ page }) => {
     await login(page);
     await navigateToSquad(page);
-    await expect(page.getByText(/unsettled|owed|owe/i)).toBeVisible();
+    await expect(page.getByText(/unsettled|owed|owe/i).first()).toBeVisible();
     await expect(page).toHaveScreenshot("squad-cards-summary.png");
   });
 
