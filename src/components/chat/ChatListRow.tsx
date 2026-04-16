@@ -93,11 +93,14 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
   },
   unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: RADII.xs,
-    backgroundColor: COLORS.feedback.info,
     // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginTop: 6,
+    width: 12,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    height: 12,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    borderRadius: 6,
+    backgroundColor: COLORS.interactive.accent,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    marginTop: 4,
   },
 });

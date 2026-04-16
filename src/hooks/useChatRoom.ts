@@ -200,7 +200,15 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
             }
 
             // Prepend new message at index 0 (bottom of inverted FlatList)
-            return [enrichMessage(incoming), ...prev];
+            const enriched = enrichMessage(incoming);
+            // Keep last_read current for own messages so they don't show as unread
+            if (incoming.sender_id === currentUserId) {
+              AsyncStorage.setItem(
+                'chat:last_read:' + (planId ?? dmChannelId),
+                new Date().toISOString()
+              );
+            }
+            return [enriched, ...prev];
           });
         }
       )

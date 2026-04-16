@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { MessageWithProfile } from '@/types/chat';
@@ -48,61 +48,21 @@ export function shouldShowTimeSeparator(
 }
 
 export function MessageBubble({ message, isOwn, showSenderInfo }: MessageBubbleProps) {
-  const [showTimestamp, setShowTimestamp] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  function handleTap() {
-    if (showTimestamp) return;
-    setShowTimestamp(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-
-    timerRef.current = setTimeout(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setShowTimestamp(false));
-    }, 2500);
-  }
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
   const timestamp = formatMessageTime(message.created_at);
 
   if (isOwn) {
     return (
-      <TouchableOpacity
-        style={styles.ownContainer}
-        onPress={handleTap}
-        activeOpacity={0.8}
-      >
+      <View style={styles.ownContainer}>
         <View style={[styles.ownBubble, message.pending && styles.pendingOpacity]}>
           <Text style={styles.ownBody}>{message.body}</Text>
         </View>
-        {showTimestamp && (
-          <Animated.Text style={[styles.ownTimestamp, { opacity: fadeAnim }]}>
-            {timestamp}
-          </Animated.Text>
-        )}
-      </TouchableOpacity>
+        <Text style={styles.ownTimestamp}>{timestamp}</Text>
+      </View>
     );
   }
 
   return (
-    <TouchableOpacity
-      style={styles.othersContainer}
-      onPress={handleTap}
-      activeOpacity={0.8}
-    >
+    <View style={styles.othersContainer}>
       {showSenderInfo ? (
         <AvatarCircle
           size={32}
@@ -117,13 +77,9 @@ export function MessageBubble({ message, isOwn, showSenderInfo }: MessageBubbleP
         <View style={styles.othersBubble}>
           <Text style={styles.othersBody}>{message.body}</Text>
         </View>
-        {showTimestamp && (
-          <Animated.Text style={[styles.othersTimestamp, { opacity: fadeAnim }]}>
-            {timestamp}
-          </Animated.Text>
-        )}
+        <Text style={styles.othersTimestamp}>{timestamp}</Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -151,12 +107,12 @@ const styles = StyleSheet.create({
   },
   ownTimestamp: {
     // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: FONT_WEIGHT.regular,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    color: 'rgba(245,245,245,0.5)',
+    color: COLORS.text.secondary,
     // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 2,
+    alignSelf: 'flex-end',
   },
   othersContainer: {
     alignSelf: 'flex-start',
@@ -192,7 +148,7 @@ const styles = StyleSheet.create({
   },
   othersTimestamp: {
     // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.secondary,
     // eslint-disable-next-line campfire/no-hardcoded-styles
