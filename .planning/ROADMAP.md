@@ -176,14 +176,14 @@ Plans:
 | 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
 | 9. IOU List & Summary | 2/3 | In Progress|  |
 | 10. Squad Dashboard | 2/2 | Complete    | 2026-04-16 |
-| 11. Birthday Feature | 6/8 | In Progress|  |
+| 11. Birthday Feature | 7/8 | In Progress|  |
 
 ### Phase 11: Birthday Feature
 
 **Goal:** Users can set their birth year, manage a personal wish list from their profile, view friends' wish lists with secret claim toggling, and create a private birthday planning group chat from a friend's birthday page
 **Requirements**: D-01 through D-18 (CONTEXT.md locked decisions)
 **Depends on:** Phase 10
-**Plans:** 6/8 plans executed
+**Plans:** 7/8 plans executed
 
 Plans:
 - [x] 11-01-PLAN.md — Migration 0017 SQL (birthday_year, wish lists, group channels, RPCs) + Playwright stubs
@@ -192,7 +192,7 @@ Plans:
 - [x] 11-04-PLAN.md — useChatRoom groupChannelId branch + chat/room.tsx + ChatRoomScreen props
 - [x] 11-05-PLAN.md — useFriendWishList + useMyWishList + useFriendsOfFriend hooks + WishListItem component
 - [x] 11-06-PLAN.md — profile/edit.tsx birthday year wiring + My Wish List section
-- [ ] 11-07-PLAN.md — birthdays.tsx tap + turning N label + _layout.tsx route + birthday/[id].tsx Friend Birthday Page
+- [x] 11-07-PLAN.md — birthdays.tsx tap + turning N label + _layout.tsx route + birthday/[id].tsx Friend Birthday Page
 - [ ] 11-08-PLAN.md — Human verify checkpoint [BLOCKING]
 
 ---

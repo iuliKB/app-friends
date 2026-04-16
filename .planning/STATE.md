@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 11-06-PLAN.md
-last_updated: "2026-04-16T23:03:59.831Z"
+stopped_at: Completed 11-07-PLAN.md
+last_updated: "2026-04-16T23:08:34.851Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 23
-  completed_plans: 21
-  percent: 91
+  completed_plans: 22
+  percent: 96
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 11 (birthday-feature) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-04-16
 
@@ -141,6 +141,8 @@ Requirements covered: 12/12 mapped
 - [Phase 11-05]: WishListItem readOnly prop: single component covers owner (no button) and friend (claim button) views — avoids duplicate components
 - [Phase 11-06]: Task 1 (birthday year wiring) was pre-completed in Plan 11-03 as Rule 1 auto-fix — BirthdayPicker signature change forced full birthdayYear state/fetch/guard/save/isDirty wiring in edit.tsx
 - [Phase 11-06]: WishListItem readOnly=true in profile edit suppresses claim button for own-profile view (D-05, D-10)
+- [Phase 11-07]: Birthday person excluded from group picker via get_friends_of RPC output — no additional UI filtering needed (D-16 accepted as UI concern per RESEARCH.md)
+- [Phase 11-07]: handlePlanBirthday silent failure on RPC error — no Alert shown, user retries by tapping Plan Birthday again
 
 ### Roadmap Evolution
 
@@ -170,8 +172,9 @@ Requirements covered: 12/12 mapped
 | Phase 11-birthday-feature P04 | 3 | 2 tasks | 4 files |
 | Phase 11-birthday-feature P05 | 5 | 2 tasks | 4 files |
 | Phase 11-birthday-feature P06 | 8 | 2 tasks | 1 files |
+| Phase 11-birthday-feature P07 | 8 | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-04-16T23:03:59.827Z
-Stopped at: Completed 11-06-PLAN.md
+Last session: 2026-04-16T23:08:34.848Z
+Stopped at: Completed 11-07-PLAN.md
