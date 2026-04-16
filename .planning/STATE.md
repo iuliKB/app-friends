@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-04-16T22:28:21.384Z"
-last_activity: 2026-04-16 -- Phase 11 planning complete
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-04-16T22:34:52.111Z"
+last_activity: 2026-04-16
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 23
-  completed_plans: 15
-  percent: 65
+  completed_plans: 16
+  percent: 70
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 10 — squad-tab
+**Current focus:** Phase 11 — birthday-feature
 
 ## Current Position
 
 Milestone: v1.4 Squad Dashboard & Social Tools
-Phase: 10
-Plan: Not started
+Phase: 11 (birthday-feature) — EXECUTING
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-04-16 -- Phase 11 planning complete
+Last activity: 2026-04-16
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -129,6 +129,9 @@ Requirements covered: 12/12 mapped
 - [Phase 10-squad-tab]: Tests intentionally RED until squad.tsx rewritten in Plan 02 — correct Wave 0 gate behavior
 - [Phase 10-squad-tab]: COLORS.text.tertiary does not exist in theme — replaced with COLORS.border (icons) and COLORS.text.secondary (text) in squad.tsx
 - [Phase 10-squad-tab]: cardAnims array access uses non-null assertion (!) to satisfy noUncheckedIndexedAccess strict mode
+- [Phase 11-01]: messages_exactly_one_channel constraint dropped and recreated using integer cast sum pattern to support three-way channel (plan/dm/group)
+- [Phase 11-01]: is_not_wish_list_owner created before wish_list_claims table to avoid forward reference — order-dependency pattern from Phase 05
+- [Phase 11-01]: get_friends_of excludes auth.uid() from results to prevent self-inclusion in birthday group member picker
 
 ### Roadmap Evolution
 
@@ -153,8 +156,9 @@ Requirements covered: 12/12 mapped
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260416-w3y | Fix add-friend button missing and IOU add-expense broken | 2026-04-16 | 0f19ec9 | [260416-w3y-fix-add-friend-button-missing-and-iou-ad](./quick/260416-w3y-fix-add-friend-button-missing-and-iou-ad/) |
+| Phase 11-birthday-feature P01 | 15 | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-04-16T22:01:47.592Z
-Stopped at: Phase 11 context gathered
+Last session: 2026-04-16T22:34:47.487Z
+Stopped at: Completed 11-01-PLAN.md

@@ -10,9 +10,9 @@ Requirements for v1.4 milestone. Each maps to exactly one phase.
 ### Squad Dashboard
 
 - [x] **DASH-01**: User sees Squad tab as a scrollable dashboard with friends list at top and feature cards below
-- [ ] **DASH-02**: Each feature card shows a glanceable summary (e.g. "2 unsettled", "birthday in 3 days")
+- [x] **DASH-02**: Each feature card shows a glanceable summary (e.g. "2 unsettled", "birthday in 3 days")
 - [x] **DASH-03**: Dashboard cards animate in with smooth entrance transitions on load
-- [ ] **DASH-04**: Existing Streaks card is preserved and displayed on the dashboard
+- [x] **DASH-04**: Existing Streaks card is preserved and displayed on the dashboard
 
 ### IOU Expense Splitting
 
@@ -73,9 +73,9 @@ Explicitly excluded.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DASH-01 | Phase 10 | Complete |
-| DASH-02 | Phase 10 | Pending |
+| DASH-02 | Phase 10 | Complete |
 | DASH-03 | Phase 10 | Complete |
-| DASH-04 | Phase 10 | Pending |
+| DASH-04 | Phase 10 | Complete |
 | IOU-01 | Phase 8 | Complete |
 | IOU-02 | Phase 8 | Complete |
 | IOU-03 | Phase 9 | Complete |
