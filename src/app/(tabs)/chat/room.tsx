@@ -3,9 +3,10 @@ import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { ChatRoomScreen } from '@/screens/chat/ChatRoomScreen';
 
 export default function ChatRoomRoute() {
-  const { plan_id, dm_channel_id, friend_name } = useLocalSearchParams<{
+  const { plan_id, dm_channel_id, group_channel_id, friend_name } = useLocalSearchParams<{
     plan_id?: string;
     dm_channel_id?: string;
+    group_channel_id?: string;
     friend_name?: string;
   }>();
   const navigation = useNavigation();
@@ -16,5 +17,5 @@ export default function ChatRoomRoute() {
     }
   }, [friend_name, navigation]);
 
-  return <ChatRoomScreen planId={plan_id} dmChannelId={dm_channel_id} friendName={friend_name} />;
+  return <ChatRoomScreen planId={plan_id} dmChannelId={dm_channel_id} groupChannelId={group_channel_id} friendName={friend_name} />;
 }

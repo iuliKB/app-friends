@@ -25,12 +25,14 @@ import type { MessageWithProfile } from '@/types/chat';
 interface ChatRoomScreenProps {
   planId?: string;
   dmChannelId?: string;
+  groupChannelId?: string;
   friendName?: string;
 }
 
 export function ChatRoomScreen({
   planId,
   dmChannelId,
+  groupChannelId,
   friendName: _friendName,
 }: ChatRoomScreenProps) {
   const navigation = useNavigation();
@@ -38,7 +40,7 @@ export function ChatRoomScreen({
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
 
-  const { messages, loading: _loading, sendMessage } = useChatRoom({ planId, dmChannelId });
+  const { messages, loading: _loading, sendMessage } = useChatRoom({ planId, dmChannelId, groupChannelId });
 
   async function handleSend(body: string) {
     const { error } = await sendMessage(body);
