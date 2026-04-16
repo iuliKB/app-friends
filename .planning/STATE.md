@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-04-16T22:34:52.111Z"
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-04-16T22:42:41.742Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 23
-  completed_plans: 16
-  percent: 70
+  completed_plans: 17
+  percent: 74
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 11 (birthday-feature) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-04-16
 
@@ -132,6 +132,7 @@ Requirements covered: 12/12 mapped
 - [Phase 11-01]: messages_exactly_one_channel constraint dropped and recreated using integer cast sum pattern to support three-way channel (plan/dm/group)
 - [Phase 11-01]: is_not_wish_list_owner created before wish_list_claims table to avoid forward reference — order-dependency pattern from Phase 05
 - [Phase 11-01]: get_friends_of excludes auth.uid() from results to prevent self-inclusion in birthday group member picker
+- [Phase 11-birthday-feature]: Migration 0017 applied via Supabase MCP apply_migration tool instead of supabase CLI db push — equivalent outcome, MCP tooling available in session context
 
 ### Roadmap Evolution
 
@@ -160,5 +161,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-16T22:34:47.487Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-04-16T22:42:41.738Z
+Stopped at: Completed 11-02-PLAN.md
