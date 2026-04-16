@@ -21,6 +21,8 @@ export type Database = {
           // Phase 6 v1.4 (migration 0016) — birthday month/day columns
           birthday_month: number | null;
           birthday_day: number | null;
+          // Phase 11 v1.4 (migration 0017) — birthday year
+          birthday_year: number | null;
         };
         Insert: {
           id: string;
@@ -35,6 +37,8 @@ export type Database = {
           // Phase 6 v1.4 (migration 0016) — birthday month/day columns
           birthday_month?: number | null;
           birthday_day?: number | null;
+          // Phase 11 v1.4 (migration 0017) — birthday year
+          birthday_year?: number | null;
         };
         Update: {
           id?: string;
@@ -49,6 +53,8 @@ export type Database = {
           // Phase 6 v1.4 (migration 0016) — birthday month/day columns
           birthday_month?: number | null;
           birthday_day?: number | null;
+          // Phase 11 v1.4 (migration 0017) — birthday year
+          birthday_year?: number | null;
         };
         Relationships: [
           {
@@ -294,6 +300,7 @@ export type Database = {
           id: string;
           plan_id: string | null;
           dm_channel_id: string | null;
+          group_channel_id: string | null;  // Phase 11 v1.4 (migration 0017) — group DM channel
           sender_id: string;
           body: string;
           created_at: string;
@@ -302,6 +309,7 @@ export type Database = {
           id?: string;
           plan_id?: string | null;
           dm_channel_id?: string | null;
+          group_channel_id?: string | null;
           sender_id: string;
           body: string;
           created_at?: string;
@@ -310,6 +318,7 @@ export type Database = {
           id?: string;
           plan_id?: string | null;
           dm_channel_id?: string | null;
+          group_channel_id?: string | null;
           sender_id?: string;
           body?: string;
           created_at?: string;
@@ -475,6 +484,91 @@ export type Database = {
         };
         Relationships: [];
       };
+      // Phase 11 v1.4 (migration 0017) — wish lists, wish list claims, group channels
+      wish_list_items: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          url: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          url?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          url?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      wish_list_claims: {
+        Row: {
+          item_id: string;
+          claimer_id: string;
+          created_at: string;
+        };
+        Insert: {
+          item_id: string;
+          claimer_id: string;
+          created_at?: string;
+        };
+        Update: {
+          item_id?: string;
+          claimer_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      group_channels: {
+        Row: {
+          id: string;
+          name: string;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      group_channel_members: {
+        Row: {
+          group_channel_id: string;
+          user_id: string;
+          joined_at: string;
+        };
+        Insert: {
+          group_channel_id: string;
+          user_id: string;
+          joined_at?: string;
+        };
+        Update: {
+          group_channel_id?: string;
+          user_id?: string;
+          joined_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       // Phase 2 v1.3 (migration 0009) — effective status view (security_invoker=true).
@@ -563,6 +657,7 @@ export type Database = {
         }[];
       };
       // Phase 7 v1.4 (migration 0016) — upcoming birthdays for authenticated user's accepted friends
+      // Updated in Phase 11 (migration 0017) to include birthday_year
       get_upcoming_birthdays: {
         Args: Record<string, never>;
         Returns: {
@@ -571,8 +666,19 @@ export type Database = {
           avatar_url: string | null;
           birthday_month: number;
           birthday_day: number;
+          birthday_year: number | null;
           days_until: number;
         }[];
+      };
+      // Phase 11 v1.4 (migration 0017) — friends of a target user (for birthday group picker)
+      get_friends_of: {
+        Args: { p_target_user: string };
+        Returns: { friend_id: string; display_name: string; avatar_url: string | null }[];
+      };
+      // Phase 11 v1.4 (migration 0017) — atomic birthday group channel creation
+      create_birthday_group: {
+        Args: { p_name: string; p_member_ids: string[] };
+        Returns: string;
       };
       // Phase 8 v1.4 (migration 0015) — atomic expense creation RPC; largest-remainder split
       create_expense: {
