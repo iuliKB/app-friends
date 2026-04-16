@@ -5,6 +5,8 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -204,6 +206,10 @@ export default function EditProfileScreen() {
   }
 
   return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={styles.scrollContent}
@@ -343,10 +349,14 @@ export default function EditProfileScreen() {
         />
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   scroll: {
     flex: 1,
     backgroundColor: COLORS.surface.base,
