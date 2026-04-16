@@ -28,10 +28,11 @@ decisions:
   - COLORS.text.tertiary does not exist in theme — replaced with COLORS.border (icons) and COLORS.text.secondary (text)
   - cardAnims array access uses non-null assertion (!) to satisfy noUncheckedIndexedAccess strict mode
   - RADII.xs and RADII.md both exist in theme (4 and 8) — no fallbacks needed
+requirements_completed: [DASH-01, DASH-02, DASH-03, DASH-04]
 metrics:
-  duration_minutes: 10
-  completed_date: "2026-04-16T09:10:00Z"
-  tasks_completed: 1
+  duration_minutes: 25
+  completed_date: "2026-04-16T09:30:00Z"
+  tasks_completed: 2
   files_created: 0
   files_modified: 1
 ---
@@ -108,13 +109,24 @@ None — all data hooks are wired to real Supabase data sources from previous ph
 | Task | Commit | Message |
 |------|--------|---------|
 | 1 | 23a7f1e | feat(10-02): rewrite squad.tsx as Squad/Activity swipeable tabs |
+| 2 | (checkpoint) | Human verified — all 15 checks approved |
+
+## Human Verification
+
+Task 2 visual verification: all 15 checks passed (user typed "approved").
+
+Checks confirmed:
+- Two tabs visible: "Squad" (left) and "Activity" (right)
+- Orange underline indicator slides to active tab
+- Tap and swipe navigation both work; underline tracks scroll in real time
+- Squad tab: compact friend rows, FriendActionSheet on tap, Friend Requests row conditional, pull-to-refresh
+- Activity tab: StreakCard, IOUCard, BirthdayCard, "More coming soon" placeholder with dashed border + lock icon
+- Cards fade + slide in on cold open; no re-animation on pull-to-refresh
+- Status bar not overlapped; bottom card not cut off by tab bar
 
 ## Self-Check: PASSED
 
 - `src/app/(tabs)/squad.tsx` — FOUND (modified)
 - commit 23a7f1e — FOUND
 - `npx tsc --noEmit` — 0 errors
-
-## Awaiting
-
-Task 2 is `checkpoint:human-verify` — visual verification of the Squad/Activity tabs in Expo Go.
+- Human approval — received ("approved", all 15 checks)

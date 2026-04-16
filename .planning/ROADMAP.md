@@ -71,7 +71,7 @@
 - [x] **Phase 7: Birthday Calendar Feature** - Upcoming birthdays hook, list screen, and dashboard card (completed 2026-04-12)
 - [x] **Phase 8: IOU Create & Detail** - Atomic expense creation, even/custom split, per-expense detail, settle action (completed 2026-04-12)
 - [ ] **Phase 9: IOU List & Summary** - Net balance view, expense history screen, IOU dashboard card
-- [ ] **Phase 10: Squad Dashboard** - Scrollable dashboard with friends list + feature cards replaces tab switcher
+- [x] **Phase 10: Squad Dashboard** - Scrollable dashboard with friends list + feature cards replaces tab switcher (completed 2026-04-16)
 
 ## Phase Details
 
@@ -164,7 +164,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 10-01-PLAN.md — Playwright test scaffold + CompactFriendRow component
-- [ ] 10-02-PLAN.md — squad.tsx FlatList rewrite + SquadTabSwitcher deletion + entrance animations + human verify [BLOCKING]
+- [x] 10-02-PLAN.md — squad.tsx FlatList rewrite + SquadTabSwitcher deletion + entrance animations + human verify [BLOCKING]
 
 ## Progress
 
@@ -175,7 +175,7 @@ Plans:
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
 | 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
 | 9. IOU List & Summary | 2/3 | In Progress|  |
-| 10. Squad Dashboard | 1/2 | In Progress|  |
+| 10. Squad Dashboard | 2/2 | Complete   | 2026-04-16 |
 
 ---
 *Roadmap updated: 2026-04-14 — Phase 10 planned (2 plans, 2 waves; replanned for dashboard design)*
