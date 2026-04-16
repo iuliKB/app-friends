@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-04-16T22:42:41.742Z"
+stopped_at: Completed 11-03-PLAN.md
+last_updated: "2026-04-16T22:51:14.062Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 23
-  completed_plans: 17
-  percent: 74
+  completed_plans: 18
+  percent: 78
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 11 (birthday-feature) — EXECUTING
-Plan: 3 of 8
+Plan: 4 of 8
 Status: Ready to execute
 Last activity: 2026-04-16
 
@@ -133,6 +133,8 @@ Requirements covered: 12/12 mapped
 - [Phase 11-01]: is_not_wish_list_owner created before wish_list_claims table to avoid forward reference — order-dependency pattern from Phase 05
 - [Phase 11-01]: get_friends_of excludes auth.uid() from results to prevent self-inclusion in birthday group member picker
 - [Phase 11-birthday-feature]: Migration 0017 applied via Supabase MCP apply_migration tool instead of supabase CLI db push — equivalent outcome, MCP tooling available in session context
+- [Phase 11-03]: formatTurningAge returns refYear - birthYear (age in reference year); behavior spec overrides inverted code snippet in plan
+- [Phase 11-03]: edit.tsx updated atomically with BirthdayPicker signature change (Rule 1 auto-fix) and birthday year required guard (D-01)
 
 ### Roadmap Evolution
 
@@ -158,8 +160,9 @@ Requirements covered: 12/12 mapped
 |---|-------------|------|--------|-----------|
 | 260416-w3y | Fix add-friend button missing and IOU add-expense broken | 2026-04-16 | 0f19ec9 | [260416-w3y-fix-add-friend-button-missing-and-iou-ad](./quick/260416-w3y-fix-add-friend-button-missing-and-iou-ad/) |
 | Phase 11-birthday-feature P01 | 15 | 2 tasks | 3 files |
+| Phase 11-birthday-feature P03 | 6 | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-04-16T22:42:41.738Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-04-16T22:51:14.059Z
+Stopped at: Completed 11-03-PLAN.md

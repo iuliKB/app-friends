@@ -176,19 +176,19 @@ Plans:
 | 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
 | 9. IOU List & Summary | 2/3 | In Progress|  |
 | 10. Squad Dashboard | 2/2 | Complete    | 2026-04-16 |
-| 11. Birthday Feature | 2/8 | In Progress|  |
+| 11. Birthday Feature | 3/8 | In Progress|  |
 
 ### Phase 11: Birthday Feature
 
 **Goal:** Users can set their birth year, manage a personal wish list from their profile, view friends' wish lists with secret claim toggling, and create a private birthday planning group chat from a friend's birthday page
 **Requirements**: D-01 through D-18 (CONTEXT.md locked decisions)
 **Depends on:** Phase 10
-**Plans:** 2/8 plans executed
+**Plans:** 3/8 plans executed
 
 Plans:
 - [x] 11-01-PLAN.md — Migration 0017 SQL (birthday_year, wish lists, group channels, RPCs) + Playwright stubs
 - [x] 11-02-PLAN.md — [BLOCKING] supabase db push
-- [ ] 11-03-PLAN.md — database.ts types + formatTurningAge + BirthdayPicker year column + BirthdayEntry extension
+- [x] 11-03-PLAN.md — database.ts types + formatTurningAge + BirthdayPicker year column + BirthdayEntry extension
 - [ ] 11-04-PLAN.md — useChatRoom groupChannelId branch + chat/room.tsx + ChatRoomScreen props
 - [ ] 11-05-PLAN.md — useFriendWishList + useMyWishList + useFriendsOfFriend hooks + WishListItem component
 - [ ] 11-06-PLAN.md — profile/edit.tsx birthday year wiring + My Wish List section
