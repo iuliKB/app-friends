@@ -85,7 +85,7 @@
 
 ## "Friend List" Clarification
 
-**User's note:** Tapping a friend from the birthday list should show their wish list AND their friends, because the user wants the opportunity to create a group with that friend's friends to discuss birthday plans (surprise coordination).
+**User's note:** Tapping a friend from the birthday list should show their wish list AND all of that friend's friends (not just mutual friends), because the user wants the opportunity to create a group with any of their friends to coordinate a birthday surprise.
 
 ---
 

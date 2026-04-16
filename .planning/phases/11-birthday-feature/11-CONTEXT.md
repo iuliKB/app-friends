@@ -36,9 +36,9 @@ Core birthday feature (picker, list screen, dashboard card) is already complete 
 - **D-12:** Tapping a friend's row in the birthday list opens a dedicated "Friend Birthday Page" screen.
 - **D-13:** This screen shows:
   1. Friend's wish list (with Claimed/Unclaim/Claim toggle per item)
-  2. Friend's mutual friends list (for selecting birthday group participants)
+  2. **All of the birthday friend's friends** (for selecting birthday group participants)
   3. "Plan birthday" button to create a group chat
-- **D-14:** Mutual friends list is used for group selection — user picks who to include before creating the group.
+- **D-14:** All of the birthday friend's friends list is shown for group selection — user picks who to include before creating the group. This is NOT limited to mutual friends; it's everyone that friend knows in the app.
 
 ### Birthday Group Chat
 - **D-15:** "Plan birthday" creates a **private group chat** (not a plan/event) auto-named `"[Name]'s birthday"`.
