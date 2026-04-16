@@ -7,6 +7,7 @@ import type { Message, MessageWithProfile } from '@/types/chat';
 interface UseChatRoomOptions {
   planId?: string;
   dmChannelId?: string;
+  groupChannelId?: string;  // standalone group DM (D-17, D-18)
 }
 
 interface UseChatRoomResult {
@@ -18,7 +19,7 @@ interface UseChatRoomResult {
 
 type ProfileInfo = { display_name: string; avatar_url: string | null };
 
-export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseChatRoomResult {
+export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoomOptions): UseChatRoomResult {
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
   const currentUserDisplayName =
@@ -50,7 +51,7 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
   }
 
   async function fetchMessages() {
-    if (!planId && !dmChannelId) return;
+    if (!planId && !dmChannelId && !groupChannelId) return;
 
     setLoading(true);
     setError(null);
@@ -102,11 +103,34 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
             });
           }
         }
+      } else if (groupChannelId) {
+        const { data: members } = await supabase
+          .from('group_channel_members')
+          .select('user_id')
+          .eq('group_channel_id', groupChannelId);
+
+        const userIds = (members ?? []).map((m) => m.user_id as string);
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url')
+            .in('id', userIds);
+          for (const p of profiles ?? []) {
+            profilesMapRef.current.set(p.id, {
+              display_name: p.display_name,
+              avatar_url: p.avatar_url,
+            });
+          }
+        }
       }
 
       // Fetch messages
-      const column = planId ? 'plan_id' : 'dm_channel_id';
-      const value = planId ?? dmChannelId;
+      const column = planId
+        ? 'plan_id'
+        : dmChannelId
+          ? 'dm_channel_id'
+          : 'group_channel_id';
+      const value = planId ?? dmChannelId ?? groupChannelId;
 
       const { data: rows, error: fetchError } = await supabase
         .from('messages')
@@ -127,6 +151,7 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
           id: row.id as string,
           plan_id: row.plan_id as string | null,
           dm_channel_id: row.dm_channel_id as string | null,
+          group_channel_id: row.group_channel_id as string | null,
           sender_id: row.sender_id as string,
           body: row.body as string,
           created_at: row.created_at as string,
@@ -155,11 +180,15 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
       channelRef.current = null;
     }
 
-    if (!planId && !dmChannelId) return;
+    if (!planId && !dmChannelId && !groupChannelId) return;
 
-    const filter = planId ? `plan_id=eq.${planId}` : `dm_channel_id=eq.${dmChannelId}`;
+    const filter = planId
+      ? `plan_id=eq.${planId}`
+      : dmChannelId
+        ? `dm_channel_id=eq.${dmChannelId}`
+        : `group_channel_id=eq.${groupChannelId}`;
 
-    const channelName = `chat-${planId ?? dmChannelId}`;
+    const channelName = `chat-${planId ?? dmChannelId ?? groupChannelId}`;
 
     channelRef.current = supabase
       .channel(channelName)
@@ -225,7 +254,7 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
         channelRef.current = null;
       }
     };
-  }, [planId, dmChannelId, session?.user?.id]);
+  }, [planId, dmChannelId, groupChannelId, session?.user?.id]);
 
   async function sendMessage(body: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
@@ -236,6 +265,7 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
       id: tempId,
       plan_id: planId ?? null,
       dm_channel_id: dmChannelId ?? null,
+      group_channel_id: groupChannelId ?? null,
       sender_id: currentUserId,
       body,
       created_at: new Date().toISOString(),
@@ -250,6 +280,7 @@ export function useChatRoom({ planId, dmChannelId }: UseChatRoomOptions): UseCha
     const { error: insertError } = await supabase.from('messages').insert({
       plan_id: planId ?? null,
       dm_channel_id: dmChannelId ?? null,
+      group_channel_id: groupChannelId ?? null,
       sender_id: currentUserId,
       body,
     });

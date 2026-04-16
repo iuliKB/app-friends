@@ -2,6 +2,7 @@ export interface Message {
   id: string;
   plan_id: string | null;
   dm_channel_id: string | null;
+  group_channel_id: string | null;
   sender_id: string;
   body: string;
   created_at: string;
