@@ -177,19 +177,21 @@ export default function SquadScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScreenHeader
-        title="Squad"
-        rightAction={
-          <TouchableOpacity
-            onPress={() => router.push('/friends/add')}
-            accessibilityLabel="Add friend"
-            accessibilityRole="button"
-          >
-            <Ionicons name="person-add-outline" size={24} color={COLORS.text.primary} />
-          </TouchableOpacity>
-        }
-      />
+    <View style={[styles.container, { paddingTop: insets.top + SPACING.sm }]}>
+      <View style={styles.headerContainer}>
+        <ScreenHeader
+          title="Squad"
+          rightAction={
+            <TouchableOpacity
+              onPress={() => router.push('/friends/add')}
+              accessibilityLabel="Add friend"
+              accessibilityRole="button"
+            >
+              <Ionicons name="person-add-outline" size={24} color={COLORS.text.primary} />
+            </TouchableOpacity>
+          }
+        />
+      </View>
 
       {/* Tab header */}
       <View style={styles.tabHeader}>
@@ -333,6 +335,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.surface.base,
+  },
+  headerContainer: {
+    paddingHorizontal: SPACING.lg,
   },
 
   // Tab header
