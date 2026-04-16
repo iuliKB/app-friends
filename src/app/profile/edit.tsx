@@ -356,6 +356,7 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+    backgroundColor: COLORS.surface.base,
   },
   scroll: {
     flex: 1,
