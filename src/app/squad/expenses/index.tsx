@@ -4,7 +4,8 @@
 // D-05: data from useIOUSummary hook (rows with unsettled_count > 0 only shown — D-06).
 // D-04: each row tappable → /squad/expenses/friend/[id] with params.
 
-import { FlatList, RefreshControl, SafeAreaView, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { COLORS, SPACING } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
@@ -108,6 +109,14 @@ export default function IOUBalanceIndexScreen() {
           />
         }
       />
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/squad/expenses/create')}
+        accessibilityLabel="Add expense"
+        accessibilityRole="button"
+      >
+        <Ionicons name="add" size={28} color={COLORS.surface.base} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -162,5 +171,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.border,
     marginLeft: SPACING.sm,
     borderRadius: SPACING.xs,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: SPACING.xl,
+    right: SPACING.xl,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    width: 56,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    height: 56,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    borderRadius: 28,
+    backgroundColor: COLORS.interactive.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
