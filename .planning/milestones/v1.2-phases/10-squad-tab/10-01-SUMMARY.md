@@ -1,127 +1,88 @@
 ---
 phase: 10-squad-tab
-plan: 01
-subsystem: ui
-tags: [react-native, expo, expo-haptics, expo-router, tab-switcher, friends]
-
-# Dependency graph
-requires:
-  - phase: 09-profile-navigation
-    provides: FriendsList component, usePendingRequestsCount hook, friends screen infrastructure
-provides:
-  - SquadTabSwitcher underline-style tab switcher with haptic feedback
-  - Squad screen with Friends/Goals two-tab layout
-  - Pending request badge on Squad tab icon (moved from Profile)
-affects:
-  - phase: 11-navigation-rename (tab bar changes, badge location updated)
-
-# Tech tracking
-tech-stack:
+plan: "01"
+subsystem: squad
+tags: [playwright, component, test-scaffold, tdd-red]
+dependency_graph:
+  requires: []
+  provides:
+    - tests/visual/squad-dashboard.spec.ts
+    - src/components/squad/CompactFriendRow.tsx
+  affects:
+    - src/app/(tabs)/squad.tsx
+tech_stack:
   added: []
   patterns:
-    - Underline tab switcher using absolute-positioned bottom border View
-    - Conditional rendering via useState for tab content (not navigator)
-    - FAB hidden implicitly by not mounting FriendsList on Goals tab
-
-key-files:
+    - Playwright test scaffold with navigateToSquad helper
+    - Leaf row component with TouchableOpacity + AvatarCircle + Ionicons
+key_files:
   created:
-    - src/components/squad/SquadTabSwitcher.tsx
-  modified:
-    - src/app/(tabs)/squad.tsx
-    - src/app/(tabs)/_layout.tsx
-
-key-decisions:
-  - "No ScreenHeader on Squad screen — SquadTabSwitcher is the primary wayfinding element"
-  - "Friend Requests row is a sibling View above FriendsList, not a FlatList header — FriendsList owns its own FlatList"
-  - "FriendsList only mounted on friends tab — FAB hides automatically without useSegments"
-  - "No container paddingHorizontal — FriendsList and requestsRow each manage their own horizontal padding"
-  - "activeOpacity is a prop not a style property — removed from StyleSheet.create to fix TS error"
-
-patterns-established:
-  - "SquadTabSwitcher pattern: underline tab switcher with absolute-positioned bottom View, haptic on switch only"
-
-requirements-completed:
-  - SQAD-01
-  - SQAD-02
-  - SQAD-03
-  - SQAD-04
-  - SQAD-05
-  - SQAD-06
-  - SQAD-07
-  - SQAD-08
-  - SQAD-09
-
-# Metrics
-duration: 2min
-completed: 2026-04-04
+    - tests/visual/squad-dashboard.spec.ts
+    - src/components/squad/CompactFriendRow.tsx
+  modified: []
+decisions:
+  - Tests intentionally RED until squad.tsx rewritten in Plan 02 — correct Wave 0 gate behavior
+metrics:
+  duration_minutes: 8
+  completed_date: "2026-04-16T08:54:39Z"
+  tasks_completed: 2
+  files_created: 2
+  files_modified: 0
 ---
 
-# Phase 10 Plan 01: Squad Tab Layout Summary
+# Phase 10 Plan 01: Squad Dashboard Test Scaffold & CompactFriendRow Summary
 
-**Squad tab converted from stub to primary friend hub with underline tab switcher (Friends/Goals), embedded FriendsList with FAB, conditional Friend Requests row, and pending badge moved from Profile to Squad**
+**One-liner:** Playwright test scaffold for DASH-01 through DASH-04 (RED state) plus CompactFriendRow leaf component for squad FlatList renderItem.
 
-## Performance
+## What Was Built
 
-- **Duration:** 2 min
-- **Started:** 2026-04-03T23:32:59Z
-- **Completed:** 2026-04-04T00:00:00Z
-- **Tasks:** 3
-- **Files modified:** 3
+### Task 1: squad-dashboard Playwright test scaffold
 
-## Accomplishments
+Created `tests/visual/squad-dashboard.spec.ts` with 4 tests under the describe block
+"Squad Dashboard — DASH-01, DASH-02, DASH-03, DASH-04":
 
-- Created `SquadTabSwitcher` with underline indicator, haptic on switch, no haptic on re-tap
-- Rewrote `squad.tsx` with Friends (default) and Goals tab content, Friend Requests row, and embedded FriendsList
-- Migrated pending request badge from Profile tab to Squad tab in `_layout.tsx`
+- **DASH-01:** login → navigateToSquad → screenshot `squad-dashboard.png`
+- **DASH-02:** login → navigateToSquad → assert `/unsettled|owed|owe/i` visible → screenshot `squad-cards-summary.png`
+- **DASH-03:** login → navigateToSquad → waitForTimeout(500) → screenshot `squad-cards-animated.png`
+- **DASH-04:** login → navigateToSquad → assert `/streak/i` visible → screenshot `squad-streak-card.png`
 
-## Task Commits
+Follows exact pattern of `iou-create-detail.spec.ts` including identical TEST_EMAIL/TEST_PASSWORD
+constants and `login(page)` helper body. `navigateToSquad` helper matches plan spec exactly.
 
-Each task was committed atomically:
+Tests are in RED state — correct until Plan 02 delivers the squad.tsx rewrite.
 
-1. **Task 1: Create SquadTabSwitcher component** - `d15ca60` (feat)
-2. **Task 2: Rewrite squad.tsx with Friends and Goals tab content** - `24b973a` (feat)
-3. **Task 3: Migrate pending request badge from Profile to Squad** - `7045dbe` (feat)
+### Task 2: CompactFriendRow component
 
-## Files Created/Modified
+Created `src/components/squad/CompactFriendRow.tsx`:
 
-- `src/components/squad/SquadTabSwitcher.tsx` - Underline-style tab switcher with haptic feedback, exported as named export
-- `src/app/(tabs)/squad.tsx` - Squad screen rewritten with SquadTabSwitcher, Friends/Goals conditional content, Friend Requests row
-- `src/app/(tabs)/_layout.tsx` - tabBarBadge moved from profile to squad Tabs.Screen
+- Pure leaf row component (no FlatList, no ScrollView)
+- Props: `{ friend: FriendWithStatus; onPress: () => void }`
+- Layout: `TouchableOpacity` → `AvatarCircle(size=36)` + `Text(name)` + `Ionicons(chevron-forward)`
+- Style: `minHeight: 56`, `paddingHorizontal: SPACING.lg`, `paddingVertical: SPACING.md`, `gap: SPACING.md`
+- Text: `flex: 1`, `fontSize: FONT_SIZE.lg`, `fontWeight: FONT_WEIGHT.regular`, `color: COLORS.text.primary`
+- Named export: `CompactFriendRow`
+- Zero TypeScript errors; zero FlatList/ScrollView references
 
-## Decisions Made
+## Verification Results
 
-- No `ScreenHeader` on Squad screen — the `SquadTabSwitcher` acts as the visual header element
-- `FriendsList` only mounted when `activeTab === 'friends'` — FAB (inside FriendsList, position: absolute) hides automatically without needing `useSegments`
-- Friend Requests row rendered as a sibling View above `<FriendsList />`, not a FlatList `ListHeaderComponent`
-- Container has no `paddingHorizontal` to avoid double-padding with FriendsList's own internal padding
+- `npx playwright test squad-dashboard.spec.ts --project=mobile --list` → 4 tests listed
+- `npx tsc --noEmit` → no errors touching CompactFriendRow
+- `grep -c "FlatList\|ScrollView" src/components/squad/CompactFriendRow.tsx` → 0
 
 ## Deviations from Plan
 
-### Auto-fixed Issues
+None — plan executed exactly as written.
 
-**1. [Rule 1 - Bug] Removed `activeOpacity` from StyleSheet.create tab style**
-- **Found during:** Task 1 (Create SquadTabSwitcher component)
-- **Issue:** `activeOpacity` is a `TouchableOpacity` prop, not a valid RN style property — TypeScript error TS2345
-- **Fix:** Removed `activeOpacity: 0.8` from `styles.tab` in `StyleSheet.create`; prop is already set directly on each `<TouchableOpacity activeOpacity={0.8}>`
-- **Files modified:** src/components/squad/SquadTabSwitcher.tsx
-- **Verification:** `npx tsc --noEmit` returns no errors
-- **Committed in:** d15ca60 (Task 1 commit)
+## Commits
 
----
+| Task | Commit | Message |
+|------|--------|---------|
+| 1 | 44c6b87 | test(10-01): add squad-dashboard Playwright test scaffold |
+| 2 | dea14bf | feat(10-01): add CompactFriendRow component |
 
-**Total deviations:** 1 auto-fixed (1 bug)
-**Impact on plan:** Necessary fix for TypeScript correctness. No scope creep.
+## Self-Check: PASSED
 
-## Issues Encountered
-
-None beyond the activeOpacity style property fix above.
-
-## Next Phase Readiness
-
-- Squad tab is fully functional — ready for Phase 11 navigation renames
-- Phase 11 note: Playwright tests may be coupled to old tab labels — update locators and snapshots
-- `usePendingRequestsCount` cleanup (`supabase.removeChannel`) should be verified in Phase 11
-
----
-*Phase: 10-squad-tab*
-*Completed: 2026-04-04*
+- `tests/visual/squad-dashboard.spec.ts` — FOUND
+- `src/components/squad/CompactFriendRow.tsx` — FOUND
+- commit 44c6b87 — FOUND
+- commit dea14bf — FOUND

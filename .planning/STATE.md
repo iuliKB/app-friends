@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
-status: phase complete
-stopped_at: Completed 09-03-PLAN.md (verified)
-last_updated: "2026-04-14T00:00:00.000Z"
-last_activity: 2026-04-14
+status: executing
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-04-16T08:55:07.975Z"
+last_activity: 2026-04-16
 progress:
   total_phases: 6
-  completed_phases: 6
+  completed_phases: 5
   total_plans: 15
   completed_plans: 15
   percent: 100
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 09 — iou-list-summary
+**Current focus:** Phase 10 — squad-tab
 
 ## Current Position
 
 Milestone: v1.4 Squad Dashboard & Social Tools
-Phase: 09 (iou-list-summary) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-04-13
+Phase: 10 (squad-tab) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-16
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -126,6 +126,7 @@ Requirements covered: 12/12 mapped
 - [Phase 09-02]: expenses/index Stack.Screen name (not expenses) required for Expo Router file-system routing of index.tsx
 - [Phase 09-02]: netAmountCents route param is display-only (T-09-P02-01 accept) — authoritative balance always from get_iou_summary() RPC
 - [Phase Phase 09-03]: IOUCard placed between StreakCard and BirthdayCard per D-14 mandate (IOUs feel more action-oriented than birthdays)
+- [Phase 10-squad-tab]: Tests intentionally RED until squad.tsx rewritten in Plan 02 — correct Wave 0 gate behavior
 
 ### Roadmap Evolution
 
@@ -146,5 +147,5 @@ Requirements covered: 12/12 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-13T16:37:08.080Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-04-16T08:55:07.971Z
+Stopped at: Completed 10-01-PLAN.md

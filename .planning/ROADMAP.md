@@ -163,7 +163,7 @@ Plans:
   5. The outer scroll is a single FlatList with feature cards in ListFooterComponent; no FlatList is nested inside a ScrollView
 **Plans**: 2 plans
 Plans:
-- [ ] 10-01-PLAN.md — Playwright test scaffold + CompactFriendRow component
+- [x] 10-01-PLAN.md — Playwright test scaffold + CompactFriendRow component
 - [ ] 10-02-PLAN.md — squad.tsx FlatList rewrite + SquadTabSwitcher deletion + entrance animations + human verify [BLOCKING]
 
 ## Progress
@@ -175,7 +175,7 @@ Plans:
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
 | 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
 | 9. IOU List & Summary | 2/3 | In Progress|  |
-| 10. Squad Dashboard | 0/2 | Not started | - |
+| 10. Squad Dashboard | 1/2 | In Progress|  |
 
 ---
 *Roadmap updated: 2026-04-14 — Phase 10 planned (2 plans, 2 waves; replanned for dashboard design)*
