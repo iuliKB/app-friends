@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Squad Dashboard & Social Tools — Active Phases
 status: executing
-stopped_at: Completed 11-04-PLAN.md
-last_updated: "2026-04-16T22:55:50.272Z"
+stopped_at: Completed 11-05-PLAN.md
+last_updated: "2026-04-16T23:00:04.027Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 23
-  completed_plans: 19
-  percent: 83
+  completed_plans: 20
+  percent: 87
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 Milestone: v1.4 Squad Dashboard & Social Tools
 Phase: 11 (birthday-feature) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-04-16
 
@@ -137,6 +137,8 @@ Requirements covered: 12/12 mapped
 - [Phase 11-03]: edit.tsx updated atomically with BirthdayPicker signature change (Rule 1 auto-fix) and birthday year required guard (D-01)
 - [Phase 11-04]: Three-branch ternary used at messages filter and realtime filter — avoids Pitfall 4 (wrong filter column when only groupChannelId provided)
 - [Phase 11-04]: group_channel_id added to Message type in chat.ts — required for TypeScript clean enrichMessage call
+- [Phase 11-05]: Empty itemIds guard: conditional Supabase .in() query returns { data: [] } when no items — avoids spurious DB error for friends with empty wish lists
+- [Phase 11-05]: WishListItem readOnly prop: single component covers owner (no button) and friend (claim button) views — avoids duplicate components
 
 ### Roadmap Evolution
 
@@ -164,8 +166,9 @@ Requirements covered: 12/12 mapped
 | Phase 11-birthday-feature P01 | 15 | 2 tasks | 3 files |
 | Phase 11-birthday-feature P03 | 6 | 2 tasks | 6 files |
 | Phase 11-birthday-feature P04 | 3 | 2 tasks | 4 files |
+| Phase 11-birthday-feature P05 | 5 | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-04-16T22:55:50.268Z
-Stopped at: Completed 11-04-PLAN.md
+Last session: 2026-04-16T23:00:04.023Z
+Stopped at: Completed 11-05-PLAN.md
