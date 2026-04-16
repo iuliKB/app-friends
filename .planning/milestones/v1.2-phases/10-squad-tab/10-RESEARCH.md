@@ -1,45 +1,35 @@
-# Phase 10: Squad Tab - Research
+# Phase 10: Squad Dashboard - Research
 
-**Researched:** 2026-04-04
-**Domain:** React Native / Expo Router — custom tab switcher, friend management relocation
+**Researched:** 2026-04-14
+**Domain:** React Native FlatList architecture, entrance animations, compact friend list UI
 **Confidence:** HIGH
+
+> NOTE: This file replaces the outdated v1.2 CONTEXT.md-era research. The old CONTEXT.md
+> described a tab-switcher design (underline Friends/Goals tabs). That design was shipped
+> in v1.2. Phase 10 in v1.4 is a new goal: replace that tab switcher with a single
+> scrollable dashboard. See ROADMAP.md Phase 10 for the authoritative definition.
 
 ## Summary
 
-This phase converts the Squad screen from a Coming Soon stub into a two-tab layout (Friends | Goals) using a custom underline-style segmented control. All required primitives already exist in the codebase: `FriendsList`, `FAB`, `expo-haptics`, design tokens, `usePendingRequestsCount`, and `useRouter`. No new packages are needed.
+Phase 10 converts the Squad screen from a two-tab (Friends/Goals) layout into a single scrollable
+dashboard. The tab switcher is removed entirely. A compact friends section sits at the top;
+the three pre-built feature cards (StreakCard, IOUCard, BirthdayCard) follow below.
 
-The primary implementation work is (1) building an underline-tab `SquadTabSwitcher` component, (2) wiring it into a refactored `squad.tsx`, (3) conditionally rendering `FriendsList` vs the Goals stub based on active tab, (4) adding the Friend Requests tappable row when `pendingCount > 0`, and (5) moving the `tabBarBadge` from the Profile `Tabs.Screen` to the Squad `Tabs.Screen` in `_layout.tsx`.
+All three feature cards already exist and are verified. The hooks (`useStreakData`,
+`useIOUSummary`, `useUpcomingBirthdays`, `useFriends`) are already called in squad.tsx. The
+structural work is: (1) replace the ScrollView + tab split with a single outer FlatList whose
+`data` array drives the friends list, (2) move the feature cards into `ListFooterComponent`,
+(3) wire entrance animations that fire only on first mount, and (4) decide where the Friend
+Requests row and the ScreenHeader "+" button go.
 
-The existing `SegmentedControl` component uses a pill/color-fill style and cannot be reused visually for the underline style — a new `SquadTabSwitcher` component must be built. The `AddFriend` pill-switcher and the status `SegmentedControl` are reference-only for haptic pattern and layout skeleton.
+The biggest technical constraint in this phase is the **nested-FlatList prohibition** (confirmed
+locked decision in STATE.md): the compact friends section CANNOT embed another FlatList or
+ScrollView. It must render friends as a flat sequence inside the outer FlatList's `data` prop.
 
-**Primary recommendation:** Build `SquadTabSwitcher` as a standalone component with an underline indicator, keep `FriendsList` completely unchanged, and manage the active tab with `useState` inside `squad.tsx`. No router-level sub-navigation needed.
-
----
-
-<user_constraints>
-## User Constraints (from CONTEXT.md)
-
-### Locked Decisions
-
-- **Segmented control style:** Underline style (NOT pill/AddFriend style) — text tabs with underline indicator under active tab. Active underline uses accent orange (`COLORS.interactive.accent`). Full width layout — each tab takes 50% of screen width. Light haptic feedback on tab tap (matches existing SegmentedControl pattern using expo-haptics).
-- **Screen header:** No ScreenHeader title — the segmented control (Friends / Goals) is the top element. Safe area inset handled by the Squad screen container (`paddingTop: insets.top`).
-- **Friends tab layout:** FriendsList component reused as-is with FAB and pull-to-refresh. "Friend Requests (N)" row only visible when `pendingCount > 0`. Row navigates to `/friends/requests`. FAB visible only on Friends tab, hidden on Goals tab.
-- **Goals tab:** Reuse current `squad.tsx` content: lock icon + "Group challenges and streaks — coming soon." Same design token styling.
-- **Badge migration:** Move `tabBarBadge` from Profile `Tabs.Screen` to Squad `Tabs.Screen` in `_layout.tsx`. Single `usePendingRequestsCount` call in `_layout.tsx` (already exists) — do NOT duplicate.
-
-### Claude's Discretion
-
-- Friend Requests row exact placement (above list vs FlatList header)
-- Exact spacing between segmented control and tab content
-- Whether to extract a reusable `TabSwitcher` component or inline the implementation
-- `useFocusEffect` vs `useEffect` for friend data refresh in Squad context
-
-### Deferred Ideas (OUT OF SCOPE)
-
-- Moving "My QR Code" from Profile to Squad tab — keep on Profile for now per milestone spec
-- Squad Goals real content (group challenges, streaks) — future milestone
-- Friends list search/filter — explicitly out of scope for groups of 3-15
-</user_constraints>
+**Primary recommendation:** Use the outer FlatList's `data` array for friend rows directly (with
+a `ListHeaderComponent` section header and `ListFooterComponent` holding the three feature
+cards). Entrance animations use `Animated.timing` (the existing app animation API) with a
+staggered `useRef` flag to suppress replay on pull-to-refresh.
 
 ---
 
@@ -47,228 +37,286 @@ The existing `SegmentedControl` component uses a pill/color-fill style and canno
 ## Phase Requirements
 
 | ID | Description | Research Support |
-|----|-------------|-----------------|
-| SQAD-01 | User can see a segmented control (Friends / Goals) at the top of the Squad screen | `SquadTabSwitcher` component with underline indicator renders at top of screen above tab content |
-| SQAD-02 | User lands on Friends tab by default when opening Squad | `useState<'friends' \| 'goals'>('friends')` default value |
-| SQAD-03 | User can switch between Friends and Goals tabs via segmented control | `setActiveTab` called from `SquadTabSwitcher` with haptic feedback |
-| SQAD-04 | User sees their friend list with status indicators in the Friends tab | `FriendsList` component embedded in Friends tab conditional render |
-| SQAD-05 | User can tap FAB to add a new friend from the Friends tab | `FriendsList` already contains FAB; conditionally render based on active tab |
-| SQAD-06 | User sees a "Friend Requests (N)" tappable row when pending requests exist | Tappable row with `pendingCount` guard: `{pendingCount > 0 && <FriendRequestsRow />}` |
-| SQAD-07 | User can tap the requests row to navigate to the Friend Requests screen | `router.push('/friends/requests')` — route already exists |
-| SQAD-08 | User sees a "Coming soon" placeholder in the Goals tab | Extract Goals stub from current `squad.tsx` content (lock icon + text) |
-| SQAD-09 | User sees pending request count badge on the Squad tab icon in bottom nav | Move `tabBarBadge` from Profile entry to Squad entry in `_layout.tsx` |
+|----|-------------|------------------|
+| DASH-01 | User sees Squad tab as a scrollable dashboard with friends list at top and feature cards below | Single FlatList architecture — friends in `data`, cards in `ListFooterComponent` |
+| DASH-02 | Each feature card shows a glanceable summary (e.g. "2 unsettled", "birthday in 3 days") | All three cards already implement this; no card changes needed beyond wiring |
+| DASH-03 | Dashboard cards animate in with smooth entrance transitions on load | `Animated.timing` opacity+translateY stagger; `useRef` flag guards first-mount-only |
+| DASH-04 | Existing Streaks card is preserved and displayed on the dashboard | StreakCard is unchanged; it already lives in squad.tsx; relocation only |
 </phase_requirements>
 
 ---
 
 ## Standard Stack
 
-### Core (all already installed)
+### Core (already installed — zero new dependencies)
 
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
-| expo-router | ~55.0.5 | File-based routing; `useFocusEffect` from expo-router | Already the app router |
-| expo-haptics | ~55.0.9 | `Haptics.impactAsync(ImpactFeedbackStyle.Light)` on tab tap | Already used in `SegmentedControl` |
-| react-native-safe-area-context | ~5.6.2 | `useSafeAreaInsets()` for top padding | Already used in squad.tsx |
-| zustand | ^5.0.12 | State management — not needed for this phase | Already installed; not used for tab state |
+| react-native `Animated` | built-in | Entrance animations (opacity + translateY) | Already used in FAB, StatusPickerSheet, HomeScreen crossfade; `useNativeDriver: true` capable |
+| expo-haptics | ~55.0.9 | Light haptic on interactive elements (optional) | Already used in SquadTabSwitcher; available |
+| react-native `FlatList` | built-in | Single outer scroll + friends list | Project mandate: FlatList for all list views |
+| `useFriends` hook | internal | Friend data for compact list section | Already called in squad.tsx; returns `FriendWithStatus[]` |
+| `AvatarCircle` | internal | Friend avatars in compact row | Already used in BirthdayCard; size prop controls dimensions |
+| `FriendActionSheet` | internal | Action sheet on compact friend row tap | Already used in FriendsList; self-contained with DM/remove/profile |
 
-### No new packages required
+[VERIFIED: codebase] `react-native-reanimated` 4.2.1 is installed but the project does NOT use
+it for UI transitions — all existing transitions use `Animated` from react-native. STATE.md
+records that Reanimated v4 caused issues with @gorhom/bottom-sheet. Do not introduce Reanimated
+for Phase 10 animations.
 
-All primitives exist. This phase is pure composition of existing code.
-
-**Installation:** None needed.
+**Installation:** No new packages required. [VERIFIED: STATE.md — "Zero new npm dependencies required"]
 
 ---
 
 ## Architecture Patterns
 
-### Recommended File Structure
+### Recommended Project Structure
+
+No new directories are needed. One new component file if compact friend rows have non-trivial
+rendering logic:
 
 ```
-src/app/(tabs)/
-├── _layout.tsx          # MODIFIED: move tabBarBadge from profile → squad
-├── squad.tsx            # REPLACED: becomes the tabbed squad screen
-└── squad/               # NOT needed — single-file approach preferred
-
-src/components/squad/
-└── SquadTabSwitcher.tsx  # NEW: underline tab bar component
-
-src/screens/friends/
-├── FriendsList.tsx      # UNCHANGED — embed directly in Friends tab
-├── FriendRequests.tsx   # UNCHANGED — navigated to from row
-└── AddFriend.tsx        # UNCHANGED — navigated to from FAB
+src/
+├── app/(tabs)/squad.tsx            # REPLACED — new dashboard layout
+└── components/squad/
+    ├── SquadTabSwitcher.tsx        # DELETE (no longer referenced anywhere)
+    └── CompactFriendRow.tsx        # NEW (optional extract)
 ```
 
-**Decision note:** Keep `squad.tsx` as a single file (not a directory). Directory-based sub-routing (`squad/_layout.tsx`) is NOT required and adds complexity for a simple two-tab toggle. The CONTEXT.md explicitly lists this as an option but the single-file approach is cleaner for conditional rendering of two views.
+### Pattern 1: Single FlatList — Friends in data, Cards in Footer
 
-### Pattern 1: Underline Tab Switcher Component
+**What:** The outer FlatList's `data` prop receives the friends array directly. Each friend
+renders as a compact row via `renderItem`. The three feature cards live in
+`ListFooterComponent`.
 
-**What:** Full-width row of text tabs with an animated underline under the active tab. Haptic feedback on press.
+**When to use:** Always — this is the only safe scroll architecture in this project. FlatList
+inside ScrollView is broken on Android (STATE.md locked decision).
 
-**When to use:** Screen-level sub-section switching where no URL/back navigation is needed.
+**Why cards go in ListFooterComponent (not ListHeaderComponent):** `ListFooterComponent` renders
+after all items, which is correct for "friends at top, cards below". `ListHeaderComponent` is
+used for the section label row (e.g. "Friends" heading + optional Friend Requests row).
 
-**Key structure:**
 ```typescript
-// src/components/squad/SquadTabSwitcher.tsx
-import * as Haptics from 'expo-haptics';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
-
-type SquadTab = 'friends' | 'goals';
-
-interface Props {
-  activeTab: SquadTab;
-  onTabChange: (tab: SquadTab) => void;
-}
-
-export function SquadTabSwitcher({ activeTab, onTabChange }: Props) {
-  async function handlePress(tab: SquadTab) {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onTabChange(tab);
-  }
-
-  return (
-    <View style={styles.container}>
-      {(['friends', 'goals'] as SquadTab[]).map((tab) => (
-        <TouchableOpacity
-          key={tab}
-          style={styles.tab}
-          onPress={() => handlePress(tab)}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-            {tab === 'friends' ? 'Friends' : 'Goals'}
-          </Text>
-          {activeTab === tab && <View style={styles.underline} />}
-        </TouchableOpacity>
-      ))}
+// Source: verified from PlansListScreen.tsx and ChatListScreen.tsx patterns in codebase
+<FlatList<FriendWithStatus>
+  data={friends}
+  keyExtractor={(item) => item.friend_id}
+  renderItem={({ item }) => (
+    <CompactFriendRow
+      friend={item}
+      onPress={() => { setSelectedFriend(item); setSheetVisible(true); }}
+    />
+  )}
+  ItemSeparatorComponent={() => <View style={styles.separator} />}
+  ListHeaderComponent={<FriendsHeader pendingCount={pendingCount} />}
+  ListFooterComponent={
+    <View style={styles.cardsSection}>
+      <AnimatedCard anim={cardAnims[0]}><StreakCard streak={streak} /></AnimatedCard>
+      <AnimatedCard anim={cardAnims[1]}><IOUCard summary={iouSummary} /></AnimatedCard>
+      <AnimatedCard anim={cardAnims[2]}><BirthdayCard birthdays={birthdays} /></AnimatedCard>
+      <View style={{ height: SPACING.xxl + insets.bottom }} />
     </View>
+  }
+  refreshControl={
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      tintColor={COLORS.interactive.accent}
+    />
+  }
+  contentContainerStyle={styles.listContent}
+/>
+```
+
+[VERIFIED: codebase] PlansListScreen.tsx lines 130-170 and ChatListScreen.tsx lines 36-63
+use this exact ListHeaderComponent + FlatList pattern.
+
+### Pattern 2: Compact Friend Row
+
+**What:** A lightweight row component that renders avatar + display name only (no username, no
+StatusPill needed for dashboard density). Minimum height 56px for touch target compliance.
+
+**Key data:** `FriendWithStatus` has `friend_id`, `display_name`, `avatar_url`.
+`AvatarCircle` size={36} fits the compact row. Pressing opens `FriendActionSheet` (same as
+FriendsList — reuse that pattern for DM/view profile/remove friend).
+
+Do NOT reuse `FriendCard` directly — it renders username + StatusPill which is too verbose for
+a compact dashboard list.
+
+```typescript
+// Source: pattern derived from FriendCard.tsx + AvatarCircle.tsx in codebase
+function CompactFriendRow({
+  friend,
+  onPress,
+}: {
+  friend: FriendWithStatus;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      style={styles.compactRow}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={friend.display_name}
+    >
+      <AvatarCircle
+        size={36}
+        imageUri={friend.avatar_url}
+        displayName={friend.display_name}
+      />
+      <Text style={styles.compactName} numberOfLines={1}>
+        {friend.display_name}
+      </Text>
+      <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+    </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-  },
-  tabText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  activeTabText: {
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  underline: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: COLORS.interactive.accent,  // #f97316 campfire orange
-  },
-});
+// compactRow: minHeight 56, paddingHorizontal SPACING.lg, flexDirection row, alignItems center, gap SPACING.md
 ```
 
-### Pattern 2: Conditional Tab Content Rendering
+### Pattern 3: Entrance Animation — First-Mount-Only Stagger
 
-**What:** Single `squad.tsx` renders Friends or Goals content based on `activeTab` state.
+**What:** Each feature card fades in and slides up from ~16px below its final position. Cards
+stagger by 80ms each. The animation fires only on first mount; pull-to-refresh does NOT replay it.
 
-**When to use:** Two-tab views where swipe gestures are not needed (swipe conflicts with pull-to-refresh).
+**Guard mechanism:** `useRef<boolean>(false)` flag (`hasAnimated`) set to true after the first
+`Animated.stagger` call. The `handleRefresh` path does NOT touch `hasAnimated`.
 
 ```typescript
-// src/app/(tabs)/squad.tsx
-export default function SquadScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { count: pendingCount } = usePendingRequestsCount();
-  const [activeTab, setActiveTab] = useState<'friends' | 'goals'>('friends');
+// Source: pattern derived from HomeScreen.tsx Animated.parallel + FAB.tsx Animated.spring
+// All use react-native Animated with useNativeDriver: true and isInteraction: false
+const cardAnims = useRef([
+  new Animated.Value(0), // StreakCard
+  new Animated.Value(0), // IOUCard
+  new Animated.Value(0), // BirthdayCard
+]).current;
 
+const hasAnimated = useRef(false);
+
+useEffect(() => {
+  if (hasAnimated.current) return;
+  hasAnimated.current = true;
+
+  Animated.stagger(
+    80,
+    cardAnims.map((anim) =>
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+        isInteraction: false, // per STATE.md D-04: avoids blocking JS thread
+      })
+    )
+  ).start();
+}, []); // eslint-disable-line react-hooks/exhaustive-deps — intentional empty deps, fires once
+```
+
+Each card is wrapped in an `Animated.View`:
+```typescript
+function AnimatedCard({ anim, children }: { anim: Animated.Value; children: React.ReactNode }) {
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <SquadTabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
+    <Animated.View
+      style={{
+        opacity: anim,
+        transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+```
 
-      {activeTab === 'friends' ? (
-        <View style={styles.tabContent}>
-          {pendingCount > 0 && (
-            <TouchableOpacity style={styles.requestsRow} onPress={() => router.push('/friends/requests')}>
-              <Ionicons name="person-add-outline" size={20} color={COLORS.text.secondary} />
-              <Text style={styles.requestsText}>Friend Requests ({pendingCount})</Text>
-              <Ionicons name="chevron-forward" size={16} color={COLORS.border} />
-            </TouchableOpacity>
-          )}
-          <FriendsList />
-        </View>
-      ) : (
-        <GoalsStub />
+[VERIFIED: codebase] HomeScreen.tsx uses `Animated.parallel` with `useNativeDriver: true`,
+`isInteraction: false`. FAB.tsx uses `useRef(new Animated.Value(1)).current` — same stable
+reference pattern. STATE.md decision: "Animated.loop requires isInteraction: false to avoid
+blocking JS thread (D-04)".
+
+### Pattern 4: Pull-to-Refresh — Multi-Hook Coordination
+
+**What:** The outer FlatList's `refreshControl` triggers a refresh on all four data hooks
+simultaneously.
+
+**Current problem:** The current Goals tab ScrollView only passes `streak.loading` and
+`streak.refetch` to RefreshControl — this is incomplete. Phase 10 must fan out to all hooks.
+
+```typescript
+// Source: synthesized from existing hook return shapes (all verified in codebase)
+const [refreshing, setRefreshing] = useState(false);
+
+async function handleRefresh() {
+  setRefreshing(true);
+  await Promise.all([
+    streak.refetch(),
+    iouSummary.refetch(),
+    birthdays.refetch(),
+    fetchFriends(),
+  ]);
+  setRefreshing(false);
+  // CRITICAL: hasAnimated.current is NOT reset here — animations never replay on refresh
+}
+```
+
+[VERIFIED: codebase] `useFriends` returns `fetchFriends()`; `useStreakData`, `useIOUSummary`,
+and `useUpcomingBirthdays` all return `refetch()` methods.
+
+### Pattern 5: ScreenHeader and "+" Button
+
+**Current state:** squad.tsx renders `<ScreenHeader title="" rightAction={createExpenseButton} />`.
+The empty title produces a text node that wastes layout space.
+
+**Recommended disposition — Option A (Keep, add title):**
+Keep ScreenHeader with `title="Squad"` and the "+" rightAction for create expense. The title
+gives context now that the tab switcher (which named the screen) is gone. This matches
+PlansListScreen and ChatListScreen which both use ScreenHeader as the primary wayfinding element.
+
+STATE.md confirms the "+" button is a D-10 approved pattern: "ScreenHeader rightAction used for
+Squad tab '+' button — D-10 approved pattern for tab screens with no Stack header."
+
+[VERIFIED: codebase — squad.tsx lines 29-41; STATE.md D-10 note]
+
+### Pattern 6: Friend Requests Row Placement
+
+**Recommended:** Inside `ListHeaderComponent`, conditionally rendered when `pendingCount > 0`.
+This mirrors the PlansListScreen invite-banner pattern.
+
+```typescript
+// Source: PlansListScreen.tsx lines 136-157 pattern
+function FriendsHeader({ pendingCount }: { pendingCount: number }) {
+  const router = useRouter();
+  return (
+    <View>
+      {pendingCount > 0 && (
+        <TouchableOpacity
+          style={styles.requestsRow}
+          onPress={() => router.push('/friends/requests')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="person-add-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} />
+          <Text style={styles.requestsLabel}>Friend Requests ({pendingCount})</Text>
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+        </TouchableOpacity>
       )}
     </View>
   );
 }
+// Existing requestsRow styles from squad.tsx can be reused verbatim
 ```
-
-**Note on `FriendsList` + FAB:** `FriendsList` renders its own `FAB` internally. Since the FAB must be hidden on Goals tab, the cleanest solution is to conditionally render `FriendsList` only on the Friends tab (it is already only rendered there in the pattern above). No prop changes to `FriendsList` required.
-
-### Pattern 3: Friend Requests Row Placement
-
-**Recommendation (Claude's discretion):** Render the Friend Requests row as a plain `TouchableOpacity` **above the `FriendsList` component**, NOT as a `ListHeaderComponent`. Rationale:
-- `FriendsList` owns its `FlatList` entirely and should not be modified
-- The requests row is a navigation trigger, not a list item — it belongs at screen level
-- This keeps `FriendsList` as a true black-box reusable component
-
-### Pattern 4: Badge Migration in `_layout.tsx`
-
-```typescript
-// Before (profile entry):
-<Tabs.Screen
-  name="profile"
-  options={{
-    tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
-    ...
-  }}
-/>
-
-// After (squad entry):
-<Tabs.Screen
-  name="squad"
-  options={{
-    tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
-    ...
-  }}
-/>
-// Profile entry: remove tabBarBadge prop entirely
-```
-
-### Pattern 5: Data Refresh on Focus
-
-**Recommendation (Claude's discretion):** Use `useFocusEffect` in `squad.tsx` to call a refresh when the tab is focused. The `FriendsList` component currently uses `useEffect([]` on mount, which means it does NOT refresh when returning to the tab.
-
-```typescript
-// In squad.tsx — add useFocusEffect for friend data refresh
-useFocusEffect(
-  useCallback(() => {
-    // FriendsList manages its own state; trigger refresh via re-mount
-    // OR: pass a refreshTrigger prop — but FriendsList has no such API
-    // SIMPLEST: rely on pull-to-refresh; no forced refresh on focus needed
-  }, [])
-);
-```
-
-**Conclusion:** `FriendsList` already has pull-to-refresh. Do NOT add a `useFocusEffect` refresh trigger that would require modifying `FriendsList`. The existing `useEffect([])` initial load is sufficient; pull-to-refresh handles stale data.
 
 ### Anti-Patterns to Avoid
 
-- **Adding sub-routing via `squad/` directory:** Creates unnecessary navigation complexity. Two conditional renders inside one screen is far simpler.
-- **Calling `usePendingRequestsCount` inside `squad.tsx`:** The hook is already called in `_layout.tsx` and returns `{ count }` — calling it again doubles the Supabase subscription. Pass `pendingCount` as prop OR rely on the `_layout.tsx` badge (for badge display) and call the hook once in `squad.tsx` separately for the row display. Actually, checking the hook: it uses `useFocusEffect` internally, and `_layout.tsx` keeps it alive. The hook is cheap (one `select count` query on focus). It is safe to call once in `squad.tsx` independently — but it must NOT share state with `_layout.tsx` badge computation. Since both are independent, this is fine.
-- **Modifying `FriendsList` to conditionally hide its FAB:** `FriendsList` is reused as-is. FAB hiding is achieved by only rendering `FriendsList` on the Friends tab.
-- **Using `@react-navigation/material-top-tabs`:** STATE.md records this decision from v1.2 research, but the CONTEXT.md for Phase 10 explicitly chose custom `useState` toggle. The `material-top-tabs` decision in STATE.md was a general finding that was then overridden in CONTEXT.md. Follow CONTEXT.md — custom segmented control, no library install.
+- **Nested FlatList:** Never put a FlatList (or ScrollView with scroll enabled) inside another
+  FlatList. Breaks Android scroll silently. [VERIFIED: STATE.md locked decision]
+- **Reanimated for these animations:** Reanimated v4 has known issues in this project. Use
+  `Animated` from react-native only. [VERIFIED: STATE.md, package.json]
+- **ScrollView + map for friends:** Project mandate is FlatList for all list views.
+  [VERIFIED: STATE.md code_context]
+- **Replaying animation on refresh:** Setting `hasAnimated.current = false` in `handleRefresh`
+  violates DASH-03. The flag must be write-once.
+- **Embedding FriendsList component:** `FriendsList` has its own internal FlatList and FAB.
+  Embedding it creates a nested FlatList AND duplicates the FAB. It must not be used in
+  Phase 10. [VERIFIED: FriendsList.tsx lines 71-103]
 
 ---
 
@@ -276,137 +324,202 @@ useFocusEffect(
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Haptic feedback | Custom vibration timing | `expo-haptics` (already installed) | Already proven in `SegmentedControl` |
-| Friend list display | Custom list component | `FriendsList` as-is | Self-contained with FAB, pull-to-refresh, empty state |
-| Route to requests | Custom requests UI inline | `router.push('/friends/requests')` | Screen already exists |
-| Tab indicator animation | `Animated` sliding underline | Static `View` with `position: absolute, bottom: 0` | Two tabs, no animation needed per REQUIREMENTS.md |
-| Safe area padding | Manual `StatusBar.currentHeight` | `useSafeAreaInsets()` | Already the project pattern |
+| Avatar display | Custom image component | `AvatarCircle` (existing) | Handles null imageUri, initials fallback, configurable size |
+| Animation stagger | Custom setTimeout delays | `Animated.stagger` (built-in) | Integrates with `useNativeDriver: true`; no extra packages |
+| Pull-to-refresh | Custom gesture detection | `RefreshControl` on outer FlatList | Standard RN pattern; used on every list screen |
+| Friend action sheet | Custom modal | `FriendActionSheet` (existing) | Self-contained, already wired to DM/remove/profile navigation |
+| Section label | Custom Text+View styling | `SectionHeader` component (existing) | `src/components/common/SectionHeader.tsx` — design token styled |
 
-**Key insight:** This phase is almost entirely composition. The only novel code is the `SquadTabSwitcher` component (underline style) and the glue in `squad.tsx`. Everything else exists.
+**Key insight:** All the hard work (cards, hooks, action sheet, avatars, refresh) is already
+built and verified across Phases 7-9. Phase 10 is a layout assembly and animation phase, not a
+new-feature phase.
 
 ---
 
 ## Common Pitfalls
 
-### Pitfall 1: Metro Bundler Ambiguity — squad.tsx vs squad/ Directory
+### Pitfall 1: ListFooterComponent Not Visible When data is Empty
 
-**What goes wrong:** If `src/app/(tabs)/squad.tsx` is not deleted in the same commit that creates `src/app/(tabs)/squad/_layout.tsx`, Metro will throw an ambiguity error.
-**Why it happens:** Expo Router treats both a file and a directory with the same name as competing route definitions.
-**How to avoid:** Since this phase uses a single-file approach (no `squad/` directory), this pitfall is avoided entirely. Keep `squad.tsx`, replace its content.
-**Warning signs:** "Ambiguous route" errors in Metro if someone starts using directory routing mid-phase.
+**What goes wrong:** When the user has zero friends, FlatList renders `ListEmptyComponent` and
+`ListFooterComponent` may not be visible or may render in an unexpected position.
 
-### Pitfall 2: Duplicate usePendingRequestsCount Subscription
+**Why it happens:** React Native FlatList's rendering of `ListFooterComponent` when `data` is
+empty can produce an empty container that looks broken, especially with an `EmptyState` message
+also present.
 
-**What goes wrong:** Calling `usePendingRequestsCount` in both `_layout.tsx` and `squad.tsx` creates two Supabase subscriptions (if it uses Realtime). Checking the hook source: it does NOT use Realtime — it uses `useFocusEffect` with a plain `select count` query. No Realtime channel. Two calls are safe but slightly wasteful.
-**How to avoid:** Call the hook in `squad.tsx` for the Friend Requests row display. The `_layout.tsx` call is for the badge. They are independent.
-**Warning signs:** Not a runtime error — just a minor inefficiency. State.md says "Single `usePendingRequestsCount` hook call stays in `_layout.tsx`" but that was before the Squad tab was planned to display the row. For Phase 10 the second call in `squad.tsx` is intentional.
+**How to avoid:** For the dashboard context, do NOT use `ListEmptyComponent`. When friends list
+is empty, show an inline prompt inside `ListHeaderComponent` (e.g. "Add friends to see their
+status"). Cards always render regardless of friend count — they have their own empty states.
 
-### Pitfall 3: FAB Appearing on Goals Tab
+[ASSUMED — specific ListFooterComponent/ListEmptyComponent interaction; verify in Expo Go]
 
-**What goes wrong:** If `FriendsList` is rendered regardless of active tab (e.g., both tabs always mounted for performance), the FAB inside `FriendsList` appears on the Goals tab.
-**Why it happens:** `FriendsList` renders `FAB` unconditionally — there is no prop to hide it.
-**How to avoid:** Use conditional rendering: `{activeTab === 'friends' && <FriendsList />}`. When Goals tab is active, `FriendsList` is unmounted entirely.
-**Warning signs:** FAB visible over Goals tab content.
+### Pitfall 2: Bottom Padding Missing — Last Card Hidden Behind Tab Bar
 
-### Pitfall 4: Safe Area Overlap with Underline Tab Control
+**What goes wrong:** BirthdayCard is flush with the bottom edge, hidden behind the tab bar.
 
-**What goes wrong:** The `SquadTabSwitcher` renders flush against the status bar if `paddingTop: insets.top` is missing from the outer container.
-**Why it happens:** The decision is no ScreenHeader — so nothing else provides the top inset.
-**How to avoid:** Apply `paddingTop: insets.top` to the outermost `View` container in `squad.tsx` (same pattern as existing `squad.tsx`).
-**Warning signs:** Tab labels overlap with time/signal indicators on device.
+**Why it happens:** The tab bar height is `56 + insets.bottom`. ListFooterComponent doesn't
+automatically get bottom padding.
 
-### Pitfall 5: Friend Requests Row Always Visible
+**How to avoid:** Add a spacer `<View style={{ height: SPACING.xxl + insets.bottom }} />` at
+the bottom of `ListFooterComponent`. [VERIFIED: current squad.tsx already uses
+`goalsScrollContent: { paddingBottom: SPACING.xxl }` — same pattern, must be extended by
+`insets.bottom`]
 
-**What goes wrong:** The row shows "Friend Requests (0)" even when no requests exist.
-**Why it happens:** Forgetting the `pendingCount > 0` guard.
-**How to avoid:** `{pendingCount > 0 && <FriendRequestsRow count={pendingCount} />}`.
-**Warning signs:** Row visible with "0" count.
+### Pitfall 3: Animated.stagger with Array of Animated.Values
 
-### Pitfall 6: usePendingRequestsCount Only Refreshes on Tab Focus
+**What goes wrong:** If `cardAnims` is declared as a plain `const` inside the component body
+(not via `useRef`), the array is recreated on every render, causing the animation to restart
+on every re-render.
 
-**What goes wrong:** The pending count shown in the row does not update if a request arrives while the Squad tab is already focused.
-**Why it happens:** `usePendingRequestsCount` uses `useFocusEffect` — it only refetches when the screen comes into focus, not in real-time.
-**How to avoid:** This is acceptable per existing app behavior. The badge in `_layout.tsx` has the same limitation. No Realtime subscription is in scope for Phase 10.
-**Warning signs:** Stale count — not a bug, known limitation of the hook.
+**Why it happens:** React re-renders the component on state changes (e.g. friends data loading).
+
+**How to avoid:** Always use `useRef([...]).current` to create a stable array of
+`Animated.Value` instances. The `.current` extraction makes them stable references that survive
+re-renders. [VERIFIED: FAB.tsx uses `const scale = useRef(new Animated.Value(1)).current`]
+
+### Pitfall 4: Multi-Hook RefreshControl refreshing State
+
+**What goes wrong:** `refreshControl refreshing={streak.loading}` (current implementation) only
+reflects streak loading state. If birthdays or IOUs finish first, the spinner still shows.
+
+**Why it happens:** The current squad.tsx passes only `streak.loading` as the refreshing prop.
+
+**How to avoid:** Use a local `const [refreshing, setRefreshing] = useState(false)` that is set
+true at start of `handleRefresh` and false only after all four `Promise.all` calls resolve.
+
+### Pitfall 5: Add-Friend FAB Disappears
+
+**What goes wrong:** The Friends tab previously embedded `<FriendsList />` which includes a
+fixed-position FAB for "Add friend". The new dashboard does not use FriendsList, so this FAB
+is gone.
+
+**How to avoid:** The ScreenHeader "+" button is for create expense. Add-friend is still
+reachable via Profile > QR Code or direct navigation to `/friends/add`. The regression is
+intentional for v1.4 (dashboard is for viewing squad, not managing friends). Document this
+trade-off in the plan for user awareness.
+
+[VERIFIED: FriendsList.tsx lines 99-103 — FAB navigates to /friends/add]
+
+---
+
+## Deletion Checklist
+
+These items are confirmed safe to delete as part of Phase 10:
+
+| Item | Location | Confirmed Safe |
+|------|----------|----------------|
+| `SquadTabSwitcher` component | `src/components/squad/SquadTabSwitcher.tsx` | Only imported in squad.tsx [VERIFIED: grep] |
+| `activeTab` useState | squad.tsx line 22 | Tab state no longer needed |
+| `tabContent` / `goalsScrollContent` styles | squad.tsx styles | Replaced by FlatList |
+| `ScrollView` import | squad.tsx | No longer needed |
+| `SquadTabSwitcher` import | squad.tsx line 8 | Component deleted |
 
 ---
 
 ## Code Examples
 
-### Underline indicator (key visual pattern)
+### Full Squad Screen Skeleton
 
 ```typescript
-// Source: Direct implementation from design tokens in src/theme/colors.ts and src/theme/spacing.ts
-const styles = StyleSheet.create({
-  underline: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: COLORS.interactive.accent,  // '#f97316' — campfire orange
-    borderRadius: 1,
-  },
-});
-```
+// Source: synthesized from squad.tsx (current), PlansListScreen.tsx, ChatListScreen.tsx
+export default function SquadScreen() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { count: pendingCount } = usePendingRequestsCount();
+  const { friends, fetchFriends } = useFriends();
+  const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [loadingDM, setLoadingDM] = useState(false);
+  const streak = useStreakData();
+  const birthdays = useUpcomingBirthdays();
+  const iouSummary = useIOUSummary();
 
-### Haptic feedback on tab change
+  // Entrance animation — first mount only
+  const cardAnims = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+  const hasAnimated = useRef(false);
 
-```typescript
-// Source: src/components/status/SegmentedControl.tsx line 19-21
-import * as Haptics from 'expo-haptics';
+  useEffect(() => {
+    fetchFriends();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-async function handlePress(tab: SquadTab) {
-  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  onTabChange(tab);
+  useEffect(() => {
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
+    Animated.stagger(80, cardAnims.map((anim) =>
+      Animated.timing(anim, { toValue: 1, duration: 300, useNativeDriver: true, isInteraction: false })
+    )).start();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [refreshing, setRefreshing] = useState(false);
+  async function handleRefresh() {
+    setRefreshing(true);
+    await Promise.all([streak.refetch(), iouSummary.refetch(), birthdays.refetch(), fetchFriends()]);
+    setRefreshing(false);
+    // hasAnimated.current intentionally NOT reset
+  }
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScreenHeader
+        title="Squad"
+        rightAction={
+          <TouchableOpacity onPress={() => router.push('/squad/expenses/create' as never)}
+            accessibilityLabel="Create expense" activeOpacity={0.7}>
+            <Ionicons name="add" size={FONT_SIZE.xxl} color={COLORS.interactive.accent} />
+          </TouchableOpacity>
+        }
+      />
+      <FlatList<FriendWithStatus>
+        data={friends}
+        keyExtractor={(item) => item.friend_id}
+        renderItem={({ item }) => (
+          <CompactFriendRow friend={item} onPress={() => { setSelectedFriend(item); setSheetVisible(true); }} />
+        )}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListHeaderComponent={
+          pendingCount > 0 ? (
+            <TouchableOpacity style={styles.requestsRow}
+              onPress={() => router.push('/friends/requests')} activeOpacity={0.7}>
+              <Ionicons name="person-add-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} />
+              <Text style={styles.requestsLabel}>Friend Requests ({pendingCount})</Text>
+              <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+            </TouchableOpacity>
+          ) : null
+        }
+        ListFooterComponent={
+          <View>
+            <AnimatedCard anim={cardAnims[0]}><StreakCard streak={streak} /></AnimatedCard>
+            <AnimatedCard anim={cardAnims[1]}><IOUCard summary={iouSummary} /></AnimatedCard>
+            <AnimatedCard anim={cardAnims[2]}><BirthdayCard birthdays={birthdays} /></AnimatedCard>
+            <View style={{ height: SPACING.xxl + insets.bottom }} />
+          </View>
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh}
+            tintColor={COLORS.interactive.accent} />
+        }
+        contentContainerStyle={styles.listContent}
+      />
+      <FriendActionSheet
+        visible={sheetVisible}
+        onClose={() => { setSheetVisible(false); setSelectedFriend(null); }}
+        friend={selectedFriend}
+        onViewProfile={() => {
+          if (selectedFriend) router.push(`/friends/${selectedFriend.friend_id}` as never);
+          setSheetVisible(false);
+        }}
+        onStartDM={/* same pattern as FriendsList.tsx handleStartDM */}
+        onRemoveFriend={/* same pattern as FriendsList.tsx handleRemoveFriend */}
+        loadingDM={loadingDM}
+      />
+    </View>
+  );
 }
-```
-
-### Friend Requests tappable row (styled like profile.tsx rows)
-
-```typescript
-// Source: src/app/(tabs)/profile.tsx lines 165-186 (reference pattern)
-{pendingCount > 0 && (
-  <TouchableOpacity
-    style={styles.requestsRow}
-    onPress={() => router.push('/friends/requests')}
-    activeOpacity={0.7}
-  >
-    <Ionicons name="person-add-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} />
-    <Text style={styles.requestsLabel}>Friend Requests ({pendingCount})</Text>
-    <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
-  </TouchableOpacity>
-)}
-```
-
-### Badge migration in _layout.tsx
-
-```typescript
-// Source: src/app/(tabs)/_layout.tsx — modify these two Tabs.Screen entries
-
-// Squad: ADD tabBarBadge
-<Tabs.Screen
-  name="squad"
-  options={{
-    title: 'Squad',
-    tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
-    tabBarIcon: ({ color, focused }) => (
-      <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
-    ),
-  }}
-/>
-
-// Profile: REMOVE tabBarBadge
-<Tabs.Screen
-  name="profile"
-  options={{
-    title: 'Profile',
-    // tabBarBadge removed
-    tabBarIcon: ({ color, focused }) => (
-      <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
-    ),
-  }}
-/>
 ```
 
 ---
@@ -415,70 +528,95 @@ async function handlePress(tab: SquadTab) {
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| Squad screen = Coming Soon stub | Squad screen = two-tab layout | Phase 10 | Friends tab surfaces friend management |
-| Friend badge on Profile tab icon | Friend badge on Squad tab icon | Phase 10 | Badge now co-located with Friends content |
-| Friend management accessed via Profile | Friend list in Squad tab directly | Phase 10 | Reduces navigation depth for daily use |
+| Tab switcher (Friends/Goals) | Single scrollable dashboard | Phase 10 (now) | Removes state management overhead; single scroll context |
+| Goals tab ScrollView | Outer FlatList | Phase 10 (now) | Fixes Android nested-scroll; enables virtualization for large friend lists |
+| FriendsList component embedded | Compact friend rows via renderItem | Phase 10 (now) | Eliminates nested FlatList; FAB must be handled separately |
+| Only streak refresh on pull | All four hooks refreshed in parallel | Phase 10 (now) | Correct multi-data refresh behavior |
 
-**Deprecated/outdated:**
-- `squad.tsx` content with `ScreenHeader` title: replaced by underline tab switcher as primary wayfinding element
-- Profile `tabBarBadge: pendingCount > 0 ? pendingCount : undefined`: moved to Squad Tabs.Screen
+**Deprecated/outdated after Phase 10:**
+- `SquadTabSwitcher` component: safe to delete, no other consumers. [VERIFIED: grep]
+- `activeTab` state, `tabContent` style, `goalsScrollContent` style: all dead code post-refactor.
+
+---
+
+## Assumptions Log
+
+| # | Claim | Section | Risk if Wrong |
+|---|-------|---------|---------------|
+| A1 | ListFooterComponent renders even when data is empty | Common Pitfalls #1 | Cards hidden when user has no friends; mitigated by not using ListEmptyComponent |
+| A2 | Expo Router tab screens stay mounted during tab switches (hasAnimated ref persists) | Architecture Patterns #3 | Animations replay on tab switch; cosmetic only |
+
+**If this table is empty:** All other claims were verified against the codebase or STATE.md.
 
 ---
 
 ## Open Questions
 
-1. **Spacing between SquadTabSwitcher and FriendsList/Goals content**
-   - What we know: No ScreenHeader means the tab switcher sits at `paddingTop: insets.top` — there is no ScreenHeader `marginBottom`
-   - What's unclear: How much vertical gap between the underline and the first list row looks right
-   - Recommendation (Claude's discretion): Use `0` gap — the `borderBottomColor: COLORS.border` on the tab row provides visual separation. The FlatList in FriendsList starts immediately below. If it feels cramped, add `marginTop: SPACING.xs` on the content area.
+1. **Add-friend FAB replacement**
+   - What we know: FriendsList's internal FAB is lost when FriendsList is not embedded
+   - What's unclear: Should Phase 10 add any affordance to reach /friends/add?
+   - Recommendation: Accept the regression for v1.4. The ScreenHeader "+" is already claimed
+     by create-expense. Profile > QR Code path remains. Flag in plan notes.
 
-2. **FlatList `ListHeaderComponent` vs sibling View for Friend Requests row**
-   - What we know: FriendsList owns its FlatList; Friend Requests row should not be inside FlatList scroll unless it scrolls away with the list
-   - Recommendation: Render the requests row as a fixed sibling above `FriendsList` (not inside FlatList). It is a navigation row, not a list item. This matches how Profile renders its rows.
+2. **Empty friends list state**
+   - What we know: Without ListEmptyComponent, an empty friends array renders nothing above
+     the feature cards
+   - What's unclear: Should there be a visual prompt to "Add friends" when list is empty?
+   - Recommendation: Add inline empty state inside ListHeaderComponent when
+     `friends.length === 0`. Keeps cards visible regardless.
+
+---
+
+## Environment Availability
+
+Step 2.6: SKIPPED — no external dependencies. Phase 10 is a layout refactor using existing
+packages only. Zero new npm dependencies confirmed by STATE.md.
 
 ---
 
 ## Validation Architecture
 
-> `workflow.nyquist_validation` is `true` in `.planning/config.json` — section included.
-
 ### Test Framework
 
 | Property | Value |
 |----------|-------|
-| Framework | Playwright 1.58.2 |
-| Config file | `playwright.config.ts` (root) |
-| Quick run command | `npx playwright test tests/visual/design-system.spec.ts --project=mobile` |
+| Framework | Playwright |
+| Config file | `playwright.config.ts` |
+| Quick run command | `npx playwright test squad-dashboard.spec.ts --project=mobile` |
 | Full suite command | `npx playwright test --project=mobile` |
 
-### Phase Requirements → Test Map
+### Phase Requirements to Test Map
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| SQAD-01 | Segmented control visible at top of Squad screen | visual regression | `npx playwright test tests/visual/design-system.spec.ts -g "friends screen" --project=mobile` | ✅ (test exists, snapshot needs update) |
-| SQAD-02 | Friends tab active by default | visual regression | Same as SQAD-01 — screenshot shows Friends tab active | ✅ snapshot needs update |
-| SQAD-03 | Tab switching works | manual | Tap Goals, verify Goals content; tap Friends, verify FriendsList | manual-only |
-| SQAD-04 | Friend list visible in Friends tab | visual regression | Same friends screen snapshot | ✅ snapshot needs update |
-| SQAD-05 | FAB present on Friends tab, absent on Goals | visual regression | Two screenshots: friends-tab + goals-tab | ❌ Wave 0: add goals-tab snapshot |
-| SQAD-06 | Friend Requests row visible when pendingCount > 0 | manual | Requires test account with pending requests | manual-only |
-| SQAD-07 | Row navigates to /friends/requests | manual | Tap row, verify screen navigation | manual-only |
-| SQAD-08 | Goals tab shows "Coming soon" | visual regression | `npx playwright test tests/visual/design-system.spec.ts -g "goals screen" --project=mobile` | ❌ Wave 0: add squad-goals-screen test |
-| SQAD-09 | Badge on Squad tab icon, not Profile | visual regression | Home/Squad screenshot showing badge position | ✅ snapshot needs update |
+| DASH-01 | Squad tab renders single scroll: friends at top, cards below | visual/smoke | `npx playwright test squad-dashboard.spec.ts` | No — Wave 0 |
+| DASH-02 | Feature cards show glanceable summaries | visual | screenshot comparison | No — Wave 0 |
+| DASH-03 | Cards animate in on first load (screenshot shows non-zero opacity state) | visual | screenshot after 500ms delay | No — Wave 0 |
+| DASH-04 | StreakCard present and shows streak count | visual/smoke | `npx playwright test squad-dashboard.spec.ts` | No — Wave 0 |
 
 ### Sampling Rate
 
-- **Per task commit:** `npx playwright test tests/visual/design-system.spec.ts -g "friends screen" --project=mobile --update-snapshots`
-- **Per wave merge:** `npx playwright test --project=mobile --update-snapshots`
-- **Phase gate:** Full suite green (with updated snapshots) before `/gsd:verify-work`
-
-**Important:** All existing Playwright snapshots that include the Squad/Profile tab bar area will fail after this phase due to badge relocation. Run `--update-snapshots` after implementation to regenerate baselines.
+- **Per task commit:** `npx playwright test squad-dashboard.spec.ts --project=mobile`
+- **Per wave merge:** `npx playwright test --project=mobile`
+- **Phase gate:** Full suite green before `/gsd-verify-work`
 
 ### Wave 0 Gaps
 
-- [ ] `tests/visual/design-system.spec.ts` — add `"squad goals tab"` test: navigate to Squad, click Goals tab, screenshot — covers SQAD-08, SQAD-05
-- [ ] Update snapshot baselines for: `friends-screen`, `profile-screen`, `home-screen` (badge position change) — run with `--update-snapshots` post-implementation
+- [ ] `tests/visual/squad-dashboard.spec.ts` — covers DASH-01 through DASH-04
+  (login + navigate to `/squad` + screenshot; same pattern as `iou-create-detail.spec.ts`)
 
-*(Existing test infrastructure covers the framework — only new snapshot tests needed for Goals tab.)*
+---
+
+## Security Domain
+
+This phase has no security-relevant surface changes. It is a layout refactor:
+- No new authentication flows
+- No new data access beyond what existing hooks already expose
+- No user input accepted (read-only dashboard)
+- `FriendActionSheet` (existing, verified) handles the only interactive element
+
+ASVS categories V2, V3, V4, V6 do not apply. V5 (input validation) not applicable — no new
+user input on the dashboard screen.
 
 ---
 
@@ -486,37 +624,32 @@ async function handlePress(tab: SquadTab) {
 
 ### Primary (HIGH confidence)
 
-- Direct codebase reads:
-  - `src/components/status/SegmentedControl.tsx` — haptic feedback pattern (expo-haptics usage)
-  - `src/screens/friends/FriendsList.tsx` — FAB internals, FlatList structure
-  - `src/app/(tabs)/_layout.tsx` — badge location, Tabs.Screen structure
-  - `src/app/(tabs)/squad.tsx` — current stub content (Goals tab source)
-  - `src/app/(tabs)/profile.tsx` lines 141-204 — Friend Requests row pattern
-  - `src/components/common/FAB.tsx` — FAB is position:absolute, internally manages safe area
-  - `src/hooks/usePendingRequestsCount.ts` — uses `useFocusEffect`, NOT Realtime
-  - `src/theme/colors.ts` — `COLORS.interactive.accent = '#f97316'`
-  - `src/theme/spacing.ts` — spacing scale
-  - `package.json` — confirmed no `@react-navigation/material-top-tabs` installed; not needed
-  - `tests/visual/design-system.spec.ts` — Playwright test structure
-  - `playwright.config.ts` — test runner config
+- Codebase: `src/app/(tabs)/squad.tsx` — current screen implementation read directly
+- Codebase: `src/components/squad/SquadTabSwitcher.tsx` — component to be deleted
+- Codebase: `src/screens/friends/FriendsList.tsx` — confirms nested FlatList risk; FAB pattern
+- Codebase: `src/screens/plans/PlansListScreen.tsx` — ListHeaderComponent + FlatList pattern
+- Codebase: `src/screens/chat/ChatListScreen.tsx` — ListHeaderComponent + FlatList pattern
+- Codebase: `src/screens/home/HomeScreen.tsx` — Animated.timing, isInteraction: false pattern
+- Codebase: `src/components/common/FAB.tsx` — `useRef(Animated.Value).current` stable ref pattern
+- Codebase: `src/components/squad/StreakCard.tsx`, `IOUCard.tsx`, `BirthdayCard.tsx` — props interfaces verified
+- Codebase: `src/components/friends/FriendCard.tsx`, `AvatarCircle.tsx` — compact row pattern
+- Codebase: `src/hooks/useFriends.ts`, `useStreakData.ts`, `useIOUSummary.ts` — refetch() interfaces
+- `.planning/STATE.md` — locked decisions: nested FlatList prohibition, zero new deps, isInteraction: false (D-04), ScreenHeader rightAction D-10
+- `.planning/REQUIREMENTS.md` — DASH-01 through DASH-04
 
 ### Secondary (MEDIUM confidence)
 
-- `.planning/STATE.md` — accumulated project decisions including Metro ambiguity warning
-- `.planning/phases/10-squad-tab/10-CONTEXT.md` — locked implementation decisions
-
-### Tertiary (LOW confidence)
-
-- None needed — all findings verified from codebase directly.
+- `.planning/ROADMAP.md` Phase 10 — authoritative goal and success criteria
 
 ---
 
 ## Metadata
 
 **Confidence breakdown:**
-- Standard stack: HIGH — all packages verified in package.json; no new installs
-- Architecture: HIGH — patterns verified from existing codebase code
-- Pitfalls: HIGH — derived from direct code inspection (hook internals, FAB structure)
+- Standard stack: HIGH — all libraries verified in codebase; no new packages
+- Architecture: HIGH — FlatList patterns verified from PlansListScreen and ChatListScreen
+- Animation patterns: HIGH — Animated.timing patterns verified from HomeScreen and FAB
+- Pitfalls: MEDIUM — A1 and A2 are assumed (empirical verification needed); others verified
 
-**Research date:** 2026-04-04
-**Valid until:** 2026-05-04 (stable codebase; no external dependencies changing)
+**Research date:** 2026-04-14
+**Valid until:** 2026-05-14 (stable patterns, no external dependencies)
