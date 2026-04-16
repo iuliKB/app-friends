@@ -178,7 +178,18 @@ export default function SquadScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScreenHeader title="Squad" />
+      <ScreenHeader
+        title="Squad"
+        rightAction={
+          <TouchableOpacity
+            onPress={() => router.push('/friends/add')}
+            accessibilityLabel="Add friend"
+            accessibilityRole="button"
+          >
+            <Ionicons name="person-add-outline" size={24} color={COLORS.text.primary} />
+          </TouchableOpacity>
+        }
+      />
 
       {/* Tab header */}
       <View style={styles.tabHeader}>
