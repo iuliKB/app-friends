@@ -18,7 +18,9 @@ import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { WishListItem } from '@/components/squad/WishListItem';
 import { APP_CONFIG } from '@/constants/config';
+import { useMyWishList } from '@/hooks/useMyWishList';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -39,6 +41,13 @@ export default function EditProfileScreen() {
   const [originalBirthdayMonth, setOriginalBirthdayMonth] = useState<number | null>(null);
   const [originalBirthdayDay, setOriginalBirthdayDay] = useState<number | null>(null);
   const [originalBirthdayYear, setOriginalBirthdayYear] = useState<number | null>(null);
+
+  const { items: wishListItems, addItem, deleteItem } = useMyWishList();
+
+  const [addingWishItem, setAddingWishItem] = useState(false);
+  const [newItemTitle, setNewItemTitle] = useState('');
+  const [newItemUrl, setNewItemUrl] = useState('');
+  const [newItemNotes, setNewItemNotes] = useState('');
 
   useEffect(() => {
     if (!session) return;
@@ -171,6 +180,17 @@ export default function EditProfileScreen() {
     router.back();
   }
 
+  async function handleAddWishItem() {
+    const trimmedTitle = newItemTitle.trim();
+    if (!trimmedTitle) return;
+    setAddingWishItem(true);
+    await addItem(trimmedTitle, newItemUrl.trim() || undefined, newItemNotes.trim() || undefined);
+    setNewItemTitle('');
+    setNewItemUrl('');
+    setNewItemNotes('');
+    setAddingWishItem(false);
+  }
+
   const isDirty =
     displayName.trim() !== originalDisplayName ||
     avatarUrl !== originalAvatarUrl ||
@@ -244,6 +264,74 @@ export default function EditProfileScreen() {
         }}
         disabled={saving}
       />
+
+      {/* My Wish List section (D-04, D-05) */}
+      <Text style={styles.birthdayLabel}>My Wish List</Text>
+
+      {wishListItems.map((item) => (
+        <View key={item.id} style={styles.wishListRow}>
+          <WishListItem
+            title={item.title}
+            url={item.url}
+            notes={item.notes}
+            isClaimed={false}
+            isClaimedByMe={false}
+            readOnly
+          />
+          <TouchableOpacity
+            onPress={() => void deleteItem(item.id)}
+            style={styles.deleteWishItem}
+            accessibilityLabel={`Delete ${item.title}`}
+          >
+            <Text style={styles.deleteWishItemText}>Remove</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+
+      {wishListItems.length === 0 && (
+        <Text style={styles.wishListEmpty}>No items yet — add something you'd love!</Text>
+      )}
+
+      {/* Add item form */}
+      <TextInput
+        style={[styles.textInput, styles.wishItemInput]}
+        value={newItemTitle}
+        onChangeText={setNewItemTitle}
+        placeholder="Item title (required)"
+        placeholderTextColor={COLORS.text.secondary}
+        maxLength={120}
+        editable={!addingWishItem}
+      />
+      <TextInput
+        style={[styles.textInput, styles.wishItemInput]}
+        value={newItemUrl}
+        onChangeText={setNewItemUrl}
+        placeholder="Link (optional)"
+        placeholderTextColor={COLORS.text.secondary}
+        maxLength={500}
+        editable={!addingWishItem}
+        keyboardType="url"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={[styles.textInput, styles.wishItemInput]}
+        value={newItemNotes}
+        onChangeText={setNewItemNotes}
+        placeholder="Notes (optional)"
+        placeholderTextColor={COLORS.text.secondary}
+        maxLength={200}
+        editable={!addingWishItem}
+      />
+      <TouchableOpacity
+        style={[styles.addWishItemButton, (!newItemTitle.trim() || addingWishItem) && styles.addWishItemButtonDisabled]}
+        onPress={handleAddWishItem}
+        disabled={!newItemTitle.trim() || addingWishItem}
+        accessibilityLabel="Add wish list item"
+      >
+        <Text style={styles.addWishItemButtonText}>
+          {addingWishItem ? 'Adding...' : 'Add Item'}
+        </Text>
+      </TouchableOpacity>
 
       {/* Save button */}
       <View style={styles.buttonWrapper}>
@@ -326,5 +414,45 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginTop: SPACING.xl,
+  },
+  wishListRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  wishListEmpty: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  wishItemInput: {
+    marginTop: SPACING.sm,
+  },
+  deleteWishItem: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    alignSelf: 'flex-start',
+    marginTop: SPACING.xs,
+  },
+  deleteWishItemText: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.destructive,
+  },
+  addWishItemButton: {
+    marginTop: SPACING.md,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  addWishItemButtonDisabled: {
+    opacity: 0.5,
+  },
+  addWishItemButtonText: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
   },
 });
