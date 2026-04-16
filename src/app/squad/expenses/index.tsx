@@ -35,7 +35,9 @@ export default function IOUBalanceIndexScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ScreenHeader title="Balances" />
+        <View style={styles.headerContainer}>
+          <ScreenHeader title="Balances" />
+        </View>
         {/* 4 skeleton rows */}
         {[1, 2, 3, 4].map((n) => (
           <View key={n} style={styles.skeletonRow}>
@@ -51,7 +53,9 @@ export default function IOUBalanceIndexScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <ScreenHeader title="Balances" />
+        <View style={styles.headerContainer}>
+          <ScreenHeader title="Balances" />
+        </View>
         <FlatList
           data={[]}
           renderItem={null}
@@ -77,7 +81,9 @@ export default function IOUBalanceIndexScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScreenHeader title="Balances" />
+      <View style={styles.headerContainer}>
+        <ScreenHeader title="Balances" />
+      </View>
       <FlatList
         data={unsettledRows}
         keyExtractor={(item) => item.friend_id}
@@ -125,6 +131,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.surface.base,
+  },
+  headerContainer: {
+    paddingHorizontal: SPACING.lg,
   },
   listContent: {
     paddingHorizontal: 0,
