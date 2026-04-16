@@ -4,12 +4,13 @@
 // Today rows get accent-tinted background (D-03). Pull-to-refresh supported.
 // DO NOT wrap FlatList in a ScrollView — breaks Android scroll silently.
 
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useUpcomingBirthdays, type BirthdayEntry } from '@/hooks/useUpcomingBirthdays';
-import { formatDaysUntil, formatBirthdayDate } from '@/utils/birthdayFormatters';
+import { formatDaysUntil, formatBirthdayDate, formatTurningAge } from '@/utils/birthdayFormatters';
 
 export const options = { title: 'Birthdays' };
 
@@ -53,13 +54,30 @@ interface BirthdayRowProps {
 }
 
 function BirthdayRow({ entry }: BirthdayRowProps) {
+  const router = useRouter();
   const isToday = entry.days_until === 0;
   const dateLabel = formatBirthdayDate(entry.birthday_month, entry.birthday_day);
+  const ageLabel =
+    entry.birthday_year !== null
+      ? formatTurningAge(entry.birthday_year, entry.birthday_month, entry.birthday_day)
+      : null;
   const daysLabel = formatDaysUntil(entry.days_until);
 
+  // Combined label: "Jan 15 · turning 28 · In 3 days" (D-02)
+  const combinedLabel = [dateLabel, ageLabel, daysLabel].filter(Boolean).join(' · ');
+
   return (
-    <View
-      style={[styles.row, isToday && { backgroundColor: TODAY_BG }]}
+    <Pressable
+      style={({ pressed }) => [
+        styles.row,
+        isToday && { backgroundColor: TODAY_BG },
+        pressed && { opacity: 0.75 },
+      ]}
+      onPress={() =>
+        router.push(
+          `/squad/birthday/${entry.friend_id}?name=${encodeURIComponent(entry.display_name)}` as never
+        )
+      }
       testID="birthday-row"
     >
       <AvatarCircle size={40} imageUri={entry.avatar_url} displayName={entry.display_name} />
@@ -67,10 +85,10 @@ function BirthdayRow({ entry }: BirthdayRowProps) {
         <Text style={styles.rowName} numberOfLines={1}>
           {entry.display_name}
         </Text>
-        <Text style={styles.rowDate}>{dateLabel}</Text>
+        <Text style={styles.rowDate}>{combinedLabel}</Text>
       </View>
       <Text style={[styles.rowDays, isToday && styles.rowDaysToday]}>{daysLabel}</Text>
-    </View>
+    </Pressable>
   );
 }
 
