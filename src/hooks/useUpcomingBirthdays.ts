@@ -13,6 +13,7 @@ export interface BirthdayEntry {
   avatar_url: string | null;
   birthday_month: number;
   birthday_day: number;
+  birthday_year: number | null; // Phase 11 v1.4 — null for legacy profiles without year (D-03)
   days_until: number;
 }
 

@@ -35,14 +35,16 @@ export default function EditProfileScreen() {
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [birthdayMonth, setBirthdayMonth] = useState<number | null>(null);
   const [birthdayDay, setBirthdayDay] = useState<number | null>(null);
+  const [birthdayYear, setBirthdayYear] = useState<number | null>(null);
   const [originalBirthdayMonth, setOriginalBirthdayMonth] = useState<number | null>(null);
   const [originalBirthdayDay, setOriginalBirthdayDay] = useState<number | null>(null);
+  const [originalBirthdayYear, setOriginalBirthdayYear] = useState<number | null>(null);
 
   useEffect(() => {
     if (!session) return;
     supabase
       .from('profiles')
-      .select('display_name, avatar_url, birthday_month, birthday_day')
+      .select('display_name, avatar_url, birthday_month, birthday_day, birthday_year')
       .eq('id', session.user.id)
       .single()
       .then(({ data, error }) => {
@@ -53,8 +55,10 @@ export default function EditProfileScreen() {
           setOriginalAvatarUrl(data.avatar_url ?? null);
           setBirthdayMonth(data.birthday_month ?? null);
           setBirthdayDay(data.birthday_day ?? null);
+          setBirthdayYear(data.birthday_year ?? null);
           setOriginalBirthdayMonth(data.birthday_month ?? null);
           setOriginalBirthdayDay(data.birthday_day ?? null);
+          setOriginalBirthdayYear(data.birthday_year ?? null);
         }
         setLoading(false);
       });
@@ -139,6 +143,13 @@ export default function EditProfileScreen() {
     const finalMonth = saveMonth !== null && saveDay !== null ? saveMonth : null;
     const finalDay = saveMonth !== null && saveDay !== null ? saveDay : null;
 
+    // Birthday year required when month+day are set (D-01)
+    if (finalMonth !== null && finalDay !== null && birthdayYear === null) {
+      Alert.alert('Birthday incomplete', 'Please add your birth year to save your birthday.');
+      setSaving(false);
+      return;
+    }
+
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -146,6 +157,7 @@ export default function EditProfileScreen() {
         avatar_url: avatarUrl,
         birthday_month: finalMonth,
         birthday_day: finalDay,
+        birthday_year: finalMonth !== null ? birthdayYear : null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', session.user.id);
@@ -163,7 +175,8 @@ export default function EditProfileScreen() {
     displayName.trim() !== originalDisplayName ||
     avatarUrl !== originalAvatarUrl ||
     birthdayMonth !== originalBirthdayMonth ||
-    birthdayDay !== originalBirthdayDay;
+    birthdayDay !== originalBirthdayDay ||
+    birthdayYear !== originalBirthdayYear;
   const canSave = displayName.trim().length > 0 && isDirty && !saving;
 
   if (loading) {
@@ -223,9 +236,11 @@ export default function EditProfileScreen() {
       <BirthdayPicker
         month={birthdayMonth}
         day={birthdayDay}
-        onChange={(m, d) => {
+        year={birthdayYear}
+        onChange={(m, d, y) => {
           setBirthdayMonth(m);
           setBirthdayDay(d);
+          setBirthdayYear(y);
         }}
         disabled={saving}
       />

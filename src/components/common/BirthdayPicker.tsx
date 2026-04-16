@@ -46,6 +46,10 @@ const MONTH_NAMES_FULL = [
   'December',
 ];
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 100 }, (_, i) => CURRENT_YEAR - 1 - i);
+// → [currentYear-1, currentYear-2, ..., currentYear-100]
+
 function getDaysInMonth(month: number): number {
   const days: Record<number, number> = {
     1: 31,
@@ -71,7 +75,8 @@ function getDaysInMonth(month: number): number {
 interface BirthdayPickerProps {
   month: number | null; // 1-12 or null
   day: number | null; // 1-31 or null
-  onChange: (month: number | null, day: number | null) => void;
+  year: number | null; // 4-digit year or null
+  onChange: (month: number | null, day: number | null, year: number | null) => void;
   disabled?: boolean;
 }
 
@@ -79,8 +84,8 @@ interface BirthdayPickerProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function BirthdayPicker({ month, day, onChange, disabled = false }: BirthdayPickerProps) {
-  const [openDropdown, setOpenDropdown] = useState<'month' | 'day' | null>(null);
+export function BirthdayPicker({ month, day, year, onChange, disabled = false }: BirthdayPickerProps) {
+  const [openDropdown, setOpenDropdown] = useState<'month' | 'day' | 'year' | null>(null);
   const translateY = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
@@ -95,7 +100,7 @@ export function BirthdayPicker({ month, day, onChange, disabled = false }: Birth
     }
   }, [openDropdown, translateY]);
 
-  function handleOpenDropdown(type: 'month' | 'day') {
+  function handleOpenDropdown(type: 'month' | 'day' | 'year') {
     if (disabled) return;
     Keyboard.dismiss();
     setOpenDropdown(type);
@@ -109,19 +114,24 @@ export function BirthdayPicker({ month, day, onChange, disabled = false }: Birth
     setOpenDropdown(null);
     // Reset day if it exceeds the max days for the newly selected month
     if (day !== null && day > getDaysInMonth(newMonth)) {
-      onChange(newMonth, null);
+      onChange(newMonth, null, year);
     } else {
-      onChange(newMonth, day);
+      onChange(newMonth, day, year);
     }
   }
 
   function handleSelectDay(newDay: number) {
     setOpenDropdown(null);
-    onChange(month, newDay);
+    onChange(month, newDay, year);
+  }
+
+  function handleSelectYear(newYear: number) {
+    setOpenDropdown(null);
+    onChange(month, day, newYear);
   }
 
   function handleClearBirthday() {
-    onChange(null, null);
+    onChange(null, null, null);
   }
 
   const monthLabel = month !== null ? MONTH_NAMES[month - 1] : null;
@@ -158,10 +168,23 @@ export function BirthdayPicker({ month, day, onChange, disabled = false }: Birth
             {dayLabel ?? 'Day'}
           </Text>
         </TouchableOpacity>
+
+        {/* Year trigger — NEW */}
+        <TouchableOpacity
+          style={[styles.trigger, disabled && styles.triggerDisabled]}
+          onPress={() => handleOpenDropdown('year')}
+          activeOpacity={0.7}
+          disabled={disabled}
+          accessibilityLabel={`Select birth year, currently ${year !== null ? String(year) : 'not set'}`}
+        >
+          <Text style={year !== null ? styles.triggerTextSelected : styles.triggerTextPlaceholder}>
+            {year !== null ? String(year) : 'Year'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Clear Birthday link — shown only when both are set */}
-      {month !== null && day !== null && (
+      {/* Clear Birthday link — shown only when all three are set */}
+      {month !== null && day !== null && year !== null && (
         <TouchableOpacity
           onPress={handleClearBirthday}
           accessibilityLabel="Clear birthday"
@@ -207,24 +230,43 @@ export function BirthdayPicker({ month, day, onChange, disabled = false }: Birth
                     </TouchableOpacity>
                   );
                 })
-              : Array.from({ length: maxDays }, (_, i) => {
-                  const value = i + 1;
-                  const isSelected = day === value;
-                  return (
-                    <TouchableOpacity
-                      key={value}
-                      style={styles.optionRow}
-                      onPress={() => handleSelectDay(value)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[styles.optionText, isSelected && styles.optionTextSelected]}
+              : openDropdown === 'day'
+                ? Array.from({ length: maxDays }, (_, i) => {
+                    const value = i + 1;
+                    const isSelected = day === value;
+                    return (
+                      <TouchableOpacity
+                        key={value}
+                        style={styles.optionRow}
+                        onPress={() => handleSelectDay(value)}
+                        activeOpacity={0.7}
                       >
-                        {String(value)}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                        <Text
+                          style={[styles.optionText, isSelected && styles.optionTextSelected]}
+                        >
+                          {String(value)}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })
+                : YEARS.map((y) => {
+                    const isSelected = year === y;
+                    return (
+                      <TouchableOpacity
+                        key={y}
+                        style={styles.optionRow}
+                        onPress={() => handleSelectYear(y)}
+                        activeOpacity={0.7}
+                        accessibilityLabel={String(y)}
+                      >
+                        <Text
+                          style={[styles.optionText, isSelected && styles.optionTextSelected]}
+                        >
+                          {String(y)}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
           </ScrollView>
         </Animated.View>
       </Modal>
