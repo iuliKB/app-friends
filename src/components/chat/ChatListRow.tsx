@@ -39,12 +39,12 @@ export function ChatListRow({ item, onPress }: ChatListRowProps) {
         </Text>
         <Text style={styles.preview} numberOfLines={1}>
           {item.lastMessage}
+          <Text style={styles.previewTime}>{' · ' + relativeTime}</Text>
         </Text>
       </View>
 
-      {/* Right side */}
+      {/* Right side — unread dot only */}
       <View style={styles.rightSide}>
-        <Text style={styles.time}>{relativeTime}</Text>
         {item.hasUnread && <View style={styles.unreadDot} />}
       </View>
     </TouchableOpacity>
@@ -84,13 +84,15 @@ const styles = StyleSheet.create({
     // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 2,
   },
-  rightSide: {
-    alignItems: 'flex-end',
-  },
-  time: {
-    fontSize: FONT_SIZE.sm,
+  previewTime: {
+    fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.secondary,
+  },
+  rightSide: {
+    justifyContent: 'center',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    marginLeft: 4,
   },
   unreadDot: {
     // eslint-disable-next-line campfire/no-hardcoded-styles
@@ -100,7 +102,5 @@ const styles = StyleSheet.create({
     // eslint-disable-next-line campfire/no-hardcoded-styles
     borderRadius: 6,
     backgroundColor: COLORS.interactive.accent,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginTop: 4,
   },
 });

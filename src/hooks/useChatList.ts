@@ -44,7 +44,7 @@ export function useChatList(): {
     }));
 
     // Step C — Fetch latest message per plan chat
-    const planLatestMap = new Map<string, { body: string; created_at: string }>();
+    const planLatestMap = new Map<string, { body: string; created_at: string; sender_id: string }>();
     if (memberPlanIds.length > 0) {
       const { data: planMsgs } = await supabase
         .from('messages')
@@ -59,13 +59,14 @@ export function useChatList(): {
           planLatestMap.set(pid, {
             body: msg.body as string,
             created_at: msg.created_at as string,
+            sender_id: msg.sender_id as string,
           });
         }
       }
     }
 
     // Step D — Fetch latest message per DM channel
-    const dmLatestMap = new Map<string, { body: string; created_at: string }>();
+    const dmLatestMap = new Map<string, { body: string; created_at: string; sender_id: string }>();
     if (dmChannels.length > 0) {
       const dmIds = dmChannels.map((d) => d.id);
       const { data: dmMsgs } = await supabase
@@ -78,7 +79,11 @@ export function useChatList(): {
       for (const msg of dmMsgs ?? []) {
         const cid = msg.dm_channel_id as string;
         if (!dmLatestMap.has(cid)) {
-          dmLatestMap.set(cid, { body: msg.body as string, created_at: msg.created_at as string });
+          dmLatestMap.set(cid, {
+            body: msg.body as string,
+            created_at: msg.created_at as string,
+            sender_id: msg.sender_id as string,
+          });
         }
       }
     }
@@ -124,11 +129,14 @@ export function useChatList(): {
     // Step H — Build ChatListItem[]
     const items: ChatListItem[] = [];
 
+    const currentUserId = session.user.id;
+
     // Plan chat items
     for (const [planId, latest] of planLatestMap.entries()) {
       const title = planTitleMap.get(planId);
       if (!title) continue;
-      const hasUnread = await checkUnread(planId, latest.created_at);
+      const hasUnread =
+        latest.sender_id !== currentUserId && (await checkUnread(planId, latest.created_at));
       items.push({
         id: planId,
         type: 'plan',
@@ -146,7 +154,8 @@ export function useChatList(): {
       if (!latest) continue;
       const profile = profileMap.get(channel.otherUserId);
       if (!profile) continue;
-      const hasUnread = await checkUnread(channel.id, latest.created_at);
+      const hasUnread =
+        latest.sender_id !== currentUserId && (await checkUnread(channel.id, latest.created_at));
       items.push({
         id: channel.id,
         type: 'dm',
