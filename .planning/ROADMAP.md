@@ -161,8 +161,10 @@ Plans:
   3. Dashboard cards animate in with smooth entrance transitions on first load; the animation does not replay on pull-to-refresh
   4. Existing Streaks card content and data are preserved exactly — streak count and copy are unchanged from v1.3
   5. The outer scroll is a single FlatList with feature cards in ListFooterComponent; no FlatList is nested inside a ScrollView
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+Plans:
+- [ ] 10-01-PLAN.md — Playwright test scaffold + CompactFriendRow component
+- [ ] 10-02-PLAN.md — squad.tsx FlatList rewrite + SquadTabSwitcher deletion + entrance animations + human verify [BLOCKING]
 
 ## Progress
 
@@ -173,7 +175,7 @@ Plans:
 | 7. Birthday Calendar Feature | 3/3 | Complete   | 2026-04-12 |
 | 8. IOU Create & Detail | 4/4 | Complete   | 2026-04-12 |
 | 9. IOU List & Summary | 2/3 | In Progress|  |
-| 10. Squad Dashboard | 0/TBD | Not started | - |
+| 10. Squad Dashboard | 0/2 | Not started | - |
 
 ---
-*Roadmap updated: 2026-04-13 — Phase 9 planned (3 plans, 3 waves)*
+*Roadmap updated: 2026-04-14 — Phase 10 planned (2 plans, 2 waves; replanned for dashboard design)*
