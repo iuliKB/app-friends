@@ -60,6 +60,7 @@ export default function FriendBirthdayPage() {
       {
         p_name: groupName,
         p_member_ids: memberIds,
+        p_birthday_person_id: friendId,
       }
     );
 
@@ -76,7 +77,7 @@ export default function FriendBirthdayPage() {
 
     // Navigate to the group chat room using the existing chat UI (D-18)
     router.push(
-      `/chat/room?group_channel_id=${groupChannelId}&friend_name=${encodeURIComponent(groupName)}` as never
+      `/chat/room?group_channel_id=${groupChannelId}&friend_name=${encodeURIComponent(groupName)}&birthday_person_id=${friendId}` as never
     );
   }
 

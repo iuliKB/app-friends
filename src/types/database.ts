@@ -536,18 +536,22 @@ export type Database = {
           name: string;
           created_by: string;
           created_at: string;
+          // migration 0018 — birthday person reference for in-chat wish list
+          birthday_person_id: string | null;
         };
         Insert: {
           id?: string;
           name: string;
           created_by: string;
           created_at?: string;
+          birthday_person_id?: string | null;
         };
         Update: {
           id?: string;
           name?: string;
           created_by?: string;
           created_at?: string;
+          birthday_person_id?: string | null;
         };
         Relationships: [];
       };

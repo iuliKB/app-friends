@@ -23,4 +23,5 @@ export interface ChatListItem {
   lastMessage: string; // truncated body
   lastMessageAt: string; // ISO timestamp for sorting
   hasUnread: boolean;
+  birthdayPersonId?: string | null; // group chats only — whose wish list to show
 }

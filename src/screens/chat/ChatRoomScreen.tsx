@@ -20,6 +20,7 @@ import {
 } from '@/components/chat/MessageBubble';
 import { SendBar } from '@/components/chat/SendBar';
 import { PinnedPlanBanner } from '@/components/chat/PinnedPlanBanner';
+import { BirthdayWishListPanel } from '@/components/chat/BirthdayWishListPanel';
 import type { MessageWithProfile } from '@/types/chat';
 
 interface ChatRoomScreenProps {
@@ -27,13 +28,15 @@ interface ChatRoomScreenProps {
   dmChannelId?: string;
   groupChannelId?: string;
   friendName?: string;
+  birthdayPersonId?: string;
 }
 
 export function ChatRoomScreen({
   planId,
   dmChannelId,
   groupChannelId,
-  friendName: _friendName,
+  friendName,
+  birthdayPersonId,
 }: ChatRoomScreenProps) {
   const navigation = useNavigation();
   const headerHeight = useHeaderHeight();
@@ -67,6 +70,12 @@ export function ChatRoomScreen({
       keyboardVerticalOffset={headerHeight}
     >
       {planId ? <PinnedPlanBanner planId={planId} /> : null}
+      {birthdayPersonId ? (
+        <BirthdayWishListPanel
+          birthdayPersonId={birthdayPersonId}
+          birthdayPersonName={friendName?.replace(/'s birthday$/, '')}
+        />
+      ) : null}
       {messages.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Start the conversation!</Text>

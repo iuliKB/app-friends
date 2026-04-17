@@ -127,13 +127,15 @@ export function useChatList(): {
     const groupChannelIds = (groupMemberRows ?? []).map((r) => r.group_channel_id as string);
 
     const groupNameMap = new Map<string, string>();
+    const groupBirthdayPersonMap = new Map<string, string | null>();
     if (groupChannelIds.length > 0) {
       const { data: groupRows } = await supabase
         .from('group_channels')
-        .select('id, name')
+        .select('id, name, birthday_person_id')
         .in('id', groupChannelIds);
       for (const g of groupRows ?? []) {
         groupNameMap.set(g.id as string, g.name as string);
+        groupBirthdayPersonMap.set(g.id as string, (g.birthday_person_id as string | null) ?? null);
       }
     }
 
@@ -223,6 +225,7 @@ export function useChatList(): {
         lastMessage: latest?.body ?? 'No messages yet',
         lastMessageAt: latest?.created_at ?? new Date(0).toISOString(),
         hasUnread,
+        birthdayPersonId: groupBirthdayPersonMap.get(channelId) ?? null,
       });
     }
 

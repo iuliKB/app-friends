@@ -20,7 +20,6 @@ import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
-import { WishListItem } from '@/components/squad/WishListItem';
 import { APP_CONFIG } from '@/constants/config';
 import { useMyWishList } from '@/hooks/useMyWishList';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
@@ -276,14 +275,15 @@ export default function EditProfileScreen() {
 
       {wishListItems.map((item) => (
         <View key={item.id} style={styles.wishListRow}>
-          <WishListItem
-            title={item.title}
-            url={item.url}
-            notes={item.notes}
-            isClaimed={false}
-            isClaimedByMe={false}
-            readOnly
-          />
+          <View style={styles.wishListItemContent}>
+            <Text style={styles.wishListItemTitle} numberOfLines={2}>{item.title}</Text>
+            {item.url ? (
+              <Text style={styles.wishListItemUrl} numberOfLines={1}>{item.url}</Text>
+            ) : null}
+            {item.notes ? (
+              <Text style={styles.wishListItemNotes} numberOfLines={2}>{item.notes}</Text>
+            ) : null}
+          </View>
           <TouchableOpacity
             onPress={() => void deleteItem(item.id)}
             style={styles.deleteWishItem}
@@ -429,6 +429,28 @@ const styles = StyleSheet.create({
   wishListRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    paddingVertical: SPACING.md,
+    gap: SPACING.sm,
+  },
+  wishListItemContent: {
+    flex: 1,
+  },
+  wishListItemTitle: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
+  },
+  wishListItemUrl: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.interactive.accent,
+    marginTop: SPACING.xs,
+  },
+  wishListItemNotes: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
   },
   wishListEmpty: {
     fontSize: FONT_SIZE.md,

@@ -19,12 +19,12 @@ export function ChatListScreen() {
     if (item.type === 'plan') {
       router.push(('/chat/room?plan_id=' + item.id) as never);
     } else if (item.type === 'group') {
-      router.push(
-        ('/chat/room?group_channel_id=' +
-          item.id +
-          '&friend_name=' +
-          encodeURIComponent(item.title)) as never
-      );
+      const params = new URLSearchParams({
+        group_channel_id: item.id,
+        friend_name: item.title,
+        ...(item.birthdayPersonId ? { birthday_person_id: item.birthdayPersonId } : {}),
+      });
+      router.push((`/chat/room?${params.toString()}`) as never);
     } else {
       router.push(
         ('/chat/room?dm_channel_id=' +
