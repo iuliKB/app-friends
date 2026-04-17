@@ -2,20 +2,15 @@
 
 ## What This Is
 
-Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, and lightweight expense tracking into a single React Native + Expo mobile app backed by Supabase. V1.3 adds status liveness (heartbeat-based freshness with TTL windows), real push delivery with token lifecycle management, the "Friend went Free" notification loop, a daily morning status prompt, and Squad Goals streaks — making the app worth opening every day.
+Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, lightweight expense tracking, and birthday coordination into a single React Native + Expo mobile app backed by Supabase. V1.4 adds IOU expense tracking, birthday profiles with wish lists + group gift coordination, a Squad Dashboard, and birthday social features — making the app useful for real-life coordination moments.
 
 ## Core Value
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone: v1.4 Squad Dashboard & Social Tools
+## Current Milestone: v1.5 (Planning)
 
-**Goal:** Transform Squad tab into a scrollable dashboard with friends list and feature cards, plus two new social features: group expense splitting (IOUs) and birthday calendar.
-
-**Target features:**
-- Squad Dashboard: friends list at top, feature cards below (Streaks, IOUs, Birthdays) replacing underline tab switcher
-- IOU Expense Splitting: group bill splitting (even/custom amounts), per-person balances, manual settle
-- Birthday Calendar: birthday field in profile (shared with friends), upcoming birthdays card, birthday list screen
+v1.4 Squad Dashboard & Social Tools shipped 2026-04-17. Planning next milestone.
 
 ## Requirements
 
@@ -74,13 +69,21 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ Unified friends section with Radar/Cards view toggle — v1.3.5
 - ✓ Upcoming events section with horizontal scroll event cards — v1.3.5
 - ✓ Cover image support for plans (expo-image-picker + Supabase Storage) — v1.3.5
+- ✓ IOU expense creation (even/custom split) and detail with settle — v1.4
+- ✓ IOU list + net balance summary per friend — v1.4
+- ✓ Birthday field (month/day/year) in profile, shared with friends — v1.4
+- ✓ Upcoming birthdays dashboard card and birthday list screen — v1.4
+- ✓ Birthday group chat with wish list panel + gift claiming/voting — v1.4
+- ✓ Squad Dashboard with scrollable feature cards (StreakCard, BirthdayCard, IOUCard) — v1.4
+- ✓ IOU + Birthday compact widgets on home screen — v1.4
+- ✓ Native DateTimePicker for birthday input — v1.4
+- ✓ Chat attachment menu (Poll, Split Expenses, To-Do) with group member pre-selection — v1.4
+- ✓ Group chat participant sheet via tappable title — v1.4
+- ✓ Plan cover image upload fix (ArrayBuffer pattern) — v1.4
 
 ### Active
 
-- [ ] Squad Dashboard with friends list + feature cards (replaces tab switcher)
-- [x] IOU expense creation (even/custom split) and detail with settle — Validated in Phase 8: IOU Create & Detail
-- [x] Birthday field in profile, shared with friends — Validated in Phase 6: Birthday Profile Field
-- [x] Upcoming birthdays dashboard card and birthday list screen — Validated in Phase 7: Birthday Calendar Feature
+(none — v1.5 not yet planned)
 
 ### Out of Scope
 
@@ -98,13 +101,14 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ## Context
 
-Shipped v1.3 Liveness & Notifications with 20 phases total across 4 milestones (v1.0–v1.3), 44 v1.3 requirements delivered.
+Shipped v1.4 Squad Dashboard & Social Tools with 11 phases across milestones v1.0–v1.4. Total ~19,500 LOC.
 Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage + Edge Functions), Zustand.
 
-Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config).
+Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak, IOUs, Birthdays). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config, wish list, birthday).
 Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
-Supabase migrations: 0001–0016 (v1.3 added 0009–0011, v1.3.5 added 0012 nudges, 0013 cover_image_url, 0014 plan-covers storage bucket, v1.4 added 0015 IOU tables/RPCs + general_notes rename, 0016 birthday columns + get_upcoming_birthdays RPC).
+Supabase migrations: 0001–0017 (v1.4 added 0015 IOU tables/RPCs + general_notes rename, 0016 birthday columns + get_upcoming_birthdays RPC, 0017 wish_list_items + wish_list_claims + group_channels + group_channel_members).
 IOU write path: Squad '+' → create screen (currency input, friend selection, even/custom split) → `create_expense` RPC → detail screen (hero card, participant rows, creator-only settle with haptic).
+Birthday write path: Profile edit → native DateTimePicker (month/day/year) → birthday list screen → tap → Friend Birthday Page → birthday group chat with collapsible wish list panel + gift claiming/voting.
 Edge Functions: `notify-plan-invite`, `notify-friend-free` (rate-limited fan-out).
 
 Known technical considerations:
@@ -163,6 +167,14 @@ Known technical considerations:
 | On-device morning prompt via scheduleNotificationAsync (v1.3 Phase 4) | Eliminates profiles.timezone column and server cron; works offline | ✓ Good |
 | Anti-Snapchat streak mechanics (v1.3 Phase 4) | Grace week per 4-week window, breaks on 2 consecutive misses, positive-only copy — avoids streak anxiety | ✓ Good |
 | Hardware verification gate as final phase (v1.3 Phase 5) | Solo dev without Apple Dev account; consolidates all manual smoke tests into one session when account acquired | ✓ Good |
+| IOU amounts as INTEGER cents (v1.4) | Float arithmetic causes phantom debts that cannot be fixed after data is written | ✓ Good |
+| create_expense() atomic RPC (v1.4) | Two chained client inserts risk orphan records on network failure between them | ✓ Good |
+| Birthday as separate month/day/year smallint columns (v1.4) | TIMESTAMPTZ causes off-by-one-day errors in negative-UTC timezones | ✓ Good |
+| Squad Dashboard FlatList with cards in ListFooterComponent (v1.4) | FlatList inside ScrollView breaks Android scroll silently | ✓ Good |
+| Native DateTimePicker (display=spinner) replaces custom modal (v1.4) | Custom ScrollView picker is fragile; native picker handles locale, accessibility, and platform conventions | ✓ Good |
+| fetch().arrayBuffer() for Supabase Storage uploads in RN (v1.4) | FormData + file:// URI fails — Supabase SDK polyfill cannot stream local URIs | ✓ Good |
+| Group chat participants via tappable header title (v1.4) | More discoverable (Messenger pattern) than + menu; navigation.setOptions headerTitle activated only for group chats | ✓ Good |
+| Wish list claims stored server-side with claimer_id (v1.4) | Client-side claim state would be lost on app restart and invisible to other group members | ✓ Good |
 
 ---
-*Last updated: 2026-04-12 after Phase 8 (IOU Create & Detail) complete — expense creation with even/custom split, detail screen with creator-only settle*
+*Last updated: 2026-04-17 after v1.4 (Squad Dashboard & Social Tools) complete*

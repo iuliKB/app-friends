@@ -1,5 +1,37 @@
 # Milestones
 
+## v1.4 Squad Dashboard & Social Tools (Shipped: 2026-04-17)
+
+**Phases completed:** 6 phases, 23 plans, 31 tasks
+
+**Key accomplishments:**
+
+- One-liner:
+- Nullable birthday_month and birthday_day smallint columns on profiles with compound day-in-month CHECK constraint and SECURITY DEFINER RPC that returns accepted friends sorted by days until next birthday with full Feb 29 leap-year handling
+- One-liner:
+- Task 1 — database.ts birthday types:
+- One-liner:
+- One-liner:
+- One-liner:
+- One-liner:
+- Task 1 — database.ts additions:
+- One-liner:
+- useExpenseCreate (form state + create_expense RPC + payer auto-include guard) and useExpenseDetail (three-query fetch + composite-PK settle) — both TypeScript strict, haptics wired
+- One-liner:
+- get_iou_summary RPC type, useIOUSummary and useExpensesWithFriend hooks, BalanceRow and ExpenseHistoryRow presentational components — typed foundation for Plans 02–03
+- IOUCard dashboard component + /squad/expenses balance index + /squad/expenses/friend/[id] history screen + Stack navigator registration
+- IOUCard wired into squad.tsx Goals tab between StreakCard and BirthdayCard; complete IOU feature human-verified in Expo Go across all 15 acceptance steps
+- Migration 0017 with wish lists, secret claims, group channels, and updated messages RLS — all Phase 11 DB objects in a single file with Playwright test stubs
+- Migration 0017 (birthday_social_v1_4) applied to Supabase project zqmaauaopyolutfoizgq via MCP — all 11 schema sections live, Wave 3 client work unblocked
+- Phase 11 TypeScript types, formatTurningAge utility, three-column BirthdayPicker, and BirthdayEntry.birthday_year — all Wave 4 UI plans unblocked
+- groupChannelId branch added to useChatRoom; route and screen wired end-to-end — group chat navigation unblocked for Plan 06
+- Three data hooks (useFriendWishList, useMyWishList, useFriendsOfFriend) and WishListItem component — Wave 4 screens unblocked for wish list and friend-of-friend UI
+- Profile edit screen extended with three-column birthday picker (Month | Day | Year) and inline My Wish List section with add/delete item management
+- Tappable birthday rows with "turning N" label, birthday/[id] route registration, and Friend Birthday Page with wish list viewing, friend picker, and birthday group chat creation
+- Birthday feature verified end-to-end; native date picker, collapsible birthday chat panel, group participant sheet, attachment menu, and home screen IOU/Birthday widgets shipped
+
+---
+
 ## v1.3 Liveness & Notifications (Shipped: 2026-04-10)
 
 **Phases completed:** 5 phases, 32 plans | 142 files changed, +29,089 lines
@@ -15,6 +47,7 @@
 - Hardware verification gate: expo_go track passed (11 checks), eas_build track deferred until Apple Dev account
 
 **Known gaps:**
+
 - EAS build track (22 hardware checks) deferred — no Apple Developer account yet
 - TTL-08 retention rollup deferred to v1.4 (pg_cron not enabled)
 - FREE-11 monitoring doc authored but not operator-verified
