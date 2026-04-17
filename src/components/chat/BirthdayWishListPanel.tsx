@@ -1,9 +1,11 @@
-// Phase 11 v1.4 — Collapsible wish list panel with voting + claiming in birthday group chats.
-import React, { useState } from 'react';
+// Phase 11 v1.4 — Collapsible birthday info panel with wish list, voting + claiming in birthday group chats.
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { supabase } from '@/lib/supabase';
 import { useFriendWishList } from '@/hooks/useFriendWishList';
 import { useWishListVotes } from '@/hooks/useWishListVotes';
+import { formatBirthdayDate, formatTurningAge } from '@/utils/birthdayFormatters';
 
 interface BirthdayWishListPanelProps {
   birthdayPersonId: string;
@@ -11,26 +13,79 @@ interface BirthdayWishListPanelProps {
   birthdayPersonName?: string;
 }
 
+interface BirthdayInfo {
+  month: number;
+  day: number;
+  year: number | null;
+}
+
 export function BirthdayWishListPanel({ birthdayPersonId, groupChannelId, birthdayPersonName }: BirthdayWishListPanelProps) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  const [birthdayInfo, setBirthdayInfo] = useState<BirthdayInfo | null>(null);
   const { items, loading, toggleClaim } = useFriendWishList(birthdayPersonId);
   const itemIds = items.map((i) => i.id);
   const { voteState, toggleVote } = useWishListVotes(groupChannelId, itemIds);
 
   const name = birthdayPersonName ?? 'Their';
 
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('birthday_month, birthday_day, birthday_year')
+      .eq('id', birthdayPersonId)
+      .single()
+      .then(({ data }) => {
+        if (data?.birthday_month && data?.birthday_day) {
+          setBirthdayInfo({
+            month: data.birthday_month as number,
+            day: data.birthday_day as number,
+            year: (data.birthday_year as number | null) ?? null,
+          });
+        }
+      });
+  }, [birthdayPersonId]);
+
   return (
     <View style={styles.container}>
       <Pressable style={styles.header} onPress={() => setExpanded((v) => !v)}>
-        <Text style={styles.headerText}>🎁 {name}'s Wish List</Text>
+        <Text style={styles.headerText}>🎁 {name}'s Birthday</Text>
         <View style={styles.headerRight}>
-          {!loading && <Text style={styles.count}>{items.length} {items.length === 1 ? 'item' : 'items'}</Text>}
+          {birthdayInfo && !expanded && (
+            <Text style={styles.headerSubtitle}>
+              {formatBirthdayDate(birthdayInfo.month, birthdayInfo.day)}
+              {birthdayInfo.year !== null
+                ? ` · ${formatTurningAge(birthdayInfo.year, birthdayInfo.month, birthdayInfo.day)}`
+                : ''}
+            </Text>
+          )}
           <Text style={styles.chevron}>{expanded ? '▲' : '▼'}</Text>
         </View>
       </Pressable>
 
       {expanded && (
         <View style={styles.body}>
+          {/* Birthday info row */}
+          {birthdayInfo && (
+            <View style={styles.birthdayInfoRow}>
+              <Text style={styles.birthdayInfoText}>
+                🎂{'  '}
+                {formatBirthdayDate(birthdayInfo.month, birthdayInfo.day)}
+                {birthdayInfo.year !== null
+                  ? `  ·  ${formatTurningAge(birthdayInfo.year, birthdayInfo.month, birthdayInfo.day)}`
+                  : ''}
+              </Text>
+            </View>
+          )}
+
+          {/* Wish list section label */}
+          <View style={styles.wishListHeader}>
+            <Text style={styles.wishListLabel}>Wish List</Text>
+            {!loading && (
+              <Text style={styles.count}>{items.length} {items.length === 1 ? 'item' : 'items'}</Text>
+            )}
+          </View>
+
+          {/* Wish list items */}
           {loading ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator size="small" color={COLORS.interactive.accent} />
@@ -117,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.sm,
   },
-  count: {
+  headerSubtitle: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.secondary,
@@ -129,6 +184,37 @@ const styles = StyleSheet.create({
   body: {
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
+  },
+  birthdayInfoRow: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  birthdayInfoText: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
+  },
+  wishListHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.xs,
+  },
+  wishListLabel: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  count: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
   },
   loadingRow: {
     paddingVertical: SPACING.lg,

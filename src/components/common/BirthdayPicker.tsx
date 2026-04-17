@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  Animated,
   Keyboard,
   Modal,
-  ScrollView,
+  Platform,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
 
 // ---------------------------------------------------------------------------
@@ -17,56 +17,18 @@ import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
 // ---------------------------------------------------------------------------
 
 const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
 const MONTH_NAMES_FULL = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 100 }, (_, i) => CURRENT_YEAR - 1 - i);
-// → [currentYear-1, currentYear-2, ..., currentYear-100]
-
-function getDaysInMonth(month: number): number {
-  const days: Record<number, number> = {
-    1: 31,
-    2: 29,
-    3: 31,
-    4: 30,
-    5: 31,
-    6: 30,
-    7: 31,
-    8: 31,
-    9: 30,
-    10: 31,
-    11: 30,
-    12: 31,
-  };
-  return days[month] ?? 31;
-}
+const MIN_DATE = new Date(CURRENT_YEAR - 100, 0, 1);
+const MAX_DATE = new Date();
 
 // ---------------------------------------------------------------------------
 // Props
@@ -74,8 +36,8 @@ function getDaysInMonth(month: number): number {
 
 interface BirthdayPickerProps {
   month: number | null; // 1-12 or null
-  day: number | null; // 1-31 or null
-  year: number | null; // 4-digit year or null
+  day: number | null;   // 1-31 or null
+  year: number | null;  // 4-digit year or null
   onChange: (month: number | null, day: number | null, year: number | null) => void;
   disabled?: boolean;
 }
@@ -85,49 +47,34 @@ interface BirthdayPickerProps {
 // ---------------------------------------------------------------------------
 
 export function BirthdayPicker({ month, day, year, onChange, disabled = false }: BirthdayPickerProps) {
-  const [openDropdown, setOpenDropdown] = useState<'month' | 'day' | 'year' | null>(null);
-  const translateY = useRef(new Animated.Value(300)).current;
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [pickerDate, setPickerDate] = useState<Date>(new Date(1990, 0, 1));
 
-  useEffect(() => {
-    if (openDropdown !== null) {
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      translateY.setValue(300);
-    }
-  }, [openDropdown, translateY]);
-
-  function handleOpenDropdown(type: 'month' | 'day' | 'year') {
+  function handleOpenPicker() {
     if (disabled) return;
     Keyboard.dismiss();
-    setOpenDropdown(type);
+    const d =
+      month !== null && day !== null && year !== null
+        ? new Date(year, month - 1, day)
+        : new Date(1990, 0, 1);
+    setPickerDate(d);
+    setPickerVisible(true);
   }
 
-  function handleCloseDropdown() {
-    setOpenDropdown(null);
-  }
-
-  function handleSelectMonth(newMonth: number) {
-    setOpenDropdown(null);
-    // Reset day if it exceeds the max days for the newly selected month
-    if (day !== null && day > getDaysInMonth(newMonth)) {
-      onChange(newMonth, null, year);
+  function handlePickerChange(_: DateTimePickerEvent, date?: Date) {
+    if (Platform.OS === 'android') {
+      setPickerVisible(false);
+      if (date) {
+        onChange(date.getMonth() + 1, date.getDate(), date.getFullYear());
+      }
     } else {
-      onChange(newMonth, day, year);
+      if (date) setPickerDate(date);
     }
   }
 
-  function handleSelectDay(newDay: number) {
-    setOpenDropdown(null);
-    onChange(month, newDay, year);
-  }
-
-  function handleSelectYear(newYear: number) {
-    setOpenDropdown(null);
-    onChange(month, day, newYear);
+  function handleDone() {
+    setPickerVisible(false);
+    onChange(pickerDate.getMonth() + 1, pickerDate.getDate(), pickerDate.getFullYear());
   }
 
   function handleClearBirthday() {
@@ -137,16 +84,13 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
   const monthLabel = month !== null ? MONTH_NAMES[month - 1] : null;
   const dayLabel = day !== null ? String(day) : null;
 
-  const maxDays = month !== null ? getDaysInMonth(month) : 31;
-
   return (
     <View>
-      {/* Two triggers side by side */}
+      {/* Three triggers side by side — all open the same native picker */}
       <View style={styles.row}>
-        {/* Month trigger */}
         <TouchableOpacity
           style={[styles.trigger, disabled && styles.triggerDisabled]}
-          onPress={() => handleOpenDropdown('month')}
+          onPress={handleOpenPicker}
           activeOpacity={0.7}
           disabled={disabled}
           accessibilityLabel={`Select birth month, currently ${month ? MONTH_NAMES_FULL[month - 1] : 'not set'}`}
@@ -156,10 +100,9 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
           </Text>
         </TouchableOpacity>
 
-        {/* Day trigger */}
         <TouchableOpacity
           style={[styles.trigger, disabled && styles.triggerDisabled]}
-          onPress={() => handleOpenDropdown('day')}
+          onPress={handleOpenPicker}
           activeOpacity={0.7}
           disabled={disabled}
           accessibilityLabel={`Select birth day, currently ${day ? String(day) : 'not set'}`}
@@ -169,10 +112,9 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
           </Text>
         </TouchableOpacity>
 
-        {/* Year trigger — NEW */}
         <TouchableOpacity
           style={[styles.trigger, disabled && styles.triggerDisabled]}
-          onPress={() => handleOpenDropdown('year')}
+          onPress={handleOpenPicker}
           activeOpacity={0.7}
           disabled={disabled}
           accessibilityLabel={`Select birth year, currently ${year !== null ? String(year) : 'not set'}`}
@@ -194,82 +136,50 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
         </TouchableOpacity>
       )}
 
-      {/* Dropdown modal */}
-      <Modal
-        visible={openDropdown !== null}
-        transparent
-        animationType="none"
-        onRequestClose={handleCloseDropdown}
-      >
-        <TouchableWithoutFeedback onPress={handleCloseDropdown}>
-          <View style={styles.backdrop} />
-        </TouchableWithoutFeedback>
+      {/* iOS: modal with native spinner + Done button */}
+      {Platform.OS === 'ios' && (
+        <Modal
+          visible={pickerVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setPickerVisible(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setPickerVisible(false)} />
+            <View style={styles.sheet}>
+              <View style={styles.sheetHeader}>
+                <Text style={styles.sheetTitle}>Birthday</Text>
+                <Pressable onPress={handleDone} accessibilityLabel="Confirm birthday selection">
+                  <Text style={styles.doneButton}>Done</Text>
+                </Pressable>
+              </View>
+              <View style={styles.pickerCenter}>
+                <DateTimePicker
+                  value={pickerDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handlePickerChange}
+                  minimumDate={MIN_DATE}
+                  maximumDate={MAX_DATE}
+                  themeVariant="dark"
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
 
-        <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
-          {/* Drag handle */}
-          <View style={styles.dragHandle} />
-
-          <ScrollView>
-            {openDropdown === 'month'
-              ? MONTH_NAMES.map((name, i) => {
-                  const value = i + 1;
-                  const isSelected = month === value;
-                  return (
-                    <TouchableOpacity
-                      key={value}
-                      style={styles.optionRow}
-                      onPress={() => handleSelectMonth(value)}
-                      activeOpacity={0.7}
-                      accessibilityLabel={MONTH_NAMES_FULL[i]}
-                    >
-                      <Text
-                        style={[styles.optionText, isSelected && styles.optionTextSelected]}
-                      >
-                        {name}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })
-              : openDropdown === 'day'
-                ? Array.from({ length: maxDays }, (_, i) => {
-                    const value = i + 1;
-                    const isSelected = day === value;
-                    return (
-                      <TouchableOpacity
-                        key={value}
-                        style={styles.optionRow}
-                        onPress={() => handleSelectDay(value)}
-                        activeOpacity={0.7}
-                      >
-                        <Text
-                          style={[styles.optionText, isSelected && styles.optionTextSelected]}
-                        >
-                          {String(value)}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })
-                : YEARS.map((y) => {
-                    const isSelected = year === y;
-                    return (
-                      <TouchableOpacity
-                        key={y}
-                        style={styles.optionRow}
-                        onPress={() => handleSelectYear(y)}
-                        activeOpacity={0.7}
-                        accessibilityLabel={String(y)}
-                      >
-                        <Text
-                          style={[styles.optionText, isSelected && styles.optionTextSelected]}
-                        >
-                          {String(y)}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-          </ScrollView>
-        </Animated.View>
-      </Modal>
+      {/* Android: native picker shown inline (has built-in OK/Cancel) */}
+      {Platform.OS === 'android' && pickerVisible && (
+        <DateTimePicker
+          value={pickerDate}
+          mode="date"
+          display="spinner"
+          onChange={handlePickerChange}
+          minimumDate={MIN_DATE}
+          maximumDate={MAX_DATE}
+        />
+      )}
     </View>
   );
 }
@@ -313,42 +223,38 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: SPACING.xs,
   },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'flex-end',
     // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)', // no exact token — modal scrim, matches FriendActionSheet
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: COLORS.surface.card,
     borderTopLeftRadius: RADII.lg,
     borderTopRightRadius: RADII.lg,
-    maxHeight: 300,
     paddingBottom: SPACING.xxl,
   },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: RADII.xs,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.sm,
-  },
-  optionRow: {
-    height: 48,
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  optionText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
+  sheetTitle: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
     color: COLORS.text.primary,
   },
-  optionTextSelected: {
+  doneButton: {
+    fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.interactive.accent,
+  },
+  pickerCenter: {
+    alignItems: 'center',
   },
 });

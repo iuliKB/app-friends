@@ -46,7 +46,8 @@ export interface ExpenseCreateData {
   submit: () => Promise<void>; // calls create_expense RPC, fires haptic, navigates to /squad/expenses/[id]
 }
 
-export function useExpenseCreate(): ExpenseCreateData {
+export function useExpenseCreate(opts?: { groupChannelId?: string | null }): ExpenseCreateData {
+  const groupChannelId = opts?.groupChannelId ?? null;
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id ?? null;
   const router = useRouter();
@@ -81,7 +82,7 @@ export function useExpenseCreate(): ExpenseCreateData {
     selectedFriendIds.size > 0 &&
     (splitMode === 'even' || allocatedCents === totalCents);
 
-  // Load accepted friends on mount
+  // Load friends — filtered to group members when groupChannelId is provided
   const loadFriends = useCallback(async () => {
     if (!userId) {
       setFriendsLoading(false);
@@ -89,26 +90,54 @@ export function useExpenseCreate(): ExpenseCreateData {
       return;
     }
     setFriendsLoading(true);
-    const { data, error: rpcErr } = await supabase.rpc('get_friends');
-    if (rpcErr) {
-      console.warn('useExpenseCreate: get_friends failed', rpcErr);
-      setFriends([]);
+
+    if (groupChannelId) {
+      const { data: members } = await supabase
+        .from('group_channel_members')
+        .select('user_id')
+        .eq('group_channel_id', groupChannelId);
+
+      const memberIds = (members ?? []).map((m) => m.user_id).filter((id) => id !== userId);
+
+      if (memberIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', memberIds);
+
+        const entries = (profiles ?? []).map((p) => ({
+          id: p.id,
+          display_name: (p.display_name as string | null) ?? '',
+          avatar_url: p.avatar_url as string | null,
+        }));
+        setFriends(entries);
+        setSelectedFriendIds(new Set(memberIds));
+      } else {
+        setFriends([]);
+      }
     } else {
-      const rows = (data ?? []) as {
-        friend_id: string;
-        display_name: string;
-        avatar_url: string | null;
-      }[];
-      setFriends(
-        rows.map((r) => ({
-          id: r.friend_id,
-          display_name: r.display_name,
-          avatar_url: r.avatar_url,
-        }))
-      );
+      const { data, error: rpcErr } = await supabase.rpc('get_friends');
+      if (rpcErr) {
+        console.warn('useExpenseCreate: get_friends failed', rpcErr);
+        setFriends([]);
+      } else {
+        const rows = (data ?? []) as {
+          friend_id: string;
+          display_name: string;
+          avatar_url: string | null;
+        }[];
+        setFriends(
+          rows.map((r) => ({
+            id: r.friend_id,
+            display_name: r.display_name,
+            avatar_url: r.avatar_url,
+          }))
+        );
+      }
     }
+
     setFriendsLoading(false);
-  }, [userId]);
+  }, [userId, groupChannelId]);
 
   useEffect(() => {
     loadFriends();

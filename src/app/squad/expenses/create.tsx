@@ -4,6 +4,7 @@
 
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
 import { useExpenseCreate } from '@/hooks/useExpenseCreate';
 import { SplitModeControl } from '@/components/iou/SplitModeControl';
@@ -14,7 +15,8 @@ import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { formatCentsDisplay, parseCentsFromInput } from '@/utils/currencyFormat';
 
 export default function ExpenseCreateScreen() {
-  const form = useExpenseCreate();
+  const { group_channel_id } = useLocalSearchParams<{ group_channel_id?: string }>();
+  const form = useExpenseCreate({ groupChannelId: group_channel_id });
 
   return (
     <ScrollView

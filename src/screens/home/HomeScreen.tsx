@@ -8,11 +8,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
-import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { OwnStatusCard } from '@/components/status/OwnStatusCard';
@@ -22,13 +19,18 @@ import { RadarView } from '@/components/home/RadarView';
 import { CardStackView } from '@/components/home/CardStackView';
 import { useViewPreference } from '@/hooks/useViewPreference';
 import { usePlans } from '@/hooks/usePlans';
+import { useIOUSummary } from '@/hooks/useIOUSummary';
+import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 import { UpcomingEventsSection } from '@/components/home/UpcomingEventsSection';
+import { HomeWidgetRow } from '@/components/home/HomeWidgetRow';
 
 export function HomeScreen() {
-  const router = useRouter();
+
   const insets = useSafeAreaInsets();
   const { friends, error, refreshing, handleRefresh } = useHomeScreen();
   usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
+  const iouSummary = useIOUSummary();
+  const birthdays = useUpcomingBirthdays();
 
   // OVR-06: 60s tick to force heartbeat re-evaluation across own + friend rows
   // without a refetch. setHeartbeatTick is enough to trigger a re-render that
@@ -143,6 +145,8 @@ export function HomeScreen() {
         {/* D-09: Upcoming events section — below Radar/Cards view */}
         <UpcomingEventsSection />
 
+        <HomeWidgetRow iouSummary={iouSummary} birthdays={birthdays} />
+
       </ScrollView>
 
       <StatusPickerSheet
@@ -150,13 +154,6 @@ export function HomeScreen() {
         onClose={() => setSheetVisible(false)}
       />
 
-      {/* FAB */}
-      <FAB
-        icon={<Ionicons name="add" size={20} color={COLORS.surface.base} />}
-        label="Start Plan"
-        onPress={() => router.push('/plan-create')}
-        accessibilityLabel="Create a new plan"
-      />
     </View>
   );
 }

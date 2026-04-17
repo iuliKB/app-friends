@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -6,10 +6,11 @@ import {
   Platform,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -18,9 +19,10 @@ import {
   formatTimeSeparator,
   shouldShowTimeSeparator,
 } from '@/components/chat/MessageBubble';
-import { SendBar } from '@/components/chat/SendBar';
+import { SendBar, type AttachmentAction } from '@/components/chat/SendBar';
 import { PinnedPlanBanner } from '@/components/chat/PinnedPlanBanner';
 import { BirthdayWishListPanel } from '@/components/chat/BirthdayWishListPanel';
+import { GroupParticipantsSheet } from '@/components/chat/GroupParticipantsSheet';
 import type { MessageWithProfile } from '@/types/chat';
 
 interface ChatRoomScreenProps {
@@ -39,11 +41,38 @@ export function ChatRoomScreen({
   birthdayPersonId,
 }: ChatRoomScreenProps) {
   const navigation = useNavigation();
+  const router = useRouter();
+  const [participantsVisible, setParticipantsVisible] = useState(false);
   const headerHeight = useHeaderHeight();
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
 
   const { messages, loading: _loading, sendMessage } = useChatRoom({ planId, dmChannelId, groupChannelId });
+
+  useEffect(() => {
+    if (!groupChannelId || !friendName) return;
+    const title = friendName;
+    navigation.setOptions({
+      headerTitle: () => (
+        <TouchableOpacity onPress={() => setParticipantsVisible(true)} activeOpacity={0.7}>
+          <Text style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: COLORS.text.primary }}>
+            {title}
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [groupChannelId, friendName, navigation]);
+
+  function handleAttachmentAction(action: AttachmentAction) {
+    if (action === 'split') {
+      const url = groupChannelId
+        ? `/squad/expenses/create?group_channel_id=${groupChannelId}`
+        : '/squad/expenses/create';
+      router.push(url as never);
+    } else {
+      Alert.alert('Coming Soon', 'This feature is on the way!', [{ text: 'OK' }]);
+    }
+  }
 
   async function handleSend(body: string) {
     const { error } = await sendMessage(body);
@@ -109,7 +138,14 @@ export function ChatRoomScreen({
           contentContainerStyle={styles.listContent}
         />
       )}
-      <SendBar onSend={handleSend} />
+      <SendBar onSend={handleSend} onAttachmentAction={handleAttachmentAction} />
+      {groupChannelId ? (
+        <GroupParticipantsSheet
+          visible={participantsVisible}
+          onClose={() => setParticipantsVisible(false)}
+          groupChannelId={groupChannelId}
+        />
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
