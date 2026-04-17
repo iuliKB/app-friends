@@ -70,9 +70,10 @@ export function ChatRoomScreen({
       keyboardVerticalOffset={headerHeight}
     >
       {planId ? <PinnedPlanBanner planId={planId} /> : null}
-      {birthdayPersonId ? (
+      {birthdayPersonId && groupChannelId ? (
         <BirthdayWishListPanel
           birthdayPersonId={birthdayPersonId}
+          groupChannelId={groupChannelId}
           birthdayPersonName={friendName?.replace(/'s birthday$/, '')}
         />
       ) : null}

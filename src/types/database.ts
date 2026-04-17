@@ -555,6 +555,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      wish_list_votes: {
+        Row: {
+          item_id: string;
+          group_channel_id: string;
+          voter_id: string;
+          created_at: string;
+        };
+        Insert: {
+          item_id: string;
+          group_channel_id: string;
+          voter_id: string;
+          created_at?: string;
+        };
+        Update: {
+          item_id?: string;
+          group_channel_id?: string;
+          voter_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       group_channel_members: {
         Row: {
           group_channel_id: string;
