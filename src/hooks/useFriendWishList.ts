@@ -11,8 +11,9 @@ export interface WishListItemWithClaim {
   title: string;
   url: string | null;
   notes: string | null;
-  isClaimed: boolean;      // true if anyone has claimed this item
-  isClaimedByMe: boolean;  // true if the current user has claimed it
+  isClaimed: boolean;
+  isClaimedByMe: boolean;
+  claimerName: string | null;  // display name of claimer (null if unclaimed or claimed by me)
 }
 
 export function useFriendWishList(friendId: string) {
@@ -61,6 +62,30 @@ export function useFriendWishList(friendId: string) {
     );
     const claimedByAnyone = new Set((claimRows ?? []).map((c) => c.item_id as string));
 
+    // Build item_id → claimer display name for items claimed by others
+    const otherClaimerIds = [...new Set(
+      (claimRows ?? [])
+        .filter((c) => (c.claimer_id as string) !== userId)
+        .map((c) => c.claimer_id as string)
+    )];
+    const claimerNames: Record<string, string> = {};
+    if (otherClaimerIds.length > 0) {
+      const { data: profileRows } = await supabase
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', otherClaimerIds);
+      for (const p of profileRows ?? []) {
+        claimerNames[p.id as string] = p.display_name as string;
+      }
+    }
+    const itemClaimerName: Record<string, string | null> = {};
+    for (const c of claimRows ?? []) {
+      const cid = c.claimer_id as string;
+      if (cid !== userId) {
+        itemClaimerName[c.item_id as string] = claimerNames[cid] ?? null;
+      }
+    }
+
     setItems(
       (itemRows ?? []).map((item) => ({
         id: item.id as string,
@@ -69,6 +94,7 @@ export function useFriendWishList(friendId: string) {
         notes: (item.notes as string | null) ?? null,
         isClaimed: claimedByAnyone.has(item.id as string),
         isClaimedByMe: claimedByMe.has(item.id as string),
+        claimerName: itemClaimerName[item.id as string] ?? null,
       }))
     );
     setLoading(false);

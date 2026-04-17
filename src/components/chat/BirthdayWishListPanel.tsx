@@ -1,4 +1,4 @@
-// Phase 11 v1.4 — Collapsible wish list panel with voting in birthday group chats.
+// Phase 11 v1.4 — Collapsible wish list panel with voting + claiming in birthday group chats.
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
@@ -13,7 +13,7 @@ interface BirthdayWishListPanelProps {
 
 export function BirthdayWishListPanel({ birthdayPersonId, groupChannelId, birthdayPersonName }: BirthdayWishListPanelProps) {
   const [expanded, setExpanded] = useState(true);
-  const { items, loading } = useFriendWishList(birthdayPersonId);
+  const { items, loading, toggleClaim } = useFriendWishList(birthdayPersonId);
   const itemIds = items.map((i) => i.id);
   const { voteState, toggleVote } = useWishListVotes(groupChannelId, itemIds);
 
@@ -47,17 +47,42 @@ export function BirthdayWishListPanel({ birthdayPersonId, groupChannelId, birthd
                     <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
                     {item.url ? <Text style={styles.itemUrl} numberOfLines={1}>{item.url}</Text> : null}
                     {item.notes ? <Text style={styles.itemNotes} numberOfLines={2}>{item.notes}</Text> : null}
-                  </View>
-                  <Pressable
-                    style={({ pressed }) => [styles.voteBtn, voted && styles.voteBtnActive, pressed && { opacity: 0.7 }]}
-                    onPress={() => void toggleVote(item.id)}
-                    accessibilityLabel={voted ? 'Remove vote' : 'Vote for this gift'}
-                  >
-                    <Text style={[styles.voteEmoji]}>👍</Text>
-                    {count > 0 && (
-                      <Text style={[styles.voteCount, voted && styles.voteCountActive]}>{count}</Text>
+                    {item.isClaimed && !item.isClaimedByMe && (
+                      <Text style={styles.claimedBadge}>
+                        🛍 {item.claimerName ? `${item.claimerName} is buying this` : 'Someone is buying this'}
+                      </Text>
                     )}
-                  </Pressable>
+                    {item.isClaimedByMe && (
+                      <Text style={styles.claimedByMeBadge}>You're buying this</Text>
+                    )}
+                  </View>
+                  <View style={styles.actions}>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.claimBtn,
+                        item.isClaimedByMe && styles.claimBtnActive,
+                        item.isClaimed && !item.isClaimedByMe && styles.claimBtnDisabled,
+                        pressed && { opacity: 0.7 },
+                      ]}
+                      onPress={() => void toggleClaim(item.id, item.isClaimedByMe)}
+                      disabled={item.isClaimed && !item.isClaimedByMe}
+                      accessibilityLabel={item.isClaimedByMe ? 'Cancel claim' : 'I\'ll buy this alone'}
+                    >
+                      <Text style={[styles.claimBtnText, item.isClaimedByMe && styles.claimBtnTextActive]}>
+                        {item.isClaimedByMe ? '✓ I\'ll buy' : '🛍'}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [styles.voteBtn, voted && styles.voteBtnActive, pressed && { opacity: 0.7 }]}
+                      onPress={() => void toggleVote(item.id)}
+                      accessibilityLabel={voted ? 'Remove vote' : 'Vote for this gift'}
+                    >
+                      <Text style={styles.voteEmoji}>👍</Text>
+                      {count > 0 && (
+                        <Text style={[styles.voteCount, voted && styles.voteCountActive]}>{count}</Text>
+                      )}
+                    </Pressable>
+                  </View>
                 </View>
               );
             })
@@ -141,6 +166,46 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     color: COLORS.text.secondary,
     marginTop: SPACING.xs,
+  },
+  claimedBadge: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
+  },
+  claimedByMeBadge: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.interactive.accent,
+    marginTop: SPACING.xs,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  claimBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.surface.base,
+    minWidth: 40,
+  },
+  claimBtnActive: {
+    backgroundColor: COLORS.interactive.accent,
+  },
+  claimBtnDisabled: {
+    opacity: 0.4,
+  },
+  claimBtnText: {
+    fontSize: FONT_SIZE.md,
+    color: COLORS.text.secondary,
+  },
+  claimBtnTextActive: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.surface.base,
   },
   voteBtn: {
     alignItems: 'center',
