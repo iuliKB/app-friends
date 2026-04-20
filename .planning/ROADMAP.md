@@ -138,7 +138,7 @@ Plans:
   4. Tapping the quoted block in a reply bubble scrolls the chat to the original message when it is within the currently loaded 50-message window
 **Plans**: 4 plans
 Plans:
-- [ ] 14-01-PLAN.md — Write migration 0019 (message_type CHECK + RLS UPDATE policy) and update MessageType
+- [x] 14-01-PLAN.md — Write migration 0019 (message_type CHECK + RLS UPDATE policy) and update MessageType
 - [ ] 14-02-PLAN.md — Extend MessageBubble (context menu, quoted block, deleted placeholder, highlight flash)
 - [ ] 14-03-PLAN.md — Extend useChatRoom (sendMessage replyToId, deleteMessage, Realtime UPDATE listener)
 - [ ] 14-04-PLAN.md — Wire SendBar reply bar + ChatRoomScreen (FlatList ref, scroll-to-original, toast)
@@ -188,7 +188,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
-| 14. Reply Threading | v1.5 | 0/4 | Not started | - |
+| 14. Reply Threading | v1.5 | 1/4 | In Progress|  |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |

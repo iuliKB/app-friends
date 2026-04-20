@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
 status: executing
-stopped_at: Phase 14 UI-SPEC approved
-last_updated: "2026-04-20T22:09:13.169Z"
-last_activity: 2026-04-20 -- Phase 14 planning complete
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-04-20T22:15:29.095Z"
+last_activity: 2026-04-20
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 9
-  completed_plans: 5
-  percent: 56
+  completed_plans: 6
+  percent: 67
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-20)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 13 — profile-rework-friend-profile
+**Current focus:** Phase 14 — reply-threading
 
 ## Current Position
 
 Milestone: v1.5 Chat & Profile
-Phase: 14
-Plan: Not started
+Phase: 14 (reply-threading) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-04-20 -- Phase 14 planning complete
+Last activity: 2026-04-20
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -66,6 +66,7 @@ Requirements covered: 16/16 mapped
 - [Phase 13]: eslint-disable for useFocusEffect empty-dep array in profile.tsx — intentional run-on-focus pattern, matches squad.tsx precedent
 - [Phase 13]: ScreenHeader does not accept onBack prop; wish-list.tsx uses title-only ScreenHeader relying on native back gesture
 - [Phase 13]: statusDot uses SPACING.sm (8px) not SPACING.xs (4px) — plan had wrong token name for the 8px UI-SPEC intent
+- [Phase 14]: Migration 0019: drop+recreate messages_message_type_check to include 'deleted'; add messages_soft_delete_own UPDATE RLS policy with USING+WITH CHECK sender_id guard
 
 ### Pending Todos
 
@@ -77,5 +78,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-20T21:47:00.809Z
-Stopped at: Phase 14 UI-SPEC approved
+Last session: 2026-04-20T22:15:29.091Z
+Stopped at: Completed 14-01-PLAN.md
