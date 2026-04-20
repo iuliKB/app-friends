@@ -182,7 +182,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
-| 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete   | 2026-04-20 |
+| 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
 | 14. Reply Threading | v1.5 | 0/TBD | Not started | - |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
