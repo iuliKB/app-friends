@@ -175,12 +175,26 @@ CREATE POLICY "poll_votes_select_channel_member"
 
 CREATE POLICY "poll_votes_insert_own"
   ON public.poll_votes FOR INSERT TO authenticated
-  WITH CHECK (user_id = (SELECT auth.uid()));
+  WITH CHECK (
+    user_id = (SELECT auth.uid())
+    AND EXISTS (
+      SELECT 1 FROM public.poll_options po
+      WHERE po.id     = poll_votes.option_id
+        AND po.poll_id = poll_votes.poll_id
+    )
+  );
 
 CREATE POLICY "poll_votes_update_own"
   ON public.poll_votes FOR UPDATE TO authenticated
   USING (user_id = (SELECT auth.uid()))
-  WITH CHECK (user_id = (SELECT auth.uid()));
+  WITH CHECK (
+    user_id = (SELECT auth.uid())
+    AND EXISTS (
+      SELECT 1 FROM public.poll_options po
+      WHERE po.id     = poll_votes.option_id
+        AND po.poll_id = poll_votes.poll_id
+    )
+  );
 
 -- message_reactions: channel member can SELECT (T-12-01); INSERT own reaction (T-12-02);
 -- DELETE own reaction only
@@ -238,12 +252,24 @@ DECLARE
   v_poll_id uuid;
   v_label   text;
   v_pos     int := 1;
+  v_sender  uuid;
 BEGIN
   IF v_caller IS NULL THEN
     RAISE EXCEPTION 'not authenticated';
   END IF;
   IF array_length(p_options, 1) < 2 OR array_length(p_options, 1) > 4 THEN
     RAISE EXCEPTION 'polls require 2-4 options';
+  END IF;
+
+  SELECT sender_id INTO v_sender
+  FROM public.messages
+  WHERE id = p_message_id;
+
+  IF v_sender IS NULL THEN
+    RAISE EXCEPTION 'message not found';
+  END IF;
+  IF v_sender <> v_caller THEN
+    RAISE EXCEPTION 'not the message owner';
   END IF;
 
   INSERT INTO public.polls (message_id, question, created_by)
@@ -277,12 +303,18 @@ ON CONFLICT (id) DO NOTHING;
 CREATE POLICY "Authenticated users can upload chat media"
 ON storage.objects FOR INSERT
 TO authenticated
-WITH CHECK (bucket_id = 'chat-media');
+WITH CHECK (
+  bucket_id = 'chat-media'
+  AND (storage.foldername(name))[1] = (SELECT auth.uid()::text)
+);
 
 CREATE POLICY "Authenticated users can update chat media"
 ON storage.objects FOR UPDATE
 TO authenticated
-USING (bucket_id = 'chat-media');
+USING (
+  bucket_id = 'chat-media'
+  AND (storage.foldername(name))[1] = (SELECT auth.uid()::text)
+);
 
 CREATE POLICY "Public read access for chat media"
 ON storage.objects FOR SELECT
