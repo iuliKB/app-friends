@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
-status: planning
-stopped_at: Phase 12 context gathered
-last_updated: "2026-04-20T18:10:29.718Z"
-last_activity: 2026-04-20 — Roadmap created, 6 phases (12-17), 16 requirements mapped
+status: executing
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-04-20T18:34:17.547Z"
+last_activity: 2026-04-20
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-20)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 12 — Schema Foundation (v1.5 start)
+**Current focus:** Phase 12 — schema-foundation
 
 ## Current Position
 
 Milestone: v1.5 Chat & Profile
-Phase: 12 of 17 (Schema Foundation)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-20 — Roadmap created, 6 phases (12-17), 16 requirements mapped
+Phase: 12 (schema-foundation) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-20
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -61,6 +61,7 @@ Requirements covered: 16/16 mapped
 - [v1.5]: Poll votes Realtime — same constraint; decide at Phase 17 planning start.
 - [v1.5]: Friend profile route at root level `/friends/[id]` — do NOT duplicate into tab folders (back nav breaks)
 - [v1.5]: expo-image-manipulator compression is mandatory before upload (not optional) — raw iPhone photos exhaust 1GB storage in days
+- [Phase 12]: Migration 0018: messages.body nullable with conditional CHECK; is_channel_member() SECURITY DEFINER helper for Phases 14-17 RLS; create_poll() atomic RPC; chat-media bucket
 
 ### Pending Todos
 
@@ -72,5 +73,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-20T18:10:29.714Z
-Stopped at: Phase 12 context gathered
+Last session: 2026-04-20T18:34:17.543Z
+Stopped at: Completed 12-01-PLAN.md

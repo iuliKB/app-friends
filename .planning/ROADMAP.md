@@ -107,7 +107,7 @@
   5. `create_poll()` SECURITY DEFINER RPC, `message_reactions` table, `polls`/`poll_options`/`poll_votes` tables, and `is_channel_member()` helper all exist with correct RLS
 **Plans**: 2 plans
 Plans:
-- [ ] 12-01-PLAN.md — Write and apply migration 0018 (schema objects, RLS, storage bucket)
+- [x] 12-01-PLAN.md — Write and apply migration 0018 (schema objects, RLS, storage bucket)
 - [ ] 12-02-PLAN.md — Update src/types/chat.ts + fix TypeScript compile
 
 ### Phase 13: Profile Rework + Friend Profile
@@ -177,7 +177,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 12. Schema Foundation | v1.5 | 0/2 | Not started | - |
+| 12. Schema Foundation | v1.5 | 1/2 | In Progress|  |
 | 13. Profile Rework + Friend Profile | v1.5 | 0/TBD | Not started | - |
 | 14. Reply Threading | v1.5 | 0/TBD | Not started | - |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
