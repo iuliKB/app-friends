@@ -1,183 +1,187 @@
-# Project Research Summary
+# Research Summary — Campfire v1.5 (Chat & Profile)
 
-**Project:** Campfire v1.4 — Squad Dashboard & Social Tools
-**Domain:** Social coordination app — group expense splitting (IOU), birthday calendar, Squad dashboard redesign
-**Researched:** 2026-04-11
-**Confidence:** MEDIUM-HIGH
+**Project:** Campfire v1.5
+**Domain:** Close-friend coordination app — chat enrichment + profile rework
+**Researched:** 2026-04-20
+**Confidence:** HIGH
+
+---
 
 ## Executive Summary
 
-Campfire v1.4 adds three features to an existing React Native + Expo + Supabase stack: a Squad dashboard redesign, a structured IOU expense-splitting system, and a birthday calendar. Zero new npm dependencies are required — the existing stack handles all three through new Supabase migrations, new Zustand store slices, and layout changes using existing components. The complexity is concentrated in the database layer, not the client layer: IOU requires three new tables with carefully designed RLS policies, a SECURITY DEFINER RPC for balance computation, and an atomic create-expense PostgreSQL function. Birthday requires a single column addition to profiles and one RPC with year-wrap arithmetic.
+Campfire v1.5 adds five chat enrichment features (reactions, media sharing, reply threading, polls, and a profile rework with a friend profile page) on top of a stable existing architecture. Research confirms that all features can be built without any new native modules — only one new package is required (`expo-image-manipulator` for pre-upload image compression). Every other capability is already present in the installed dependency set. This is an additive milestone, not an architectural overhaul.
 
-The recommended build order is database-first, features-second, dashboard-last. Migrations must be applied before any client code is written because column types and RLS policies cannot be changed without destructive migrations once data exists. Each feature (birthday, then IOU) should be built and tested in isolation before being wired into the Squad dashboard. The dashboard is assembled last from pre-built, independently verified cards — minimizing integration risk.
+The single largest technical risk is Supabase Realtime free-tier budget. Adding naive Postgres Changes subscriptions for reactions and poll votes on top of the existing messages subscription would multiply the per-subscriber event count and could exhaust the 2M message/month free-tier limit. The solution is consistent across all new features: embed state in the already-subscribed `messages` row or use Realtime Broadcast instead of Postgres Changes for high-frequency events. All schema changes ship in one migration (0018), which is additive-only and does not break existing messages.
 
-The top risks are concentrated in the IOU layer: storing amounts as floats (permanent cent drift), non-atomic expense creation (orphan records on network failure), and under-restricted RLS that allows debtors to self-certify settlement. Birthday has one critical schema risk: TIMESTAMPTZ instead of DATE causes off-by-one-day errors for users in negative-UTC timezones. The dashboard has one structural risk: nesting FlatList inside ScrollView kills Android scroll. All are preventable at schema/architecture-design time and unrecoverable after data is written.
+The profile rework is completely independent of all chat phases and has zero DB migrations. Among chat features, the correct build order is: schema foundation first, then threading, then reactions, then media, then polls. This order minimises rework by building shared UI primitives (the `BubbleContextMenu` long-press layer) before features that depend on them.
+
+---
 
 ## Key Findings
 
-### Recommended Stack
+### Stack
 
-All v1.4 features build on the locked stack (React Native 0.83.2, Expo SDK 55, Supabase, Zustand 5, TypeScript strict, Reanimated 4.2.1). No new npm dependencies are required. `@react-native-community/datetimepicker` (already at 8.6.0) handles birthday date entry. `Intl.NumberFormat` (built into Hermes on Expo SDK 55) handles currency display. Expense split math belongs in Postgres RPC functions, not a library — no mature Expo Go-compatible expense-splitting library exists.
+All core capabilities are already installed. One new package required.
 
-The only conditional new dependency is `@marceloterreiro/flash-calendar` (`^1.3.0`) — pure-JS, Expo Go-compatible — but only if the birthday list screen requires a month-grid layout. A sorted FlatList of upcoming birthdays is simpler and likely better UX for groups of 3–15.
+**New install:**
+- `expo-image-manipulator` ~55.0.15 — client-side resize + JPEG compress before upload. Expo Go compatible. Resize to 1280px + quality 0.75 = ~150–300 KB per chat image.
 
-**Core technologies:**
-- `@supabase/supabase-js ^2.99.2`: All IOU and birthday data via new tables and SECURITY DEFINER RPCs — existing client, no changes
-- `zustand ^5.0.12`: Two new store slices (`useIouStore`, `useBirthdayStore`) following existing slice patterns
-- `@react-native-community/datetimepicker 8.6.0`: Birthday date picker in profile edit — already installed
-- `expo-haptics ~55.0.9`: Settle confirmation haptic feedback — already installed
-- `Intl.NumberFormat` (Hermes built-in): Currency display with no library needed
+**Reused without change:**
+- `expo-image-picker` — camera + library picker (already used for plan covers/avatars)
+- `expo-image` — inline image rendering with disk cache
+- `react-native-reanimated` + `react-native-gesture-handler` — long-press + spring animation for reaction picker
+- `@supabase/supabase-js` — Storage upload, Realtime
+- `fetch().arrayBuffer()` pattern from `uploadPlanCover.ts` — direct reuse for chat uploads
 
-### Expected Features
+**Explicitly rejected:** full emoji picker library (stale, overkill for 6-tapback strip), `react-native-fast-image` (duplicates `expo-image`, requires EAS build), separate WebSocket/Realtime library, `expo-file-system` for uploads.
 
-**Must have (table stakes):**
-- IOU: Add expense with amount, description, payer, even split among selected friends
-- IOU: Custom split by exact amount (per-person override)
-- IOU: Per-person net balance view (owed vs. owed-to per friend pair)
-- IOU: Mark as settled (manual, creator-only confirmation)
-- IOU: Expense history list (chronological audit trail)
-- Birthday: Optional birthday field on profile (month + day only, no year)
-- Birthday: Upcoming birthdays card on Squad dashboard (next 30 days)
-- Birthday: Birthday list screen (sorted by days-remaining, today highlighted)
-- Birthday: Push notification on friend's birthday (on-device scheduled)
-- Dashboard: FriendsList at top, Streaks + IOUs + Birthdays feature cards below; removes underline tab switcher
+**Storage:** Public `chat-media` bucket, path `{channel_type}/{channel_id}/{sender_id}/{uuid}.jpg`. Public bucket preferred over private + signed URLs (signed URLs expire and break chat history).
 
-**Should have (differentiators):**
-- IOU: Consolidated net balance between friend pairs (not raw per-expense rows)
-- IOU: IOU card on Squad dashboard showing aggregate balance ("You're owed $34")
-- Birthday: Push notification with DM deep-link (one-tap "Happy birthday")
-- Birthday: "Days away" label ("Today", "Tomorrow", "3 days") instead of raw dates
-- Dashboard: Feature cards as progressive disclosure — summary without drilling in
+### Features
 
-**Defer (v1.5+):**
-- IOU tied to a Plan (pre-populate participants from plan attendees)
-- Settlement push notification to creditor
-- Birthday notification "send a wish" action button with pre-composed DM
+**Must have:**
+- Reactions: long-press picker, emoji badge with count, toggle off own reaction, persist across restarts
+- Media: pick from library or camera, inline in bubble, upload progress, full-screen tap, client-side compression (mandatory for free tier)
+- Threading: "Reply" entry via long-press menu, quoted preview in composer, quoted block in bubble, inline only (no Slack-style threads)
+- Polls: create via attachment menu, 2–4 options, tap to vote, live counts, one vote per person, distinct card message type
+- Profile: remove status section from Profile tab, consolidate notification toggles, separate avatar/profile edit paths
+- Friend profile page: avatar, display name, current status (via `effective_status` view), birthday, wish list, DM button
 
-**Out of scope (v2+):**
-- In-app payment processing (Venmo/Apple Pay)
-- Debt simplification graph algorithm
-- Recurring expenses
-- Contact sync for birthdays
-- Multi-currency support
+**Should have:**
+- Curated 6-emoji reaction set (❤️ 😂 😮 😢 👍 🔥), haptic feedback, reaction bar visible without interaction
+- Scroll-to-original on reply quote tap
+- Show voter names per poll option (appropriate for 3–15 person group)
 
-### Architecture Approach
+**Defer to v2+:**
+- Video sharing, full emoji picker, multiple-choice polls, anonymous polls, push notifications for reactions, image deletion/unsend, separate thread view
 
-All three features follow established Campfire conventions: file-based Expo Router routes under `src/app/squad/`, hooks that call Supabase directly with no cache layer, Zustand for ephemeral UI state only, SECURITY DEFINER RPCs for cross-table queries that would cause RLS recursion, and `(SELECT auth.uid())` wrappers in all RLS policy predicates. The Squad dashboard screen owns all hook instances and passes data down as props — no inter-card state sharing. Feature cards are assembled last after each is independently verified.
+### Architecture
 
-**Major components:**
-1. `SquadDashboardScreen` — owns all hooks; passes data to cards; replaces `SquadTabSwitcher`; single outer FlatList with feature cards in ListFooterComponent
-2. IOU screens (`ious/create`, `ious/[id]`, `ious/index`) + `IOUDashboardCard` — backed by `iou_groups` + `iou_members` tables and `get_iou_summary()` + `create_expense()` RPCs
-3. `BirthdayListScreen` + `BirthdayDashboardCard` — backed by `birthday_month`/`birthday_day` columns on `profiles` and `get_upcoming_birthdays()` RPC
+Single migration 0018 (additive only). `BubbleContextMenu` is the shared long-press primitive built once in the threading phase and extended by reactions. `PollCard` uses `View` + map (max 4 options) — no nested FlatList. All components use `StyleSheet` only.
 
-**Database migrations required (in order):**
-- `0015_iou_groups.sql` — `iou_groups`, `iou_members` tables, RLS, indexes, `get_iou_summary()` RPC, `create_expense()` atomic RPC
-- `0016_birthdays.sql` — `birthday_month` + `birthday_day` columns on `profiles`, `get_upcoming_birthdays()` RPC
+**Schema additions:**
+- `messages`: `image_url`, `reply_to_message_id`, `reply_preview`, `message_type` enum, `poll_id`
+- New tables: `message_reactions` (PK: message_id, user_id, emoji), `polls`, `poll_options`, `poll_votes` (PK: poll_id, user_id)
+- New RPC: `create_poll()` SECURITY DEFINER — atomic poll + options + message insert
+- SECURITY DEFINER helpers: `is_message_channel_member()`, `is_channel_member()` — prevent RLS recursion
+- New route: `/friends/[id]` at root level (outside all tab stacks) for consistent back navigation
+
+**New components:** `ReactionBar`, `ReactionPicker`, `ReplyPreviewBar`, `BubbleContextMenu`, `ChatImage`, `PollCard`, `PollCreateScreen`, `FriendProfileScreen`
+
+**New hook:** `usePoll(pollId)` — fetch + Realtime for poll votes
 
 ### Critical Pitfalls
 
-1. **IOU amounts stored as FLOAT** — Use `INTEGER` cents (e.g., `1000` = $10.00). Even split uses largest-remainder method in Postgres RPC, not JS. Cannot be fixed after data is written.
+1. **Realtime budget multiplier (2B, 4B)** — Do NOT add Postgres Changes subscriptions for `message_reactions` or `poll_votes`. Per-subscriber multiplier: 10 users × 3 rooms = 30 subscribers × 20 reactions/day = 180K Realtime msgs/month for reactions alone. Instead: embed reactions as JSONB on `messages` row or use Broadcast. Decide before writing any subscription code.
 
-2. **Non-atomic IOU creation** — Wrap expense INSERT + participant INSERTs in a single `create_expense()` PostgreSQL RPC. Two chained `supabase.from().insert()` calls are not atomic; network failure between them creates orphan records.
+2. **No image compression before upload (1A)** — Always run `expo-image-manipulator` before `fetch().arrayBuffer()`. Raw iPhone photos are 4–8 MB. 10 users sending 5 photos/day at full resolution exhausts the 1 GB Storage budget in under a week. This is not an optimisation — it is required.
 
-3. **Debtors can self-certify settlement** — Only the expense creator (`iou_groups.created_by`) can mark shares settled. RLS UPDATE policy on `iou_members` must restrict to the creator, not the participant.
+3. **No unique constraint on reactions (2A)** — `UNIQUE(message_id, user_id, emoji)` must be in the migration. Use upsert (`INSERT ... ON CONFLICT DO NOTHING`). Without this, double-taps create ghost reactions that inflate counts permanently.
 
-4. **Birthday stored as TIMESTAMPTZ instead of DATE** — Use separate `smallint` columns (`birthday_month`, `birthday_day`) as confirmed in ARCHITECTURE.md. Parse as `new Date(year, month-1, day)` on the client, never `new Date(isoString)`. Cannot be fixed without destructive migration.
+4. **scrollToIndex fails for off-screen messages (3A)** — `getItemLayout` is not set in `ChatRoomScreen`. Implement `onScrollToIndexFailed` with a progressive scroll fallback. Scope scroll-to-original to messages within the current 50-message fetch window.
 
-5. **FlatList inside ScrollView on dashboard** — Single outer `FlatList`; feature cards in `ListFooterComponent`. Nesting FlatList inside ScrollView breaks Android scroll silently — feature cards become unreachable.
+5. **Friend profile navigation route ambiguity (5A)** — Keep `/friends/[id]` at root level. Every entry point must use the same absolute path. Do not duplicate into tab-specific folders — back navigation breaks.
+
+6. **FlatList memory from inline images (1B)** — Before adding image cells: set `removeClippedSubviews={true}` and `windowSize={5}`. Wrap `MessageBubble` in `React.memo`. Use `expo-image` with `cachePolicy="memory-disk"` at capped display size.
+
+7. **Friend profile reads stale status (5B)** — Existing `friends/[id].tsx` queries `statuses` directly, not `effective_status` view. Fix during profile rework phase or status freshness (ALIVE/FADING/DEAD) will diverge between home screen and profile.
+
+---
 
 ## Implications for Roadmap
 
-The dependency chain drives the build order: migrations → birthday profile field → birthday feature → IOU create/detail → IOU list/summary → Squad dashboard.
+### Phase 1: Schema Foundation (Migration 0018 + Types)
+**Rationale:** All chat phases depend on the schema. Shipping it first prevents mid-feature migration reruns and keeps all type updates in one commit. Additive-only — zero risk to existing messages.
+**Delivers:** Migration 0018 (columns, tables, RLS helpers, storage bucket, `create_poll` RPC), updated `types/chat.ts`, extended `useChatRoom` fetch and `sendMessage` signature.
+**Research flag:** Standard — follows existing migration patterns directly.
 
-### Phase 1: Database Migrations
-**Rationale:** All client work depends on schema being correct. Column types and RLS cannot be changed after data is written. Both migrations are independent and applied together.
-**Delivers:** All new tables, columns, RLS policies, indexes, RPCs (`get_iou_summary`, `get_upcoming_birthdays`, `create_expense`); `plans.iou_notes` renamed to `general_notes`
-**Avoids:** Float amounts (use INTEGER cents), self-settlement RLS hole, RLS recursion (SECURITY DEFINER pattern from `0004_fix_plan_members_rls_recursion.sql`), TIMESTAMPTZ birthday, birthday privacy exposure
+### Phase 2: Profile Rework + Friend Profile Page
+**Rationale:** Zero DB migrations, completely independent of chat phases, high UX visibility. Delivers immediately. Run in parallel with Phase 1 if bandwidth allows.
+**Delivers:** `ProfileScreen` layout cleanup, new `FriendProfileScreen`, navigation wiring from all entry points.
+**Pitfalls addressed:** 5A (root-level route), 5B (`effective_status` view), 5C (atomic removal + redesign), 5D (`split()[0]` TypeScript fix).
+**Research flag:** Standard — all data sources exist, navigation pattern established.
 
-### Phase 2: Birthday Profile Field
-**Rationale:** Lowest-risk entry point; validates new columns work before building dependent screens. One file change (`profile/edit.tsx`), no new hooks or navigation.
-**Delivers:** Birthday month/day input in profile edit; save/load round-trip verified; Feb 29 → Feb 28 client normalization in place
-**Uses:** Existing `FormField` component; `datetimepicker` already installed
+### Phase 3: Reply Threading
+**Rationale:** First chat UI phase. Builds `BubbleContextMenu` (the long-press primitive reused by reactions). No new Realtime subscriptions — lowest complexity among chat features.
+**Delivers:** `ReplyPreviewBar`, `BubbleContextMenu` (Reply action), quoted preview in `SendBar`, extended `sendMessage` with `replyToId`/`replyPreview`.
+**Pitfalls addressed:** 3A (`onScrollToIndexFailed` from the start), 3B (`ON DELETE SET NULL`), 3C (compact 2-line preview bounds height variance).
+**Research flag:** Standard — iMessage/Telegram inline reply pattern is well-documented.
 
-### Phase 3: Birthday Calendar Feature
-**Rationale:** Birthday is simpler than IOU (read-only, single RPC, no form validation). Ships first to validate the RPC pattern and on-device notification scheduling before IOU complexity.
-**Delivers:** `useUpcomingBirthdays()` hook, `BirthdayRow` component, `BirthdayListScreen`, `BirthdayDashboardCard`, day-of push notification
-**Addresses:** Year-wrap arithmetic, "Today"/"Tomorrow"/"N days" label logic, empty state
+### Phase 4: Message Reactions
+**Rationale:** `BubbleContextMenu` from Phase 3 already exists; React is another menu action. Validates Realtime state-patching approach before the more complex poll vote updates.
+**Delivers:** `ReactionBar`, `ReactionPicker` (6-emoji hardcoded strip), haptic feedback, reactions Realtime strategy.
+**Pitfalls addressed:** 2A (unique constraint + upsert), 2B (no separate Postgres Changes subscription), 2C (in-flight dedup with a `Set<string>` ref).
+**Research flag:** Confirm Realtime strategy (JSONB on `messages` row vs Broadcast) at phase planning start. JSONB is simpler at 3–15 person scale; Broadcast is the fallback if budget math shows risk.
 
-### Phase 4: IOU Create and Detail
-**Rationale:** IOU creation is the most complex single operation in v1.4. Build before the list screen so the feature is testable end-to-end with real data.
-**Delivers:** `useIOUDetail()` hook, `IOUSplitField`/`IOUMemberRow` components, `ious/create` screen, `ious/[id]` screen, settle action via `create_expense()` RPC
-**Avoids:** Non-atomic write (Pitfall 6), client-side balance calculation (Pitfall 8)
+### Phase 5: Media Sharing
+**Rationale:** Independent of threading/reactions. The upload pipeline (picker → compress → upload → insert) closely follows the proven `uploadPlanCover` path — low architectural novelty.
+**Delivers:** `ChatImage` component, photo action in `SendBar`, `uploadChatImage` utility, `compressForChat` (via `expo-image-manipulator`), full-screen modal, upload progress.
+**Pitfalls addressed:** 1A (compression required), 1B (`removeClippedSubviews` + `windowSize` before first image cell), 1C (preview strip inside `SendBar`), 1D (public bucket with UUID paths).
+**Research flag:** Quick Android camera smoke test in Expo Go before implementation (historical `launchCameraAsync` issues resolved in SDK 55 but worth confirming).
 
-### Phase 5: IOU List and Summary
-**Rationale:** IOU list depends on data that Phase 4 creates; `IOUDashboardCard` is only meaningful after expenses exist.
-**Delivers:** `useIOUSummary()` hook, `IOUGroupRow` component, `ious/index` screen, `IOUDashboardCard` with aggregate balance display
-
-### Phase 6: Squad Dashboard Redesign
-**Rationale:** Dashboard is assembled last from pre-built, independently verified cards. Layout integration phase — lowest implementation risk, highest navigation risk.
-**Delivers:** `SquadDashboardScreen`, `FriendRowCompact`, full rewrite of `squad.tsx`, deletion of `SquadTabSwitcher.tsx`, all squad sub-routes wired
-**Avoids:** FlatList/ScrollView nesting (Pitfall 4), tab file restructure breaking badge (Pitfall 7 — audit all `router.push('/squad')` first), parallel fetch hooks (use consolidated `useSquadDashboard()` with `Promise.all()`)
+### Phase 6: Polls
+**Rationale:** Most complex feature — new navigation screen, new hook, SECURITY DEFINER RPC. Building last means all chat patterns (BubbleContextMenu, message-type branching, Realtime patching) are already proven.
+**Delivers:** `PollCreateScreen` at `/chat/poll-create`, `PollCard` in `MessageBubble`, `usePoll` hook, `create_poll` RPC wired to `SendBar` (currently "Coming Soon").
+**Pitfalls addressed:** 4A (unique constraint on `poll_votes`, upsert), 4B (no separate Postgres Changes on `poll_votes` — use RPC counts + messages row trigger or Broadcast), 4C (show voter names openly — right call for this group size).
+**Research flag:** Confirm vote-count Realtime strategy (trigger vs Broadcast vs RPC polling) at phase planning start.
 
 ### Phase Ordering Rationale
 
-- Migrations are the hard prerequisite: schema decisions are irreversible
-- Birthday before IOU: simpler read-only feature validates the RPC pattern with less risk
-- IOU create/detail before IOU list: cannot display a list without data; testing requires the create flow
-- Dashboard last: depends on all cards existing and working independently; minimizes integration blast radius
-- Each feature ships its own screen before its dashboard card is added — incremental, verifiable progress
+- Schema first prevents mid-feature migration reruns.
+- Profile is independent and high-visibility — ships early.
+- Threading before reactions: `BubbleContextMenu` built once and extended.
+- Media after reactions: independent, but benefits from settled long-press pattern.
+- Polls last: most complex, builds on all prior patterns.
 
 ### Research Flags
 
-Phases with standard patterns (skip deep research):
-- **Phase 1 (Migrations):** RLS patterns, SECURITY DEFINER RPCs, integer-cents storage all documented in codebase precedent and PITFALLS.md
-- **Phase 2 (Birthday profile field):** Single file edit, existing form patterns
-- **Phase 3 (Birthday calendar):** Read-only feature; on-device notification scheduling already done in v1.3
-- **Phase 5 (IOU list/summary):** Follows existing list screen patterns exactly
-- **Phase 6 (Squad dashboard):** Layout reorganization; patterns established
+Needs deeper research during phase planning:
+- **Phase 4 (Reactions):** Realtime strategy — JSONB vs Broadcast. Decide before writing subscription code.
+- **Phase 6 (Polls):** Vote-count Realtime strategy — trigger on messages row vs Broadcast vs RPC polling. Validate free-tier budget math for chosen approach.
 
-Phases warranting deeper planning attention:
-- **Phase 4 (IOU create/detail):** Most complex business logic in v1.4. The `create_expense()` RPC, even/custom split UX, and settlement RLS interaction deserve careful spec review before implementation. Write a PLAN doc before executing.
+Standard patterns (skip additional research):
+- **Phase 1, 2, 3, 5** — migration patterns, navigation, upload pipeline, threading all follow established codebase conventions directly.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Direct read of `package.json`; Hermes Intl confirmed for Expo SDK 55; flash-calendar Expo compatibility verified via Expo blog |
-| Features | MEDIUM | IOU and birthday patterns stable across Splitwise/Venmo; Campfire-specific tradeoffs (no payment, small groups) derived from first principles |
-| Architecture | HIGH | Follows existing codebase conventions exactly; RPC patterns mirror `get_friends()`; navigation follows `src/app/friends/` precedent |
-| Pitfalls | HIGH | Float/money storage verified via official Postgres docs; RLS recursion is a known project precedent with an existing fix; FlatList/ScrollView is a documented React Native warning |
+| Stack | HIGH | One new library verified via official SDK 55 docs; all others in active use. |
+| Features | HIGH (reactions/threading/profile) / MEDIUM (polls) | iMessage/WhatsApp patterns are stable. Fewer reference implementations for polls in small-group intimate apps. |
+| Architecture | HIGH | Based on direct codebase inspection of migrations, hooks, and screen files. |
+| Pitfalls | HIGH (stack-specific) / MEDIUM (Realtime quota math) | Stack pitfalls from codebase history and confirmed GitHub issues. Realtime budget is estimated — depends on actual concurrent user count. |
 
-**Overall confidence:** MEDIUM-HIGH
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Feb 29 birthday handling:** `make_date` errors for leap-day birthdays in non-leap years. Normalize Feb 29 → Feb 28 at insert time in client validation. Needs explicit test case during Phase 2.
-- **`plans.iou_notes` field disposition:** PITFALLS.md recommends renaming to `general_notes`; must happen in Phase 1 migration. Decide and document before writing `0015_iou_groups.sql`.
-- **IOU settlement UX copy:** Settlement is manual (no money moves). Copy must set correct expectation. Flag for UI spec in Phase 4.
-- **Dashboard scroll architecture:** ARCHITECTURE.md proposes horizontal friends bar + vertical card stack. PITFALLS.md mandates single outer FlatList. These are compatible but the exact structure needs explicit layout decision in the Phase 6 PLAN.
+- **Realtime strategy for reactions and polls:** Research identifies the risk and two viable solutions (JSONB embed vs Broadcast). Final choice should be made at the start of Phase 4 and Phase 6 after reviewing actual concurrent subscriber count in production.
+- **Android camera in Expo Go:** SDK 55 resolved the main known issues but a quick physical-device smoke test before Phase 5 ships is recommended. Android emulator is sufficient (no Apple Dev account needed).
+- **Poll close UX:** Schema includes `closes_at` as nullable. Whether to surface a "Close poll" button in v1.5 or defer entirely to v2 is a product decision — not a technical blocker.
+
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct read of `/Users/iulian/Develop/campfire/package.json` — installed dependencies confirmed
-- Supabase official docs — RLS performance, `(SELECT auth.uid())` optimization
-- PostgreSQL docs — `DATE` vs `TIMESTAMPTZ` semantics
-- Crunchy Data blog — working with money in Postgres (integer cents)
-- Campfire codebase `0004_fix_plan_members_rls_recursion.sql` — SECURITY DEFINER precedent
-- Expo blog — flash-calendar Expo Go compatibility confirmed
+- Expo ImageManipulator SDK 55 docs — compression API, contextual API (not deprecated `manipulateAsync`)
+- Expo ImagePicker SDK 55 docs — camera + library, permission flow
+- Supabase Storage Access Control docs — bucket policies, `storage.foldername` helper
+- Supabase Realtime Pricing docs — per-subscriber multiplier, 2M/month free-tier limit
+- Direct codebase inspection — `useChatRoom.ts`, `MessageBubble.tsx`, `SendBar.tsx`, `ChatRoomScreen.tsx`, `uploadPlanCover.ts`, migrations 0001–0017, `PROJECT.md`
 
 ### Secondary (MEDIUM confidence)
-- Splitwise Wikipedia / system design articles — IOU data model
-- React Native community — FlatList-inside-ScrollView Android behavior
-- Expo Router docs — file-based routing, nested navigators
-- Marmelab blog (Dec 2025) — supabase-js has no transaction support
-- Modern Treasury blog — floats don't work for storing cents
+- expo/expo#24824, #37561 — `expo-image` inside FlatList memory/framedrops
+- expo/expo#21544, #39480 — `launchCameraAsync` Android issues (SDK 55 resolved)
+- React Native `scrollToIndex` beyond render limit — `onScrollToIndexFailed` pattern
 
-### Tertiary (MEDIUM — community consensus)
-- npm search — confirmed no mature Expo Go-compatible expense-splitting library exists
-- Birthday UX case studies — month+day only (no year) is the correct UX pattern
+### Tertiary (LOW confidence / pattern reference)
+- iMessage iOS 18 tapback expansion — curated emoji set rationale
+- WhatsApp threaded replies 2025 — inline-only recommendation for small groups
 
 ---
-*Research completed: 2026-04-11*
+
+*Research completed: 2026-04-20*
 *Ready for roadmap: yes*
