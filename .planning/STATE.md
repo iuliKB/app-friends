@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
 status: executing
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-04-20T20:44:08.773Z"
+stopped_at: Completed 13-02-PLAN.md
+last_updated: "2026-04-20T20:47:44.583Z"
 last_activity: 2026-04-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 
 Milestone: v1.5 Chat & Profile
 Phase: 13 (profile-rework-friend-profile) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-20
 
@@ -64,6 +64,7 @@ Requirements covered: 16/16 mapped
 - [Phase 12]: Migration 0018: messages.body nullable with conditional CHECK; is_channel_member() SECURITY DEFINER helper for Phases 14-17 RLS; create_poll() atomic RPC; chat-media bucket
 - [Phase 12-schema-foundation]: D-01 reflected in TypeScript: Message.body is string | null; stale database.ts requires row cast to any at useChatRoom.ts mapping site
 - [Phase 13]: eslint-disable for useFocusEffect empty-dep array in profile.tsx — intentional run-on-focus pattern, matches squad.tsx precedent
+- [Phase 13]: ScreenHeader does not accept onBack prop; wish-list.tsx uses title-only ScreenHeader relying on native back gesture
 
 ### Pending Todos
 
@@ -75,5 +76,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-20T20:44:08.770Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-04-20T20:47:44.580Z
+Stopped at: Completed 13-02-PLAN.md

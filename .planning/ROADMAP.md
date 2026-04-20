@@ -123,7 +123,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 13-01-PLAN.md — Profile tab restructure (remove status, consolidate notifications, inline avatar tap, add Edit Profile + My Wish List rows)
-- [ ] 13-02-PLAN.md — Strip edit.tsx to details-only + create wish-list.tsx screen + register in _layout.tsx
+- [x] 13-02-PLAN.md — Strip edit.tsx to details-only + create wish-list.tsx screen + register in _layout.tsx
 - [ ] 13-03-PLAN.md — Enrich friend profile with effective_status, birthday display, and wish list section
 **UI hint**: yes
 
@@ -182,7 +182,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
-| 13. Profile Rework + Friend Profile | v1.5 | 1/3 | In Progress|  |
+| 13. Profile Rework + Friend Profile | v1.5 | 2/3 | In Progress|  |
 | 14. Reply Threading | v1.5 | 0/TBD | Not started | - |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
