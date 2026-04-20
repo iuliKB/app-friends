@@ -11,6 +11,7 @@ export default function ProfileLayout() {
       }}
     >
       <Stack.Screen name="edit" options={{ headerShown: false }} />
+      <Stack.Screen name="wish-list" options={{ headerShown: false }} />
     </Stack>
   );
 }

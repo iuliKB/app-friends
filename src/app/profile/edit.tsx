@@ -114,55 +114,55 @@ export default function EditProfileScreen() {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-    >
-      <ScreenHeader title="Edit Profile" />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <ScreenHeader title="Edit Profile" />
 
-      {/* Display name field */}
-      <TextInput
-        style={[styles.textInput, saving && styles.inputDisabled]}
-        value={displayName}
-        onChangeText={setDisplayName}
-        placeholder="Display name"
-        placeholderTextColor={COLORS.text.secondary}
-        maxLength={APP_CONFIG.displayNameMaxLength}
-        editable={!saving}
-      />
-      <Text style={styles.charCount}>
-        {displayName.length}/{APP_CONFIG.displayNameMaxLength}
-      </Text>
-
-      {/* Read-only username display (D-06) */}
-      <Text style={styles.fieldLabel}>Username</Text>
-      <Text style={styles.usernameValue}>@{username ?? ''}</Text>
-
-      {/* Birthday field (D-03: below display name, above Save) */}
-      <Text style={styles.birthdayLabel}>Birthday</Text>
-      <BirthdayPicker
-        month={birthdayMonth}
-        day={birthdayDay}
-        year={birthdayYear}
-        onChange={(m, d, y) => {
-          setBirthdayMonth(m);
-          setBirthdayDay(d);
-          setBirthdayYear(y);
-        }}
-        disabled={saving}
-      />
-
-      {/* Save button */}
-      <View style={styles.buttonWrapper}>
-        <PrimaryButton
-          title="Save Changes"
-          onPress={handleSave}
-          loading={saving}
-          disabled={!canSave}
+        {/* Display name field */}
+        <TextInput
+          style={[styles.textInput, saving && styles.inputDisabled]}
+          value={displayName}
+          onChangeText={setDisplayName}
+          placeholder="Display name"
+          placeholderTextColor={COLORS.text.secondary}
+          maxLength={APP_CONFIG.displayNameMaxLength}
+          editable={!saving}
         />
-      </View>
-    </ScrollView>
+        <Text style={styles.charCount}>
+          {displayName.length}/{APP_CONFIG.displayNameMaxLength}
+        </Text>
+
+        {/* Read-only username display (D-06) */}
+        <Text style={styles.fieldLabel}>Username</Text>
+        <Text style={styles.usernameValue}>@{username ?? ''}</Text>
+
+        {/* Birthday field (D-03: below display name, above Save) */}
+        <Text style={styles.birthdayLabel}>Birthday</Text>
+        <BirthdayPicker
+          month={birthdayMonth}
+          day={birthdayDay}
+          year={birthdayYear}
+          onChange={(m, d, y) => {
+            setBirthdayMonth(m);
+            setBirthdayDay(d);
+            setBirthdayYear(y);
+          }}
+          disabled={saving}
+        />
+
+        {/* Save button */}
+        <View style={styles.buttonWrapper}>
+          <PrimaryButton
+            title="Save Changes"
+            onPress={handleSave}
+            loading={saving}
+            disabled={!canSave}
+          />
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
