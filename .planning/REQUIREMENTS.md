@@ -26,7 +26,7 @@ Milestone goal: Elevate chat with reactions, media, threading, and polls while c
 ### Reply Threading
 
 - [x] **CHAT-07**: User can reply to a specific message; the reply shows a quoted preview of the original
-- [ ] **CHAT-08**: Tapping the quoted preview scrolls to the original message (within loaded window only)
+- [x] **CHAT-08**: Tapping the quoted preview scrolls to the original message (within loaded window only)
 
 ### Polls
 
