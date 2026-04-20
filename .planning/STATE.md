@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
-status: executing
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-04-20T18:34:17.547Z"
+status: verifying
+stopped_at: Completed 12-02-PLAN.md
+last_updated: "2026-04-20T18:38:03.419Z"
 last_activity: 2026-04-20
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 Milestone: v1.5 Chat & Profile
 Phase: 12 (schema-foundation) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-20
 
 Progress: [░░░░░░░░░░] 0%
@@ -62,6 +62,7 @@ Requirements covered: 16/16 mapped
 - [v1.5]: Friend profile route at root level `/friends/[id]` — do NOT duplicate into tab folders (back nav breaks)
 - [v1.5]: expo-image-manipulator compression is mandatory before upload (not optional) — raw iPhone photos exhaust 1GB storage in days
 - [Phase 12]: Migration 0018: messages.body nullable with conditional CHECK; is_channel_member() SECURITY DEFINER helper for Phases 14-17 RLS; create_poll() atomic RPC; chat-media bucket
+- [Phase 12-schema-foundation]: D-01 reflected in TypeScript: Message.body is string | null; stale database.ts requires row cast to any at useChatRoom.ts mapping site
 
 ### Pending Todos
 
@@ -73,5 +74,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-20T18:34:17.543Z
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-04-20T18:38:03.416Z
+Stopped at: Completed 12-02-PLAN.md

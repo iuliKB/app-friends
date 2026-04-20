@@ -86,7 +86,7 @@
 
 ### Phases
 
-- [ ] **Phase 12: Schema Foundation** - Migration 0018 with all additive columns, tables, RLS helpers, storage bucket, and updated TypeScript types
+- [x] **Phase 12: Schema Foundation** - Migration 0018 with all additive columns, tables, RLS helpers, storage bucket, and updated TypeScript types (completed 2026-04-20)
 - [ ] **Phase 13: Profile Rework + Friend Profile** - Remove status duplication, consolidate notification toggles, separate edit paths, new friend profile screen
 - [ ] **Phase 14: Reply Threading** - Long-press context menu primitive + inline quoted reply in chat
 - [ ] **Phase 15: Message Reactions** - Tapback emoji strip extending the context menu; live counts inline below bubbles
@@ -108,7 +108,7 @@
 **Plans**: 2 plans
 Plans:
 - [x] 12-01-PLAN.md — Write and apply migration 0018 (schema objects, RLS, storage bucket)
-- [ ] 12-02-PLAN.md — Update src/types/chat.ts + fix TypeScript compile
+- [x] 12-02-PLAN.md — Update src/types/chat.ts + fix TypeScript compile
 
 ### Phase 13: Profile Rework + Friend Profile
 **Goal**: Users experience a cleaner, less cluttered Profile tab and can view any friend's full profile in one tap
@@ -177,7 +177,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 12. Schema Foundation | v1.5 | 1/2 | In Progress|  |
+| 12. Schema Foundation | v1.5 | 2/2 | Complete   | 2026-04-20 |
 | 13. Profile Rework + Friend Profile | v1.5 | 0/TBD | Not started | - |
 | 14. Reply Threading | v1.5 | 0/TBD | Not started | - |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
