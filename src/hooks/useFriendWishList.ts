@@ -107,16 +107,20 @@ export function useFriendWishList(friendId: string) {
   const toggleClaim = useCallback(
     async (itemId: string, currentlyClaimed: boolean) => {
       if (!userId) return;
+      let opError;
       if (currentlyClaimed) {
-        await supabase
+        ({ error: opError } = await supabase
           .from('wish_list_claims')
           .delete()
           .eq('item_id', itemId)
-          .eq('claimer_id', userId);
+          .eq('claimer_id', userId));
       } else {
-        await supabase
+        ({ error: opError } = await supabase
           .from('wish_list_claims')
-          .insert({ item_id: itemId, claimer_id: userId });
+          .insert({ item_id: itemId, claimer_id: userId }));
+      }
+      if (opError) {
+        console.warn('toggleClaim failed', opError);
       }
       await refetch();
     },
