@@ -168,7 +168,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
 
       // Mark as read
       await AsyncStorage.setItem(
-        'chat:last_read:' + (planId ?? dmChannelId),
+        'chat:last_read:' + (planId ?? dmChannelId ?? groupChannelId),
         new Date().toISOString()
       );
     } catch (err) {
@@ -206,7 +206,20 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
           filter,
         },
         (payload) => {
-          const incoming = payload.new as Message;
+          const raw = payload.new as Record<string, unknown>;
+          const incoming: Message = {
+            id: raw.id as string,
+            plan_id: raw.plan_id as string | null,
+            dm_channel_id: raw.dm_channel_id as string | null,
+            group_channel_id: raw.group_channel_id as string | null,
+            sender_id: raw.sender_id as string,
+            body: raw.body as string | null,
+            created_at: raw.created_at as string,
+            image_url: (raw.image_url as string | null) ?? null,
+            reply_to_message_id: (raw.reply_to_message_id as string | null) ?? null,
+            message_type: ((raw.message_type as string) ?? 'text') as MessageType,
+            poll_id: (raw.poll_id as string | null) ?? null,
+          };
 
           setMessages((prev) => {
             // Check if this is a dedup of an optimistic message:
@@ -238,7 +251,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
             // Keep last_read current for own messages so they don't show as unread
             if (incoming.sender_id === currentUserId) {
               AsyncStorage.setItem(
-                'chat:last_read:' + (planId ?? dmChannelId),
+                'chat:last_read:' + (planId ?? dmChannelId ?? groupChannelId),
                 new Date().toISOString()
               );
             }
