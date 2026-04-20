@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Animated,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation, useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import {
@@ -19,7 +20,7 @@ import {
   formatTimeSeparator,
   shouldShowTimeSeparator,
 } from '@/components/chat/MessageBubble';
-import { SendBar, type AttachmentAction } from '@/components/chat/SendBar';
+import { SendBar, type AttachmentAction, type ReplyContext } from '@/components/chat/SendBar';
 import { PinnedPlanBanner } from '@/components/chat/PinnedPlanBanner';
 import { BirthdayWishListPanel } from '@/components/chat/BirthdayWishListPanel';
 import { GroupParticipantsSheet } from '@/components/chat/GroupParticipantsSheet';
@@ -47,7 +48,20 @@ export function ChatRoomScreen({
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
 
-  const { messages, loading: _loading, sendMessage } = useChatRoom({ planId, dmChannelId, groupChannelId });
+  const { messages, loading: _loading, sendMessage, deleteMessage } = useChatRoom({ planId, dmChannelId, groupChannelId });
+
+  // Phase 14: FlatList ref for scrollToIndex
+  const flatListRef = useRef<FlatList<MessageWithProfile>>(null);
+
+  // Phase 14: reply state
+  const [replyContext, setReplyContext] = useState<ReplyContext | null>(null);
+
+  // Phase 14: highlighted message for scroll-to-original flash
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  // Phase 14: toast for out-of-window original
+  const toastAnim = useRef(new Animated.Value(0)).current;
+  const [toastVisible, setToastVisible] = useState(false);
 
   useEffect(() => {
     if (!groupChannelId || !friendName) return;
@@ -63,6 +77,26 @@ export function ChatRoomScreen({
     });
   }, [groupChannelId, friendName, navigation]);
 
+  function showToast() {
+    setToastVisible(true);
+    Animated.sequence([
+      Animated.timing(toastAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(2000),
+      Animated.timing(toastAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setToastVisible(false));
+  }
+
+  function scrollToMessage(messageId: string) {
+    const index = messages.findIndex((m) => m.id === messageId);
+    if (index === -1) {
+      showToast();
+      return;
+    }
+    flatListRef.current?.scrollToIndex({ index, animated: true });
+    setHighlightedId(messageId);
+    setTimeout(() => setHighlightedId(null), 1200);
+  }
+
   function handleAttachmentAction(action: AttachmentAction) {
     if (action === 'split') {
       const url = groupChannelId
@@ -75,7 +109,8 @@ export function ChatRoomScreen({
   }
 
   async function handleSend(body: string) {
-    const { error } = await sendMessage(body);
+    const replyToId = replyContext?.messageId;
+    const { error } = await sendMessage(body, replyToId);
     if (error) {
       Alert.alert('Error', 'Message failed to send.', [{ text: 'OK' }]);
     }
@@ -112,6 +147,7 @@ export function ChatRoomScreen({
         </View>
       ) : (
         <FlatList
+          ref={flatListRef}
           inverted
           data={messages}
           keyExtractor={(item) => item.id}
@@ -131,14 +167,39 @@ export function ChatRoomScreen({
                   message={item}
                   isOwn={item.sender_id === currentUserId}
                   showSenderInfo={isFirstInGroup(messages, index)}
+                  allMessages={messages}
+                  highlighted={highlightedId === item.id}
+                  onReply={(msg) =>
+                    setReplyContext({
+                      messageId: msg.id,
+                      senderName: msg.sender_display_name,
+                      previewText: msg.body ?? (msg.image_url ? '📷 Photo' : ''),
+                    })
+                  }
+                  onDelete={(id) => deleteMessage(id)}
+                  onScrollToMessage={scrollToMessage}
                 />
               </View>
             );
           }}
           contentContainerStyle={styles.listContent}
+          onScrollToIndexFailed={() => {
+            // Treat as out-of-window (D-11)
+            showToast();
+          }}
         />
       )}
-      <SendBar onSend={handleSend} onAttachmentAction={handleAttachmentAction} />
+      {toastVisible && (
+        <Animated.View style={[styles.toast, { opacity: toastAnim }]} pointerEvents="none">
+          <Text style={styles.toastText}>Scroll up to see the original message</Text>
+        </Animated.View>
+      )}
+      <SendBar
+        onSend={handleSend}
+        onAttachmentAction={handleAttachmentAction}
+        replyContext={replyContext}
+        onClearReply={() => setReplyContext(null)}
+      />
       {groupChannelId ? (
         <GroupParticipantsSheet
           visible={participantsVisible}
@@ -171,5 +232,21 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     textAlign: 'center',
     marginVertical: SPACING.md,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: SPACING.xxl,
+    alignSelf: 'center',
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.pill,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  toastText: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
 });
