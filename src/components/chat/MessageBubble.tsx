@@ -62,10 +62,79 @@ export function shouldShowTimeSeparator(
   return Math.abs(currentTime - previousTime) >= 15 * 60 * 1000;
 }
 
-export function MessageBubble({ message, isOwn, showSenderInfo }: MessageBubbleProps) {
+function QuotedBlock({
+  replyToId,
+  allMessages,
+  isOwn,
+  onPress,
+}: {
+  replyToId: string;
+  allMessages: MessageWithProfile[];
+  isOwn: boolean;
+  onPress: () => void;
+}) {
+  const original = allMessages.find((m) => m.id === replyToId);
+  const accentColor = isOwn ? COLORS.interactive.accent : COLORS.text.secondary;
+
+  const senderName = original?.sender_display_name ?? 'Unknown';
+  const previewText = original
+    ? original.message_type === 'deleted'
+      ? 'Message deleted.'
+      : (original.body ?? (original.image_url ? '📷 Photo' : 'Message deleted.'))
+    : 'Original message deleted';
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityLabel={`Quoted message from ${senderName}: ${previewText}. Tap to scroll to original.`}
+    >
+      <View style={styles.quotedBlock}>
+        <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
+        <View style={styles.quotedContent}>
+          <Text style={[styles.quotedSender, { color: accentColor }]} numberOfLines={1}>
+            {senderName}
+          </Text>
+          <Text style={styles.quotedPreview} numberOfLines={1}>
+            {previewText}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+export function MessageBubble({
+  message,
+  isOwn,
+  showSenderInfo,
+  allMessages,
+  highlighted,
+  onReply,
+  onDelete,
+  onScrollToMessage,
+}: MessageBubbleProps) {
   const [showTimestamp, setShowTimestamp] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [pillY, setPillY] = useState(0);
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightAnim = useRef(new Animated.Value(0)).current;
+
+  // eslint-disable-next-line campfire/no-hardcoded-styles
+  const highlightBg = highlightAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['transparent', 'rgba(249, 115, 22, 0.2)'],
+  });
+
+  useEffect(() => {
+    if (!highlighted) return;
+    Animated.sequence([
+      Animated.timing(highlightAnim, { toValue: 1, duration: 200, useNativeDriver: false }),
+      Animated.timing(highlightAnim, { toValue: 0, duration: 800, useNativeDriver: false }),
+    ]).start();
+  }, [highlighted, highlightAnim]);
 
   function handleTap() {
     if (showTimestamp) return;
@@ -85,6 +154,34 @@ export function MessageBubble({ message, isOwn, showSenderInfo }: MessageBubbleP
     }, 2500);
   }
 
+  function handleLongPress(event: { nativeEvent: { pageY: number } }) {
+    if (message.pending) return;
+    if (message.message_type === 'deleted') return;
+    setPillY(Math.max(60, event.nativeEvent.pageY - 80));
+    setMenuVisible(true);
+  }
+
+  function closeMenu() {
+    setMenuVisible(false);
+  }
+
+  function handleReply() {
+    closeMenu();
+    onReply(message);
+  }
+
+  async function handleCopy() {
+    closeMenu();
+    if (message.body) {
+      await Clipboard.setStringAsync(message.body);
+    }
+  }
+
+  function handleDelete() {
+    closeMenu();
+    onDelete(message.id);
+  }
+
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -92,45 +189,128 @@ export function MessageBubble({ message, isOwn, showSenderInfo }: MessageBubbleP
   }, []);
 
   const timestamp = formatMessageTime(message.created_at);
+  const isDeleted = message.message_type === 'deleted';
+  const bodyText = isDeleted ? 'Message deleted.' : (message.body ?? '');
+
+  const contextMenu = (
+    <Modal
+      visible={menuVisible}
+      transparent
+      animationType="none"
+      onRequestClose={closeMenu}
+    >
+      <TouchableWithoutFeedback onPress={closeMenu}>
+        <View style={[StyleSheet.absoluteFillObject, styles.backdrop]} />
+      </TouchableWithoutFeedback>
+      <View style={[styles.contextPill, { top: pillY }]}>
+        <TouchableOpacity
+          onPress={handleReply}
+          style={styles.pillAction}
+          accessibilityLabel="Reply to message"
+        >
+          <Ionicons name="return-up-back" size={20} color={COLORS.text.primary} />
+          <Text style={styles.pillActionLabel}>Reply</Text>
+        </TouchableOpacity>
+        <View style={styles.pillDivider} />
+        <TouchableOpacity
+          onPress={handleCopy}
+          style={styles.pillAction}
+          accessibilityLabel="Copy message text"
+        >
+          <Ionicons name="copy-outline" size={20} color={COLORS.text.primary} />
+          <Text style={styles.pillActionLabel}>Copy</Text>
+        </TouchableOpacity>
+        {isOwn && (
+          <>
+            <View style={styles.pillDivider} />
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={styles.pillAction}
+              accessibilityLabel="Delete message"
+            >
+              <Ionicons name="trash-outline" size={20} color={COLORS.interactive.destructive} />
+              <Text style={[styles.pillActionLabel, { color: COLORS.interactive.destructive }]}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </Modal>
+  );
 
   if (isOwn) {
     return (
-      <TouchableOpacity style={styles.ownContainer} onPress={handleTap} activeOpacity={0.8}>
-        <View style={[styles.ownBubble, message.pending && styles.pendingOpacity]}>
-          <Text style={styles.ownBody}>{message.body}</Text>
-        </View>
-        {showTimestamp && (
-          <Animated.Text style={[styles.ownTimestamp, { opacity: fadeAnim }]}>
-            {timestamp}
-          </Animated.Text>
-        )}
-      </TouchableOpacity>
+      <Animated.View style={{ backgroundColor: highlightBg }}>
+        <TouchableOpacity
+          style={styles.ownContainer}
+          onPress={handleTap}
+          onLongPress={handleLongPress}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.ownBubble, message.pending && styles.pendingOpacity]}>
+            {message.reply_to_message_id && (
+              <QuotedBlock
+                replyToId={message.reply_to_message_id}
+                allMessages={allMessages}
+                isOwn={isOwn}
+                onPress={() => onScrollToMessage(message.reply_to_message_id!)}
+              />
+            )}
+            <Text style={isDeleted ? styles.deletedBody : styles.ownBody}>{bodyText}</Text>
+          </View>
+          {showTimestamp && (
+            <Animated.Text style={[styles.ownTimestamp, { opacity: fadeAnim }]}>
+              {timestamp}
+            </Animated.Text>
+          )}
+        </TouchableOpacity>
+        {contextMenu}
+      </Animated.View>
     );
   }
 
   return (
-    <TouchableOpacity style={styles.othersContainer} onPress={handleTap} activeOpacity={0.8}>
-      {showSenderInfo ? (
-        <AvatarCircle
-          size={32}
-          imageUri={message.sender_avatar_url}
-          displayName={message.sender_display_name}
-        />
-      ) : (
-        <View style={styles.avatarSpacer} />
-      )}
-      <View style={styles.othersContent}>
-        {showSenderInfo && <Text style={styles.senderName}>{message.sender_display_name}</Text>}
-        <View style={styles.othersBubble}>
-          <Text style={styles.othersBody}>{message.body}</Text>
-        </View>
-        {showTimestamp && (
-          <Animated.Text style={[styles.othersTimestamp, { opacity: fadeAnim }]}>
-            {timestamp}
-          </Animated.Text>
+    <Animated.View style={{ backgroundColor: highlightBg }}>
+      <TouchableOpacity
+        style={styles.othersContainer}
+        onPress={handleTap}
+        onLongPress={handleLongPress}
+        activeOpacity={0.8}
+      >
+        {showSenderInfo ? (
+          <AvatarCircle
+            size={32}
+            imageUri={message.sender_avatar_url}
+            displayName={message.sender_display_name}
+          />
+        ) : (
+          <View style={styles.avatarSpacer} />
         )}
-      </View>
-    </TouchableOpacity>
+        <View style={styles.othersContent}>
+          {showSenderInfo && (
+            <Text style={styles.senderName}>{message.sender_display_name}</Text>
+          )}
+          <View style={styles.othersBubble}>
+            {message.reply_to_message_id && (
+              <QuotedBlock
+                replyToId={message.reply_to_message_id}
+                allMessages={allMessages}
+                isOwn={isOwn}
+                onPress={() => onScrollToMessage(message.reply_to_message_id!)}
+              />
+            )}
+            <Text style={isDeleted ? styles.deletedBody : styles.othersBody}>{bodyText}</Text>
+          </View>
+          {showTimestamp && (
+            <Animated.Text style={[styles.othersTimestamp, { opacity: fadeAnim }]}>
+              {timestamp}
+            </Animated.Text>
+          )}
+        </View>
+      </TouchableOpacity>
+      {contextMenu}
+    </Animated.View>
   );
 }
 
@@ -204,5 +384,84 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     // eslint-disable-next-line campfire/no-hardcoded-styles
     marginTop: 2,
+  },
+  deletedBody: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    fontStyle: 'italic',
+  },
+  // QuotedBlock styles
+  quotedBlock: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface.overlay,
+    borderRadius: RADII.xs,
+    marginBottom: SPACING.xs,
+    overflow: 'hidden',
+  },
+  accentBar: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    width: 4,
+    borderRadius: RADII.xs,
+  },
+  quotedContent: {
+    flex: 1,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.lg,
+  },
+  quotedSender: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
+  },
+  quotedPreview: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+  },
+  // Context menu styles
+  backdrop: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  contextPill: {
+    position: 'absolute',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.lg,
+    paddingHorizontal: SPACING.sm,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowColor: '#000',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowOffset: { width: 0, height: 2 },
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowOpacity: 0.3,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowRadius: 8,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    elevation: 8,
+  },
+  pillAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    minHeight: 44,
+    paddingVertical: SPACING.sm,
+  },
+  pillActionLabel: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text.primary,
+  },
+  pillDivider: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    width: 1,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    height: 24,
+    backgroundColor: COLORS.border,
+    alignSelf: 'center',
   },
 });
