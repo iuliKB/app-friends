@@ -42,8 +42,8 @@ Milestone goal: Elevate chat with reactions, media, threading, and polls while c
 
 ### Friend Profile Page
 
-- [ ] **PROF-04**: Tapping a friend's name/avatar opens a full friend profile screen
-- [ ] **PROF-05**: Friend profile shows avatar, display name, current status, birthday, and wish list
+- [x] **PROF-04**: Tapping a friend's name/avatar opens a full friend profile screen
+- [x] **PROF-05**: Friend profile shows avatar, display name, current status, birthday, and wish list
 
 ---
 
