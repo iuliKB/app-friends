@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import {
   Animated,
   Modal,
+  PanResponder,
   StyleSheet,
   Text,
   TextInput,
@@ -14,9 +15,17 @@ import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 
 export type AttachmentAction = 'poll' | 'split' | 'todo';
 
+export interface ReplyContext {
+  messageId: string;
+  senderName: string;
+  previewText: string;
+}
+
 interface SendBarProps {
   onSend: (body: string) => void;
   onAttachmentAction?: (action: AttachmentAction) => void;
+  replyContext?: ReplyContext | null;   // Phase 14: reply bar (D-13, D-15)
+  onClearReply?: () => void;           // Phase 14: × button + swipe dismiss (D-14)
 }
 
 const ACTIONS: { id: AttachmentAction; icon: string; label: string; sub: string }[] = [
@@ -25,10 +34,22 @@ const ACTIONS: { id: AttachmentAction; icon: string; label: string; sub: string 
   { id: 'todo', icon: '✅', label: 'To-Do List', sub: 'Assign tasks to the group' },
 ];
 
-export function SendBar({ onSend, onAttachmentAction }: SendBarProps) {
+export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply }: SendBarProps) {
   const [text, setText] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const translateY = useRef(new Animated.Value(300)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gs) => gs.dy > 5,
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dy > 60 || gs.vy > 0.5) {
+          onClearReply?.();
+        }
+      },
+    })
+  ).current;
 
   const canSend = text.trim().length > 0;
 
@@ -37,6 +58,7 @@ export function SendBar({ onSend, onAttachmentAction }: SendBarProps) {
     const body = text.trim();
     setText('');
     onSend(body);
+    onClearReply?.();   // Phase 14: clear reply bar after send
   }
 
   function openMenu() {
@@ -63,6 +85,32 @@ export function SendBar({ onSend, onAttachmentAction }: SendBarProps) {
 
   return (
     <>
+      {replyContext && (
+        <View
+          {...panResponder.panHandlers}
+          style={styles.replyBar}
+        >
+          <View style={styles.replyBarContent}>
+            <Ionicons name="return-up-back" size={16} color={COLORS.interactive.accent} />
+            <View style={styles.replyBarText}>
+              <Text style={styles.replyBarLabel} numberOfLines={1}>
+                {`↩ Replying to ${replyContext.senderName}`}
+              </Text>
+              <Text style={styles.replyBarPreview} numberOfLines={1}>
+                {replyContext.previewText}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={onClearReply}
+            style={styles.replyBarDismiss}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Cancel reply"
+          >
+            <Ionicons name="close" size={20} color={COLORS.text.secondary} />
+          </TouchableOpacity>
+        </View>
+      )}
       <View style={styles.container}>
         <TouchableOpacity
           onPress={openMenu}
@@ -205,5 +253,42 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.secondary,
     marginTop: 2,
+  },
+  replyBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    height: 48,
+    backgroundColor: COLORS.surface.card,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingHorizontal: SPACING.lg,
+  },
+  replyBarContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  replyBarText: {
+    flex: 1,
+  },
+  replyBarLabel: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.interactive.accent,
+  },
+  replyBarPreview: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+  },
+  replyBarDismiss: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    minWidth: 44,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
   },
 });
