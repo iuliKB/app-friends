@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   quotedContent: {
     flex: 1,
     paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
   },
   quotedSender: {
     fontSize: FONT_SIZE.sm,
