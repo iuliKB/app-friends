@@ -96,6 +96,13 @@ export default function ProfileScreen() {
       const {
         data: { publicUrl },
       } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', session.user.id);
+      if (dbError) {
+        Alert.alert('Error', "Photo uploaded but couldn't save to profile. Try again.");
+      }
       setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
     } catch {
       Alert.alert(
