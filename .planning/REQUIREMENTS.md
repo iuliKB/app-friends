@@ -4,7 +4,7 @@
 
 Milestone goal: Elevate chat with reactions, media, threading, and polls while cleaning up a cluttered profile into a coherent, friend-focused UX.
 
-**Total requirements:** 13
+**Total requirements:** 16
 **Categories:** Chat Enhancements (CHAT), Profile Rework (PROF)
 
 ---
@@ -73,19 +73,19 @@ Milestone goal: Elevate chat with reactions, media, threading, and polls while c
 
 | REQ-ID | Phase | Plan |
 |--------|-------|------|
-| CHAT-01 | TBD | TBD |
-| CHAT-02 | TBD | TBD |
-| CHAT-03 | TBD | TBD |
-| CHAT-04 | TBD | TBD |
-| CHAT-05 | TBD | TBD |
-| CHAT-06 | TBD | TBD |
-| CHAT-07 | TBD | TBD |
-| CHAT-08 | TBD | TBD |
-| CHAT-09 | TBD | TBD |
-| CHAT-10 | TBD | TBD |
-| CHAT-11 | TBD | TBD |
-| PROF-01 | TBD | TBD |
-| PROF-02 | TBD | TBD |
-| PROF-03 | TBD | TBD |
-| PROF-04 | TBD | TBD |
-| PROF-05 | TBD | TBD |
+| CHAT-01 | Phase 15 | TBD |
+| CHAT-02 | Phase 15 | TBD |
+| CHAT-03 | Phase 15 | TBD |
+| CHAT-04 | Phase 16 | TBD |
+| CHAT-05 | Phase 16 | TBD |
+| CHAT-06 | Phase 16 | TBD |
+| CHAT-07 | Phase 14 | TBD |
+| CHAT-08 | Phase 14 | TBD |
+| CHAT-09 | Phase 17 | TBD |
+| CHAT-10 | Phase 17 | TBD |
+| CHAT-11 | Phase 17 | TBD |
+| PROF-01 | Phase 13 | TBD |
+| PROF-02 | Phase 13 | TBD |
+| PROF-03 | Phase 13 | TBD |
+| PROF-04 | Phase 13 | TBD |
+| PROF-05 | Phase 13 | TBD |

@@ -8,7 +8,7 @@
 - ✅ **v1.3 Liveness & Notifications** — Phases 1-5 (shipped 2026-04-10)
 - ✅ **v1.3.5 Homescreen Redesign** — Phases 1-4 (shipped 2026-04-11)
 - ✅ **v1.4 Squad Dashboard & Social Tools** — Phases 5-11 (shipped 2026-04-17)
-- 🔄 **v1.5** — Planning
+- 🔄 **v1.5 Chat & Profile** — Phases 12-17 (in progress)
 
 ## Archived Milestones
 
@@ -80,4 +80,107 @@
 
 ---
 
-*Roadmap updated: 2026-04-17 — v1.4 shipped, v1.5 planning*
+## v1.5 Chat & Profile (Phases 12-17)
+
+**Milestone goal:** Elevate chat with reactions, media, threading, and polls while cleaning up a cluttered profile into a coherent, friend-focused UX.
+
+### Phases
+
+- [ ] **Phase 12: Schema Foundation** - Migration 0018 with all additive columns, tables, RLS helpers, storage bucket, and updated TypeScript types
+- [ ] **Phase 13: Profile Rework + Friend Profile** - Remove status duplication, consolidate notification toggles, separate edit paths, new friend profile screen
+- [ ] **Phase 14: Reply Threading** - Long-press context menu primitive + inline quoted reply in chat
+- [ ] **Phase 15: Message Reactions** - Tapback emoji strip extending the context menu; live counts inline below bubbles
+- [ ] **Phase 16: Media Sharing** - Photo library + camera capture, compressed upload, inline image bubbles
+- [ ] **Phase 17: Polls** - Poll creation via attachment menu, live vote counts, per-person single vote
+
+## Phase Details
+
+### Phase 12: Schema Foundation
+**Goal**: All database objects, RLS helpers, storage bucket, and TypeScript types required by Phases 13-17 exist and are active — existing chat continues to work without change
+**Depends on**: Phase 11 (v1.4 complete)
+**Requirements**: (none — infrastructure enabling CHAT-01 through CHAT-11)
+**Success Criteria** (what must be TRUE):
+  1. Migration 0018 applies cleanly to the Supabase project with zero errors
+  2. Existing chat messages load and send normally after migration
+  3. `types/chat.ts` exports compile with strict TypeScript and include `image_url`, `reply_to_message_id`, `message_type`, `poll_id`, and `reactions` fields
+  4. `chat-media` storage bucket exists in Supabase with public read access and UUID-namespaced paths
+  5. `create_poll()` SECURITY DEFINER RPC, `message_reactions` table, `polls`/`poll_options`/`poll_votes` tables, and `is_channel_member()` helper all exist with correct RLS
+**Plans**: TBD
+
+### Phase 13: Profile Rework + Friend Profile
+**Goal**: Users experience a cleaner, less cluttered Profile tab and can view any friend's full profile in one tap
+**Depends on**: Phase 11 (v1.4 complete) — no dependency on Phase 12
+**Requirements**: PROF-01, PROF-02, PROF-03, PROF-04, PROF-05
+**Success Criteria** (what must be TRUE):
+  1. Profile tab shows no status display — the status pill and mood section are absent from this screen
+  2. All notification toggles appear under a single "Notifications" section header with no orphan toggles elsewhere on the screen
+  3. Tapping "Edit Profile" opens a detail-only editor (display name, username) separate from the avatar/photo edit flow
+  4. Tapping a friend's name or avatar from any screen opens a dedicated Friend Profile screen showing avatar, display name, current status (freshness-aware via `effective_status`), birthday, and wish list
+  5. Back navigation from Friend Profile returns the user to the exact screen they came from regardless of entry point
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 14: Reply Threading
+**Goal**: Users can reply to any specific message with inline quoted context visible to all participants
+**Depends on**: Phase 12
+**Requirements**: CHAT-07, CHAT-08
+**Success Criteria** (what must be TRUE):
+  1. Long-pressing any message bubble opens a context menu with at least a "Reply" action
+  2. Selecting Reply attaches a quoted preview bar above the composer showing the original sender and first line of the message
+  3. The sent reply appears in the chat as a bubble with a compact quoted block above the reply text, attributed to the original sender
+  4. Tapping the quoted block in a reply bubble scrolls the chat to the original message when it is within the currently loaded 50-message window
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 15: Message Reactions
+**Goal**: Users can express quick reactions to any message using a curated 6-emoji tapback strip, with live counts visible to all participants
+**Depends on**: Phase 14 (BubbleContextMenu primitive)
+**Requirements**: CHAT-01, CHAT-02, CHAT-03
+**Success Criteria** (what must be TRUE):
+  1. Long-pressing a message bubble opens the context menu with a row of 6 emoji choices (❤️ 😂 😮 😢 👍 🔥) above the action list
+  2. Tapping an emoji adds the user's reaction and immediately shows the count badge below the message bubble without a full reload
+  3. Tapping the same emoji a second time removes the reaction and the count badge disappears if the count reaches zero
+  4. Reactions from all chat participants are visible and update in real time without page refresh
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 16: Media Sharing
+**Goal**: Users can send photos from their library or camera directly in chat, displayed inline as compressed image bubbles
+**Depends on**: Phase 12
+**Requirements**: CHAT-04, CHAT-05, CHAT-06
+**Success Criteria** (what must be TRUE):
+  1. A photo attach action in the send bar opens the device photo library picker; selecting an image queues it for send with a visible progress indicator
+  2. A camera action opens the in-app camera; capturing a photo queues it for send with the same progress indicator
+  3. Sent images appear inline inside the chat bubble at a capped display size — no link, no download required
+  4. Tapping an inline image opens it full-screen with a close control
+  5. Images are compressed client-side before upload (max 1280px, ~75% quality) — raw camera photos are never uploaded at full resolution
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 17: Polls
+**Goal**: Users can create single-choice polls in any chat via the attachment menu, vote, change their vote, and see live per-option counts
+**Depends on**: Phase 12, Phase 14 (message-type branching established)
+**Requirements**: CHAT-09, CHAT-10, CHAT-11
+**Success Criteria** (what must be TRUE):
+  1. Tapping "Poll" in the chat attachment menu opens a poll creation screen where the user can enter a question and 2–4 option labels, then send
+  2. The poll appears in the chat as a distinct card (not a text bubble) visible to all participants, showing the question and all options
+  3. Tapping an option casts the user's vote; their selected option is visually distinguished from unselected options
+  4. A participant who already voted can tap a different option to change their vote — only one vote per person is counted at any time
+  5. Vote counts per option update in real time for all participants without requiring a manual refresh
+**Plans**: TBD
+**UI hint**: yes
+
+## Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 12. Schema Foundation | v1.5 | 0/TBD | Not started | - |
+| 13. Profile Rework + Friend Profile | v1.5 | 0/TBD | Not started | - |
+| 14. Reply Threading | v1.5 | 0/TBD | Not started | - |
+| 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
+| 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
+| 17. Polls | v1.5 | 0/TBD | Not started | - |
+
+---
+
+*Roadmap updated: 2026-04-20 — v1.5 Chat & Profile roadmap created (Phases 12-17)*
