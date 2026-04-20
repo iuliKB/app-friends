@@ -105,7 +105,10 @@
   3. `types/chat.ts` exports compile with strict TypeScript and include `image_url`, `reply_to_message_id`, `message_type`, `poll_id`, and `reactions` fields
   4. `chat-media` storage bucket exists in Supabase with public read access and UUID-namespaced paths
   5. `create_poll()` SECURITY DEFINER RPC, `message_reactions` table, `polls`/`poll_options`/`poll_votes` tables, and `is_channel_member()` helper all exist with correct RLS
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 12-01-PLAN.md — Write and apply migration 0018 (schema objects, RLS, storage bucket)
+- [ ] 12-02-PLAN.md — Update src/types/chat.ts + fix TypeScript compile
 
 ### Phase 13: Profile Rework + Friend Profile
 **Goal**: Users experience a cleaner, less cluttered Profile tab and can view any friend's full profile in one tap
@@ -174,7 +177,7 @@
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 12. Schema Foundation | v1.5 | 0/TBD | Not started | - |
+| 12. Schema Foundation | v1.5 | 0/2 | Not started | - |
 | 13. Profile Rework + Friend Profile | v1.5 | 0/TBD | Not started | - |
 | 14. Reply Threading | v1.5 | 0/TBD | Not started | - |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
