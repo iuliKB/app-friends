@@ -566,22 +566,25 @@ async function sendMessage(body: string, replyToId?: string): Promise<{ error: E
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Soft-delete + CHECK constraint resolution strategy**
    - What we know: `messages_body_required` CHECK (`message_type <> 'text' OR body IS NOT NULL`) blocks setting `body = NULL` on text messages.
    - What's unclear: Which approach to use — add `'deleted'` to message_type enum, or relax the CHECK constraint.
    - Recommendation: Add `'deleted'` to the `message_type` CHECK list and `message_type = 'deleted'` in the UPDATE. This is the cleanest signal: the planner should include a migration task (0019) as the first wave.
+   - **RESOLVED:** Plan 14-01 (Wave 0) adds `'deleted'` to the `messages_message_type_check` constraint and issues `UPDATE messages SET body = NULL, message_type = 'deleted'` for soft-delete.
 
 2. **Realtime propagation of soft-delete to other participants**
    - What we know: Current `subscribeRealtime()` handles INSERT only. A deleted message becomes `body = NULL` via UPDATE.
    - What's unclear: Is real-time propagation of deletes required in Phase 14?
    - Recommendation: Add an UPDATE listener in `subscribeRealtime()` alongside the INSERT listener. The existing Realtime channel already filters by channel ID — just add `event: 'UPDATE'` handler. Without it, other participants only see "Message deleted." after they re-open the chat.
+   - **RESOLVED:** Plan 14-03 Task 2 adds an UPDATE Realtime listener in `subscribeRealtime()` so other participants see "Message deleted." in real time.
 
 3. **Context menu bubble positioning**
    - What we know: The `Modal` positions the pill at screen coordinates. The bubble's screen position must be measured.
    - What's unclear: Best API — `onLongPress` native event `nativeEvent.pageY` vs `ref.measure()`.
    - Recommendation: Use `nativeEvent.pageY` from the `onLongPress` event handler — it provides the touch point location without needing a ref.measure() async call.
+   - **RESOLVED:** Plan 14-02 Task 2 uses `nativeEvent.pageY` from `onLongPress` for context menu positioning.
 
 ---
 
