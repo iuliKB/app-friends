@@ -17,11 +17,13 @@ import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { decode } from 'base64-arraybuffer';
+import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { APP_CONFIG } from '@/constants/config';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
-import { MoodPicker } from '@/components/status/MoodPicker';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import {
   registerForPushNotifications,
@@ -36,6 +38,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [profile, setProfile] = useState<{
     display_name: string;
     avatar_url: string | null;
@@ -76,6 +80,63 @@ export default function ProfileScreen() {
       // Phase 3 FREE-07 — hydrate toggle from profiles.notify_friend_free
       setFriendFreeEnabled(data.notify_friend_free ?? true);
     }
+  }
+
+  async function uploadAvatar(asset: ImagePicker.ImagePickerAsset) {
+    if (!session || !asset.base64) return;
+    setAvatarLoading(true);
+    try {
+      const fileExt = asset.uri.split('.').pop()?.toLowerCase() ?? 'jpeg';
+      const filePath = `${session.user.id}/avatar.${fileExt}`;
+      await supabase.storage.from('avatars').upload(filePath, decode(asset.base64), {
+        contentType: `image/${fileExt}`,
+        upsert: true,
+      });
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
+    } catch {
+      Alert.alert('Error', "Couldn't upload photo. Make sure the image is under 5MB and try again.");
+    } finally {
+      setAvatarLoading(false);
+    }
+  }
+
+  function handleChangeAvatar() {
+    Alert.alert('Change Photo', undefined, [
+      {
+        text: 'Choose from Library',
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: 'images' as ImagePicker.MediaType,
+            allowsEditing: true,
+            aspect: APP_CONFIG.avatarAspect,
+            quality: APP_CONFIG.avatarQuality,
+            base64: true,
+          });
+          if (!result.canceled && result.assets[0]) {
+            await uploadAvatar(result.assets[0]);
+          }
+        },
+      },
+      {
+        text: 'Take Photo',
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== 'granted') return;
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: 'images' as ImagePicker.MediaType,
+            allowsEditing: true,
+            aspect: APP_CONFIG.avatarAspect,
+            quality: APP_CONFIG.avatarQuality,
+            base64: true,
+          });
+          if (!result.canceled && result.assets[0]) {
+            await uploadAvatar(result.assets[0]);
+          }
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   }
 
   async function loadNotificationsEnabled() {
@@ -222,28 +283,62 @@ export default function ProfileScreen() {
       </View>
 
       {/* Avatar header */}
-      <TouchableOpacity
-        style={styles.avatarHeader}
-        onPress={() => router.push('/profile/edit' as never)}
-        activeOpacity={0.8}
-      >
+      <View style={styles.avatarHeader}>
         <View style={{ position: 'relative' }}>
           <AvatarCircle
             size={80}
-            imageUri={profile?.avatar_url}
+            imageUri={avatarUrl ?? profile?.avatar_url}
             displayName={profile?.display_name || 'U'}
+            onPress={avatarLoading ? undefined : handleChangeAvatar}
           />
+          {avatarLoading && (
+            <View style={styles.avatarOverlay}>
+              <ActivityIndicator color={COLORS.text.primary} size="small" />
+            </View>
+          )}
           <View style={styles.pencilOverlay}>
             <Ionicons name="pencil-outline" size={SPACING.lg} color={COLORS.interactive.accent} />
           </View>
         </View>
         <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
         <Text style={styles.username}>@{profile?.username ?? ''}</Text>
+      </View>
+
+      {/* Edit Profile row (D-04) */}
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => router.push('/profile/edit' as never)}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="person-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>Edit Profile</Text>
+        <View style={styles.rowRight}>
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+        </View>
       </TouchableOpacity>
 
-      {/* Your Status section */}
-      <Text style={styles.sectionHeader}>YOUR STATUS</Text>
-      <MoodPicker />
+      {/* My Wish List row (D-07) */}
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => router.push('/profile/wish-list' as never)}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="gift-outline"
+          size={FONT_SIZE.xl}
+          color={COLORS.text.secondary}
+          style={styles.rowIcon}
+        />
+        <Text style={styles.rowLabel}>My Wish List</Text>
+        <View style={styles.rowRight}>
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+        </View>
+      </TouchableOpacity>
 
       {/* QR Code */}
       <TouchableOpacity
@@ -415,6 +510,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: SPACING.xl,
     paddingHorizontal: SPACING.lg,
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 40,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(0,0,0,0.5)', // no exact token for avatar upload scrim
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pencilOverlay: {
     position: 'absolute',
