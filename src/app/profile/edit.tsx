@@ -1,9 +1,6 @@
-import { decode } from 'base64-arraybuffer';
-import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -11,17 +8,14 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
-import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { APP_CONFIG } from '@/constants/config';
-import { useMyWishList } from '@/hooks/useMyWishList';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -30,115 +24,39 @@ export default function EditProfileScreen() {
   const session = useAuthStore((s) => s.session);
 
   const [displayName, setDisplayName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [originalDisplayName, setOriginalDisplayName] = useState('');
-  const [originalAvatarUrl, setOriginalAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [avatarLoading, setAvatarLoading] = useState(false);
   const [birthdayMonth, setBirthdayMonth] = useState<number | null>(null);
   const [birthdayDay, setBirthdayDay] = useState<number | null>(null);
   const [birthdayYear, setBirthdayYear] = useState<number | null>(null);
   const [originalBirthdayMonth, setOriginalBirthdayMonth] = useState<number | null>(null);
   const [originalBirthdayDay, setOriginalBirthdayDay] = useState<number | null>(null);
   const [originalBirthdayYear, setOriginalBirthdayYear] = useState<number | null>(null);
-
-  const { items: wishListItems, addItem, deleteItem } = useMyWishList();
-
-  const [addingWishItem, setAddingWishItem] = useState(false);
-  const [newItemTitle, setNewItemTitle] = useState('');
-  const [newItemUrl, setNewItemUrl] = useState('');
-  const [newItemNotes, setNewItemNotes] = useState('');
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) return;
     supabase
       .from('profiles')
-      .select('display_name, avatar_url, birthday_month, birthday_day, birthday_year')
+      .select('display_name, avatar_url, birthday_month, birthday_day, birthday_year, username')
       .eq('id', session.user.id)
       .single()
       .then(({ data, error }) => {
         if (data && !error) {
           setDisplayName(data.display_name ?? '');
-          setAvatarUrl(data.avatar_url ?? null);
           setOriginalDisplayName(data.display_name ?? '');
-          setOriginalAvatarUrl(data.avatar_url ?? null);
           setBirthdayMonth(data.birthday_month ?? null);
           setBirthdayDay(data.birthday_day ?? null);
           setBirthdayYear(data.birthday_year ?? null);
           setOriginalBirthdayMonth(data.birthday_month ?? null);
           setOriginalBirthdayDay(data.birthday_day ?? null);
           setOriginalBirthdayYear(data.birthday_year ?? null);
+          setUsername(data.username ?? null);
         }
         setLoading(false);
       });
   }, [session]);
-
-  async function uploadAvatar(asset: ImagePicker.ImagePickerAsset) {
-    if (!session || !asset.base64) return;
-    setAvatarLoading(true);
-    try {
-      const fileExt = asset.uri.split('.').pop()?.toLowerCase() ?? 'jpeg';
-      const filePath = `${session.user.id}/avatar.${fileExt}`;
-
-      await supabase.storage.from('avatars').upload(filePath, decode(asset.base64), {
-        contentType: `image/${fileExt}`,
-        upsert: true,
-      });
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('avatars').getPublicUrl(filePath);
-
-      // Append cache-buster so React Native reloads the image
-      setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
-    } catch {
-      Alert.alert(
-        'Error',
-        "Couldn't upload photo. Make sure the image is under 5MB and try again."
-      );
-    } finally {
-      setAvatarLoading(false);
-    }
-  }
-
-  function handleChangeAvatar() {
-    Alert.alert('Change Photo', undefined, [
-      {
-        text: 'Choose from Library',
-        onPress: async () => {
-          const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: 'images' as ImagePicker.MediaType,
-            allowsEditing: true,
-            aspect: APP_CONFIG.avatarAspect,
-            quality: APP_CONFIG.avatarQuality,
-            base64: true,
-          });
-          if (!result.canceled && result.assets[0]) {
-            await uploadAvatar(result.assets[0]);
-          }
-        },
-      },
-      {
-        text: 'Take Photo',
-        onPress: async () => {
-          const { status } = await ImagePicker.requestCameraPermissionsAsync();
-          if (status !== 'granted') return;
-          const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: 'images' as ImagePicker.MediaType,
-            allowsEditing: true,
-            aspect: APP_CONFIG.avatarAspect,
-            quality: APP_CONFIG.avatarQuality,
-            base64: true,
-          });
-          if (!result.canceled && result.assets[0]) {
-            await uploadAvatar(result.assets[0]);
-          }
-        },
-      },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  }
 
   async function handleSave() {
     if (!session) return;
@@ -164,7 +82,6 @@ export default function EditProfileScreen() {
       .from('profiles')
       .update({
         display_name: displayName.trim(),
-        avatar_url: avatarUrl,
         birthday_month: finalMonth,
         birthday_day: finalDay,
         birthday_year: finalMonth !== null ? birthdayYear : null,
@@ -181,20 +98,8 @@ export default function EditProfileScreen() {
     router.back();
   }
 
-  async function handleAddWishItem() {
-    const trimmedTitle = newItemTitle.trim();
-    if (!trimmedTitle) return;
-    setAddingWishItem(true);
-    await addItem(trimmedTitle, newItemUrl.trim() || undefined, newItemNotes.trim() || undefined);
-    setNewItemTitle('');
-    setNewItemUrl('');
-    setNewItemNotes('');
-    setAddingWishItem(false);
-  }
-
   const isDirty =
     displayName.trim() !== originalDisplayName ||
-    avatarUrl !== originalAvatarUrl ||
     birthdayMonth !== originalBirthdayMonth ||
     birthdayDay !== originalBirthdayDay ||
     birthdayYear !== originalBirthdayYear;
@@ -216,32 +121,6 @@ export default function EditProfileScreen() {
     >
       <ScreenHeader title="Edit Profile" />
 
-      {/* Avatar section */}
-      <View style={styles.avatarSection}>
-        <View style={styles.avatarWrapper}>
-          <AvatarCircle
-            size={80}
-            imageUri={avatarUrl}
-            displayName={displayName || 'U'}
-            onPress={avatarLoading ? undefined : handleChangeAvatar}
-          />
-          {avatarLoading && (
-            <View style={styles.avatarOverlay}>
-              <ActivityIndicator color={COLORS.text.primary} size="small" />
-            </View>
-          )}
-        </View>
-        <TouchableOpacity
-          onPress={avatarLoading ? undefined : handleChangeAvatar}
-          disabled={avatarLoading}
-          style={styles.changePhotoButton}
-        >
-          <Text style={styles.changePhotoText}>
-            {avatarLoading ? 'Uploading...' : 'Change Photo'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       {/* Display name field */}
       <TextInput
         style={[styles.textInput, saving && styles.inputDisabled]}
@@ -256,6 +135,10 @@ export default function EditProfileScreen() {
         {displayName.length}/{APP_CONFIG.displayNameMaxLength}
       </Text>
 
+      {/* Read-only username display (D-06) */}
+      <Text style={styles.fieldLabel}>Username</Text>
+      <Text style={styles.usernameValue}>@{username ?? ''}</Text>
+
       {/* Birthday field (D-03: below display name, above Save) */}
       <Text style={styles.birthdayLabel}>Birthday</Text>
       <BirthdayPicker
@@ -269,75 +152,6 @@ export default function EditProfileScreen() {
         }}
         disabled={saving}
       />
-
-      {/* My Wish List section (D-04, D-05) */}
-      <Text style={styles.birthdayLabel}>My Wish List</Text>
-
-      {wishListItems.map((item) => (
-        <View key={item.id} style={styles.wishListRow}>
-          <View style={styles.wishListItemContent}>
-            <Text style={styles.wishListItemTitle} numberOfLines={2}>{item.title}</Text>
-            {item.url ? (
-              <Text style={styles.wishListItemUrl} numberOfLines={1}>{item.url}</Text>
-            ) : null}
-            {item.notes ? (
-              <Text style={styles.wishListItemNotes} numberOfLines={2}>{item.notes}</Text>
-            ) : null}
-          </View>
-          <TouchableOpacity
-            onPress={() => void deleteItem(item.id)}
-            style={styles.deleteWishItem}
-            accessibilityLabel={`Delete ${item.title}`}
-          >
-            <Text style={styles.deleteWishItemText}>Remove</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
-
-      {wishListItems.length === 0 && (
-        <Text style={styles.wishListEmpty}>No items yet — add something you'd love!</Text>
-      )}
-
-      {/* Add item form */}
-      <TextInput
-        style={[styles.textInput, styles.wishItemInput]}
-        value={newItemTitle}
-        onChangeText={setNewItemTitle}
-        placeholder="Item title (required)"
-        placeholderTextColor={COLORS.text.secondary}
-        maxLength={120}
-        editable={!addingWishItem}
-      />
-      <TextInput
-        style={[styles.textInput, styles.wishItemInput]}
-        value={newItemUrl}
-        onChangeText={setNewItemUrl}
-        placeholder="Link (optional)"
-        placeholderTextColor={COLORS.text.secondary}
-        maxLength={500}
-        editable={!addingWishItem}
-        keyboardType="url"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={[styles.textInput, styles.wishItemInput]}
-        value={newItemNotes}
-        onChangeText={setNewItemNotes}
-        placeholder="Notes (optional)"
-        placeholderTextColor={COLORS.text.secondary}
-        maxLength={200}
-        editable={!addingWishItem}
-      />
-      <TouchableOpacity
-        style={[styles.addWishItemButton, (!newItemTitle.trim() || addingWishItem) && styles.addWishItemButtonDisabled]}
-        onPress={handleAddWishItem}
-        disabled={!newItemTitle.trim() || addingWishItem}
-        accessibilityLabel="Add wish list item"
-      >
-        <Text style={styles.addWishItemButtonText}>
-          {addingWishItem ? 'Adding...' : 'Add Item'}
-        </Text>
-      </TouchableOpacity>
 
       {/* Save button */}
       <View style={styles.buttonWrapper}>
@@ -367,36 +181,6 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xxl,
     paddingBottom: SPACING.xxl,
   },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: SPACING.xxl,
-  },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  avatarOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 40,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)', // no exact token for avatar upload scrim
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  changePhotoButton: {
-    marginTop: SPACING.sm,
-    minHeight: SPACING.xxl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  changePhotoText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.accent,
-  },
   textInput: {
     backgroundColor: COLORS.surface.card,
     borderRadius: RADII.lg,
@@ -416,6 +200,19 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: SPACING.xs,
   },
+  fieldLabel: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.sm,
+  },
+  usernameValue: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    paddingHorizontal: SPACING.lg,
+  },
   birthdayLabel: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.regular,
@@ -425,67 +222,5 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginTop: SPACING.xl,
-  },
-  wishListRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: SPACING.md,
-    gap: SPACING.sm,
-  },
-  wishListItemContent: {
-    flex: 1,
-  },
-  wishListItemTitle: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  wishListItemUrl: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.accent,
-    marginTop: SPACING.xs,
-  },
-  wishListItemNotes: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  wishListEmpty: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  wishItemInput: {
-    marginTop: SPACING.sm,
-  },
-  deleteWishItem: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    alignSelf: 'flex-start',
-    marginTop: SPACING.xs,
-  },
-  deleteWishItemText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-  },
-  addWishItemButton: {
-    marginTop: SPACING.md,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-  },
-  addWishItemButtonDisabled: {
-    opacity: 0.5,
-  },
-  addWishItemButtonText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
   },
 });
