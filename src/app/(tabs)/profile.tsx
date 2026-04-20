@@ -60,6 +60,7 @@ export default function ProfileScreen() {
     useCallback(() => {
       fetchProfile();
       loadNotificationsEnabled();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
 
@@ -92,10 +93,15 @@ export default function ProfileScreen() {
         contentType: `image/${fileExt}`,
         upsert: true,
       });
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
     } catch {
-      Alert.alert('Error', "Couldn't upload photo. Make sure the image is under 5MB and try again.");
+      Alert.alert(
+        'Error',
+        "Couldn't upload photo. Make sure the image is under 5MB and try again."
+      );
     } finally {
       setAvatarLoading(false);
     }
@@ -385,8 +391,8 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      {/* Settings section */}
-      <Text style={styles.sectionHeader}>SETTINGS</Text>
+      {/* Notifications section (D-02) */}
+      <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
 
       <View style={styles.row}>
         <Ionicons
@@ -419,9 +425,6 @@ export default function ProfileScreen() {
           thumbColor={friendFreeEnabled ? COLORS.interactive.accent : COLORS.border}
         />
       </View>
-
-      {/* Morning prompt section (Phase 4 / MORN-07, MORN-08) */}
-      <Text style={styles.sectionHeader}>MORNING PROMPT</Text>
 
       <View style={styles.row}>
         <Ionicons
