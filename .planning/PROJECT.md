@@ -186,4 +186,4 @@ Known technical considerations:
 | Wish list claims stored server-side with claimer_id (v1.4) | Client-side claim state would be lost on app restart and invisible to other group members | ✓ Good |
 
 ---
-*Last updated: 2026-04-20 after Phase 12 (Schema Foundation — migration 0018, chat v1.5 DB objects) complete*
+*Last updated: 2026-04-20 after Phase 13 (Profile Rework & Friend Profile — profile tab restructure, wish list screen, friend profile enrichment) complete*
