@@ -186,4 +186,4 @@ Known technical considerations:
 | Wish list claims stored server-side with claimer_id (v1.4) | Client-side claim state would be lost on app restart and invisible to other group members | ✓ Good |
 
 ---
-*Last updated: 2026-04-20 after Phase 13 (Profile Rework & Friend Profile — profile tab restructure, wish list screen, friend profile enrichment) complete*
+*Last updated: 2026-04-21 after Phase 14 (Reply Threading — long-press reply with quoted block, soft-delete, Realtime propagation) complete*
