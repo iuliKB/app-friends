@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
 status: executing
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-04-20T22:18:48.590Z"
+stopped_at: Completed 14-03-PLAN.md
+last_updated: "2026-04-20T22:21:24.693Z"
 last_activity: 2026-04-20
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 9
-  completed_plans: 7
-  percent: 78
+  completed_plans: 8
+  percent: 89
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 
 Milestone: v1.5 Chat & Profile
 Phase: 14 (reply-threading) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-20
 
@@ -69,6 +69,7 @@ Requirements covered: 16/16 mapped
 - [Phase 14]: Migration 0019: drop+recreate messages_message_type_check to include 'deleted'; add messages_soft_delete_own UPDATE RLS policy with USING+WITH CHECK sender_id guard
 - [Phase 14-reply-threading]: expo-clipboard installed via npx expo install (SDK-matched ~55.0.13); not previously in package.json
 - [Phase 14-reply-threading]: MessageBubble context menu: contextMenu extracted as JSX variable to share isOwn/handlers without prop drilling
+- [Phase 14-reply-threading]: body: null cast to any in deleteMessage .update() — Supabase generated types mark body as non-nullable; DB column is nullable since 0018; same any-cast pattern as fetch mapping site
 
 ### Pending Todos
 
@@ -80,5 +81,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-20T22:18:48.586Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-04-20T22:21:24.690Z
+Stopped at: Completed 14-03-PLAN.md
