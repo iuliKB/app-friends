@@ -35,8 +35,7 @@ Declared values (project tokens from `src/theme/spacing.ts`):
 |-------|-------|-------|
 | xs | 4px | Avatar overlap offset, tight inline gaps |
 | sm | 8px | Bubble padding, icon-label gap, separator height |
-| md | 12px | Card section gaps, quoted block internal padding |
-| lg | 16px | Standard screen padding, reply bar horizontal padding |
+| lg | 16px | Standard screen padding, reply bar horizontal padding, card section gaps, quoted block internal padding |
 | xl | 24px | Large section spacing, overlay vertical offset |
 | xxl | 32px | Screen header top, bottom sheet padding |
 
@@ -45,6 +44,8 @@ Exceptions:
 - Quoted accent bar: 4px wide (RADII.xs width, not a spacing token — decorative dimension)
 - Reply preview bar: 48px height (fixed, to keep it compact above SendBar)
 - Dismiss button (×) in reply bar: 44px tap target (accessibility minimum)
+
+Note: The previous `md = 12px` token was removed from this phase's scale. Quoted block internal padding and card section gaps use `SPACING.lg` (16px). If a 12px token exists in the project for screens outside this phase, it must be declared as a project-level exception in those phases with explicit justification.
 
 ---
 
@@ -55,12 +56,14 @@ All sizes from `src/theme/typography.ts`. Line heights are React Native defaults
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
 | Body | 16px (FONT_SIZE.lg) | 400 (regular) | 1.4 | Message bubble body text, reply bar preview text |
-| Label | 13px (FONT_SIZE.sm) | 400 (regular) | 1.3 | Sender name in quoted block (secondary color), timestamps |
+| Label | 13px (FONT_SIZE.sm) | 400 (regular) | 1.3 | Sender name in quoted block (secondary color), timestamps, deleted message placeholder |
 | Accent label | 13px (FONT_SIZE.sm) | 600 (semibold) | 1.3 | Sender name in quoted block (accent/tinted color), "Replying to [Name]" label |
 | Caption | 11px (FONT_SIZE.xs) | 400 (regular) | 1.2 | Context menu action sub-labels if needed |
 
 Context menu action labels: 16px semibold (matches SendBar `actionLabel` pattern).
 Context menu action text follows existing `actionLabel` / `actionSub` hierarchy from `SendBar.tsx`.
+
+Deleted message placeholder uses `FONT_SIZE.sm` (13px) — same as all other secondary text — to maintain a consistent two-tier hierarchy (body at 16px, secondary at 13px). A 14px tier was eliminated to remove ambiguity.
 
 ---
 
@@ -101,6 +104,7 @@ New components and modifications required for this phase.
 
 - Trigger: `onLongPress` on `TouchableOpacity` in `MessageBubble`
 - Presentation: `Modal` with `transparent` background + `COLORS.overlay` backdrop (`rgba(0,0,0,0.5)`). Floating pill positioned absolutely above the tapped bubble.
+- Primary focal point: The BubbleContextMenu pill is the primary visual anchor when the context menu appears; `COLORS.overlay` backdrop dimming establishes visual isolation from the rest of the chat.
 - Shape: `RADII.lg` (12px) pill container, `COLORS.surface.card` background
 - Actions row layout: horizontal flex, each action = icon + label, 44px minimum touch target
 - Action rows: "↩ Reply" (all messages) | "📋 Copy" (all messages) | "🗑 Delete" (own messages only, `COLORS.interactive.destructive` text)
@@ -118,11 +122,11 @@ New components and modifications required for this phase.
   - Sender name: `FONT_SIZE.sm` (13px), `FONT_WEIGHT.semibold`, tinted color (see accent bar mapping above)
   - Preview text: `FONT_SIZE.sm` (13px), `FONT_WEIGHT.regular`, `COLORS.text.secondary`, max 1 line, ellipsis truncation
   - Quoted block background: `COLORS.surface.overlay` (`#ffffff14`) inside own bubble; `COLORS.surface.overlay` inside others' bubble
-  - Quoted block padding: `SPACING.xs` (4px) vertical, `SPACING.sm` (8px) horizontal
+  - Quoted block padding: `SPACING.xs` (4px) vertical, `SPACING.lg` (16px) horizontal
   - Quoted block `RADII.xs` (4px) on all corners except left-side (where accent bar sits)
   - Tappable: `onPress` scrolls to original message
 - Add deleted message placeholder:
-  - When `message.body === null`: render "Message deleted." in `COLORS.text.secondary`, italic, `FONT_SIZE.md` (14px)
+  - When `message.body === null`: render "Message deleted." in `COLORS.text.secondary`, italic, `FONT_SIZE.sm` (13px)
   - No context menu on deleted messages (skip `onLongPress` when body is null)
 - Add highlight flash state:
   - `highlightAnim`: `Animated.Value(0)` → interpolates background color from transparent to `COLORS.interactive.accent` at 20% opacity → back to transparent
@@ -160,9 +164,11 @@ New components and modifications required for this phase.
 | Tap Reply | `onPress` on Reply action | Context menu closes; reply bar appears above SendBar |
 | Tap Copy | `onPress` on Copy action | Context menu closes; text copied to clipboard (no visual feedback beyond system) |
 | Tap Delete | `onPress` on Delete action | Context menu closes; message body set to null; bubble shows "Message deleted." placeholder |
+| Delete failure | Network error on deleteMessage RPC | Message body is restored to pre-delete state; toast shows "Couldn't delete message. Try again." |
 | Tap × (reply bar) | `onPress` | Reply bar disappears; `replyContext` clears |
 | Swipe down (reply bar) | `PanResponder` gesture | Reply bar dismisses; `replyContext` clears |
 | Send with reply | `onSend` when `replyContext !== null` | Reply clears; message sent with `reply_to_message_id`; bubble renders with quoted block |
+| Send with reply — failure | Network error on sendMessage | Existing send error handling applies (optimistic message reverts per established pattern); reply bar remains open so user can retry |
 | Tap quoted block | `onPress` on quoted block | Scrolls FlatList to original message; flash highlight plays |
 | Tap quoted block (not in window) | `onPress` on quoted block | Toast appears: "Scroll up to see the original message" |
 | Flash highlight | After scroll-to-index | 1s background color pulse on target bubble |
@@ -181,6 +187,8 @@ New components and modifications required for this phase.
 | Quoted block — deleted original | "Original message deleted" |
 | Quoted block — image message | "📷 Photo" |
 | Toast — not in window | "Scroll up to see the original message" |
+| Error — delete failure | "Couldn't delete message. Try again." (toast, non-blocking) |
+| Error — send failure | Existing send error handling applies — optimistic message reverts; reply bar stays open |
 | Empty state | Not applicable — this phase adds to existing chat, no empty state introduced |
 | Delete confirmation | None — soft delete is immediate (no confirmation dialog); action is reversible via undo only if implemented, which is out of scope |
 
