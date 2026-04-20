@@ -8,9 +8,18 @@ Campfire is a "friendship OS" — an all-in-one social coordination app for clos
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone: v1.5 (Planning)
+## Current Milestone: v1.5 Chat & Profile
 
-v1.4 Squad Dashboard & Social Tools shipped 2026-04-17. Planning next milestone.
+**Goal:** Elevate chat with reactions, media, threading, and polls while cleaning up a cluttered profile into a coherent, friend-focused UX.
+
+**Target features:**
+- Message reactions (emoji tapback on any message)
+- Media sharing in chat (photos from library + in-app camera, inline display)
+- Reply threading (reply to a specific message with quoted context)
+- Polls in chat (via existing attachment menu entry point)
+- Remove status duplication from profile (home is the single source of truth)
+- Profile rework: Notifications section, edit details separate from photo, cleaner layout
+- Friend profile page: tap friend → full screen with avatar, status, birthday, wish list
 
 ## Requirements
 
