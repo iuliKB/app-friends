@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
-status: verifying
-stopped_at: Phase 13 context gathered
-last_updated: "2026-04-20T20:10:16.421Z"
+status: executing
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-04-20T20:44:08.773Z"
 last_activity: 2026-04-20
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 5
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-20)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 12 — schema-foundation
+**Current focus:** Phase 13 — profile-rework-friend-profile
 
 ## Current Position
 
 Milestone: v1.5 Chat & Profile
-Phase: 13
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 13 (profile-rework-friend-profile) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-20
 
 Progress: [░░░░░░░░░░] 0%
@@ -63,6 +63,7 @@ Requirements covered: 16/16 mapped
 - [v1.5]: expo-image-manipulator compression is mandatory before upload (not optional) — raw iPhone photos exhaust 1GB storage in days
 - [Phase 12]: Migration 0018: messages.body nullable with conditional CHECK; is_channel_member() SECURITY DEFINER helper for Phases 14-17 RLS; create_poll() atomic RPC; chat-media bucket
 - [Phase 12-schema-foundation]: D-01 reflected in TypeScript: Message.body is string | null; stale database.ts requires row cast to any at useChatRoom.ts mapping site
+- [Phase 13]: eslint-disable for useFocusEffect empty-dep array in profile.tsx — intentional run-on-focus pattern, matches squad.tsx precedent
 
 ### Pending Todos
 
@@ -74,5 +75,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-20T20:10:16.418Z
-Stopped at: Phase 13 context gathered
+Last session: 2026-04-20T20:44:08.770Z
+Stopped at: Completed 13-01-PLAN.md

@@ -36,9 +36,9 @@ Milestone goal: Elevate chat with reactions, media, threading, and polls while c
 
 ### Profile Rework
 
-- [ ] **PROF-01**: Status display removed from profile screen (home screen is the only status entry point)
-- [ ] **PROF-02**: Notification toggles grouped under a single "Notifications" section header
-- [ ] **PROF-03**: Edit profile details (display name, username) accessible separately from photo edit
+- [x] **PROF-01**: Status display removed from profile screen (home screen is the only status entry point)
+- [x] **PROF-02**: Notification toggles grouped under a single "Notifications" section header
+- [x] **PROF-03**: Edit profile details (display name, username) accessible separately from photo edit
 
 ### Friend Profile Page
 
