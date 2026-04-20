@@ -14,7 +14,8 @@ interface UseChatRoomResult {
   messages: MessageWithProfile[];
   loading: boolean;
   error: string | null;
-  sendMessage: (body: string) => Promise<{ error: Error | null }>;
+  sendMessage: (body: string, replyToId?: string) => Promise<{ error: Error | null }>;
+  deleteMessage: (messageId: string) => Promise<{ error: Error | null }>;
 }
 
 type ProfileInfo = { display_name: string; avatar_url: string | null };
@@ -274,7 +275,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     };
   }, [planId, dmChannelId, groupChannelId, session?.user?.id]);
 
-  async function sendMessage(body: string): Promise<{ error: Error | null }> {
+  async function sendMessage(body: string, replyToId?: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
     const tempId = Date.now().toString();
@@ -288,7 +289,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       body,
       created_at: new Date().toISOString(),
       image_url: null,
-      reply_to_message_id: null,
+      reply_to_message_id: replyToId ?? null,
       message_type: 'text',
       poll_id: null,
       pending: true,
@@ -305,6 +306,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       group_channel_id: groupChannelId ?? null,
       sender_id: currentUserId,
       body,
+      reply_to_message_id: replyToId ?? null,
     });
 
     if (insertError) {
@@ -316,5 +318,44 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     return { error: null };
   }
 
-  return { messages, loading, error, sendMessage };
+  async function deleteMessage(messageId: string): Promise<{ error: Error | null }> {
+    if (!currentUserId) return { error: new Error('Not authenticated') };
+
+    // Stash original body and message_type before optimistic update (RESEARCH.md Pitfall 4)
+    const original = messages.find((m) => m.id === messageId);
+    const originalBody = original?.body ?? null;
+    const originalMessageType = original?.message_type ?? 'text';
+
+    // Optimistic update: set body=NULL + message_type='deleted'
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId
+          ? { ...m, body: null, message_type: 'deleted' as MessageType }
+          : m
+      )
+    );
+
+    const { error: updateError } = await supabase
+      .from('messages')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update({ body: null as any, message_type: 'deleted' })
+      .eq('id', messageId)
+      .eq('sender_id', currentUserId);
+
+    if (updateError) {
+      // Rollback optimistic update
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, body: originalBody, message_type: originalMessageType }
+            : m
+        )
+      );
+      return { error: updateError };
+    }
+
+    return { error: null };
+  }
+
+  return { messages, loading, error, sendMessage, deleteMessage };
 }
