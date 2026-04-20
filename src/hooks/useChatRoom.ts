@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
-import type { Message, MessageWithProfile } from '@/types/chat';
+import type { Message, MessageType, MessageWithProfile } from '@/types/chat';
 
 interface UseChatRoomOptions {
   planId?: string;
@@ -146,15 +146,20 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       }
 
       // Keep newest-first order — inverted FlatList renders index 0 at the bottom
-      const enriched = (rows ?? []).map((row) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const enriched = (rows ?? []).map((row: any) =>
         enrichMessage({
           id: row.id as string,
           plan_id: row.plan_id as string | null,
           dm_channel_id: row.dm_channel_id as string | null,
           group_channel_id: row.group_channel_id as string | null,
           sender_id: row.sender_id as string,
-          body: row.body as string,
+          body: row.body as string | null,
           created_at: row.created_at as string,
+          image_url: (row.image_url as string | null) ?? null,
+          reply_to_message_id: (row.reply_to_message_id as string | null) ?? null,
+          message_type: ((row.message_type as string) ?? 'text') as MessageType,
+          poll_id: (row.poll_id as string | null) ?? null,
         })
       );
 
@@ -269,6 +274,10 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       sender_id: currentUserId,
       body,
       created_at: new Date().toISOString(),
+      image_url: null,
+      reply_to_message_id: null,
+      message_type: 'text',
+      poll_id: null,
       pending: true,
       tempId,
       sender_display_name: currentUserDisplayName,
