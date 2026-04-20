@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
-status: executing
-stopped_at: Completed 14-03-PLAN.md
-last_updated: "2026-04-20T22:21:24.693Z"
+status: verifying
+stopped_at: Completed 14-04-PLAN.md
+last_updated: "2026-04-20T22:24:41.754Z"
 last_activity: 2026-04-20
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
-  percent: 89
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 Milestone: v1.5 Chat & Profile
 Phase: 14 (reply-threading) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-20
 
 Progress: [░░░░░░░░░░] 0%
@@ -70,6 +70,8 @@ Requirements covered: 16/16 mapped
 - [Phase 14-reply-threading]: expo-clipboard installed via npx expo install (SDK-matched ~55.0.13); not previously in package.json
 - [Phase 14-reply-threading]: MessageBubble context menu: contextMenu extracted as JSX variable to share isOwn/handlers without prop drilling
 - [Phase 14-reply-threading]: body: null cast to any in deleteMessage .update() — Supabase generated types mark body as non-nullable; DB column is nullable since 0018; same any-cast pattern as fetch mapping site
+- [Phase 14-reply-threading]: ReplyContext exported from SendBar.tsx co-located with the component that owns it
+- [Phase 14-reply-threading]: scrollToMessage sets highlightedId then clears after 1200ms; onScrollToIndexFailed shows toast (out-of-window D-11)
 
 ### Pending Todos
 
@@ -81,5 +83,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-20T22:21:24.690Z
-Stopped at: Completed 14-03-PLAN.md
+Last session: 2026-04-20T22:24:41.750Z
+Stopped at: Completed 14-04-PLAN.md

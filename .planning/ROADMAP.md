@@ -88,7 +88,7 @@
 
 - [x] **Phase 12: Schema Foundation** - Migration 0018 with all additive columns, tables, RLS helpers, storage bucket, and updated TypeScript types (completed 2026-04-20)
 - [x] **Phase 13: Profile Rework + Friend Profile** - Remove status duplication, consolidate notification toggles, separate edit paths, new friend profile screen (completed 2026-04-20)
-- [ ] **Phase 14: Reply Threading** - Long-press context menu primitive + inline quoted reply in chat
+- [x] **Phase 14: Reply Threading** - Long-press context menu primitive + inline quoted reply in chat (completed 2026-04-20)
 - [ ] **Phase 15: Message Reactions** - Tapback emoji strip extending the context menu; live counts inline below bubbles
 - [ ] **Phase 16: Media Sharing** - Photo library + camera capture, compressed upload, inline image bubbles
 - [ ] **Phase 17: Polls** - Poll creation via attachment menu, live vote counts, per-person single vote
@@ -141,7 +141,7 @@ Plans:
 - [x] 14-01-PLAN.md — Write migration 0019 (message_type CHECK + RLS UPDATE policy) and update MessageType
 - [x] 14-02-PLAN.md — Extend MessageBubble (context menu, quoted block, deleted placeholder, highlight flash)
 - [x] 14-03-PLAN.md — Extend useChatRoom (sendMessage replyToId, deleteMessage, Realtime UPDATE listener)
-- [ ] 14-04-PLAN.md — Wire SendBar reply bar + ChatRoomScreen (FlatList ref, scroll-to-original, toast)
+- [x] 14-04-PLAN.md — Wire SendBar reply bar + ChatRoomScreen (FlatList ref, scroll-to-original, toast)
 **UI hint**: yes
 
 ### Phase 15: Message Reactions
@@ -188,7 +188,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
-| 14. Reply Threading | v1.5 | 3/4 | In Progress|  |
+| 14. Reply Threading | v1.5 | 4/4 | Complete   | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |
