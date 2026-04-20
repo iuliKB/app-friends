@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Animated,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { MessageWithProfile } from '@/types/chat';
@@ -8,6 +18,12 @@ interface MessageBubbleProps {
   message: MessageWithProfile;
   isOwn: boolean;
   showSenderInfo: boolean;
+  // Phase 14 additions:
+  allMessages: MessageWithProfile[];
+  highlighted?: boolean;
+  onReply: (message: MessageWithProfile) => void;
+  onDelete: (messageId: string) => void;
+  onScrollToMessage: (messageId: string) => void;
 }
 
 function formatMessageTime(isoString: string): string {
