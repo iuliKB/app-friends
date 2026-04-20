@@ -551,7 +551,7 @@ const { items: wishListItems, loading: wishListLoading } = useFriendWishList(id 
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Avatar URL refresh after upload on profile.tsx**
    - What we know: edit.tsx updates a local `avatarUrl` state with cache-busted URL immediately. Profile.tsx currently fetches avatar_url from DB on focus.
