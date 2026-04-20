@@ -120,7 +120,11 @@ Plans:
   3. Tapping "Edit Profile" opens a detail-only editor (display name, username) separate from the avatar/photo edit flow
   4. Tapping a friend's name or avatar from any screen opens a dedicated Friend Profile screen showing avatar, display name, current status (freshness-aware via `effective_status`), birthday, and wish list
   5. Back navigation from Friend Profile returns the user to the exact screen they came from regardless of entry point
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 13-01-PLAN.md — Profile tab restructure (remove status, consolidate notifications, inline avatar tap, add Edit Profile + My Wish List rows)
+- [ ] 13-02-PLAN.md — Strip edit.tsx to details-only + create wish-list.tsx screen + register in _layout.tsx
+- [ ] 13-03-PLAN.md — Enrich friend profile with effective_status, birthday display, and wish list section
 **UI hint**: yes
 
 ### Phase 14: Reply Threading
@@ -178,7 +182,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
-| 13. Profile Rework + Friend Profile | v1.5 | 0/TBD | Not started | - |
+| 13. Profile Rework + Friend Profile | v1.5 | 0/3 | Not started | - |
 | 14. Reply Threading | v1.5 | 0/TBD | Not started | - |
 | 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
