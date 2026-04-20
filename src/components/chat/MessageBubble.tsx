@@ -252,7 +252,7 @@ export function MessageBubble({
           onLongPress={handleLongPress}
           activeOpacity={0.8}
         >
-          <View style={[styles.ownBubble, message.pending && styles.pendingOpacity]}>
+          <View style={[styles.ownBubble, message.pending && styles.pendingOpacity, !!message.reply_to_message_id && styles.replyMinWidth]}>
             {message.reply_to_message_id && (
               <QuotedBlock
                 replyToId={message.reply_to_message_id}
@@ -295,7 +295,7 @@ export function MessageBubble({
           {showSenderInfo && (
             <Text style={styles.senderName}>{message.sender_display_name}</Text>
           )}
-          <View style={styles.othersBubble}>
+          <View style={[styles.othersBubble, !!message.reply_to_message_id && styles.replyMinWidth]}>
             {message.reply_to_message_id && (
               <QuotedBlock
                 replyToId={message.reply_to_message_id}
@@ -334,6 +334,9 @@ const styles = StyleSheet.create({
   },
   pendingOpacity: {
     opacity: 0.7,
+  },
+  replyMinWidth: {
+    minWidth: 180,
   },
   ownBody: {
     fontSize: FONT_SIZE.lg,
