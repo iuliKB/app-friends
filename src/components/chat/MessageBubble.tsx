@@ -74,7 +74,11 @@ function QuotedBlock({
   onPress: () => void;
 }) {
   const original = allMessages.find((m) => m.id === replyToId);
-  const accentColor = isOwn ? COLORS.interactive.accent : COLORS.text.secondary;
+  // Own bubbles are orange — use white + dark overlay so the block is visible.
+  // Others' bubbles are dark — use orange accent + light overlay.
+  const accentColor = isOwn ? 'rgba(255,255,255,0.9)' : COLORS.interactive.accent;
+  const quotedBg = isOwn ? 'rgba(0,0,0,0.2)' : COLORS.surface.overlay;
+  const previewColor = isOwn ? 'rgba(255,255,255,0.7)' : COLORS.text.secondary;
 
   const senderName = original?.sender_display_name ?? 'Unknown';
   const previewText = original
@@ -89,13 +93,13 @@ function QuotedBlock({
       activeOpacity={0.7}
       accessibilityLabel={`Quoted message from ${senderName}: ${previewText}. Tap to scroll to original.`}
     >
-      <View style={styles.quotedBlock}>
+      <View style={[styles.quotedBlock, { backgroundColor: quotedBg }]}>
         <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
         <View style={styles.quotedContent}>
           <Text style={[styles.quotedSender, { color: accentColor }]} numberOfLines={1}>
             {senderName}
           </Text>
-          <Text style={styles.quotedPreview} numberOfLines={1}>
+          <Text style={[styles.quotedPreview, { color: previewColor }]} numberOfLines={1}>
             {previewText}
           </Text>
         </View>
