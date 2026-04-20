@@ -5,6 +5,8 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { useFriendWishList } from '@/hooks/useFriendWishList';
+import { WishListItem } from '@/components/squad/WishListItem';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -15,6 +17,27 @@ interface FriendProfile {
   display_name: string;
   username: string;
   avatar_url: string | null;
+  birthday_month: number | null;
+  birthday_day: number | null;
+}
+
+const MONTH_NAMES = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+function formatBirthday(month: number, day: number): string {
+  return `${MONTH_NAMES[month - 1]} ${day}`;
 }
 
 export default function FriendProfileScreen() {
@@ -22,9 +45,11 @@ export default function FriendProfileScreen() {
   const session = useAuthStore((s) => s.session);
 
   const [profile, setProfile] = useState<FriendProfile | null>(null);
-  const [status, setStatus] = useState<StatusValue>('free');
+  const [status, setStatus] = useState<StatusValue | null>(null);
   const [contextTag, setContextTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { items: wishListItems, loading: wishListLoading } = useFriendWishList(id ?? '');
 
   useEffect(() => {
     if (!id) return;
@@ -33,19 +58,25 @@ export default function FriendProfileScreen() {
       const [profileResult, statusResult] = await Promise.all([
         supabase
           .from('profiles')
-          .select('display_name, username, avatar_url')
+          .select('display_name, username, avatar_url, birthday_month, birthday_day')
           .eq('id', id)
           .single(),
-        supabase.from('statuses').select('status, context_tag').eq('user_id', id).single(),
+        supabase
+          .from('effective_status')
+          .select('effective_status, context_tag')
+          .eq('user_id', id)
+          .single(),
       ]);
 
       if (profileResult.data && !profileResult.error) {
         setProfile(profileResult.data as FriendProfile);
       }
-      if (statusResult.data && !statusResult.error) {
-        setStatus(statusResult.data.status as StatusValue);
-        setContextTag((statusResult.data.context_tag as string | null) ?? null);
-      }
+      const effectiveStatus =
+        statusResult.error || !statusResult.data
+          ? null
+          : (statusResult.data.effective_status as StatusValue | null);
+      setStatus(effectiveStatus);
+      setContextTag((statusResult.data?.context_tag as string | null) ?? null);
       setLoading(false);
     }
 
@@ -120,14 +151,23 @@ export default function FriendProfileScreen() {
           <Text style={styles.displayName}>{profile.display_name}</Text>
           <Text style={styles.username}>@{profile.username}</Text>
 
-          {/* Status row */}
-          <View style={styles.statusRow}>
-            <View style={[styles.statusDot, { backgroundColor: COLORS.status[status] }]} />
-            <Text style={[styles.statusText, { color: COLORS.status[status] }]}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+          {/* Birthday row — only render when both month and day are non-null (D-10) */}
+          {profile.birthday_month && profile.birthday_day ? (
+            <Text style={styles.birthday}>
+              {formatBirthday(profile.birthday_month, profile.birthday_day)}
             </Text>
-            {contextTag ? <Text style={styles.contextTag}> {contextTag}</Text> : null}
-          </View>
+          ) : null}
+
+          {/* Status row — only render when effective_status is non-null (D-09) */}
+          {status !== null ? (
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, { backgroundColor: COLORS.status[status] }]} />
+              <Text style={[styles.statusText, { color: COLORS.status[status] }]}>
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Text>
+              {contextTag ? <Text style={styles.contextTag}> {contextTag}</Text> : null}
+            </View>
+          ) : null}
         </View>
 
         {/* Action buttons */}
@@ -136,6 +176,26 @@ export default function FriendProfileScreen() {
           <TouchableOpacity style={styles.removeFriendButton} onPress={handleRemoveFriend}>
             <Text style={styles.removeFriendText}>Remove Friend</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Wish list section (D-11) */}
+        <View style={styles.wishListSection}>
+          <Text style={styles.sectionHeader}>WISH LIST</Text>
+          {wishListLoading ? null : wishListItems.length === 0 ? (
+            <Text style={styles.emptyWishList}>No wish list items.</Text>
+          ) : (
+            wishListItems.map((item) => (
+              <WishListItem
+                key={item.id}
+                title={item.title}
+                url={item.url}
+                notes={item.notes}
+                isClaimed={item.isClaimed}
+                isClaimedByMe={item.isClaimedByMe}
+                readOnly={true}
+              />
+            ))
+          )}
         </View>
       </ScrollView>
     </>
@@ -169,6 +229,13 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
     textAlign: 'center',
   },
+  birthday: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
+    textAlign: 'center',
+  },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,8 +243,8 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   statusDot: {
-    width: 10,
-    height: 10,
+    width: SPACING.sm,
+    height: SPACING.sm,
     borderRadius: RADII.xs,
     // eslint-disable-next-line campfire/no-hardcoded-styles
     marginRight: 6, // no exact token
@@ -204,5 +271,23 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.interactive.destructive,
+  },
+  wishListSection: {
+    marginTop: SPACING.xl,
+  },
+  sectionHeader: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+  },
+  emptyWishList: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.secondary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
 });
