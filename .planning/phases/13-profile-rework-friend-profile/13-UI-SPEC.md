@@ -40,11 +40,14 @@ Declared values (project-defined, must be referenced via SPACING token — no ha
 | xl | 24px | Section spacing, button-from-form gap, FAB offset |
 | xxl | 32px | Screen header top, auth header padding, major section breaks |
 
-Exceptions:
+**Exception note — SPACING.md (12px):** 12px is a project-established token predating this phase, defined in `src/theme/spacing.ts` line 4. It is not in the standard 4/8/16/24/32/48/64 set but is retained for consistency with the existing project token file. All usages MUST reference `SPACING.md`, never a hardcoded `12`.
+
+Additional exceptions (structural dimensions, not spacing gaps):
+
 - Profile row minimum height: 52px (established pattern — `minHeight: 52` in `row` style)
 - Avatar size: 80px (established — `AvatarCircle size={80}`)
 - Pencil overlay badge: 32px × 32px (SPACING.xl square, RADII.full)
-- Status dot on friend profile: 10px × 10px (established — no token, use literal 10)
+- Status dot on friend profile: 8px × 8px using `SPACING.xs` token (changed from previous 10px non-multiple to conform to 4-point grid)
 - Logout row top margin: 48px (established hardcoded gap in profile.tsx — maintain for visual breathing room above destructive action)
 
 Source: `src/theme/spacing.ts`, `src/app/(tabs)/profile.tsx` StyleSheet.
@@ -56,9 +59,11 @@ Source: `src/theme/spacing.ts`, `src/app/(tabs)/profile.tsx` StyleSheet.
 | Role | Token | Size | Weight | Line Height | Usage |
 |------|-------|------|--------|-------------|-------|
 | Body / Row label | FONT_SIZE.lg | 16px | FONT_WEIGHT.regular (400) | 1.5 | Row labels, button labels, status text, body copy |
-| Secondary / Caption | FONT_SIZE.md | 14px | FONT_WEIGHT.regular (400) | 1.4 | Section label text, form field labels, username, char count |
+| Secondary / Caption | FONT_SIZE.md | 14px | FONT_WEIGHT.regular (400) | 1.4 | Section label text, form field labels, username, char count label |
 | Small / Hint | FONT_SIZE.sm | 13px | FONT_WEIGHT.regular (400) | 1.4 | Timestamps, denied hint text, wish list URL/notes, version string |
 | Heading / Name | FONT_SIZE.xl | 20px | FONT_WEIGHT.semibold (600) | 1.2 | Display name on profile and friend profile screens |
+
+**FONT_SIZE.sm discrepancy note:** `src/theme/typography.ts` declares `FONT_SIZE.sm = 13`. The existing `charCount` style in `src/app/profile/edit.tsx` line 413 contains a hardcoded `fontSize: 12` with an `// eslint-disable-next-line campfire/no-hardcoded-styles` comment — this deviation predates this phase and is retained as-is for the char count style only. All other FONT_SIZE.sm usages are 13px via token.
 
 Notes:
 - Section headers (e.g., "NOTIFICATIONS") use FONT_SIZE.md (14px) at FONT_WEIGHT.regular, COLORS.text.secondary — uppercase via text content, not `textTransform`.
@@ -101,9 +106,11 @@ Source: `src/theme/colors.ts`, `src/app/(tabs)/profile.tsx`, `src/app/friends/[i
 
 ### Screen A: Profile Tab (`src/app/(tabs)/profile.tsx`)
 
+**Primary visual anchor:** Avatar + display name block (AvatarCircle 80px, display name at FONT_SIZE.xl/semibold, username at FONT_SIZE.md/secondary) — this compound element is the focal point at the top of the screen.
+
 **Layout order (top to bottom):**
 1. ScreenHeader — title "Profile"
-2. Avatar block (centered): AvatarCircle 80px + pencil overlay badge → `onPress` triggers photo picker Alert directly (no navigation). Display name at FONT_SIZE.xl/semibold. Username at FONT_SIZE.md/regular/secondary.
+2. Avatar block (centered): AvatarCircle 80px + pencil overlay badge (`accessibilityLabel="Change profile photo"`) → `onPress` triggers photo picker Alert directly (no navigation). Display name at FONT_SIZE.xl/semibold. Username at FONT_SIZE.md/regular/secondary.
 3. Row: "Edit Profile" — Ionicons `person-outline`, chevron-forward trailing, navigates to `/profile/edit`
 4. Row: "My Wish List" — Ionicons `gift-outline`, chevron-forward trailing, navigates to `/profile/wish-list`
 5. Row: "My QR Code" — Ionicons `qr-code-outline`, chevron-forward trailing (existing, keep)
@@ -117,7 +124,7 @@ Source: `src/theme/colors.ts`, `src/app/(tabs)/profile.tsx`, `src/app/friends/[i
 13. Row: "Time" — tappable when morning toggle ON; shows selected time as trailing text; disabled (opacity 0.4) when morning toggle OFF
 14. DateTimePicker inline (conditional, iOS spinner / Android default) — appears when time row tapped and morningEnabled
 15. Hint text (conditional): "Enable notifications in iOS Settings to receive morning prompts." — FONT_SIZE.sm, text.secondary, paddingHorizontal lg
-16. Logout row — FONT_SIZE.lg, destructive color, 52px height, marginTop 48px
+16. Logout row — FONT_SIZE.lg, destructive color, 52px height, marginTop 48px — **intentionally immediate (no confirmation dialog)**; tap calls `supabase.auth.signOut()` directly; Stack.Protected guard handles navigation automatically
 17. Version text — FONT_SIZE.sm, text.secondary, centered
 
 **Removed vs. current:** The "YOUR STATUS" section header and `MoodPicker` component are absent. The "SETTINGS" section header and "MORNING PROMPT" section header are replaced by a single "NOTIFICATIONS" section header. (Source: D-01, D-02)
@@ -128,6 +135,7 @@ Source: `src/theme/colors.ts`, `src/app/(tabs)/profile.tsx`, `src/app/friends/[i
 - "My Wish List" row tap → `router.push('/profile/wish-list')`
 - All three toggles follow existing optimistic-flip + revert-on-error pattern
 - Morning time row is `disabled` and `opacity 0.4` when `morningEnabled === false`
+- "Log out" tap → immediate sign-out, no confirmation dialog (intentional design — log out is low-risk and recoverable)
 
 ---
 
@@ -136,7 +144,7 @@ Source: `src/theme/colors.ts`, `src/app/(tabs)/profile.tsx`, `src/app/friends/[i
 **Layout order (top to bottom):**
 1. ScreenHeader — title "Edit Profile"
 2. Display name TextInput — height 52, backgroundColor surface.card, RADII.lg, FONT_SIZE.lg, text.primary
-3. Char count — FONT_SIZE.sm (12px in existing code, keep), text.secondary, right-aligned
+3. Char count — hardcoded `fontSize: 12` (pre-existing deviation at `edit.tsx` line 413 with eslint-disable comment; retain as-is), text.secondary, right-aligned
 4. @username read-only display — label "Username", value "@{username}" as non-interactive Text, FONT_SIZE.md, text.secondary. No TextInput.
 5. Birthday label — FONT_SIZE.md, text.secondary, marginTop xl
 6. BirthdayPicker component (unchanged)
@@ -168,18 +176,20 @@ Source: `src/theme/colors.ts`, `src/app/(tabs)/profile.tsx`, `src/app/friends/[i
 
 ### Screen D: Friend Profile Screen (`src/app/friends/[id].tsx` — enriched)
 
+**Primary visual anchor:** Avatar + display name block (AvatarCircle 80px centered, display name at FONT_SIZE.xl/semibold, @username at FONT_SIZE.md/secondary) — this compound element is the focal point at the top of the screen.
+
 **Layout order (top to bottom):**
 1. Stack.Screen title = friend's display name (Stack header, existing)
 2. AvatarCircle 80px — centered (existing)
 3. Display name — FONT_SIZE.xl/semibold, text.primary, marginTop lg, centered (existing)
 4. @username — FONT_SIZE.md/regular, text.secondary, marginTop xs, centered (existing)
 5. Status row (conditional — render ONLY when effective_status is non-null):
-   - Status dot 10×10, RADII.xs, backgroundColor COLORS.status[status], marginRight 6
+   - Status dot 8×8 (SPACING.xs), RADII.xs, backgroundColor COLORS.status[status], marginRight 6
    - Status label: status capitalized, FONT_SIZE.lg/regular, color COLORS.status[status]
    - Context tag (if present): FONT_SIZE.lg/regular, text.secondary
    - When effective_status is NULL: omit status row entirely (no "Status unavailable" text — clean omission)
 6. Birthday row (conditional — render ONLY when birthday_month and birthday_day are non-null):
-   - Format: "Month Day" — e.g., "Aug 14" (no year, no emoji per D-10 emoji note being Claude's discretion — omit emoji for clean minimalism matching app style)
+   - Format: "Month Day" — e.g., "Aug 14" (no year, no emoji — clean minimalism matching app style)
    - FONT_SIZE.md/regular, text.secondary, marginTop sm, centered
 7. Action buttons section — marginTop xl:
    - PrimaryButton: "Message {firstName}" (existing)
@@ -220,6 +230,7 @@ Source: `src/theme/colors.ts`, `src/app/(tabs)/profile.tsx`, `src/app/friends/[i
 | Remove friend alert title | "Remove Friend" |
 | Remove friend alert body | "Remove {displayName} from your friends? You can add them again by searching their username." |
 | Remove friend confirm button | "Remove" (style: destructive) |
+| Log out — no confirmation | Immediate action; no alert dialog |
 | Photo picker alert title | "Change Photo" |
 | Photo picker — library option | "Choose from Library" |
 | Photo picker — camera option | "Take Photo" |
@@ -236,6 +247,7 @@ Source: Existing copy extracted from `profile.tsx`, `friends/[id].tsx`, `profile
 |--------|-------|-----------------|
 | Profile tab | Loading (profile fetch) | No explicit loader — profile data renders as empty strings until resolved (existing pattern) |
 | Profile tab | Toggle loading | Optimistic flip; revert on error with Alert |
+| Profile tab | Logging out | `loggingOut` state disables logout row; no spinner (existing pattern) |
 | Edit profile | Saving | PrimaryButton `loading` prop (ActivityIndicator replaces title); inputs retain values |
 | Edit profile | Save disabled | PrimaryButton `disabled` prop (opacity reduction handled internally) |
 | Edit profile | Avatar uploading | ActivityIndicator overlay on AvatarCircle; "Uploading..." replaces "Change Photo" |
@@ -266,7 +278,7 @@ No new component libraries are introduced in this phase. All components are eith
 | `src/app/(tabs)/profile.tsx` | Modify | Remove MoodPicker + YOUR STATUS section; collapse SETTINGS + MORNING PROMPT into NOTIFICATIONS; add Edit Profile row; add My Wish List row; move avatar tap inline |
 | `src/app/profile/edit.tsx` | Modify | Strip avatar section and wish list section; add read-only username display; keep display name + birthday |
 | `src/app/profile/wish-list.tsx` | Create | New screen; wish list CRUD moved from edit.tsx; uses `useMyWishList` hook |
-| `src/app/friends/[id].tsx` | Modify | Switch status to effective_status view; add birthday row; add wish list section using `useFriendWishList` + `WishListItem` |
+| `src/app/friends/[id].tsx` | Modify | Switch status to effective_status view; add birthday row; add wish list section using `useFriendWishList` + `WishListItem`; status dot changed to 8×8 |
 
 Reused without modification: `AvatarCircle`, `BirthdayPicker`, `PrimaryButton`, `ScreenHeader`, `SectionHeader`, `WishListItem`, `LoadingIndicator`, `useMyWishList`, `useFriendWishList`.
 
