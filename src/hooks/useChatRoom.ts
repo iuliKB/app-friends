@@ -260,6 +260,24 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
           });
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter },
+        (payload) => {
+          const raw = payload.new as Record<string, unknown>;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === raw.id
+                ? {
+                    ...m,
+                    body: raw.body as string | null,
+                    message_type: (raw.message_type as string) as MessageType,
+                  }
+                : m
+            )
+          );
+        }
+      )
       .subscribe();
   }
 
