@@ -23,7 +23,7 @@ export default function WishListScreen() {
 
   async function handleAddWishItem() {
     const trimmedTitle = newItemTitle.trim();
-    if (!trimmedTitle) return;
+    if (!trimmedTitle || addingWishItem) return;
     setAddingWishItem(true);
     await addItem(trimmedTitle, newItemUrl.trim() || undefined, newItemNotes.trim() || undefined);
     setNewItemTitle('');
