@@ -609,17 +609,13 @@ None for automated tests — the project does not use a unit test framework. All
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **How does usePoll receive Realtime vote updates from useChatRoom?**
-   - What we know: D-14 mandates the existing channel handles poll_votes events; PollCard needs updated counts.
-   - What's unclear: The bridging mechanism between `useChatRoom` (which owns Realtime) and `usePoll` (which owns local poll state).
-   - Recommendation: Planner chooses one approach — simplest is a `pollVoteEvents` state array in `useChatRoom` that `PollCard` subscribes to via prop, triggering a local count re-fetch when the event's `poll_id` matches.
+1. **How does usePoll receive Realtime vote updates from useChatRoom?** (RESOLVED)
+   - Resolution: `lastPollVoteEvent: { pollId, timestamp }` state atom in `useChatRoom`; `PollCard` receives it as a prop and `usePoll` re-fetches counts when `pollId` matches. Avoids duplicate subscriptions, satisfies D-14.
 
-2. **Upsert vs delete+insert for changing vote?**
-   - What we know: D-12 leaves this to planner's discretion; the composite PK `(poll_id, user_id)` supports upsert naturally.
-   - What's unclear: Whether `supabase.from('poll_votes').upsert()` correctly handles the case where the new `option_id` differs from the existing one.
-   - Recommendation: Use delete+insert (two sequential calls) for clarity — same approach as `addReaction` (delete old, insert new). Upsert only updates the `option_id` of the existing row if `onConflict: 'poll_id,user_id'` is specified, which is valid but less obvious.
+2. **Upsert vs delete+insert for changing vote?** (RESOLVED)
+   - Resolution: delete+insert (two sequential calls) — mirrors `addReaction`/`removeReaction` pattern for consistency. Chosen in Plan 17-01 Task 1.
 
 ---
 
