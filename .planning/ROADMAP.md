@@ -189,7 +189,12 @@ Plans:
   3. Tapping an option casts the user's vote; their selected option is visually distinguished from unselected options
   4. A participant who already voted can tap a different option to change their vote — only one vote per person is counted at any time
   5. Vote counts per option update in real time for all participants without requiring a manual refresh
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 17-01-PLAN.md — usePoll hook + useChatRoom sendPoll() + poll_votes Realtime extension (data layer)
+- [ ] 17-02-PLAN.md — PollCreationSheet component (bottom sheet modal, validation, D-01 through D-04)
+- [ ] 17-03-PLAN.md — PollCard component (unvoted/voted states, animated progress bars, D-05 through D-09)
+- [ ] 17-04-PLAN.md — MessageBubble isPoll branch + ChatRoomScreen wire-up + human verification checkpoint
 **UI hint**: yes
 
 ## Progress
@@ -201,8 +206,8 @@ Plans:
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 4/4 | Complete    | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete    | 2026-04-21 |
-| 17. Polls | v1.5 | 0/TBD | Not started | - |
+| 17. Polls | v1.5 | 0/4 | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-04-21 — Phase 16 plans created (4 plans, 4 waves)*
+*Roadmap updated: 2026-04-21 — Phase 17 plans created (4 plans, 3 waves)*
