@@ -475,18 +475,33 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     // DB write: delete any existing reaction for this user on this message, then insert new
     const oldReaction = preSnapshot.find((r) => r.reacted_by_me);
     if (oldReaction) {
-      await supabase
+      const { error: deleteError } = await supabase
         .from('message_reactions')
         .delete()
         .eq('message_id', messageId)
         .eq('user_id', currentUserId);
+
+      if (deleteError) {
+        // Delete failed — original reaction is still in DB; rollback optimistic update
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m))
+        );
+        return { error: deleteError };
+      }
     }
     const { error: insertError } = await supabase
       .from('message_reactions')
       .insert({ message_id: messageId, user_id: currentUserId, emoji });
 
     if (insertError) {
-      // Silent rollback
+      // Delete succeeded but insert failed — re-insert old reaction to restore DB consistency
+      if (oldReaction) {
+        await supabase.from('message_reactions').insert({
+          message_id: messageId,
+          user_id: currentUserId,
+          emoji: oldReaction.emoji,
+        });
+      }
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m))
       );
