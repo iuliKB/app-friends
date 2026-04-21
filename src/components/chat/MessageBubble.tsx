@@ -25,7 +25,7 @@ interface MessageBubbleProps {
   onDelete: (messageId: string) => void;
   onScrollToMessage: (messageId: string) => void;
   // Phase 15 additions:
-  onReact: (messageId: string, emoji: string) => void;
+  onReact?: (messageId: string, emoji: string) => void;
 }
 
 const PRESET_EMOJIS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
@@ -135,7 +135,7 @@ export function MessageBubble({
   onReply,
   onDelete,
   onScrollToMessage,
-  onReact,
+  onReact = () => {},
 }: MessageBubbleProps) {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
