@@ -100,7 +100,9 @@ export function ReactionsSheet({
     fetchRows();
   }, [fetchRows]);
 
-  const tabs = [ALL_TAB, ...reactions.map((r) => r.emoji)];
+  // Derive tabs and counts from fetched rows so both stay in sync (WR-04)
+  const emojiSet = [...new Set(rows.map((r) => r.emoji))];
+  const tabs = loading ? [ALL_TAB, ...reactions.map((r) => r.emoji)] : [ALL_TAB, ...emojiSet];
 
   const visibleRows =
     activeTab === ALL_TAB ? rows : rows.filter((r) => r.emoji === activeTab);
@@ -123,7 +125,7 @@ export function ReactionsSheet({
           {tabs.map((tab) => {
             const count = tab === ALL_TAB
               ? rows.length
-              : (reactions.find((r) => r.emoji === tab)?.count ?? 0);
+              : rows.filter((r) => r.emoji === tab).length;
             return (
               <TouchableOpacity
                 key={tab}
