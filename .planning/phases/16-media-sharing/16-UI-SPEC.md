@@ -41,6 +41,8 @@ Project uses a 4-base scale defined in `src/theme/spacing.ts`. Map to template s
 | xl | `SPACING.xl` | 24px | Large section spacing, FAB bottom offset |
 | 2xl | `SPACING.xxl` | 32px | Screen header top, auth header padding |
 
+> **Approved project exception:** The project spacing scale deviates from the 4/8/16/24/32/48/64 standard set — `SPACING.md = 12px` is a pre-existing approved project token from `src/theme/spacing.ts`, carried forward unchanged. No new non-standard values introduced by this phase.
+
 Exceptions:
 - SendBar row height: 52px hardcoded (existing container — do not change)
 - Reply bar height: 48px hardcoded (existing — do not change)
@@ -103,6 +105,8 @@ Source: `src/theme/colors.ts`, `src/components/chat/MessageBubble.tsx`, `src/com
 ## Component Inventory
 
 All new components for this phase:
+
+> **Focal Point:** Primary visual anchor on the ChatRoom screen is inline image bubbles in the message list. Secondary anchor is the photo icon in the SendBar row.
 
 ### 1. SendBar photo icon button (extends `SendBar.tsx`)
 
