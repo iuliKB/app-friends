@@ -179,6 +179,7 @@ export function ChatRoomScreen({
                   onDelete={(id) => deleteMessage(id)}
                   onScrollToMessage={scrollToMessage}
                   onReact={(messageId, emoji) => addReaction(messageId, emoji)}
+                  currentUserId={currentUserId}
                 />
               </View>
             );

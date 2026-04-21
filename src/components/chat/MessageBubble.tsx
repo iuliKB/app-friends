@@ -12,6 +12,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { ReactionsSheet } from '@/components/chat/ReactionsSheet';
 import type { MessageWithProfile } from '@/types/chat';
 
 interface MessageBubbleProps {
@@ -26,6 +27,7 @@ interface MessageBubbleProps {
   onScrollToMessage: (messageId: string) => void;
   // Phase 15 additions:
   onReact?: (messageId: string, emoji: string) => void;
+  currentUserId?: string;
 }
 
 const PRESET_EMOJIS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
@@ -136,10 +138,12 @@ export function MessageBubble({
   onDelete,
   onScrollToMessage,
   onReact = () => {},
+  currentUserId = '',
 }: MessageBubbleProps) {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [pillY, setPillY] = useState(0);
+  const [reactionsSheetVisible, setReactionsSheetVisible] = useState(false);
 
   const emojiStripTop = Math.max(SPACING.xl + STRIP_HEIGHT + SPACING.sm, pillY - STRIP_HEIGHT - SPACING.sm);
 
@@ -309,7 +313,7 @@ export function MessageBubble({
               {message.reactions!.map((r) => (
                 <TouchableOpacity
                   key={r.emoji}
-                  onPress={() => onReact(message.id, r.emoji)}
+                  onPress={() => setReactionsSheetVisible(true)}
                   style={[styles.reactionBadge, r.reacted_by_me && styles.reactionBadgeOwn]}
                   activeOpacity={0.7}
                   accessibilityLabel={
@@ -332,6 +336,15 @@ export function MessageBubble({
           )}
         </TouchableOpacity>
         {contextMenu}
+        {reactionsSheetVisible && (message.reactions?.length ?? 0) > 0 && (
+          <ReactionsSheet
+            messageId={message.id}
+            reactions={message.reactions!}
+            currentUserId={currentUserId}
+            onReact={onReact}
+            onClose={() => setReactionsSheetVisible(false)}
+          />
+        )}
       </Animated.View>
     );
   }
@@ -374,7 +387,7 @@ export function MessageBubble({
               {message.reactions!.map((r) => (
                 <TouchableOpacity
                   key={r.emoji}
-                  onPress={() => onReact(message.id, r.emoji)}
+                  onPress={() => setReactionsSheetVisible(true)}
                   style={[styles.reactionBadge, r.reacted_by_me && styles.reactionBadgeOwn]}
                   activeOpacity={0.7}
                   accessibilityLabel={
@@ -398,6 +411,15 @@ export function MessageBubble({
         </View>
       </TouchableOpacity>
       {contextMenu}
+      {reactionsSheetVisible && (message.reactions?.length ?? 0) > 0 && (
+        <ReactionsSheet
+          messageId={message.id}
+          reactions={message.reactions!}
+          currentUserId={currentUserId}
+          onReact={onReact}
+          onClose={() => setReactionsSheetVisible(false)}
+        />
+      )}
     </Animated.View>
   );
 }
