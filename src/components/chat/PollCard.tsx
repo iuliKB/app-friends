@@ -38,7 +38,11 @@ function OptionRow({ option, isSelected, hasVoted, totalVotes, onPress }: Option
         useNativeDriver: false,
       }).start();
     } else {
-      widthAnim.setValue(0);
+      Animated.timing(widthAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
     }
   }, [hasVoted, option.votes, totalVotes]); // eslint-disable-line react-hooks/exhaustive-deps
 

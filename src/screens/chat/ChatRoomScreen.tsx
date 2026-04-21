@@ -324,7 +324,6 @@ export function ChatRoomScreen({
         onDismiss={() => setShowPollCreationSheet(false)}
         onSend={(question, options) => {
           void sendPoll(question, options);
-          setShowPollCreationSheet(false);
         }}
       />
     </KeyboardAvoidingView>

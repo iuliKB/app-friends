@@ -275,15 +275,15 @@ export function useChatRoom({
       // Dedup: own INSERT already applied via optimistic update in usePoll
       if (incomingUserId === currentUserId) return;
 
-      // Scope guard: verify poll_id belongs to a message in current room
+      // Scope guard: only signal PollCard if this poll belongs to a message in this room
+      let isInRoom = false;
       setMessages((prev) => {
-        const msgIdx = prev.findIndex((m) => m.poll_id === incomingPollId);
-        if (msgIdx === -1) return prev; // not in this room
-        return prev; // no messages state change — just signal PollCard via lastPollVoteEvent
+        isInRoom = prev.some((m) => m.poll_id === incomingPollId);
+        return prev;
       });
-
-      // Signal PollCard to refresh counts (bridge to usePoll without duplicate subscription)
-      setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
+      if (isInRoom) {
+        setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
+      }
     }
 
     function handlePollVoteDelete(payload: { old: Record<string, unknown> }) {
@@ -293,13 +293,14 @@ export function useChatRoom({
 
       if (deletedUserId === currentUserId) return;
 
+      let isInRoom = false;
       setMessages((prev) => {
-        const msgIdx = prev.findIndex((m) => m.poll_id === incomingPollId);
-        if (msgIdx === -1) return prev;
+        isInRoom = prev.some((m) => m.poll_id === incomingPollId);
         return prev;
       });
-
-      setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
+      if (isInRoom) {
+        setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
+      }
     }
 
     channelRef.current = supabase
@@ -390,6 +391,7 @@ export function useChatRoom({
                     ...m,
                     body: raw.body as string | null,
                     message_type: raw.message_type as string as MessageType,
+                    poll_id: (raw.poll_id as string | null) ?? m.poll_id,
                   }
                 : m
             )
