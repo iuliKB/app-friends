@@ -91,7 +91,7 @@
 - [x] **Phase 14: Reply Threading** - Long-press context menu primitive + inline quoted reply in chat (completed 2026-04-20)
 - [x] **Phase 15: Message Reactions** - Tapback emoji strip extending the context menu; live counts inline below bubbles (completed 2026-04-21)
 - [x] **Phase 16: Media Sharing** - Photo library + camera capture, compressed upload, inline image bubbles (completed 2026-04-21)
-- [ ] **Phase 17: Polls** - Poll creation via attachment menu, live vote counts, per-person single vote
+- [x] **Phase 17: Polls** - Poll creation via attachment menu, live vote counts, per-person single vote (completed 2026-04-21)
 
 ## Phase Details
 
@@ -194,7 +194,7 @@ Plans:
 - [x] 17-01-PLAN.md — usePoll hook + useChatRoom sendPoll() + poll_votes Realtime extension (data layer)
 - [x] 17-02-PLAN.md — PollCreationSheet component (bottom sheet modal, validation, D-01 through D-04)
 - [x] 17-03-PLAN.md — PollCard component (unvoted/voted states, animated progress bars, D-05 through D-09)
-- [ ] 17-04-PLAN.md — MessageBubble isPoll branch + ChatRoomScreen wire-up + human verification checkpoint
+- [x] 17-04-PLAN.md — MessageBubble isPoll branch + ChatRoomScreen wire-up + human verification checkpoint
 **UI hint**: yes
 
 ## Progress
@@ -206,7 +206,7 @@ Plans:
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 4/4 | Complete    | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete    | 2026-04-21 |
-| 17. Polls | v1.5 | 3/4 | In Progress|  |
+| 17. Polls | v1.5 | 4/4 | Complete   | 2026-04-21 |
 
 ---
 

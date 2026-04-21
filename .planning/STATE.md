@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
-status: executing
-stopped_at: Completed 17-03-PLAN.md
-last_updated: "2026-04-21T20:38:01.563Z"
+status: verifying
+stopped_at: Completed 17-04-PLAN.md
+last_updated: "2026-04-21T21:00:47.755Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 21
-  completed_plans: 20
-  percent: 95
+  completed_plans: 21
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 Milestone: v1.5 Chat & Profile
 Phase: 17 (polls) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-21
 
 Progress: [░░░░░░░░░░] 0%
@@ -82,6 +82,9 @@ Requirements covered: 16/16 mapped
 - [Phase 17-polls]: lastPollVoteEvent bridge: useChatRoom Realtime signals usePoll re-fetch without duplicate subscription
 - [Phase 17-polls]: eslint-disable suppression only needed for backdrop rgba string in PollCreationSheet — minWidth/minHeight/height: 4 values are not flagged by campfire/no-hardcoded-styles (confirmed via lint)
 - [Phase 17-polls]: OptionRow declared before PollCard in file — stable Animated.Value per instance, no re-creation on parent re-render
+- [Phase 17-polls]: isPoll early-return placed before isOwn branch in MessageBubble to bypass 75% maxWidth bubble constraint
+- [Phase 17-polls]: onAttachmentAction fires after setMenuVisible(false) in SendBar — iOS cannot stack two Modals simultaneously
+- [Phase 17-polls]: crypto.randomUUID() unavailable in Hermes — use Math.random UUID template for all optimistic IDs
 
 ### Pending Todos
 
@@ -93,5 +96,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-21T20:38:01.559Z
-Stopped at: Completed 17-03-PLAN.md
+Last session: 2026-04-21T21:00:47.751Z
+Stopped at: Completed 17-04-PLAN.md
