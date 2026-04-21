@@ -157,7 +157,7 @@ Plans:
 Plans:
 - [x] 15-01-PLAN.md — aggregateReactions utility + unit tests (TDD)
 - [x] 15-02-PLAN.md — MessageBubble: EmojiStripRow + ReactionBadgeRow + onReact prop
-- [ ] 15-03-PLAN.md — useChatRoom: reactions load, addReaction/removeReaction, realtime extension
+- [x] 15-03-PLAN.md — useChatRoom: reactions load, addReaction/removeReaction, realtime extension
 - [ ] 15-04-PLAN.md — ChatRoomScreen: wire onReact + human verification checkpoint
 **UI hint**: yes
 
@@ -194,7 +194,7 @@ Plans:
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
-| 15. Message Reactions | v1.5 | 2/4 | In Progress|  |
+| 15. Message Reactions | v1.5 | 3/4 | In Progress|  |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |
 
