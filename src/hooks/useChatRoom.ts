@@ -471,19 +471,23 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
   async function deleteMessage(messageId: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
-    // Stash original body and message_type before optimistic update (RESEARCH.md Pitfall 4)
-    const original = messages.find((m) => m.id === messageId);
-    const originalBody = original?.body ?? null;
-    const originalMessageType = original?.message_type ?? 'text';
+    // Stash original body and message_type inside the updater to avoid stale closure reads.
+    // Collapsing snapshot-capture and optimistic update into a single setMessages call guarantees
+    // the snapshot is taken from the same state being mutated (same pattern as addReaction).
+    let originalBody: string | null = null;
+    let originalMessageType: MessageType = 'text';
 
     // Optimistic update: set body=NULL + message_type='deleted'
-    setMessages((prev) =>
-      prev.map((m) =>
+    setMessages((prev) => {
+      const original = prev.find((m) => m.id === messageId);
+      originalBody = original?.body ?? null;
+      originalMessageType = original?.message_type ?? 'text';
+      return prev.map((m) =>
         m.id === messageId
           ? { ...m, body: null, message_type: 'deleted' as MessageType }
           : m
-      )
-    );
+      );
+    });
 
     const { error: updateError } = await supabase
       .from('messages')
