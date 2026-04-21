@@ -17,6 +17,8 @@ interface UseChatRoomResult {
   error: string | null;
   sendMessage: (body: string, replyToId?: string) => Promise<{ error: Error | null }>;
   deleteMessage: (messageId: string) => Promise<{ error: Error | null }>;
+  addReaction: (messageId: string, emoji: string) => Promise<{ error: Error | null }>;
+  removeReaction: (messageId: string, emoji: string) => Promise<{ error: Error | null }>;
 }
 
 type ProfileInfo = { display_name: string; avatar_url: string | null };
@@ -380,5 +382,90 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     return { error: null };
   }
 
-  return { messages, loading, error, sendMessage, deleteMessage };
+  async function addReaction(messageId: string, emoji: string): Promise<{ error: Error | null }> {
+    if (!currentUserId) return { error: new Error('Not authenticated') };
+
+    // Snapshot pre-tap state synchronously before any await (prevents stale closure)
+    const preSnapshot = messages.find((m) => m.id === messageId)?.reactions ?? [];
+
+    // Optimistic update: apply net result (remove old reaction, add/increment new)
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== messageId) return m;
+        const existing = m.reactions ?? [];
+        // Remove previous reaction by this user (one-emoji-per-user — D-03)
+        const withoutOld = existing
+          .map((r) =>
+            r.reacted_by_me ? { ...r, count: r.count - 1, reacted_by_me: false } : r
+          )
+          .filter((r) => r.count > 0);
+        // Add or increment new emoji
+        const idx = withoutOld.findIndex((r) => r.emoji === emoji);
+        if (idx >= 0) {
+          const updated = [...withoutOld];
+          updated[idx] = { ...updated[idx]!, count: updated[idx]!.count + 1, reacted_by_me: true };
+          return { ...m, reactions: updated };
+        }
+        return { ...m, reactions: [...withoutOld, { emoji, count: 1, reacted_by_me: true }] };
+      })
+    );
+
+    // DB write: delete any existing reaction for this user on this message, then insert new
+    const oldReaction = preSnapshot.find((r) => r.reacted_by_me);
+    if (oldReaction) {
+      await supabase
+        .from('message_reactions')
+        .delete()
+        .eq('message_id', messageId)
+        .eq('user_id', currentUserId);
+    }
+    const { error: insertError } = await supabase
+      .from('message_reactions')
+      .insert({ message_id: messageId, user_id: currentUserId, emoji });
+
+    if (insertError) {
+      // Silent rollback
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m))
+      );
+      return { error: insertError };
+    }
+    return { error: null };
+  }
+
+  async function removeReaction(messageId: string, emoji: string): Promise<{ error: Error | null }> {
+    if (!currentUserId) return { error: new Error('Not authenticated') };
+
+    const preSnapshot = messages.find((m) => m.id === messageId)?.reactions ?? [];
+
+    // Optimistic update: decrement count, remove pill if count reaches 0
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== messageId) return m;
+        const updated = (m.reactions ?? [])
+          .map((r) =>
+            r.emoji === emoji ? { ...r, count: r.count - 1, reacted_by_me: false } : r
+          )
+          .filter((r) => r.count > 0);
+        return { ...m, reactions: updated };
+      })
+    );
+
+    const { error: deleteError } = await supabase
+      .from('message_reactions')
+      .delete()
+      .eq('message_id', messageId)
+      .eq('user_id', currentUserId)
+      .eq('emoji', emoji);
+
+    if (deleteError) {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m))
+      );
+      return { error: deleteError };
+    }
+    return { error: null };
+  }
+
+  return { messages, loading, error, sendMessage, deleteMessage, addReaction, removeReaction };
 }

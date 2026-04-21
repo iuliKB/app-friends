@@ -594,6 +594,28 @@ export type Database = {
         };
         Relationships: [];
       };
+      // Phase 15 (migration 0018) — message reactions table
+      message_reactions: {
+        Row: {
+          message_id: string;
+          user_id: string;
+          emoji: string;
+          created_at: string;
+        };
+        Insert: {
+          message_id: string;
+          user_id: string;
+          emoji: string;
+          created_at?: string;
+        };
+        Update: {
+          message_id?: string;
+          user_id?: string;
+          emoji?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       // Phase 2 v1.3 (migration 0009) — effective status view (security_invoker=true).
