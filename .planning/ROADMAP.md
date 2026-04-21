@@ -153,7 +153,12 @@ Plans:
   2. Tapping an emoji adds the user's reaction and immediately shows the count badge below the message bubble without a full reload
   3. Tapping the same emoji a second time removes the reaction and the count badge disappears if the count reaches zero
   4. Reactions from all chat participants are visible and update in real time without page refresh
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 15-01-PLAN.md — aggregateReactions utility + unit tests (TDD)
+- [ ] 15-02-PLAN.md — MessageBubble: EmojiStripRow + ReactionBadgeRow + onReact prop
+- [ ] 15-03-PLAN.md — useChatRoom: reactions load, addReaction/removeReaction, realtime extension
+- [ ] 15-04-PLAN.md — ChatRoomScreen: wire onReact + human verification checkpoint
 **UI hint**: yes
 
 ### Phase 16: Media Sharing
@@ -189,10 +194,10 @@ Plans:
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
-| 15. Message Reactions | v1.5 | 0/TBD | Not started | - |
+| 15. Message Reactions | v1.5 | 0/4 | Not started | - |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-04-20 — v1.5 Chat & Profile roadmap created (Phases 12-17)*
+*Roadmap updated: 2026-04-21 — Phase 15 plans created (4 plans, 3 waves)*
