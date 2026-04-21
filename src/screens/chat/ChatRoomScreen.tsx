@@ -4,12 +4,16 @@ import {
   Animated,
   FlatList,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { ImageViewerModal } from '@/components/chat/ImageViewerModal';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation, useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
@@ -48,7 +52,7 @@ export function ChatRoomScreen({
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
 
-  const { messages, loading: _loading, sendMessage, deleteMessage, addReaction } = useChatRoom({ planId, dmChannelId, groupChannelId });
+  const { messages, loading: _loading, sendMessage, sendImage, deleteMessage, addReaction } = useChatRoom({ planId, dmChannelId, groupChannelId });
 
   // Phase 14: FlatList ref for scrollToIndex
   const flatListRef = useRef<FlatList<MessageWithProfile>>(null);
@@ -59,9 +63,13 @@ export function ChatRoomScreen({
   // Phase 14: highlighted message for scroll-to-original flash
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
+  // Phase 16: full-screen image viewer
+  const [viewerImageUrl, setViewerImageUrl] = useState<string | null>(null);
+
   // Phase 14: toast for out-of-window original
   const toastAnim = useRef(new Animated.Value(0)).current;
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('Scroll up to see the original message');
 
   useEffect(() => {
     if (!groupChannelId || !friendName) return;
@@ -77,13 +85,17 @@ export function ChatRoomScreen({
     });
   }, [groupChannelId, friendName, navigation]);
 
-  function showToast() {
+  function showToast(message?: string) {
+    if (message) setToastMessage(message);
     setToastVisible(true);
     Animated.sequence([
       Animated.timing(toastAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
       Animated.delay(2000),
       Animated.timing(toastAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-    ]).start(() => setToastVisible(false));
+    ]).start(() => {
+      setToastVisible(false);
+      setToastMessage('Scroll up to see the original message');
+    });
   }
 
   function scrollToMessage(messageId: string) {
@@ -114,6 +126,66 @@ export function ChatRoomScreen({
     if (error) {
       Alert.alert('Error', 'Message failed to send.', [{ text: 'OK' }]);
     }
+  }
+
+  function handlePhotoPress() {
+    Alert.alert('Send Photo', undefined, [
+      {
+        text: 'Photo Library',
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: 'images' as ImagePicker.MediaType,
+            allowsEditing: false,
+            quality: 1,
+          });
+          if (!result.canceled && result.assets[0]) {
+            await handlePhotoSelected(result.assets[0].uri);
+          }
+        },
+      },
+      {
+        text: 'Camera',
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert(
+              'Camera Access Needed',
+              'Allow Campfire to use your camera in Settings to take photos.',
+              [
+                { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                { text: 'Cancel', style: 'cancel' },
+              ],
+            );
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: 'images' as ImagePicker.MediaType,
+            quality: 1,
+          });
+          if (!result.canceled && result.assets[0]) {
+            await handlePhotoSelected(result.assets[0].uri);
+          }
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  }
+
+  async function handlePhotoSelected(localUri: string) {
+    // T-16-13: compress to max 1280px / 0.75 JPEG before upload — never send raw camera photos
+    const compressed = await manipulateAsync(
+      localUri,
+      [{ resize: { width: 1280 } }],
+      { compress: 0.75, format: SaveFormat.JPEG },
+    );
+
+    const replyToId = replyContext?.messageId;
+    const { error } = await sendImage(compressed.uri, replyToId);
+
+    if (error) {
+      showToast('Photo could not be sent');
+    }
+    setReplyContext(null);
   }
 
   function isFirstInGroup(msgs: MessageWithProfile[], index: number): boolean {
@@ -179,6 +251,7 @@ export function ChatRoomScreen({
                   onDelete={(id) => deleteMessage(id)}
                   onScrollToMessage={scrollToMessage}
                   onReact={(messageId, emoji) => addReaction(messageId, emoji)}
+                  onImagePress={(url) => setViewerImageUrl(url)}
                   currentUserId={currentUserId}
                 />
               </View>
@@ -193,7 +266,7 @@ export function ChatRoomScreen({
       )}
       {toastVisible && (
         <Animated.View style={[styles.toast, { opacity: toastAnim }]} pointerEvents="none">
-          <Text style={styles.toastText}>Scroll up to see the original message</Text>
+          <Text style={styles.toastText}>{toastMessage}</Text>
         </Animated.View>
       )}
       <SendBar
@@ -201,6 +274,7 @@ export function ChatRoomScreen({
         onAttachmentAction={handleAttachmentAction}
         replyContext={replyContext}
         onClearReply={() => setReplyContext(null)}
+        onPhotoPress={handlePhotoPress}
       />
       {groupChannelId ? (
         <GroupParticipantsSheet
@@ -209,6 +283,11 @@ export function ChatRoomScreen({
           groupChannelId={groupChannelId}
         />
       ) : null}
+      <ImageViewerModal
+        visible={viewerImageUrl !== null}
+        imageUrl={viewerImageUrl}
+        onClose={() => setViewerImageUrl(null)}
+      />
     </KeyboardAvoidingView>
   );
 }
