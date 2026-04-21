@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   Modal,
   StyleSheet,
@@ -8,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
@@ -28,6 +30,8 @@ interface MessageBubbleProps {
   // Phase 15 additions:
   onReact?: (messageId: string, emoji: string) => void;
   currentUserId?: string;
+  // Phase 16 additions:
+  onImagePress?: (imageUrl: string) => void;
 }
 
 const PRESET_EMOJIS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
@@ -139,6 +143,7 @@ export function MessageBubble({
   onScrollToMessage,
   onReact = () => {},
   currentUserId = '',
+  onImagePress,
 }: MessageBubbleProps) {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -219,6 +224,7 @@ export function MessageBubble({
 
   const timestamp = formatMessageTime(message.created_at);
   const isDeleted = message.message_type === 'deleted';
+  const isImage = message.message_type === 'image';
   const bodyText = isDeleted ? 'Message deleted.' : (message.body ?? '');
 
   const contextMenu = (
@@ -259,15 +265,19 @@ export function MessageBubble({
           <Ionicons name="return-up-back" size={20} color={COLORS.text.primary} />
           <Text style={styles.pillActionLabel}>Reply</Text>
         </TouchableOpacity>
-        <View style={styles.pillDivider} />
-        <TouchableOpacity
-          onPress={handleCopy}
-          style={styles.pillAction}
-          accessibilityLabel="Copy message text"
-        >
-          <Ionicons name="copy-outline" size={20} color={COLORS.text.primary} />
-          <Text style={styles.pillActionLabel}>Copy</Text>
-        </TouchableOpacity>
+        {!isImage && (
+          <>
+            <View style={styles.pillDivider} />
+            <TouchableOpacity
+              onPress={handleCopy}
+              style={styles.pillAction}
+              accessibilityLabel="Copy message text"
+            >
+              <Ionicons name="copy-outline" size={20} color={COLORS.text.primary} />
+              <Text style={styles.pillActionLabel}>Copy</Text>
+            </TouchableOpacity>
+          </>
+        )}
         {isOwn && (
           <>
             <View style={styles.pillDivider} />
@@ -296,7 +306,7 @@ export function MessageBubble({
           onLongPress={handleLongPress}
           activeOpacity={0.8}
         >
-          <View style={[styles.ownBubble, message.pending && styles.pendingOpacity, !!message.reply_to_message_id && styles.replyMinWidth]}>
+          <View style={[styles.ownBubble, isImage && { paddingHorizontal: 0, paddingVertical: 0 }, !!message.reply_to_message_id && styles.replyMinWidth]}>
             {message.reply_to_message_id && (
               <QuotedBlock
                 replyToId={message.reply_to_message_id}
@@ -305,7 +315,30 @@ export function MessageBubble({
                 onPress={() => onScrollToMessage(message.reply_to_message_id!)}
               />
             )}
-            <Text style={isDeleted ? styles.deletedBody : styles.ownBody}>{bodyText}</Text>
+            {isImage ? (
+              <TouchableOpacity
+                onPress={() => message.image_url && onImagePress?.(message.image_url)}
+                activeOpacity={0.9}
+                accessibilityLabel={message.pending ? 'Sending photo...' : `Photo from ${message.sender_display_name}`}
+                style={{ padding: 0 }}
+              >
+                <View style={[styles.imageBubbleWrapper, message.pending && { opacity: 0.7 }]}>
+                  <Image
+                    source={{ uri: message.image_url ?? undefined }}
+                    style={styles.inlineImage}
+                    contentFit="cover"
+                    recyclingKey={message.id}
+                  />
+                  {message.pending && (
+                    <View style={styles.spinnerOverlay}>
+                      <ActivityIndicator size="large" color={COLORS.interactive.accent} />
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <Text style={isDeleted ? styles.deletedBody : styles.ownBody}>{bodyText}</Text>
+            )}
           </View>
           {/* ReactionBadgeRow — D-04, D-05. Sibling to bubble, NOT inside it (Pitfall 5) */}
           {(message.reactions?.length ?? 0) > 0 && (
@@ -370,7 +403,7 @@ export function MessageBubble({
           {showSenderInfo && (
             <Text style={styles.senderName}>{message.sender_display_name}</Text>
           )}
-          <View style={[styles.othersBubble, !!message.reply_to_message_id && styles.replyMinWidth]}>
+          <View style={[styles.othersBubble, isImage && { paddingHorizontal: 0, paddingVertical: 0 }, !!message.reply_to_message_id && styles.replyMinWidth]}>
             {message.reply_to_message_id && (
               <QuotedBlock
                 replyToId={message.reply_to_message_id}
@@ -379,7 +412,30 @@ export function MessageBubble({
                 onPress={() => onScrollToMessage(message.reply_to_message_id!)}
               />
             )}
-            <Text style={isDeleted ? styles.deletedBody : styles.othersBody}>{bodyText}</Text>
+            {isImage ? (
+              <TouchableOpacity
+                onPress={() => message.image_url && onImagePress?.(message.image_url)}
+                activeOpacity={0.9}
+                accessibilityLabel={message.pending ? 'Sending photo...' : `Photo from ${message.sender_display_name}`}
+                style={{ padding: 0 }}
+              >
+                <View style={[styles.imageBubbleWrapper, message.pending && { opacity: 0.7 }]}>
+                  <Image
+                    source={{ uri: message.image_url ?? undefined }}
+                    style={styles.inlineImage}
+                    contentFit="cover"
+                    recyclingKey={message.id}
+                  />
+                  {message.pending && (
+                    <View style={styles.spinnerOverlay}>
+                      <ActivityIndicator size="large" color={COLORS.interactive.accent} />
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <Text style={isDeleted ? styles.deletedBody : styles.othersBody}>{bodyText}</Text>
+            )}
           </View>
           {/* ReactionBadgeRow — others' messages, left-aligned */}
           {(message.reactions?.length ?? 0) > 0 && (
@@ -642,5 +698,27 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.primary,
+  },
+  // Phase 16 — image bubble styles
+  imageBubbleWrapper: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    width: 240,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    maxHeight: 320,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    aspectRatio: 4 / 3,
+    borderRadius: RADII.md,
+    overflow: 'hidden',
+  },
+  inlineImage: {
+    width: '100%',
+    height: '100%',
+  },
+  spinnerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
