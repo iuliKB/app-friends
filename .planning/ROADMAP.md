@@ -193,7 +193,7 @@ Plans:
 Plans:
 - [x] 17-01-PLAN.md — usePoll hook + useChatRoom sendPoll() + poll_votes Realtime extension (data layer)
 - [x] 17-02-PLAN.md — PollCreationSheet component (bottom sheet modal, validation, D-01 through D-04)
-- [ ] 17-03-PLAN.md — PollCard component (unvoted/voted states, animated progress bars, D-05 through D-09)
+- [x] 17-03-PLAN.md — PollCard component (unvoted/voted states, animated progress bars, D-05 through D-09)
 - [ ] 17-04-PLAN.md — MessageBubble isPoll branch + ChatRoomScreen wire-up + human verification checkpoint
 **UI hint**: yes
 
@@ -206,7 +206,7 @@ Plans:
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 4/4 | Complete    | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete    | 2026-04-21 |
-| 17. Polls | v1.5 | 2/4 | In Progress|  |
+| 17. Polls | v1.5 | 3/4 | In Progress|  |
 
 ---
 

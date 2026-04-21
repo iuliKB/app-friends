@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
 status: executing
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-04-21T20:35:26.982Z"
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-04-21T20:38:01.563Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 21
-  completed_plans: 19
-  percent: 90
+  completed_plans: 20
+  percent: 95
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 
 Milestone: v1.5 Chat & Profile
 Phase: 17 (polls) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-04-21
 
@@ -81,6 +81,7 @@ Requirements covered: 16/16 mapped
 - [Phase 17-polls]: poll_votes Realtime via postgres_changes on existing channel (D-14) — no new subscription created per poll card
 - [Phase 17-polls]: lastPollVoteEvent bridge: useChatRoom Realtime signals usePoll re-fetch without duplicate subscription
 - [Phase 17-polls]: eslint-disable suppression only needed for backdrop rgba string in PollCreationSheet — minWidth/minHeight/height: 4 values are not flagged by campfire/no-hardcoded-styles (confirmed via lint)
+- [Phase 17-polls]: OptionRow declared before PollCard in file — stable Animated.Value per instance, no re-creation on parent re-render
 
 ### Pending Todos
 
@@ -92,5 +93,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-21T20:35:26.978Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-04-21T20:38:01.559Z
+Stopped at: Completed 17-03-PLAN.md
