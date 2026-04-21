@@ -285,13 +285,25 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
           };
 
           setMessages((prev) => {
-            // Check if this is a dedup of an optimistic message:
-            // same sender_id + same body, created within 5 seconds of an optimistic entry
+            // Primary dedup: match by id — works for both text (client UUID via sendMessage)
+            // and image messages. Avoids false negatives when the same text is sent twice
+            // within 5 seconds (WR-04). Body-based matching is kept as a secondary fallback
+            // for any legacy messages that may not carry a client-generated id.
+            const byIdIdx = prev.findIndex((m) => m.pending === true && m.id === incoming.id);
+            if (byIdIdx !== -1) {
+              const enriched = enrichMessage(incoming);
+              const updated = [...prev];
+              updated[byIdIdx] = enriched;
+              return updated;
+            }
+
+            // Secondary dedup (fallback): same sender_id + same body within 5 seconds
             const now = new Date(incoming.created_at).getTime();
             const optimisticIdx = prev.findIndex(
               (m) =>
                 m.pending === true &&
                 m.sender_id === incoming.sender_id &&
+                m.body !== null &&
                 m.body === incoming.body &&
                 Math.abs(new Date(m.created_at).getTime() - now) < 5000
             );
@@ -361,7 +373,14 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
   async function sendMessage(body: string, replyToId?: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
-    const tempId = Date.now().toString();
+    // Client-side UUID — passed as id in the insert so Realtime dedup can match by id
+    // instead of body text. This eliminates false-negative dedup when the same text is
+    // sent twice within 5 seconds (WR-04, same strategy as sendImage).
+    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
+    const tempId = messageId;
 
     const optimistic: MessageWithProfile = {
       id: tempId,
@@ -384,6 +403,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     setMessages((prev) => [optimistic, ...prev]);
 
     const { error: insertError } = await supabase.from('messages').insert({
+      id: messageId,
       plan_id: planId ?? null,
       dm_channel_id: dmChannelId ?? null,
       group_channel_id: groupChannelId ?? null,
