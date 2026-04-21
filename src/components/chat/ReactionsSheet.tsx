@@ -55,17 +55,30 @@ export function ReactionsSheet({
 
   const fetchRows = useCallback(async () => {
     setLoading(true);
-    const { data: reactionsData } = await supabase
+    const { data: reactionsData, error: reactionsFetchError } = await supabase
       .from('message_reactions')
       .select('emoji, user_id')
       .eq('message_id', messageId);
 
+    if (reactionsFetchError) {
+      console.warn('[ReactionsSheet] Failed to fetch reactions:', reactionsFetchError.message);
+      setLoading(false);
+      return;
+    }
+
     if (reactionsData && reactionsData.length > 0) {
       const userIds = [...new Set(reactionsData.map((r) => r.user_id))];
-      const { data: profilesData } = await supabase
+      const { data: profilesData, error: profilesFetchError } = await supabase
         .from('profiles')
         .select('id, display_name, avatar_url')
         .in('id', userIds);
+
+      if (profilesFetchError) {
+        console.warn('[ReactionsSheet] Failed to fetch profiles:', profilesFetchError.message);
+        setLoading(false);
+        return;
+      }
+
       const profileMap = new Map(
         (profilesData ?? []).map((p) => [p.id, p])
       );
