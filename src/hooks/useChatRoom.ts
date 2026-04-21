@@ -444,6 +444,12 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     // Snapshot pre-tap state synchronously before any await (prevents stale closure)
     const preSnapshot = messages.find((m) => m.id === messageId)?.reactions ?? [];
 
+    // Toggle-off: tapping the same emoji the user already reacted with → remove it
+    const isSameEmoji = preSnapshot.some((r) => r.emoji === emoji && r.reacted_by_me);
+    if (isSameEmoji) {
+      return removeReaction(messageId, emoji);
+    }
+
     // Optimistic update: apply net result (remove old reaction, add/increment new)
     setMessages((prev) =>
       prev.map((m) => {
