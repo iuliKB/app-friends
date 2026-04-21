@@ -14,6 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { ImageViewerModal } from '@/components/chat/ImageViewerModal';
+import { PollCreationSheet } from '@/components/chat/PollCreationSheet';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation, useRouter } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
@@ -52,7 +53,16 @@ export function ChatRoomScreen({
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
 
-  const { messages, loading: _loading, sendMessage, sendImage, deleteMessage, addReaction } = useChatRoom({ planId, dmChannelId, groupChannelId });
+  const {
+    messages,
+    loading: _loading,
+    sendMessage,
+    sendImage,
+    sendPoll,
+    deleteMessage,
+    addReaction,
+    lastPollVoteEvent,
+  } = useChatRoom({ planId, dmChannelId, groupChannelId });
 
   // Phase 14: FlatList ref for scrollToIndex
   const flatListRef = useRef<FlatList<MessageWithProfile>>(null);
@@ -66,6 +76,9 @@ export function ChatRoomScreen({
   // Phase 16: full-screen image viewer
   const [viewerImageUrl, setViewerImageUrl] = useState<string | null>(null);
 
+  // Phase 17: poll creation sheet
+  const [showPollCreationSheet, setShowPollCreationSheet] = useState(false);
+
   // Phase 14: toast for out-of-window original
   const toastAnim = useRef(new Animated.Value(0)).current;
   const [toastVisible, setToastVisible] = useState(false);
@@ -77,7 +90,13 @@ export function ChatRoomScreen({
     navigation.setOptions({
       headerTitle: () => (
         <TouchableOpacity onPress={() => setParticipantsVisible(true)} activeOpacity={0.7}>
-          <Text style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: COLORS.text.primary }}>
+          <Text
+            style={{
+              fontSize: FONT_SIZE.md,
+              fontWeight: FONT_WEIGHT.semibold,
+              color: COLORS.text.primary,
+            }}
+          >
             {title}
           </Text>
         </TouchableOpacity>
@@ -115,6 +134,8 @@ export function ChatRoomScreen({
         ? `/squad/expenses/create?group_channel_id=${groupChannelId}`
         : '/squad/expenses/create';
       router.push(url as never);
+    } else if (action === 'poll') {
+      setShowPollCreationSheet(true);
     } else {
       Alert.alert('Coming Soon', 'This feature is on the way!', [{ text: 'OK' }]);
     }
@@ -141,7 +162,7 @@ export function ChatRoomScreen({
               [
                 { text: 'Open Settings', onPress: () => Linking.openSettings() },
                 { text: 'Cancel', style: 'cancel' },
-              ],
+              ]
             );
             return;
           }
@@ -166,7 +187,7 @@ export function ChatRoomScreen({
               [
                 { text: 'Open Settings', onPress: () => Linking.openSettings() },
                 { text: 'Cancel', style: 'cancel' },
-              ],
+              ]
             );
             return;
           }
@@ -185,11 +206,10 @@ export function ChatRoomScreen({
 
   async function handlePhotoSelected(localUri: string) {
     // T-16-13: compress to max 1280px / 0.75 JPEG before upload — never send raw camera photos
-    const compressed = await manipulateAsync(
-      localUri,
-      [{ resize: { width: 1280 } }],
-      { compress: 0.75, format: SaveFormat.JPEG },
-    );
+    const compressed = await manipulateAsync(localUri, [{ resize: { width: 1280 } }], {
+      compress: 0.75,
+      format: SaveFormat.JPEG,
+    });
 
     const replyToId = replyContext?.messageId;
     const { error } = await sendImage(compressed.uri, replyToId);
@@ -243,9 +263,7 @@ export function ChatRoomScreen({
             return (
               <View>
                 {showSeparator && (
-                  <Text style={styles.timeSeparator}>
-                    {formatTimeSeparator(item.created_at)}
-                  </Text>
+                  <Text style={styles.timeSeparator}>{formatTimeSeparator(item.created_at)}</Text>
                 )}
                 <MessageBubble
                   message={item}
@@ -265,6 +283,7 @@ export function ChatRoomScreen({
                   onReact={(messageId, emoji) => addReaction(messageId, emoji)}
                   onImagePress={(url) => setViewerImageUrl(url)}
                   currentUserId={currentUserId}
+                  lastPollVoteEvent={lastPollVoteEvent}
                 />
               </View>
             );
@@ -299,6 +318,14 @@ export function ChatRoomScreen({
         visible={viewerImageUrl !== null}
         imageUrl={viewerImageUrl}
         onClose={() => setViewerImageUrl(null)}
+      />
+      <PollCreationSheet
+        visible={showPollCreationSheet}
+        onDismiss={() => setShowPollCreationSheet(false)}
+        onSend={(question, options) => {
+          void sendPoll(question, options);
+          setShowPollCreationSheet(false);
+        }}
       />
     </KeyboardAvoidingView>
   );
