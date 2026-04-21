@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
 status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-04-21T15:52:43.505Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-04-21T15:55:03.050Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 17
-  completed_plans: 14
-  percent: 82
+  completed_plans: 15
+  percent: 88
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 
 Milestone: v1.5 Chat & Profile
 Phase: 16 (media-sharing) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-21
 
@@ -74,6 +74,7 @@ Requirements covered: 16/16 mapped
 - [Phase 14-reply-threading]: scrollToMessage sets highlightedId then clears after 1200ms; onScrollToIndexFailed shows toast (out-of-window D-11)
 - [Phase 16]: contentType forced to image/jpeg in uploadChatMedia — client cannot upload executable disguised as image (T-16-02)
 - [Phase 16]: upsert: false in uploadChatMedia — each messageId is UUID, no re-upload needed
+- [Phase 16]: crypto.randomUUID() as shared storage/DB key in sendImage — body=null breaks body+sender dedup guard; id-based dedup is the clean alternative
 
 ### Pending Todos
 
@@ -85,5 +86,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-21T15:52:43.501Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-04-21T15:55:03.046Z
+Stopped at: Completed 16-02-PLAN.md
