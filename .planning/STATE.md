@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
 status: verifying
-stopped_at: Completed 16-04-PLAN.md — awaiting human verification checkpoint
-last_updated: "2026-04-21T16:02:15.588Z"
+stopped_at: Completed 16-04-PLAN.md — Phase 16 media-sharing complete, human verification approved
+last_updated: "2026-04-21T16:15:00.943Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
@@ -77,6 +77,7 @@ Requirements covered: 16/16 mapped
 - [Phase 16]: crypto.randomUUID() as shared storage/DB key in sendImage — body=null breaks body+sender dedup guard; id-based dedup is the clean alternative
 - [Phase 16]: requestPermissionsAsync(true) not ({writeOnly:true}) — actual expo-media-library SDK signature takes boolean not object
 - [Phase 16]: showToast extended with optional message param; reset to default text on animation end preserves existing scroll-toast behaviour
+- [Phase 16-media-sharing]: showToast extended with optional message param that resets to default on animation end — preserves existing scroll-to-original toast behaviour without duplicating animation logic
 
 ### Pending Todos
 
@@ -88,5 +89,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-21T16:02:15.585Z
-Stopped at: Completed 16-04-PLAN.md — awaiting human verification checkpoint
+Last session: 2026-04-21T16:15:00.940Z
+Stopped at: Completed 16-04-PLAN.md — Phase 16 media-sharing complete, human verification approved

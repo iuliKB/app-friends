@@ -32,7 +32,7 @@ decisions:
 metrics:
   duration: "~10 minutes"
   completed: "2026-04-21"
-  tasks_completed: 1
+  tasks_completed: 2
   files_created: 0
   files_modified: 1
 ---
@@ -46,7 +46,7 @@ metrics:
 | # | Task | Commit | Files |
 |---|------|--------|-------|
 | 1 | Wire photo picker, compression, sendImage, and ImageViewerModal in ChatRoomScreen | fbb3465 | src/screens/chat/ChatRoomScreen.tsx |
-| 2 | Human verification checkpoint | — | (awaiting human approval) |
+| 2 | Human verification — end-to-end photo send flow | — | approved by user |
 
 ## Verification Results
 
