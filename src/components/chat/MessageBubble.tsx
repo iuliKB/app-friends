@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { ReactionsSheet } from '@/components/chat/ReactionsSheet';
+import { PollCard } from '@/components/chat/PollCard';
 import type { MessageWithProfile } from '@/types/chat';
 
 interface MessageBubbleProps {
@@ -32,6 +33,8 @@ interface MessageBubbleProps {
   currentUserId?: string;
   // Phase 16 additions:
   onImagePress?: (imageUrl: string) => void;
+  // Phase 17 additions:
+  lastPollVoteEvent?: { pollId: string; timestamp: number } | null;
 }
 
 const PRESET_EMOJIS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
@@ -144,19 +147,22 @@ export function MessageBubble({
   onReact = () => {},
   currentUserId = '',
   onImagePress,
+  lastPollVoteEvent,
 }: MessageBubbleProps) {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [pillY, setPillY] = useState(0);
   const [reactionsSheetVisible, setReactionsSheetVisible] = useState(false);
 
-  const emojiStripTop = Math.max(SPACING.xl + STRIP_HEIGHT + SPACING.sm, pillY - STRIP_HEIGHT - SPACING.sm);
+  const emojiStripTop = Math.max(
+    SPACING.xl + STRIP_HEIGHT + SPACING.sm,
+    pillY - STRIP_HEIGHT - SPACING.sm
+  );
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const highlightAnim = useRef(new Animated.Value(0)).current;
 
-  // eslint-disable-next-line campfire/no-hardcoded-styles
   const highlightBg = highlightAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['transparent', 'rgba(249, 115, 22, 0.2)'],
@@ -225,31 +231,31 @@ export function MessageBubble({
   const timestamp = formatMessageTime(message.created_at);
   const isDeleted = message.message_type === 'deleted';
   const isImage = message.message_type === 'image';
+  const isPoll = message.message_type === 'poll';
   const bodyText = isDeleted ? 'Message deleted.' : (message.body ?? '');
 
   const contextMenu = (
-    <Modal
-      visible={menuVisible}
-      transparent
-      animationType="none"
-      onRequestClose={closeMenu}
-    >
+    <Modal visible={menuVisible} transparent animationType="none" onRequestClose={closeMenu}>
       <TouchableWithoutFeedback onPress={closeMenu}>
         <View style={[StyleSheet.absoluteFillObject, styles.backdrop]} />
       </TouchableWithoutFeedback>
       {/* NEW: emoji strip above pill — D-01 */}
       <View style={[styles.emojiStrip, { top: emojiStripTop }]}>
         {PRESET_EMOJIS.map((emoji) => {
-          const isActive = message.reactions?.some((r) => r.emoji === emoji && r.reacted_by_me) ?? false;
+          const isActive =
+            message.reactions?.some((r) => r.emoji === emoji && r.reacted_by_me) ?? false;
           return (
             <TouchableOpacity
               key={emoji}
-              onPress={() => { closeMenu(); onReact(message.id, emoji); }}
+              onPress={() => {
+                closeMenu();
+                onReact(message.id, emoji);
+              }}
               style={[styles.emojiButton, isActive && styles.emojiButtonActive]}
               activeOpacity={0.7}
               accessibilityLabel={`React with ${getEmojiName(emoji)}`}
             >
-              {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+              {}
               <Text style={{ fontSize: 24 }}>{emoji}</Text>
             </TouchableOpacity>
           );
@@ -257,15 +263,17 @@ export function MessageBubble({
       </View>
       {/* Existing pill — UNCHANGED */}
       <View style={[styles.contextPill, { top: pillY }]}>
-        <TouchableOpacity
-          onPress={handleReply}
-          style={styles.pillAction}
-          accessibilityLabel="Reply to message"
-        >
-          <Ionicons name="return-up-back" size={20} color={COLORS.text.primary} />
-          <Text style={styles.pillActionLabel}>Reply</Text>
-        </TouchableOpacity>
-        {!isImage && (
+        {!isPoll && (
+          <TouchableOpacity
+            onPress={handleReply}
+            style={styles.pillAction}
+            accessibilityLabel="Reply to message"
+          >
+            <Ionicons name="return-up-back" size={20} color={COLORS.text.primary} />
+            <Text style={styles.pillActionLabel}>Reply</Text>
+          </TouchableOpacity>
+        )}
+        {!isImage && !isPoll && (
           <>
             <View style={styles.pillDivider} />
             <TouchableOpacity
@@ -297,6 +305,25 @@ export function MessageBubble({
     </Modal>
   );
 
+  if (isPoll) {
+    return (
+      <Animated.View style={{ backgroundColor: highlightBg }}>
+        <TouchableOpacity
+          style={styles.pollContainer}
+          onLongPress={handleLongPress}
+          activeOpacity={0.9}
+        >
+          <PollCard
+            message={message}
+            currentUserId={currentUserId ?? ''}
+            lastPollVoteEvent={lastPollVoteEvent ?? null}
+          />
+        </TouchableOpacity>
+        {contextMenu}
+      </Animated.View>
+    );
+  }
+
   if (isOwn) {
     return (
       <Animated.View style={{ backgroundColor: highlightBg }}>
@@ -306,7 +333,13 @@ export function MessageBubble({
           onLongPress={handleLongPress}
           activeOpacity={0.8}
         >
-          <View style={[styles.ownBubble, isImage && { paddingHorizontal: 0, paddingVertical: 0 }, !!message.reply_to_message_id && styles.replyMinWidth]}>
+          <View
+            style={[
+              styles.ownBubble,
+              isImage && { paddingHorizontal: 0, paddingVertical: 0 },
+              !!message.reply_to_message_id && styles.replyMinWidth,
+            ]}
+          >
             {message.reply_to_message_id && (
               <QuotedBlock
                 replyToId={message.reply_to_message_id}
@@ -319,7 +352,9 @@ export function MessageBubble({
               <TouchableOpacity
                 onPress={() => message.image_url && onImagePress?.(message.image_url)}
                 activeOpacity={0.9}
-                accessibilityLabel={message.pending ? 'Sending photo...' : `Photo from ${message.sender_display_name}`}
+                accessibilityLabel={
+                  message.pending ? 'Sending photo...' : `Photo from ${message.sender_display_name}`
+                }
                 style={{ padding: 0 }}
               >
                 <View style={[styles.imageBubbleWrapper, message.pending && { opacity: 0.7 }]}>
@@ -355,7 +390,7 @@ export function MessageBubble({
                       : `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}`
                   }
                 >
-                  {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+                  {}
                   <Text style={{ fontSize: 14 }}>{r.emoji}</Text>
                   <Text style={styles.reactionBadgeCount}>{r.count}</Text>
                 </TouchableOpacity>
@@ -400,10 +435,14 @@ export function MessageBubble({
           <View style={styles.avatarSpacer} />
         )}
         <View style={styles.othersContent}>
-          {showSenderInfo && (
-            <Text style={styles.senderName}>{message.sender_display_name}</Text>
-          )}
-          <View style={[styles.othersBubble, isImage && { paddingHorizontal: 0, paddingVertical: 0 }, !!message.reply_to_message_id && styles.replyMinWidth]}>
+          {showSenderInfo && <Text style={styles.senderName}>{message.sender_display_name}</Text>}
+          <View
+            style={[
+              styles.othersBubble,
+              isImage && { paddingHorizontal: 0, paddingVertical: 0 },
+              !!message.reply_to_message_id && styles.replyMinWidth,
+            ]}
+          >
             {message.reply_to_message_id && (
               <QuotedBlock
                 replyToId={message.reply_to_message_id}
@@ -416,7 +455,9 @@ export function MessageBubble({
               <TouchableOpacity
                 onPress={() => message.image_url && onImagePress?.(message.image_url)}
                 activeOpacity={0.9}
-                accessibilityLabel={message.pending ? 'Sending photo...' : `Photo from ${message.sender_display_name}`}
+                accessibilityLabel={
+                  message.pending ? 'Sending photo...' : `Photo from ${message.sender_display_name}`
+                }
                 style={{ padding: 0 }}
               >
                 <View style={[styles.imageBubbleWrapper, message.pending && { opacity: 0.7 }]}>
@@ -452,7 +493,7 @@ export function MessageBubble({
                       : `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}`
                   }
                 >
-                  {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+                  {}
                   <Text style={{ fontSize: 14 }}>{r.emoji}</Text>
                   <Text style={styles.reactionBadgeCount}>{r.count}</Text>
                 </TouchableOpacity>
@@ -558,7 +599,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.secondary,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     fontStyle: 'italic',
   },
   // QuotedBlock styles
@@ -570,7 +611,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   accentBar: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
     width: 4,
     borderRadius: RADII.xs,
   },
@@ -602,13 +642,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     // eslint-disable-next-line campfire/no-hardcoded-styles
     shadowColor: '#000',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     shadowOffset: { width: 0, height: 2 },
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     shadowOpacity: 0.3,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     shadowRadius: 8,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     elevation: 8,
   },
   pillAction: {
@@ -616,7 +656,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.xs,
     paddingHorizontal: SPACING.sm,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     minHeight: 44,
     paddingVertical: SPACING.sm,
   },
@@ -626,9 +666,8 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
   },
   pillDivider: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
     width: 1,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     height: 24,
     backgroundColor: COLORS.border,
     alignSelf: 'center',
@@ -644,21 +683,21 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
     // eslint-disable-next-line campfire/no-hardcoded-styles
     shadowColor: '#000',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     shadowOffset: { width: 0, height: 2 },
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     shadowOpacity: 0.3,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     shadowRadius: 8,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     elevation: 8,
   },
   emojiButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     minWidth: 44,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     minHeight: 44,
     borderRadius: RADII.full,
   },
@@ -685,7 +724,7 @@ const styles = StyleSheet.create({
     borderRadius: RADII.full,
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     borderWidth: 1,
     borderColor: 'transparent',
   },
@@ -699,13 +738,18 @@ const styles = StyleSheet.create({
     fontWeight: FONT_WEIGHT.regular,
     color: COLORS.text.primary,
   },
+  // Phase 17 — poll container style
+  pollContainer: {
+    width: '100%',
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xs,
+  },
   // Phase 16 — image bubble styles
   imageBubbleWrapper: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
     width: 240,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     maxHeight: 320,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     aspectRatio: 4 / 3,
     borderRadius: RADII.md,
     overflow: 'hidden',
