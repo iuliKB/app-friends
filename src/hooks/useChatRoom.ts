@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { aggregateReactions } from '@/utils/aggregateReactions';
 import type { Message, MessageType, MessageWithProfile } from '@/types/chat';
 
 interface UseChatRoomOptions {
@@ -135,7 +136,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
 
       const { data: rows, error: fetchError } = await supabase
         .from('messages')
-        .select('*')
+        .select('*, reactions:message_reactions(emoji, user_id)')
         .eq(column, value!)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -161,6 +162,10 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
           reply_to_message_id: (row.reply_to_message_id as string | null) ?? null,
           message_type: ((row.message_type as string) ?? 'text') as MessageType,
           poll_id: (row.poll_id as string | null) ?? null,
+          reactions: aggregateReactions(
+            (row.reactions as { emoji: string; user_id: string }[] | null) ?? [],
+            currentUserId,
+          ),
         })
       );
 
