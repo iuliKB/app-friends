@@ -303,6 +303,28 @@ export function MessageBubble({
             )}
             <Text style={isDeleted ? styles.deletedBody : styles.ownBody}>{bodyText}</Text>
           </View>
+          {/* ReactionBadgeRow — D-04, D-05. Sibling to bubble, NOT inside it (Pitfall 5) */}
+          {(message.reactions?.length ?? 0) > 0 && (
+            <View style={styles.reactionBadgeRow}>
+              {message.reactions!.map((r) => (
+                <TouchableOpacity
+                  key={r.emoji}
+                  onPress={() => onReact(message.id, r.emoji)}
+                  style={[styles.reactionBadge, r.reacted_by_me && styles.reactionBadgeOwn]}
+                  activeOpacity={0.7}
+                  accessibilityLabel={
+                    r.reacted_by_me
+                      ? `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}. You reacted. Tap to remove.`
+                      : `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}`
+                  }
+                >
+                  {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+                  <Text style={{ fontSize: 14 }}>{r.emoji}</Text>
+                  <Text style={styles.reactionBadgeCount}>{r.count}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {showTimestamp && (
             <Animated.Text style={[styles.ownTimestamp, { opacity: fadeAnim }]}>
               {timestamp}
@@ -346,6 +368,28 @@ export function MessageBubble({
             )}
             <Text style={isDeleted ? styles.deletedBody : styles.othersBody}>{bodyText}</Text>
           </View>
+          {/* ReactionBadgeRow — others' messages, left-aligned */}
+          {(message.reactions?.length ?? 0) > 0 && (
+            <View style={[styles.reactionBadgeRow, styles.reactionBadgeRowOthers]}>
+              {message.reactions!.map((r) => (
+                <TouchableOpacity
+                  key={r.emoji}
+                  onPress={() => onReact(message.id, r.emoji)}
+                  style={[styles.reactionBadge, r.reacted_by_me && styles.reactionBadgeOwn]}
+                  activeOpacity={0.7}
+                  accessibilityLabel={
+                    r.reacted_by_me
+                      ? `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}. You reacted. Tap to remove.`
+                      : `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}`
+                  }
+                >
+                  {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+                  <Text style={{ fontSize: 14 }}>{r.emoji}</Text>
+                  <Text style={styles.reactionBadgeCount}>{r.count}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {showTimestamp && (
             <Animated.Text style={[styles.othersTimestamp, { opacity: fadeAnim }]}>
               {timestamp}
@@ -543,5 +587,38 @@ const styles = StyleSheet.create({
   emojiButtonActive: {
     // eslint-disable-next-line campfire/no-hardcoded-styles
     backgroundColor: 'rgba(249, 115, 22, 0.20)',
+  },
+  // Phase 15 — reaction badge row styles
+  reactionBadgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.xs,
+    marginTop: SPACING.xs,
+    alignSelf: 'flex-end',
+  },
+  reactionBadgeRowOthers: {
+    alignSelf: 'flex-start',
+  },
+  reactionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  reactionBadgeOwn: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(249, 115, 22, 0.20)',
+    borderColor: COLORS.interactive.accent,
+  },
+  reactionBadgeCount: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
 });
