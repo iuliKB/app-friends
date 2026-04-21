@@ -71,17 +71,19 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
     }).start();
   }
 
-  function closeMenu() {
+  function closeMenu(onClosed?: () => void) {
     Animated.timing(translateY, {
       toValue: 300,
       duration: 200,
       useNativeDriver: true,
-    }).start(() => setMenuVisible(false));
+    }).start(() => {
+      setMenuVisible(false);
+      onClosed?.();
+    });
   }
 
   function handleAction(action: AttachmentAction) {
-    closeMenu();
-    onAttachmentAction?.(action);
+    closeMenu(() => onAttachmentAction?.(action));
   }
 
   return (
