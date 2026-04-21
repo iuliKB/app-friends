@@ -30,9 +30,9 @@ Milestone goal: Elevate chat with reactions, media, threading, and polls while c
 
 ### Polls
 
-- [ ] **CHAT-09**: User can create a poll (2–4 options, single-choice) via the chat attachment menu
-- [ ] **CHAT-10**: User can vote on a poll; their selection is shown; they can change their vote
-- [ ] **CHAT-11**: Poll shows live vote counts visible to all participants
+- [x] **CHAT-09**: User can create a poll (2–4 options, single-choice) via the chat attachment menu
+- [x] **CHAT-10**: User can vote on a poll; their selection is shown; they can change their vote
+- [x] **CHAT-11**: Poll shows live vote counts visible to all participants
 
 ### Profile Rework
 

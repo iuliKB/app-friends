@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
-status: verifying
-stopped_at: Phase 17 context gathered
-last_updated: "2026-04-21T19:26:52.874Z"
+status: executing
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-04-21T20:32:46.390Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
+  total_plans: 21
+  completed_plans: 18
+  percent: 86
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-20)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 16 — media-sharing
+**Current focus:** Phase 17 — polls
 
 ## Current Position
 
 Milestone: v1.5 Chat & Profile
-Phase: 17
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 17 (polls) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-04-21
 
 Progress: [░░░░░░░░░░] 0%
@@ -78,6 +78,8 @@ Requirements covered: 16/16 mapped
 - [Phase 16]: requestPermissionsAsync(true) not ({writeOnly:true}) — actual expo-media-library SDK signature takes boolean not object
 - [Phase 16]: showToast extended with optional message param; reset to default text on animation end preserves existing scroll-toast behaviour
 - [Phase 16-media-sharing]: showToast extended with optional message param that resets to default on animation end — preserves existing scroll-to-original toast behaviour without duplicating animation logic
+- [Phase 17-polls]: poll_votes Realtime via postgres_changes on existing channel (D-14) — no new subscription created per poll card
+- [Phase 17-polls]: lastPollVoteEvent bridge: useChatRoom Realtime signals usePoll re-fetch without duplicate subscription
 
 ### Pending Todos
 
@@ -89,5 +91,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-21T19:26:52.867Z
-Stopped at: Phase 17 context gathered
+Last session: 2026-04-21T20:32:46.387Z
+Stopped at: Completed 17-01-PLAN.md
