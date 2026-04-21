@@ -90,7 +90,7 @@
 - [x] **Phase 13: Profile Rework + Friend Profile** - Remove status duplication, consolidate notification toggles, separate edit paths, new friend profile screen (completed 2026-04-20)
 - [x] **Phase 14: Reply Threading** - Long-press context menu primitive + inline quoted reply in chat (completed 2026-04-20)
 - [x] **Phase 15: Message Reactions** - Tapback emoji strip extending the context menu; live counts inline below bubbles (completed 2026-04-21)
-- [ ] **Phase 16: Media Sharing** - Photo library + camera capture, compressed upload, inline image bubbles
+- [x] **Phase 16: Media Sharing** - Photo library + camera capture, compressed upload, inline image bubbles (completed 2026-04-21)
 - [ ] **Phase 17: Polls** - Poll creation via attachment menu, live vote counts, per-person single vote
 
 ## Phase Details
@@ -176,7 +176,7 @@ Plans:
 - [x] 16-01-PLAN.md — Install packages + uploadChatMedia helper + Wave 0 test scaffold
 - [x] 16-02-PLAN.md — useChatRoom: add sendImage() (optimistic insert, upload, CDN replace, rollback)
 - [x] 16-03-PLAN.md — SendBar photo icon + MessageBubble image variant + ImageViewerModal component
-- [ ] 16-04-PLAN.md — ChatRoomScreen: wire picker, compression, sendImage, viewer + human checkpoint
+- [x] 16-04-PLAN.md — ChatRoomScreen: wire picker, compression, sendImage, viewer + human checkpoint
 **UI hint**: yes
 
 ### Phase 17: Polls
@@ -200,7 +200,7 @@ Plans:
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 4/4 | Complete    | 2026-04-21 |
-| 16. Media Sharing | v1.5 | 3/4 | In Progress|  |
+| 16. Media Sharing | v1.5 | 4/4 | Complete   | 2026-04-21 |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |
 
 ---

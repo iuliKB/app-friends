@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
-status: executing
-stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-04-21T15:59:17.903Z"
+status: verifying
+stopped_at: Completed 16-04-PLAN.md — awaiting human verification checkpoint
+last_updated: "2026-04-21T16:02:15.588Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 17
-  completed_plans: 16
-  percent: 94
+  completed_plans: 17
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 Milestone: v1.5 Chat & Profile
 Phase: 16 (media-sharing) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-21
 
 Progress: [░░░░░░░░░░] 0%
@@ -76,6 +76,7 @@ Requirements covered: 16/16 mapped
 - [Phase 16]: upsert: false in uploadChatMedia — each messageId is UUID, no re-upload needed
 - [Phase 16]: crypto.randomUUID() as shared storage/DB key in sendImage — body=null breaks body+sender dedup guard; id-based dedup is the clean alternative
 - [Phase 16]: requestPermissionsAsync(true) not ({writeOnly:true}) — actual expo-media-library SDK signature takes boolean not object
+- [Phase 16]: showToast extended with optional message param; reset to default text on animation end preserves existing scroll-toast behaviour
 
 ### Pending Todos
 
@@ -87,5 +88,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-21T15:59:17.899Z
-Stopped at: Completed 16-03-PLAN.md
+Last session: 2026-04-21T16:02:15.585Z
+Stopped at: Completed 16-04-PLAN.md — awaiting human verification checkpoint
