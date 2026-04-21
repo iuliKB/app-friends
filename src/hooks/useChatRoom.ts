@@ -605,7 +605,9 @@ export function useChatRoom({
     });
 
     if (rpcError) {
+      // Roll back optimistic message AND delete the orphaned server-side row (poll_id still null)
       setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+      await supabase.from('messages').delete().eq('id', messageId);
       return { error: rpcError };
     }
 

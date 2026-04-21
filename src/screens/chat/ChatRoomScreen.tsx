@@ -323,7 +323,9 @@ export function ChatRoomScreen({
         visible={showPollCreationSheet}
         onDismiss={() => setShowPollCreationSheet(false)}
         onSend={(question, options) => {
-          void sendPoll(question, options);
+          sendPoll(question, options).then(({ error }) => {
+            if (error) Alert.alert('Error', 'Poll could not be sent. Please try again.', [{ text: 'OK' }]);
+          });
         }}
       />
     </KeyboardAvoidingView>

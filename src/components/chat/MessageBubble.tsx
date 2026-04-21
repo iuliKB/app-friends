@@ -197,6 +197,8 @@ export function MessageBubble({
   function handleLongPress(event: { nativeEvent: { pageY: number } }) {
     if (message.pending) return;
     if (message.message_type === 'deleted') return;
+    // Non-own poll messages have no available actions — skip showing an empty pill
+    if (isPoll && !isOwn) return;
     setPillY(Math.max(60, event.nativeEvent.pageY - 80));
     setMenuVisible(true);
   }

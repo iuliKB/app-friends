@@ -22,10 +22,15 @@ interface PollCreationSheetProps {
 
 export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSheetProps) {
   const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState(['', '']); // start with 2 empty fields (D-03)
+  // Each option carries a stable id so React can key removable rows without index drift
+  const [options, setOptions] = useState([
+    { id: 1, text: '' },
+    { id: 2, text: '' },
+  ]);
+  const nextId = useRef(3);
   const translateY = useRef(new Animated.Value(300)).current;
 
-  const canSendPoll = question.trim().length > 0 && options.every((o) => o.trim().length > 0);
+  const canSendPoll = question.trim().length > 0 && options.every((o) => o.text.trim().length > 0);
 
   function open() {
     Animated.timing(translateY, {
@@ -43,7 +48,11 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
     }).start(() => {
       onDismiss();
       setQuestion('');
-      setOptions(['', '']);
+      setOptions([
+        { id: 1, text: '' },
+        { id: 2, text: '' },
+      ]);
+      nextId.current = 3;
     });
   }
 
@@ -58,17 +67,18 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
     if (!canSendPoll) return;
     onSend(
       question.trim(),
-      options.map((o) => o.trim())
+      options.map((o) => o.text.trim())
     );
     close();
   }
 
   function addOption() {
-    setOptions((prev) => [...prev, '']);
+    const id = nextId.current++;
+    setOptions((prev) => [...prev, { id, text: '' }]);
   }
 
-  function removeOption(index: number) {
-    setOptions((prev) => prev.filter((_, i) => i !== index));
+  function removeOption(id: number) {
+    setOptions((prev) => prev.filter((o) => o.id !== id));
   }
 
   return (
@@ -95,12 +105,12 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
           />
           {/* Option rows */}
           {options.map((opt, idx) => (
-            <View key={idx} style={styles.optionRow}>
+            <View key={opt.id} style={styles.optionRow}>
               <TextInput
                 style={[styles.input, styles.optionInput]}
-                value={opt}
+                value={opt.text}
                 onChangeText={(text) =>
-                  setOptions((prev) => prev.map((o, i) => (i === idx ? text : o)))
+                  setOptions((prev) => prev.map((o) => (o.id === opt.id ? { ...o, text } : o)))
                 }
                 placeholder={`Option ${idx + 1}`}
                 placeholderTextColor={COLORS.text.secondary}
@@ -108,7 +118,7 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
               />
               {idx >= 2 && (
                 <TouchableOpacity
-                  onPress={() => removeOption(idx)}
+                  onPress={() => removeOption(opt.id)}
                   accessibilityLabel={`Remove option ${idx + 1}`}
                   style={styles.removeButton}
                 >
