@@ -171,7 +171,12 @@ Plans:
   3. Sent images appear inline inside the chat bubble at a capped display size — no link, no download required
   4. Tapping an inline image opens it full-screen with a close control
   5. Images are compressed client-side before upload (max 1280px, ~75% quality) — raw camera photos are never uploaded at full resolution
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 16-01-PLAN.md — Install packages + uploadChatMedia helper + Wave 0 test scaffold
+- [ ] 16-02-PLAN.md — useChatRoom: add sendImage() (optimistic insert, upload, CDN replace, rollback)
+- [ ] 16-03-PLAN.md — SendBar photo icon + MessageBubble image variant + ImageViewerModal component
+- [ ] 16-04-PLAN.md — ChatRoomScreen: wire picker, compression, sendImage, viewer + human checkpoint
 **UI hint**: yes
 
 ### Phase 17: Polls
@@ -195,9 +200,9 @@ Plans:
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 4/4 | Complete    | 2026-04-21 |
-| 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
+| 16. Media Sharing | v1.5 | 0/4 | Not started | - |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-04-21 — Phase 15 plans created (4 plans, 3 waves)*
+*Roadmap updated: 2026-04-21 — Phase 16 plans created (4 plans, 4 waves)*
