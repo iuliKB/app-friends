@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Chat & Profile
 status: executing
-stopped_at: Phase 16 context gathered
-last_updated: "2026-04-21T15:11:29.039Z"
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-04-21T15:52:43.505Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_plans: 17
+  completed_plans: 14
+  percent: 82
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-20)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 15 — message-reactions
+**Current focus:** Phase 16 — media-sharing
 
 ## Current Position
 
 Milestone: v1.5 Chat & Profile
-Phase: 16
-Plan: Not started
-Status: Executing Phase 15
+Phase: 16 (media-sharing) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-04-21
 
 Progress: [░░░░░░░░░░] 0%
@@ -72,6 +72,8 @@ Requirements covered: 16/16 mapped
 - [Phase 14-reply-threading]: body: null cast to any in deleteMessage .update() — Supabase generated types mark body as non-nullable; DB column is nullable since 0018; same any-cast pattern as fetch mapping site
 - [Phase 14-reply-threading]: ReplyContext exported from SendBar.tsx co-located with the component that owns it
 - [Phase 14-reply-threading]: scrollToMessage sets highlightedId then clears after 1200ms; onScrollToIndexFailed shows toast (out-of-window D-11)
+- [Phase 16]: contentType forced to image/jpeg in uploadChatMedia — client cannot upload executable disguised as image (T-16-02)
+- [Phase 16]: upsert: false in uploadChatMedia — each messageId is UUID, no re-upload needed
 
 ### Pending Todos
 
@@ -83,5 +85,5 @@ Requirements covered: 16/16 mapped
 
 ## Session Continuity
 
-Last session: 2026-04-21T15:11:29.035Z
-Stopped at: Phase 16 context gathered
+Last session: 2026-04-21T15:52:43.501Z
+Stopped at: Completed 16-01-PLAN.md

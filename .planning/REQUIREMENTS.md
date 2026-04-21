@@ -19,9 +19,9 @@ Milestone goal: Elevate chat with reactions, media, threading, and polls while c
 
 ### Media Sharing
 
-- [ ] **CHAT-04**: User can attach a photo from their library to a chat message
-- [ ] **CHAT-05**: User can take a photo with the in-app camera and send it in chat
-- [ ] **CHAT-06**: Sent images display inline in the chat bubble (compressed, not as a link)
+- [x] **CHAT-04**: User can attach a photo from their library to a chat message
+- [x] **CHAT-05**: User can take a photo with the in-app camera and send it in chat
+- [x] **CHAT-06**: Sent images display inline in the chat bubble (compressed, not as a link)
 
 ### Reply Threading
 

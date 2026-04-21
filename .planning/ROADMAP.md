@@ -173,7 +173,7 @@ Plans:
   5. Images are compressed client-side before upload (max 1280px, ~75% quality) — raw camera photos are never uploaded at full resolution
 **Plans**: 4 plans
 Plans:
-- [ ] 16-01-PLAN.md — Install packages + uploadChatMedia helper + Wave 0 test scaffold
+- [x] 16-01-PLAN.md — Install packages + uploadChatMedia helper + Wave 0 test scaffold
 - [ ] 16-02-PLAN.md — useChatRoom: add sendImage() (optimistic insert, upload, CDN replace, rollback)
 - [ ] 16-03-PLAN.md — SendBar photo icon + MessageBubble image variant + ImageViewerModal component
 - [ ] 16-04-PLAN.md — ChatRoomScreen: wire picker, compression, sendImage, viewer + human checkpoint
@@ -200,7 +200,7 @@ Plans:
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 4/4 | Complete    | 2026-04-21 |
-| 16. Media Sharing | v1.5 | 0/4 | Not started | - |
+| 16. Media Sharing | v1.5 | 1/4 | In Progress|  |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |
 
 ---
