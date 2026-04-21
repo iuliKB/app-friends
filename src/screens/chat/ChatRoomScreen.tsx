@@ -133,6 +133,18 @@ export function ChatRoomScreen({
       {
         text: 'Photo Library',
         onPress: async () => {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert(
+              'Photo Library Access Needed',
+              'Allow Campfire to access your photos in Settings.',
+              [
+                { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                { text: 'Cancel', style: 'cancel' },
+              ],
+            );
+            return;
+          }
           const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: 'images' as ImagePicker.MediaType,
             allowsEditing: false,
