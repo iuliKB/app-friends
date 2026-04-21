@@ -203,6 +203,59 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
 
     const channelName = `chat-${planId ?? dmChannelId ?? groupChannelId}`;
 
+    function handleReactionInsert(payload: { new: Record<string, unknown> }) {
+      const raw = payload.new;
+      const incomingUserId = raw.user_id as string;
+      const incomingEmoji = raw.emoji as string;
+      const incomingMessageId = raw.message_id as string;
+
+      // Pitfall 1 dedup guard: own INSERT already applied via optimistic update
+      if (incomingUserId === currentUserId) return;
+
+      setMessages((prev) => {
+        const msgIdx = prev.findIndex((m) => m.id === incomingMessageId);
+        if (msgIdx === -1) return prev; // not in this room — client-side scope guard
+
+        const msg = prev[msgIdx]!;
+        const reactions = msg.reactions ?? [];
+        const existingIdx = reactions.findIndex((r) => r.emoji === incomingEmoji);
+        let updatedReactions: typeof reactions;
+        if (existingIdx >= 0) {
+          updatedReactions = reactions.map((r, i) =>
+            i === existingIdx ? { ...r, count: r.count + 1 } : r
+          );
+        } else {
+          updatedReactions = [...reactions, { emoji: incomingEmoji, count: 1, reacted_by_me: false }];
+        }
+        const updated = [...prev];
+        updated[msgIdx] = { ...msg, reactions: updatedReactions };
+        return updated;
+      });
+    }
+
+    function handleReactionDelete(payload: { old: Record<string, unknown> }) {
+      const raw = payload.old;
+      const deletedUserId = raw.user_id as string;
+      const deletedEmoji = raw.emoji as string;
+      const deletedMessageId = raw.message_id as string;
+
+      // Pitfall 2 dedup guard: own DELETE already applied via optimistic update
+      if (deletedUserId === currentUserId) return;
+
+      setMessages((prev) => {
+        const msgIdx = prev.findIndex((m) => m.id === deletedMessageId);
+        if (msgIdx === -1) return prev;
+
+        const msg = prev[msgIdx]!;
+        const updatedReactions = (msg.reactions ?? [])
+          .map((r) => (r.emoji === deletedEmoji ? { ...r, count: r.count - 1 } : r))
+          .filter((r) => r.count > 0);
+        const updated = [...prev];
+        updated[msgIdx] = { ...msg, reactions: updatedReactions };
+        return updated;
+      });
+    }
+
     channelRef.current = supabase
       .channel(channelName)
       .on(
@@ -285,6 +338,9 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
           );
         }
       )
+      // reaction listeners — no server-side filter (no room column on message_reactions; use client-side guard)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, handleReactionInsert)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, handleReactionDelete)
       .subscribe();
   }
 
