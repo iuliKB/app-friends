@@ -48,7 +48,7 @@ export function ChatRoomScreen({
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
 
-  const { messages, loading: _loading, sendMessage, deleteMessage } = useChatRoom({ planId, dmChannelId, groupChannelId });
+  const { messages, loading: _loading, sendMessage, deleteMessage, addReaction } = useChatRoom({ planId, dmChannelId, groupChannelId });
 
   // Phase 14: FlatList ref for scrollToIndex
   const flatListRef = useRef<FlatList<MessageWithProfile>>(null);
@@ -178,6 +178,7 @@ export function ChatRoomScreen({
                   }
                   onDelete={(id) => deleteMessage(id)}
                   onScrollToMessage={scrollToMessage}
+                  onReact={(messageId, emoji) => addReaction(messageId, emoji)}
                 />
               </View>
             );
