@@ -409,7 +409,10 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
 
     // Client-side UUID — used for both storage path AND message id so Realtime dedup matches.
     // Cannot use Date.now() tempId like sendMessage because body=null breaks the body-based dedup guard.
-    const messageId = crypto.randomUUID();
+    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
     const tempId = messageId;
 
     const optimistic: MessageWithProfile = {
