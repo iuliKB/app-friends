@@ -43,6 +43,7 @@ Declared values (all multiples of 4):
 Exceptions:
 - Touch targets enforce 44px minimum height (pill action rows, option rows, emoji buttons) — hardcoded per existing pattern
 - Drag handle: 40px wide × 4px tall, fixed — follows SendBar attachment sheet pattern
+- `SPACING.md` (12px) — used as `marginBottom` between the question input and option rows, and for card section gaps inside PollCreationSheet and PollCard. 12px is not in the standard set but is `SPACING.md`, an established token declared in `src/theme/spacing.ts` (comment: "card section gaps") with precedent usage across 44 source files throughout the codebase. Retained as-is under this exception.
 
 **Source:** `src/theme/spacing.ts` + existing component patterns in SendBar.tsx and MessageBubble.tsx.
 
@@ -160,8 +161,8 @@ Accent reserved for: selected radio circle fill, selected option progress bar, S
   - Touch target: minHeight 44px.
 
 **Buttons (D-02, D-04):**
-- Row at bottom: Cancel (left) + Send Poll (right).
-- Cancel: FONT_SIZE.lg, FONT_WEIGHT.semibold, COLORS.text.secondary. No background. minHeight 44px.
+- Row at bottom: Discard Poll (left) + Send Poll (right).
+- Discard Poll: FONT_SIZE.lg, FONT_WEIGHT.semibold, COLORS.text.secondary. No background. minHeight 44px.
 - Send Poll (active): background COLORS.interactive.accent, border-radius RADII.md (8px), label FONT_SIZE.lg FONT_WEIGHT.semibold COLORS.surface.base. minHeight 44px.
 - Send Poll (disabled): background COLORS.surface.overlay (muted), label COLORS.text.secondary. Disabled until question non-empty AND all visible option fields non-empty.
 - Button row: `SPACING.lg` horizontal padding, `SPACING.xl` (24px) top margin from last option.
@@ -196,7 +197,7 @@ Accent reserved for: selected radio circle fill, selected option progress bar, S
 | Element | Copy |
 |---------|------|
 | Primary CTA — send poll | "Send Poll" |
-| Secondary action — cancel creation | "Cancel" |
+| Secondary action — discard creation | "Discard Poll" |
 | Creation sheet title | "New Poll" |
 | Question placeholder | "Ask the group…" |
 | Option placeholders | "Option 1", "Option 2", "Option 3", "Option 4" |
