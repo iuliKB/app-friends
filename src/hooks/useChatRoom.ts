@@ -551,7 +551,10 @@ export function useChatRoom({
   async function sendPoll(question: string, options: string[]): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
-    const messageId = crypto.randomUUID();
+    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
     const tempId = messageId;
 
     const optimistic: MessageWithProfile = {
