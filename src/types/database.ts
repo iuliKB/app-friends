@@ -302,8 +302,12 @@ export type Database = {
           dm_channel_id: string | null;
           group_channel_id: string | null;  // Phase 11 v1.4 (migration 0017) — group DM channel
           sender_id: string;
-          body: string;
+          body: string | null;              // Phase 14 v1.4 (migration 0018) — nullable for image-only messages
           created_at: string;
+          image_url: string | null;         // Phase 14 v1.4 (migration 0018)
+          reply_to_message_id: string | null; // Phase 14 v1.4 (migration 0018)
+          message_type: string;             // Phase 14 v1.4 (migration 0018) — 'text' | 'image' | 'poll'
+          poll_id: string | null;           // Phase 14 v1.4 (migration 0018)
         };
         Insert: {
           id?: string;
@@ -311,8 +315,12 @@ export type Database = {
           dm_channel_id?: string | null;
           group_channel_id?: string | null;
           sender_id: string;
-          body: string;
+          body?: string | null;
           created_at?: string;
+          image_url?: string | null;
+          reply_to_message_id?: string | null;
+          message_type?: string;
+          poll_id?: string | null;
         };
         Update: {
           id?: string;
@@ -320,8 +328,12 @@ export type Database = {
           dm_channel_id?: string | null;
           group_channel_id?: string | null;
           sender_id?: string;
-          body?: string;
+          body?: string | null;
           created_at?: string;
+          image_url?: string | null;
+          reply_to_message_id?: string | null;
+          message_type?: string;
+          poll_id?: string | null;
         };
         Relationships: [
           {
@@ -787,3 +799,7 @@ export type FriendFreePush = Tables<'friend_free_pushes'>;
 // Phase 8 v1.4 row-type aliases for IOU tables
 export type IouGroup = Tables<'iou_groups'>;
 export type IouMember = Tables<'iou_members'>;
+
+// Phase 15 v1.4 row-type alias for message reactions
+// Note: MessageReaction is already used in src/types/chat.ts for a different (aggregated) shape
+export type MessageReactionRow = Tables<'message_reactions'>;
