@@ -24,6 +24,24 @@ interface MessageBubbleProps {
   onReply: (message: MessageWithProfile) => void;
   onDelete: (messageId: string) => void;
   onScrollToMessage: (messageId: string) => void;
+  // Phase 15 additions:
+  onReact: (messageId: string, emoji: string) => void;
+}
+
+const PRESET_EMOJIS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
+const STRIP_HEIGHT = 52; // tap target height + padding
+
+const EMOJI_NAMES: Record<string, string> = {
+  '❤️': 'heart',
+  '😂': 'laughing face',
+  '😮': 'surprised',
+  '😢': 'crying',
+  '👍': 'thumbs up',
+  '🔥': 'fire',
+};
+
+function getEmojiName(emoji: string): string {
+  return EMOJI_NAMES[emoji] ?? emoji;
 }
 
 function formatMessageTime(isoString: string): string {
@@ -117,10 +135,13 @@ export function MessageBubble({
   onReply,
   onDelete,
   onScrollToMessage,
+  onReact,
 }: MessageBubbleProps) {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [pillY, setPillY] = useState(0);
+
+  const emojiStripTop = Math.max(SPACING.xl + STRIP_HEIGHT + SPACING.sm, pillY - STRIP_HEIGHT - SPACING.sm);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -206,6 +227,25 @@ export function MessageBubble({
       <TouchableWithoutFeedback onPress={closeMenu}>
         <View style={[StyleSheet.absoluteFillObject, styles.backdrop]} />
       </TouchableWithoutFeedback>
+      {/* NEW: emoji strip above pill — D-01 */}
+      <View style={[styles.emojiStrip, { top: emojiStripTop }]}>
+        {PRESET_EMOJIS.map((emoji) => {
+          const isActive = message.reactions?.some((r) => r.emoji === emoji && r.reacted_by_me) ?? false;
+          return (
+            <TouchableOpacity
+              key={emoji}
+              onPress={() => { closeMenu(); onReact(message.id, emoji); }}
+              style={[styles.emojiButton, isActive && styles.emojiButtonActive]}
+              activeOpacity={0.7}
+              accessibilityLabel={`React with ${getEmojiName(emoji)}`}
+            >
+              {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+              <Text style={{ fontSize: 24 }}>{emoji}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      {/* Existing pill — UNCHANGED */}
       <View style={[styles.contextPill, { top: pillY }]}>
         <TouchableOpacity
           onPress={handleReply}
@@ -263,6 +303,28 @@ export function MessageBubble({
             )}
             <Text style={isDeleted ? styles.deletedBody : styles.ownBody}>{bodyText}</Text>
           </View>
+          {/* ReactionBadgeRow — D-04, D-05. Sibling to bubble, NOT inside it (Pitfall 5) */}
+          {(message.reactions?.length ?? 0) > 0 && (
+            <View style={styles.reactionBadgeRow}>
+              {message.reactions!.map((r) => (
+                <TouchableOpacity
+                  key={r.emoji}
+                  onPress={() => onReact(message.id, r.emoji)}
+                  style={[styles.reactionBadge, r.reacted_by_me && styles.reactionBadgeOwn]}
+                  activeOpacity={0.7}
+                  accessibilityLabel={
+                    r.reacted_by_me
+                      ? `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}. You reacted. Tap to remove.`
+                      : `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}`
+                  }
+                >
+                  {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+                  <Text style={{ fontSize: 14 }}>{r.emoji}</Text>
+                  <Text style={styles.reactionBadgeCount}>{r.count}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {showTimestamp && (
             <Animated.Text style={[styles.ownTimestamp, { opacity: fadeAnim }]}>
               {timestamp}
@@ -306,6 +368,28 @@ export function MessageBubble({
             )}
             <Text style={isDeleted ? styles.deletedBody : styles.othersBody}>{bodyText}</Text>
           </View>
+          {/* ReactionBadgeRow — others' messages, left-aligned */}
+          {(message.reactions?.length ?? 0) > 0 && (
+            <View style={[styles.reactionBadgeRow, styles.reactionBadgeRowOthers]}>
+              {message.reactions!.map((r) => (
+                <TouchableOpacity
+                  key={r.emoji}
+                  onPress={() => onReact(message.id, r.emoji)}
+                  style={[styles.reactionBadge, r.reacted_by_me && styles.reactionBadgeOwn]}
+                  activeOpacity={0.7}
+                  accessibilityLabel={
+                    r.reacted_by_me
+                      ? `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}. You reacted. Tap to remove.`
+                      : `${getEmojiName(r.emoji)} reaction, ${r.count} ${r.count !== 1 ? 'people' : 'person'}`
+                  }
+                >
+                  {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+                  <Text style={{ fontSize: 14 }}>{r.emoji}</Text>
+                  <Text style={styles.reactionBadgeCount}>{r.count}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {showTimestamp && (
             <Animated.Text style={[styles.othersTimestamp, { opacity: fadeAnim }]}>
               {timestamp}
@@ -470,5 +554,71 @@ const styles = StyleSheet.create({
     height: 24,
     backgroundColor: COLORS.border,
     alignSelf: 'center',
+  },
+  // Phase 15 — emoji strip styles
+  emojiStrip: {
+    position: 'absolute',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface.overlay,
+    borderRadius: RADII.lg,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowColor: '#000',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowOffset: { width: 0, height: 2 },
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowOpacity: 0.3,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    shadowRadius: 8,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    elevation: 8,
+  },
+  emojiButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    minWidth: 44,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    minHeight: 44,
+    borderRadius: RADII.full,
+  },
+  emojiButtonActive: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(249, 115, 22, 0.20)',
+  },
+  // Phase 15 — reaction badge row styles
+  reactionBadgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.xs,
+    marginTop: SPACING.xs,
+    alignSelf: 'flex-end',
+  },
+  reactionBadgeRowOthers: {
+    alignSelf: 'flex-start',
+  },
+  reactionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    backgroundColor: COLORS.surface.card,
+    borderRadius: RADII.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  reactionBadgeOwn: {
+    // eslint-disable-next-line campfire/no-hardcoded-styles
+    backgroundColor: 'rgba(249, 115, 22, 0.20)',
+    borderColor: COLORS.interactive.accent,
+  },
+  reactionBadgeCount: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
+    color: COLORS.text.primary,
   },
 });
