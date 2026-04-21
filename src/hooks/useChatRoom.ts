@@ -9,7 +9,7 @@ import type { Message, MessageReaction, MessageType, MessageWithProfile } from '
 interface UseChatRoomOptions {
   planId?: string;
   dmChannelId?: string;
-  groupChannelId?: string;  // standalone group DM (D-17, D-18)
+  groupChannelId?: string; // standalone group DM (D-17, D-18)
 }
 
 interface UseChatRoomResult {
@@ -18,14 +18,20 @@ interface UseChatRoomResult {
   error: string | null;
   sendMessage: (body: string, replyToId?: string) => Promise<{ error: Error | null }>;
   sendImage: (localUri: string, replyToId?: string) => Promise<{ error: Error | null }>;
+  sendPoll: (question: string, options: string[]) => Promise<{ error: Error | null }>;
   deleteMessage: (messageId: string) => Promise<{ error: Error | null }>;
   addReaction: (messageId: string, emoji: string) => Promise<{ error: Error | null }>;
   removeReaction: (messageId: string, emoji: string) => Promise<{ error: Error | null }>;
+  lastPollVoteEvent: { pollId: string; timestamp: number } | null;
 }
 
 type ProfileInfo = { display_name: string; avatar_url: string | null };
 
-export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoomOptions): UseChatRoomResult {
+export function useChatRoom({
+  planId,
+  dmChannelId,
+  groupChannelId,
+}: UseChatRoomOptions): UseChatRoomResult {
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
   const currentUserDisplayName =
@@ -36,6 +42,10 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastPollVoteEvent, setLastPollVoteEvent] = useState<{
+    pollId: string;
+    timestamp: number;
+  } | null>(null);
 
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const profilesMapRef = useRef<Map<string, ProfileInfo>>(new Map());
@@ -131,11 +141,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       }
 
       // Fetch messages
-      const column = planId
-        ? 'plan_id'
-        : dmChannelId
-          ? 'dm_channel_id'
-          : 'group_channel_id';
+      const column = planId ? 'plan_id' : dmChannelId ? 'dm_channel_id' : 'group_channel_id';
       const value = planId ?? dmChannelId ?? groupChannelId;
 
       const { data: rows, error: fetchError } = await supabase
@@ -152,7 +158,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       }
 
       // Keep newest-first order — inverted FlatList renders index 0 at the bottom
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const enriched = (rows ?? []).map((row: any) =>
         enrichMessage({
           id: row.id as string,
@@ -168,7 +174,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
           poll_id: (row.poll_id as string | null) ?? null,
           reactions: aggregateReactions(
             (row.reactions as { emoji: string; user_id: string }[] | null) ?? [],
-            currentUserId,
+            currentUserId
           ),
         })
       );
@@ -227,7 +233,10 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
             i === existingIdx ? { ...r, count: r.count + 1 } : r
           );
         } else {
-          updatedReactions = [...reactions, { emoji: incomingEmoji, count: 1, reacted_by_me: false }];
+          updatedReactions = [
+            ...reactions,
+            { emoji: incomingEmoji, count: 1, reacted_by_me: false },
+          ];
         }
         const updated = [...prev];
         updated[msgIdx] = { ...msg, reactions: updatedReactions };
@@ -256,6 +265,41 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
         updated[msgIdx] = { ...msg, reactions: updatedReactions };
         return updated;
       });
+    }
+
+    function handlePollVoteInsert(payload: { new: Record<string, unknown> }) {
+      const raw = payload.new;
+      const incomingUserId = raw.user_id as string;
+      const incomingPollId = raw.poll_id as string;
+
+      // Dedup: own INSERT already applied via optimistic update in usePoll
+      if (incomingUserId === currentUserId) return;
+
+      // Scope guard: verify poll_id belongs to a message in current room
+      setMessages((prev) => {
+        const msgIdx = prev.findIndex((m) => m.poll_id === incomingPollId);
+        if (msgIdx === -1) return prev; // not in this room
+        return prev; // no messages state change — just signal PollCard via lastPollVoteEvent
+      });
+
+      // Signal PollCard to refresh counts (bridge to usePoll without duplicate subscription)
+      setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
+    }
+
+    function handlePollVoteDelete(payload: { old: Record<string, unknown> }) {
+      const raw = payload.old;
+      const deletedUserId = raw.user_id as string;
+      const incomingPollId = raw.poll_id as string;
+
+      if (deletedUserId === currentUserId) return;
+
+      setMessages((prev) => {
+        const msgIdx = prev.findIndex((m) => m.poll_id === incomingPollId);
+        if (msgIdx === -1) return prev;
+        return prev;
+      });
+
+      setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
     }
 
     channelRef.current = supabase
@@ -345,7 +389,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
                 ? {
                     ...m,
                     body: raw.body as string | null,
-                    message_type: (raw.message_type as string) as MessageType,
+                    message_type: raw.message_type as string as MessageType,
                   }
                 : m
             )
@@ -353,8 +397,27 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
         }
       )
       // reaction listeners — no server-side filter (no room column on message_reactions; use client-side guard)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, handleReactionInsert)
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, handleReactionDelete)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'message_reactions' },
+        handleReactionInsert
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'message_reactions' },
+        handleReactionDelete
+      )
+      // poll_votes listeners — no server-side filter (no room column on poll_votes; use client-side guard)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'poll_votes' },
+        handlePollVoteInsert
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'poll_votes' },
+        handlePollVoteDelete
+      )
       .subscribe();
   }
 
@@ -421,15 +484,12 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     return { error: null };
   }
 
-  async function sendImage(
-    localUri: string,
-    replyToId?: string
-  ): Promise<{ error: Error | null }> {
+  async function sendImage(localUri: string, replyToId?: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
     // Client-side UUID — used for both storage path AND message id so Realtime dedup matches.
     // Cannot use Date.now() tempId like sendMessage because body=null breaks the body-based dedup guard.
-    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
       return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
     });
@@ -441,9 +501,9 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       dm_channel_id: dmChannelId ?? null,
       group_channel_id: groupChannelId ?? null,
       sender_id: currentUserId,
-      body: null,                           // D-10: image messages never have body
+      body: null, // D-10: image messages never have body
       created_at: new Date().toISOString(),
-      image_url: localUri,                  // D-11: local URI for instant display
+      image_url: localUri, // D-11: local URI for instant display
       reply_to_message_id: replyToId ?? null,
       message_type: 'image',
       poll_id: null,
@@ -473,8 +533,8 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       dm_channel_id: dmChannelId ?? null,
       group_channel_id: groupChannelId ?? null,
       sender_id: currentUserId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      body: null as any,                    // same cast pattern as deleteMessage — Supabase types mark body non-nullable but DB is nullable since 0018
+
+      body: null as any, // same cast pattern as deleteMessage — Supabase types mark body non-nullable but DB is nullable since 0018
       image_url: cdnUrl,
       reply_to_message_id: replyToId ?? null,
       message_type: 'image',
@@ -483,6 +543,65 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     if (insertError) {
       setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
       return { error: insertError };
+    }
+
+    return { error: null };
+  }
+
+  async function sendPoll(question: string, options: string[]): Promise<{ error: Error | null }> {
+    if (!currentUserId) return { error: new Error('Not authenticated') };
+
+    const messageId = crypto.randomUUID();
+    const tempId = messageId;
+
+    const optimistic: MessageWithProfile = {
+      id: tempId,
+      plan_id: planId ?? null,
+      dm_channel_id: dmChannelId ?? null,
+      group_channel_id: groupChannelId ?? null,
+      sender_id: currentUserId,
+      body: null,
+      created_at: new Date().toISOString(),
+      image_url: null,
+      reply_to_message_id: null,
+      message_type: 'poll',
+      poll_id: null, // unknown until RPC completes
+      reactions: [],
+      pending: true,
+      tempId,
+      sender_display_name: currentUserDisplayName,
+      sender_avatar_url: currentUserAvatarUrl,
+    };
+
+    setMessages((prev) => [optimistic, ...prev]);
+
+    // Step 1: insert message row FIRST (create_poll() RPC verifies sender ownership via this row)
+    const { error: msgError } = await supabase.from('messages').insert({
+      id: messageId,
+      plan_id: planId ?? null,
+      dm_channel_id: dmChannelId ?? null,
+      group_channel_id: groupChannelId ?? null,
+      sender_id: currentUserId,
+
+      body: null as any, // Supabase types mark non-nullable; DB nullable since migration 0018
+      message_type: 'poll',
+    });
+
+    if (msgError) {
+      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+      return { error: msgError };
+    }
+
+    // Step 2: atomically create poll + options rows; sets messages.poll_id
+    const { error: rpcError } = await supabase.rpc('create_poll', {
+      p_message_id: messageId,
+      p_question: question,
+      p_options: options,
+    });
+
+    if (rpcError) {
+      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+      return { error: rpcError };
     }
 
     return { error: null };
@@ -503,15 +622,13 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       originalBody = original?.body ?? null;
       originalMessageType = original?.message_type ?? 'text';
       return prev.map((m) =>
-        m.id === messageId
-          ? { ...m, body: null, message_type: 'deleted' as MessageType }
-          : m
+        m.id === messageId ? { ...m, body: null, message_type: 'deleted' as MessageType } : m
       );
     });
 
     const { error: updateError } = await supabase
       .from('messages')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .update({ body: null as any, message_type: 'deleted' })
       .eq('id', messageId)
       .eq('sender_id', currentUserId);
@@ -520,9 +637,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       // Rollback optimistic update
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === messageId
-            ? { ...m, body: originalBody, message_type: originalMessageType }
-            : m
+          m.id === messageId ? { ...m, body: originalBody, message_type: originalMessageType } : m
         )
       );
       return { error: updateError };
@@ -557,9 +672,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
         const existing = m.reactions ?? [];
         // Remove previous reaction by this user (one-emoji-per-user — D-03)
         const withoutOld = existing
-          .map((r) =>
-            r.reacted_by_me ? { ...r, count: r.count - 1, reacted_by_me: false } : r
-          )
+          .map((r) => (r.reacted_by_me ? { ...r, count: r.count - 1, reacted_by_me: false } : r))
           .filter((r) => r.count > 0);
         // Add or increment new emoji
         const idx = withoutOld.findIndex((r) => r.emoji === emoji);
@@ -610,7 +723,10 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     return { error: null };
   }
 
-  async function removeReaction(messageId: string, emoji: string): Promise<{ error: Error | null }> {
+  async function removeReaction(
+    messageId: string,
+    emoji: string
+  ): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
     // Capture snapshot from latest state inside the updater to avoid stale closure reads
@@ -626,9 +742,7 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
       prev.map((m) => {
         if (m.id !== messageId) return m;
         const updated = (m.reactions ?? [])
-          .map((r) =>
-            r.emoji === emoji ? { ...r, count: r.count - 1, reacted_by_me: false } : r
-          )
+          .map((r) => (r.emoji === emoji ? { ...r, count: r.count - 1, reacted_by_me: false } : r))
           .filter((r) => r.count > 0);
         return { ...m, reactions: updated };
       })
@@ -650,5 +764,16 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     return { error: null };
   }
 
-  return { messages, loading, error, sendMessage, sendImage, deleteMessage, addReaction, removeReaction };
+  return {
+    messages,
+    loading,
+    error,
+    sendMessage,
+    sendImage,
+    sendPoll,
+    deleteMessage,
+    addReaction,
+    removeReaction,
+    lastPollVoteEvent,
+  };
 }
