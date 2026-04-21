@@ -26,6 +26,7 @@ interface SendBarProps {
   onAttachmentAction?: (action: AttachmentAction) => void;
   replyContext?: ReplyContext | null;   // Phase 14: reply bar (D-13, D-15)
   onClearReply?: () => void;           // Phase 14: × button + swipe dismiss (D-14)
+  onPhotoPress?: () => void;
 }
 
 const ACTIONS: { id: AttachmentAction; icon: string; label: string; sub: string }[] = [
@@ -34,7 +35,7 @@ const ACTIONS: { id: AttachmentAction; icon: string; label: string; sub: string 
   { id: 'todo', icon: '✅', label: 'To-Do List', sub: 'Assign tasks to the group' },
 ];
 
-export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply }: SendBarProps) {
+export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply, onPhotoPress }: SendBarProps) {
   const [text, setText] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const translateY = useRef(new Animated.Value(300)).current;
@@ -119,6 +120,16 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
           style={styles.attachBtn}
         >
           <Ionicons name="add-circle" size={28} color={COLORS.interactive.accent} />
+        </TouchableOpacity>
+
+        {/* Photo icon — D-01: inline between + and TextInput; always visible */}
+        <TouchableOpacity
+          onPress={onPhotoPress}
+          activeOpacity={0.7}
+          accessibilityLabel="Attach photo"
+          style={[styles.attachBtn, { minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }]}
+        >
+          <Ionicons name="image-outline" size={28} color={COLORS.interactive.accent} />
         </TouchableOpacity>
 
         <TextInput
