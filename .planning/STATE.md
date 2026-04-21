@@ -4,7 +4,7 @@ milestone: v1.5
 milestone_name: Chat & Profile
 status: verifying
 stopped_at: Completed 17-04-PLAN.md
-last_updated: "2026-04-21T21:00:47.755Z"
+last_updated: "2026-04-21T21:08:55.952Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 6
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 ## Current Position
 
 Milestone: v1.5 Chat & Profile
-Phase: 17 (polls) — EXECUTING
-Plan: 4 of 4
+Phase: 17
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-04-21
 

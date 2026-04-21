@@ -206,7 +206,7 @@ Plans:
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
 | 15. Message Reactions | v1.5 | 4/4 | Complete    | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete    | 2026-04-21 |
-| 17. Polls | v1.5 | 4/4 | Complete   | 2026-04-21 |
+| 17. Polls | v1.5 | 4/4 | Complete    | 2026-04-21 |
 
 ---
 
