@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { aggregateReactions } from '@/utils/aggregateReactions';
-import type { Message, MessageType, MessageWithProfile } from '@/types/chat';
+import type { Message, MessageReaction, MessageType, MessageWithProfile } from '@/types/chat';
 
 interface UseChatRoomOptions {
   planId?: string;
@@ -441,11 +441,18 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
   async function addReaction(messageId: string, emoji: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
-    // Snapshot pre-tap state synchronously before any await (prevents stale closure)
-    const preSnapshot = messages.find((m) => m.id === messageId)?.reactions ?? [];
+    // Capture snapshot from latest state inside the updater to avoid stale closure reads
+    let preSnapshot: MessageReaction[] = [];
+    let isSameEmoji = false;
+
+    setMessages((prev) => {
+      const msg = prev.find((m) => m.id === messageId);
+      preSnapshot = msg?.reactions ?? [];
+      isSameEmoji = preSnapshot.some((r) => r.emoji === emoji && r.reacted_by_me);
+      return prev; // no-op: only reading state here
+    });
 
     // Toggle-off: tapping the same emoji the user already reacted with → remove it
-    const isSameEmoji = preSnapshot.some((r) => r.emoji === emoji && r.reacted_by_me);
     if (isSameEmoji) {
       return removeReaction(messageId, emoji);
     }
@@ -513,7 +520,13 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
   async function removeReaction(messageId: string, emoji: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
-    const preSnapshot = messages.find((m) => m.id === messageId)?.reactions ?? [];
+    // Capture snapshot from latest state inside the updater to avoid stale closure reads
+    let preSnapshot: MessageReaction[] = [];
+    setMessages((prev) => {
+      const msg = prev.find((m) => m.id === messageId);
+      preSnapshot = msg?.reactions ?? [];
+      return prev; // no-op: only reading state here
+    });
 
     // Optimistic update: decrement count, remove pill if count reaches 0
     setMessages((prev) =>
