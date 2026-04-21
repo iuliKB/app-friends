@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { aggregateReactions } from '@/utils/aggregateReactions';
+import { uploadChatMedia } from '@/lib/uploadChatMedia';
 import type { Message, MessageReaction, MessageType, MessageWithProfile } from '@/types/chat';
 
 interface UseChatRoomOptions {
@@ -16,6 +17,7 @@ interface UseChatRoomResult {
   loading: boolean;
   error: string | null;
   sendMessage: (body: string, replyToId?: string) => Promise<{ error: Error | null }>;
+  sendImage: (localUri: string, replyToId?: string) => Promise<{ error: Error | null }>;
   deleteMessage: (messageId: string) => Promise<{ error: Error | null }>;
   addReaction: (messageId: string, emoji: string) => Promise<{ error: Error | null }>;
   removeReaction: (messageId: string, emoji: string) => Promise<{ error: Error | null }>;
@@ -399,6 +401,70 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     return { error: null };
   }
 
+  async function sendImage(
+    localUri: string,
+    replyToId?: string
+  ): Promise<{ error: Error | null }> {
+    if (!currentUserId) return { error: new Error('Not authenticated') };
+
+    // Client-side UUID — used for both storage path AND message id so Realtime dedup matches.
+    // Cannot use Date.now() tempId like sendMessage because body=null breaks the body-based dedup guard.
+    const messageId = crypto.randomUUID();
+    const tempId = messageId;
+
+    const optimistic: MessageWithProfile = {
+      id: tempId,
+      plan_id: planId ?? null,
+      dm_channel_id: dmChannelId ?? null,
+      group_channel_id: groupChannelId ?? null,
+      sender_id: currentUserId,
+      body: null,                           // D-10: image messages never have body
+      created_at: new Date().toISOString(),
+      image_url: localUri,                  // D-11: local URI for instant display
+      reply_to_message_id: replyToId ?? null,
+      message_type: 'image',
+      poll_id: null,
+      reactions: [],
+      pending: true,
+      tempId,
+      sender_display_name: currentUserDisplayName,
+      sender_avatar_url: currentUserAvatarUrl,
+    };
+
+    setMessages((prev) => [optimistic, ...prev]);
+
+    // Upload first, then insert with CDN URL (unlike text sends that insert immediately)
+    const cdnUrl = await uploadChatMedia(currentUserId, messageId, localUri);
+
+    if (!cdnUrl) {
+      // D-13: remove optimistic on failure; caller shows toast
+      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+      return { error: new Error('Upload failed') };
+    }
+
+    // Insert with client-generated UUID so Realtime dedup fires on the same id (body=null breaks
+    // the existing body+sender guard — supplying id is the clean alternative per RESEARCH.md Pitfall 1)
+    const { error: insertError } = await supabase.from('messages').insert({
+      id: messageId,
+      plan_id: planId ?? null,
+      dm_channel_id: dmChannelId ?? null,
+      group_channel_id: groupChannelId ?? null,
+      sender_id: currentUserId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      body: null as any,                    // same cast pattern as deleteMessage — Supabase types mark body non-nullable but DB is nullable since 0018
+      image_url: cdnUrl,
+      reply_to_message_id: replyToId ?? null,
+      message_type: 'image',
+    });
+
+    if (insertError) {
+      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+      return { error: insertError };
+    }
+
+    return { error: null };
+  }
+
   async function deleteMessage(messageId: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
@@ -557,5 +623,5 @@ export function useChatRoom({ planId, dmChannelId, groupChannelId }: UseChatRoom
     return { error: null };
   }
 
-  return { messages, loading, error, sendMessage, deleteMessage, addReaction, removeReaction };
+  return { messages, loading, error, sendMessage, sendImage, deleteMessage, addReaction, removeReaction };
 }
