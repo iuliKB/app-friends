@@ -89,7 +89,7 @@
 - [x] **Phase 12: Schema Foundation** - Migration 0018 with all additive columns, tables, RLS helpers, storage bucket, and updated TypeScript types (completed 2026-04-20)
 - [x] **Phase 13: Profile Rework + Friend Profile** - Remove status duplication, consolidate notification toggles, separate edit paths, new friend profile screen (completed 2026-04-20)
 - [x] **Phase 14: Reply Threading** - Long-press context menu primitive + inline quoted reply in chat (completed 2026-04-20)
-- [ ] **Phase 15: Message Reactions** - Tapback emoji strip extending the context menu; live counts inline below bubbles
+- [x] **Phase 15: Message Reactions** - Tapback emoji strip extending the context menu; live counts inline below bubbles (completed 2026-04-21)
 - [ ] **Phase 16: Media Sharing** - Photo library + camera capture, compressed upload, inline image bubbles
 - [ ] **Phase 17: Polls** - Poll creation via attachment menu, live vote counts, per-person single vote
 
@@ -158,7 +158,7 @@ Plans:
 - [x] 15-01-PLAN.md — aggregateReactions utility + unit tests (TDD)
 - [x] 15-02-PLAN.md — MessageBubble: EmojiStripRow + ReactionBadgeRow + onReact prop
 - [x] 15-03-PLAN.md — useChatRoom: reactions load, addReaction/removeReaction, realtime extension
-- [ ] 15-04-PLAN.md — ChatRoomScreen: wire onReact + human verification checkpoint
+- [x] 15-04-PLAN.md — ChatRoomScreen: wire onReact + human verification checkpoint
 **UI hint**: yes
 
 ### Phase 16: Media Sharing
@@ -194,7 +194,7 @@ Plans:
 | 12. Schema Foundation | v1.5 | 2/2 | Complete    | 2026-04-20 |
 | 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete    | 2026-04-20 |
 | 14. Reply Threading | v1.5 | 4/4 | Complete    | 2026-04-20 |
-| 15. Message Reactions | v1.5 | 3/4 | In Progress|  |
+| 15. Message Reactions | v1.5 | 4/4 | Complete   | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 0/TBD | Not started | - |
 | 17. Polls | v1.5 | 0/TBD | Not started | - |
 
