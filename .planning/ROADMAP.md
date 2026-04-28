@@ -103,7 +103,7 @@
 
 ### Phases
 
-- [ ] **Phase 18: Theme Foundation** - ThemeProvider context, DARK/LIGHT color split, useTheme() hook, app.config.ts fix, compat shim
+- [x] **Phase 18: Theme Foundation** - ThemeProvider context, DARK/LIGHT color split, useTheme() hook, app.config.ts fix, compat shim, ThemeSegmentedControl + Profile APPEARANCE section
 - [ ] **Phase 19: Theme Migration** - Migrate all ~98 COLORS import files to useTheme(); Profile APPEARANCE toggle; remove compat shim
 - [ ] **Phase 20: Map Feature** - Migration 0020 lat/lng columns, react-native-maps + expo-location install, LocationPicker, plan map view, Explore map
 - [ ] **Phase 21: Gallery Foundation** - plan_photos table + RLS + add_plan_photo RPC + plan-gallery Storage bucket, upload pipeline, usePlanPhotos hook
@@ -125,7 +125,7 @@
 Plans:
 - [x] 18-01-PLAN.md — LIGHT palette + ThemeContext.tsx + barrel export extension
 - [x] 18-02-PLAN.md — Wire ThemeProvider into _layout.tsx + app.config.ts automatic chrome
-- [ ] 18-03-PLAN.md — ThemeSegmentedControl component + Profile APPEARANCE section
+- [x] 18-03-PLAN.md — ThemeSegmentedControl component + Profile APPEARANCE section
 **UI hint**: yes
 
 ### Phase 19: Theme Migration
@@ -188,7 +188,7 @@ Plans:
 | 15. Message Reactions | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
-| 18. Theme Foundation | v1.6 | 2/3 | In Progress|  |
+| 18. Theme Foundation | v1.6 | 3/3 | Complete | 2026-04-28 |
 | 19. Theme Migration | v1.6 | 0/? | Not started | - |
 | 20. Map Feature | v1.6 | 0/? | Not started | - |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
@@ -196,4 +196,4 @@ Plans:
 
 ---
 
-*Roadmap updated: 2026-04-28 — v1.6 Phase 18 planned (3 plans, 3 waves)*
+*Roadmap updated: 2026-04-28 — v1.6 Phase 18 complete (3/3 plans); Phase 19 Theme Migration is next*
