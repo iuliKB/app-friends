@@ -7,9 +7,11 @@
 //
 // ALL strings here are subject to the Plan 06 copy review gate (D-20).
 
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+
 interface StreakCardProps {
   streak: {
     currentWeeks: number;
@@ -21,11 +23,86 @@ interface StreakCardProps {
 }
 
 export function StreakCard({ streak }: StreakCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      paddingVertical: SPACING.xxl,
+      paddingHorizontal: SPACING.xl,
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.xl,
+      alignItems: 'center',
+    },
+    cardPressed: {
+      opacity: 0.85,
+    },
+    bigNumber: {
+      fontSize: FONT_SIZE.xxl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    bigNumberMuted: {
+      color: colors.text.secondary,
+    },
+    label: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    emoji: {
+      fontSize: FONT_SIZE.xxl,
+      marginTop: SPACING.md,
+    },
+    divider: {
+      height: 1,
+      alignSelf: 'stretch',
+      backgroundColor: colors.border,
+      marginVertical: SPACING.lg,
+    },
+    subline: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+    },
+    skeletonCard: {
+      opacity: 0.5,
+    },
+    skeletonBig: {
+      width: SPACING.xxl * 2,
+      height: SPACING.xxl,
+      borderRadius: RADII.md,
+      backgroundColor: colors.border,
+    },
+    skeletonLabel: {
+      width: SPACING.xxl * 3,
+      height: SPACING.lg,
+      borderRadius: RADII.md,
+      backgroundColor: colors.border,
+      marginTop: SPACING.md,
+    },
+    skeletonSubline: {
+      width: SPACING.xxl * 4,
+      height: SPACING.md,
+      borderRadius: RADII.md,
+      backgroundColor: colors.border,
+    },
+  }), [colors]);
+
   const router = useRouter();
   const { currentWeeks, bestWeeks, loading } = streak;
 
   if (loading) {
-    return <StreakCardSkeleton />;
+    return (
+      <View style={[styles.card, styles.skeletonCard]} accessibilityLabel="Loading streak">
+        <View style={styles.skeletonBig} />
+        <View style={styles.skeletonLabel} />
+        <View style={styles.divider} />
+        <View style={styles.skeletonSubline} />
+      </View>
+    );
   }
 
   const isZero = currentWeeks === 0;
@@ -55,81 +132,3 @@ export function StreakCard({ streak }: StreakCardProps) {
     </Pressable>
   );
 }
-
-function StreakCardSkeleton() {
-  return (
-    <View style={[styles.card, styles.skeletonCard]} accessibilityLabel="Loading streak">
-      <View style={styles.skeletonBig} />
-      <View style={styles.skeletonLabel} />
-      <View style={styles.divider} />
-      <View style={styles.skeletonSubline} />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    paddingVertical: SPACING.xxl,
-    paddingHorizontal: SPACING.xl,
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
-    alignItems: 'center',
-  },
-  cardPressed: {
-    opacity: 0.85,
-  },
-  bigNumber: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  bigNumberMuted: {
-    color: COLORS.text.secondary,
-  },
-  label: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  emoji: {
-    fontSize: FONT_SIZE.xxl,
-    marginTop: SPACING.md,
-  },
-  divider: {
-    height: 1,
-    alignSelf: 'stretch',
-    backgroundColor: COLORS.border,
-    marginVertical: SPACING.lg,
-  },
-  subline: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-  },
-  skeletonCard: {
-    opacity: 0.5,
-  },
-  skeletonBig: {
-    width: SPACING.xxl * 2,
-    height: SPACING.xxl,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.border,
-  },
-  skeletonLabel: {
-    width: SPACING.xxl * 3,
-    height: SPACING.lg,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.border,
-    marginTop: SPACING.md,
-  },
-  skeletonSubline: {
-    width: SPACING.xxl * 4,
-    height: SPACING.md,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.border,
-  },
-});

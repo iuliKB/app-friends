@@ -2,8 +2,9 @@
 // Signed amount display: "+$42 → you" (green) or "-$18 ← you" (red).
 // D-03, D-04: avatar + friend name + signed amount label. Tappable.
 
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 
@@ -23,9 +24,44 @@ export function BalanceRow({
   unsettledCount,
   onPress,
 }: BalanceRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+    },
+    rowPressed: {
+      opacity: 0.75,
+    },
+    nameColumn: {
+      flex: 1,
+      marginLeft: SPACING.sm,
+    },
+    name: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    unsettledLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    amount: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      marginLeft: SPACING.sm,
+    },
+  }), [colors]);
+
   const isPositive = netAmountCents >= 0;
   const absAmount = formatCentsDisplay(Math.abs(netAmountCents));
-  const amountColor = isPositive ? COLORS.status.free : COLORS.interactive.destructive;
+  const amountColor = isPositive ? colors.status.free : colors.interactive.destructive;
   const signedLabel = isPositive ? `+${absAmount} → you` : `-${absAmount} ← you`;
 
   return (
@@ -48,37 +84,3 @@ export function BalanceRow({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    minHeight: 44,
-  },
-  rowPressed: {
-    opacity: 0.75,
-  },
-  nameColumn: {
-    flex: 1,
-    marginLeft: SPACING.sm,
-  },
-  name: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  unsettledLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  amount: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    marginLeft: SPACING.sm,
-  },
-});

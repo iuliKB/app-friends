@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 
 interface IOUNotesFieldProps {
@@ -18,6 +18,37 @@ interface IOUNotesFieldProps {
 }
 
 export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: SPACING.md,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerTitle: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginLeft: SPACING.sm,
+    },
+    textInput: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.lg,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 80,
+      textAlignVertical: 'top',
+    },
+  }), [colors]);
+
   const [expanded, setExpanded] = useState(false);
   const [localText, setLocalText] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
@@ -52,11 +83,11 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
           <Ionicons
             name={expanded ? 'chevron-down' : 'chevron-forward'}
             size={20}
-            color={COLORS.text.secondary}
+            color={colors.text.secondary}
           />
           <Text style={styles.headerTitle}>{'Notes'}</Text>
         </View>
-        {saving && <ActivityIndicator size="small" color={COLORS.text.secondary} />}
+        {saving && <ActivityIndicator size="small" color={colors.text.secondary} />}
       </TouchableOpacity>
 
       {expanded && (
@@ -68,7 +99,7 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
             onChangeText={setLocalText}
             onBlur={handleBlur}
             placeholder="Add notes for this plan..."
-            placeholderTextColor={COLORS.text.secondary}
+            placeholderTextColor={colors.text.secondary}
             textAlignVertical="top"
           />
         </View>
@@ -76,32 +107,3 @@ export function IOUNotesField({ planId, initialValue }: IOUNotesFieldProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: SPACING.md,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginLeft: SPACING.sm,
-  },
-  textInput: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.lg,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-});

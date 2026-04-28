@@ -89,6 +89,33 @@ export function shouldShowTimeSeparator(
   return Math.abs(currentTime - previousTime) >= 15 * 60 * 1000;
 }
 
+// Static structural styles for QuotedBlock (colors applied inline).
+const quotedBlockStyles = StyleSheet.create({
+  quotedBlock: {
+    flexDirection: 'row',
+    borderRadius: RADII.xs,
+    marginBottom: SPACING.xs,
+    overflow: 'hidden',
+  },
+  accentBar: {
+    width: 4,
+    borderRadius: RADII.xs,
+  },
+  quotedContent: {
+    flex: 1,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+  },
+  quotedSender: {
+    fontSize: FONT_SIZE.sm,
+    fontFamily: FONT_FAMILY.body.semibold,
+  },
+  quotedPreview: {
+    fontSize: FONT_SIZE.sm,
+    fontFamily: FONT_FAMILY.body.regular,
+  },
+});
+
 function QuotedBlock({
   replyToId,
   allMessages,
@@ -122,13 +149,13 @@ function QuotedBlock({
       activeOpacity={0.7}
       accessibilityLabel={`Quoted message from ${senderName}: ${previewText}. Tap to scroll to original.`}
     >
-      <View style={[styles.quotedBlock, { backgroundColor: quotedBg }]}>
-        <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
-        <View style={styles.quotedContent}>
-          <Text style={[styles.quotedSender, { color: accentColor }]} numberOfLines={1}>
+      <View style={[quotedBlockStyles.quotedBlock, { backgroundColor: quotedBg }]}>
+        <View style={[quotedBlockStyles.accentBar, { backgroundColor: accentColor }]} />
+        <View style={quotedBlockStyles.quotedContent}>
+          <Text style={[quotedBlockStyles.quotedSender, { color: accentColor }]} numberOfLines={1}>
             {senderName}
           </Text>
-          <Text style={[styles.quotedPreview, { color: previewColor }]} numberOfLines={1}>
+          <Text style={[quotedBlockStyles.quotedPreview, { color: previewColor }]} numberOfLines={1}>
             {previewText}
           </Text>
         </View>

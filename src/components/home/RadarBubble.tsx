@@ -145,7 +145,7 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
   const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
 
   // 2. Bubble size
-  const targetSize = heartbeatState === 'dead' ? BubbleSizeMap.dead : (BubbleSizeMap[friend.status] ?? 36);
+  const targetSize = heartbeatState === 'dead' ? 48 : (BubbleSizeMap[friend.status] ?? 36);
 
   // 3. Outer opacity
   let baseOpacity: number;

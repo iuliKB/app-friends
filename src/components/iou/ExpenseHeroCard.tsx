@@ -3,8 +3,9 @@
 // All-settled banner rendered above card content when allSettled=true.
 // ExpenseHeroCardSkeleton shown during loading.
 
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 
 interface ExpenseHeroCardProps {
@@ -24,6 +25,65 @@ export function ExpenseHeroCard({
   splitMode,
   allSettled,
 }: ExpenseHeroCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    settledBanner: {
+      backgroundColor: colors.status.free,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 48,
+      borderRadius: RADII.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.lg,
+    },
+    settledBannerText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: '#ffffff',
+    },
+    card: {
+      backgroundColor: colors.surface.card,
+      padding: SPACING.lg,
+      borderRadius: RADII.lg,
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.lg,
+    },
+    title: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    total: {
+      fontSize: FONT_SIZE.xxl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginTop: SPACING.xs,
+    },
+    metaRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginTop: SPACING.sm,
+    },
+    metaText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    metaSeparator: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    skeletonCard: {
+      opacity: 0.5,
+    },
+    skeletonBox: {
+      backgroundColor: colors.border,
+      borderRadius: RADII.md,
+    },
+  }), [colors]);
+
   const dateString = new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
@@ -55,6 +115,23 @@ export function ExpenseHeroCard({
 }
 
 export function ExpenseHeroCardSkeleton() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      padding: SPACING.lg,
+      borderRadius: RADII.lg,
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.lg,
+    },
+    skeletonCard: {
+      opacity: 0.5,
+    },
+    skeletonBox: {
+      backgroundColor: colors.border,
+      borderRadius: RADII.md,
+    },
+  }), [colors]);
+
   return (
     <View style={[styles.card, styles.skeletonCard]}>
       {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
@@ -66,60 +143,3 @@ export function ExpenseHeroCardSkeleton() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  settledBanner: {
-    backgroundColor: COLORS.status.free,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 48,
-    borderRadius: RADII.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.lg,
-  },
-  settledBannerText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: '#ffffff',
-  },
-  card: {
-    backgroundColor: COLORS.surface.card,
-    padding: SPACING.lg,
-    borderRadius: RADII.lg,
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.lg,
-  },
-  title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  total: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginTop: SPACING.xs,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: SPACING.sm,
-  },
-  metaText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  metaSeparator: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.text.secondary,
-  },
-  skeletonCard: {
-    opacity: 0.5,
-  },
-  skeletonBox: {
-    backgroundColor: COLORS.border,
-    borderRadius: RADII.md,
-  },
-});

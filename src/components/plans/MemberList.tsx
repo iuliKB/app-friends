@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import type { PlanMember } from '@/types/plans';
 
 interface MemberListProps {
@@ -24,6 +24,38 @@ const GROUPS: RsvpGroup[] = [
 ];
 
 export function MemberList({ members, creatorId, onMemberPress }: MemberListProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    sectionHeader: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.secondary,
+      marginTop: SPACING.lg,
+      marginBottom: SPACING.sm,
+    },
+    memberRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: SPACING.sm,
+      paddingHorizontal: SPACING.sm,
+    },
+    dimmed: {
+      opacity: 0.5,
+    },
+    memberName: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      marginLeft: SPACING.md,
+    },
+    creatorBadge: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.interactive.accent,
+      marginLeft: SPACING.sm,
+    },
+  }), [colors]);
+
   return (
     <View>
       {GROUPS.map(({ label, rsvpValue, dimmed }) => {
@@ -58,34 +90,3 @@ export function MemberList({ members, creatorId, onMemberPress }: MemberListProp
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionHeader: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.sm,
-  },
-  memberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.sm,
-  },
-  dimmed: {
-    opacity: 0.5,
-  },
-  memberName: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    marginLeft: SPACING.md,
-  },
-  creatorBadge: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.interactive.accent,
-    marginLeft: SPACING.sm,
-  },
-});

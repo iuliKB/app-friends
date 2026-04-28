@@ -2,8 +2,9 @@
 // Reusable row for a single wish list item: title + optional URL + optional notes + claim toggle.
 // readOnly=true: no claim button (used in own profile view — D-05)
 // readOnly=false (default): shows Claim / Unclaim / Claimed button based on claim state (D-08, D-09)
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 
 interface WishListItemProps {
   title: string;
@@ -24,6 +25,60 @@ export function WishListItem({
   onToggleClaim,
   readOnly = false,
 }: WishListItemProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      backgroundColor: colors.surface.base,
+      gap: SPACING.md,
+    },
+    textGroup: {
+      flex: 1,
+    },
+    title: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    url: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.accent,
+      marginTop: SPACING.xs,
+    },
+    notes: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    claimButton: {
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.xs,
+      borderRadius: RADII.md,
+      backgroundColor: colors.surface.card,
+      alignSelf: 'flex-start',
+      marginTop: SPACING.xs,
+    },
+    claimButtonActive: {
+      backgroundColor: colors.interactive.accent,
+    },
+    claimText: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    claimTextActive: {
+      color: colors.surface.base,
+    },
+    claimTextClaimed: {
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   const claimLabel = isClaimedByMe ? 'Unclaim' : isClaimed ? 'Claimed' : 'Claim';
 
   return (
@@ -67,56 +122,3 @@ export function WishListItem({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    backgroundColor: COLORS.surface.base,
-    gap: SPACING.md,
-  },
-  textGroup: {
-    flex: 1,
-  },
-  title: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  url: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.accent,
-    marginTop: SPACING.xs,
-  },
-  notes: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  claimButton: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.surface.card,
-    alignSelf: 'flex-start',
-    marginTop: SPACING.xs,
-  },
-  claimButtonActive: {
-    backgroundColor: COLORS.interactive.accent,
-  },
-  claimText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  claimTextActive: {
-    color: COLORS.surface.base,
-  },
-  claimTextClaimed: {
-    color: COLORS.text.secondary,
-  },
-});

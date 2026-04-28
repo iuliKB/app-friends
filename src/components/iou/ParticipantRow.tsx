@@ -3,8 +3,9 @@
 // "Mark Settled" button shown only when isCreator && !isPayerRow && !isSettled.
 // T-08-P02-01: UI guard is UX convenience; authoritative enforcement is RLS on iou_members.
 
+import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 
@@ -29,6 +30,71 @@ export function ParticipantRow({
   onSettle,
   settleLoading,
 }: ParticipantRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.lg,
+      backgroundColor: colors.surface.card,
+      marginBottom: SPACING.sm,
+      borderRadius: RADII.md,
+    },
+    info: {
+      flex: 1,
+      marginLeft: SPACING.sm,
+    },
+    name: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    share: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    settleButton: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+      backgroundColor: colors.interactive.accent,
+      paddingHorizontal: SPACING.lg,
+      borderRadius: RADII.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    settleButtonLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: '#ffffff',
+    },
+    badge: {
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      borderRadius: RADII.md,
+    },
+    settledBadge: {
+      backgroundColor: colors.status.free,
+    },
+    unsettledBadge: {
+      backgroundColor: colors.border,
+    },
+    badgeText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+    },
+    settledText: {
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: '#ffffff',
+    },
+    unsettledText: {
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   const showSettleButton = isCreator && !isPayerRow && !isSettled;
 
   return (
@@ -69,66 +135,3 @@ export function ParticipantRow({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface.card,
-    marginBottom: SPACING.sm,
-    borderRadius: RADII.md,
-  },
-  info: {
-    flex: 1,
-    marginLeft: SPACING.sm,
-  },
-  name: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  share: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  settleButton: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    minHeight: 44,
-    backgroundColor: COLORS.interactive.accent,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: RADII.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  settleButtonLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: '#ffffff',
-  },
-  badge: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADII.md,
-  },
-  settledBadge: {
-    backgroundColor: COLORS.status.free,
-  },
-  unsettledBadge: {
-    backgroundColor: COLORS.border,
-  },
-  badgeText: {
-    fontSize: FONT_SIZE.md,
-  },
-  settledText: {
-    fontWeight: FONT_WEIGHT.semibold,
-    color: '#ffffff',
-  },
-  unsettledText: {
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-});

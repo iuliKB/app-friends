@@ -2,8 +2,9 @@
 // Settled rows dimmed at opacity 0.45 via static wrapper View (not Animated).
 // D-07, D-08: title + amount + payer/date meta. Tappable → expense detail.
 
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 
 interface ExpenseHistoryRowProps {
@@ -31,6 +32,41 @@ export function ExpenseHistoryRow({
   isFullySettled,
   onPress,
 }: ExpenseHistoryRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+    },
+    rowPressed: {
+      opacity: 0.75,
+    },
+    leftColumn: {
+      flex: 1,
+      marginRight: SPACING.sm,
+    },
+    title: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    meta: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    amount: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+  }), [colors]);
+
   return (
     <View style={isFullySettled ? { opacity: 0.45 } : undefined}>
       <Pressable
@@ -52,37 +88,3 @@ export function ExpenseHistoryRow({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    minHeight: 44,
-  },
-  rowPressed: {
-    opacity: 0.75,
-  },
-  leftColumn: {
-    flex: 1,
-    marginRight: SPACING.sm,
-  },
-  title: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  meta: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  amount: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-});

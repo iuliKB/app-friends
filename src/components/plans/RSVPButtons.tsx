@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 type RsvpValue = 'going' | 'maybe' | 'out';
 
@@ -10,13 +10,44 @@ interface RSVPButtonsProps {
   disabled?: boolean;
 }
 
-const RSVP_OPTIONS: { value: RsvpValue; label: string; activeColor: string }[] = [
-  { value: 'going', label: 'Going', activeColor: COLORS.status.free },
-  { value: 'maybe', label: 'Maybe', activeColor: COLORS.status.maybe },
-  { value: 'out', label: 'Out', activeColor: COLORS.status.busy },
-];
-
 export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButtonsProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      gap: SPACING.sm,
+    },
+    button: {
+      flex: 1,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 44,
+      borderRadius: RADII.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonInactive: {
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    label: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+    },
+    labelActive: {
+      color: colors.surface.base,
+    },
+    labelInactive: {
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
+  const RSVP_OPTIONS: { value: RsvpValue; label: string; activeColor: string }[] = useMemo(() => [
+    { value: 'going', label: 'Going', activeColor: colors.status.free },
+    { value: 'maybe', label: 'Maybe', activeColor: colors.status.maybe },
+    { value: 'out', label: 'Out', activeColor: colors.status.busy },
+  ], [colors]);
+
   const [savingRsvp, setSavingRsvp] = useState<RsvpValue | null>(null);
 
   async function handlePress(value: RsvpValue) {
@@ -48,7 +79,7 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
             {isSaving ? (
               <ActivityIndicator
                 size="small"
-                color={isActive ? COLORS.surface.base : COLORS.text.secondary}
+                color={isActive ? colors.surface.base : colors.text.secondary}
               />
             ) : (
               <Text style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}>
@@ -61,32 +92,3 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  button: {
-    flex: 1,
-    height: 44,
-    borderRadius: RADII.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonInactive: {
-    backgroundColor: COLORS.surface.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  label: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-  },
-  labelActive: {
-    color: COLORS.surface.base,
-  },
-  labelInactive: {
-    color: COLORS.text.secondary,
-  },
-});

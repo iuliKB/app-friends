@@ -3,8 +3,9 @@
 // Returns null when remaining === 0 (per UI-SPEC copywriting table).
 // Destructive red when over-allocated (remaining < 0).
 
+import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 
 interface RemainingIndicatorProps {
@@ -13,6 +14,21 @@ interface RemainingIndicatorProps {
 }
 
 export function RemainingIndicator({ totalCents, allocatedCents }: RemainingIndicatorProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    text: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      marginTop: SPACING.sm,
+    },
+    secondary: {
+      color: colors.text.secondary,
+    },
+    destructive: {
+      color: colors.interactive.destructive,
+    },
+  }), [colors]);
+
   const remaining = totalCents - allocatedCents;
 
   if (remaining === 0) {
@@ -34,17 +50,3 @@ export function RemainingIndicator({ totalCents, allocatedCents }: RemainingIndi
     </Text>
   );
 }
-
-const styles = StyleSheet.create({
-  text: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    marginTop: SPACING.sm,
-  },
-  secondary: {
-    color: COLORS.text.secondary,
-  },
-  destructive: {
-    color: COLORS.interactive.destructive,
-  },
-});

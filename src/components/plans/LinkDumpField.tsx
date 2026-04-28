@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 
 const URL_REGEX = /https?:\/\/[^\s<>"')\]]+/gi;
@@ -48,6 +48,49 @@ function parseTextSegments(text: string): TextSegment[] {
 }
 
 export function LinkDumpField({ planId, initialValue }: LinkDumpFieldProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: SPACING.md,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerTitle: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginLeft: SPACING.sm,
+    },
+    content: {
+      gap: SPACING.sm,
+    },
+    displayText: {
+      fontSize: FONT_SIZE.lg,
+      color: colors.text.primary,
+      marginBottom: SPACING.xs,
+    },
+    urlText: {
+      color: colors.interactive.accent,
+      textDecorationLine: 'underline',
+    },
+    textInput: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.lg,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 80,
+      textAlignVertical: 'top',
+    },
+  }), [colors]);
+
   const [expanded, setExpanded] = useState(false);
   const [localText, setLocalText] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
@@ -84,11 +127,11 @@ export function LinkDumpField({ planId, initialValue }: LinkDumpFieldProps) {
           <Ionicons
             name={expanded ? 'chevron-down' : 'chevron-forward'}
             size={20}
-            color={COLORS.text.secondary}
+            color={colors.text.secondary}
           />
           <Text style={styles.headerTitle}>{'Links'}</Text>
         </View>
-        {saving && <ActivityIndicator size="small" color={COLORS.text.secondary} />}
+        {saving && <ActivityIndicator size="small" color={colors.text.secondary} />}
       </TouchableOpacity>
 
       {expanded && (
@@ -113,7 +156,7 @@ export function LinkDumpField({ planId, initialValue }: LinkDumpFieldProps) {
             onChangeText={setLocalText}
             onBlur={handleBlur}
             placeholder="Drop links here..."
-            placeholderTextColor={COLORS.text.secondary}
+            placeholderTextColor={colors.text.secondary}
             textAlignVertical="top"
           />
         </View>
@@ -121,44 +164,3 @@ export function LinkDumpField({ planId, initialValue }: LinkDumpFieldProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: SPACING.md,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginLeft: SPACING.sm,
-  },
-  content: {
-    gap: SPACING.sm,
-  },
-  displayText: {
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.xs,
-  },
-  urlText: {
-    color: COLORS.interactive.accent,
-    textDecorationLine: 'underline',
-  },
-  textInput: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.lg,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-});

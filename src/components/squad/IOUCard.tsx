@@ -5,9 +5,10 @@
 // D-13: tap → /squad/expenses.
 // D-15: data from useIOUSummary hook (parent owns hook, passes IOUSummaryData prop).
 
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 import type { IOUSummaryData } from '@/hooks/useIOUSummary';
 
@@ -16,17 +17,90 @@ interface IOUCardProps {
 }
 
 export function IOUCard({ summary }: IOUCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      paddingVertical: SPACING.xxl,
+      paddingHorizontal: SPACING.xl,
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.xl,
+    },
+    cardPressed: {
+      opacity: 0.85,
+    },
+    title: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    balanceAmount: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 24, // FONT_SIZE.xxl — display-size balance, matches IOUCard spec
+      fontFamily: FONT_FAMILY.display.semibold,
+      marginTop: SPACING.sm,
+    },
+    unsettledLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    emptyText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.sm,
+    },
+    skeletonCard: {
+      opacity: 0.5,
+    },
+    skeletonTitle: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 60,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 16,
+      borderRadius: RADII.md,
+      backgroundColor: colors.border,
+    },
+    skeletonAmount: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 160,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 40,
+      borderRadius: RADII.md,
+      backgroundColor: colors.border,
+      marginTop: SPACING.sm,
+    },
+    skeletonSublabel: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 80,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 14,
+      borderRadius: RADII.md,
+      backgroundColor: colors.border,
+      marginTop: SPACING.xs,
+    },
+  }), [colors]);
+
   const router = useRouter();
   const { netCents, unsettledCount, loading } = summary;
 
   if (loading) {
-    return <IOUCardSkeleton />;
+    return (
+      <View style={[styles.card, styles.skeletonCard]} accessibilityLabel="Loading IOUs">
+        <View style={styles.skeletonTitle} />
+        <View style={styles.skeletonAmount} />
+        <View style={styles.skeletonSublabel} />
+      </View>
+    );
   }
 
   const hasActivity = unsettledCount > 0;
   const isPositive = netCents >= 0;
   const absAmount = formatCentsDisplay(Math.abs(netCents));
-  const balanceColor = isPositive ? COLORS.status.free : COLORS.interactive.destructive;
+  const balanceColor = isPositive ? colors.status.free : colors.interactive.destructive;
   const balanceLabel = isPositive ? `You're owed ${absAmount}` : `You owe ${absAmount}`;
   const unsettledLabel =
     unsettledCount === 1 ? '1 unsettled' : `${unsettledCount} unsettled`;
@@ -57,80 +131,3 @@ export function IOUCard({ summary }: IOUCardProps) {
     </Pressable>
   );
 }
-
-function IOUCardSkeleton() {
-  return (
-    <View style={[styles.card, styles.skeletonCard]} accessibilityLabel="Loading IOUs">
-      <View style={styles.skeletonTitle} />
-      <View style={styles.skeletonAmount} />
-      <View style={styles.skeletonSublabel} />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    paddingVertical: SPACING.xxl,
-    paddingHorizontal: SPACING.xl,
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
-  },
-  cardPressed: {
-    opacity: 0.85,
-  },
-  title: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  balanceAmount: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 24, // FONT_SIZE.xxl — display-size balance, matches IOUCard spec
-    fontWeight: FONT_WEIGHT.semibold,
-    marginTop: SPACING.sm,
-  },
-  unsettledLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  emptyText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.sm,
-  },
-  // Skeleton styles
-  skeletonCard: {
-    opacity: 0.5,
-  },
-  skeletonTitle: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 60,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 16,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.border,
-  },
-  skeletonAmount: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 160,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 40,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.border,
-    marginTop: SPACING.sm,
-  },
-  skeletonSublabel: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 80,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 14,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.border,
-    marginTop: SPACING.xs,
-  },
-});

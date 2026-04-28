@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarStack } from '@/components/plans/AvatarStack';
 import type { PlanWithMembers } from '@/types/plans';
 
@@ -14,8 +14,8 @@ export function formatPlanTime(scheduledFor: string | null): string {
   const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   if (diffHours < 0) return 'Past';
-  if (diffHours < 1) return `In ${Math.max(1, Math.round(diffMs / 60000))} min \u2022 ${timeStr}`;
-  if (diffHours < 24) return `In ${Math.floor(diffHours)}h \u2022 ${timeStr}`;
+  if (diffHours < 1) return `In ${Math.max(1, Math.round(diffMs / 60000))} min • ${timeStr}`;
+  if (diffHours < 24) return `In ${Math.floor(diffHours)}h • ${timeStr}`;
 
   const isToday = date.toDateString() === now.toDateString();
   const tomorrow = new Date(now);
@@ -45,6 +45,44 @@ interface PlanCardProps {
 }
 
 export function PlanCard({ plan, onPress }: PlanCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: SPACING.lg,
+    },
+    title: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginBottom: SPACING.xs,
+    },
+    timeLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.secondary,
+      marginBottom: SPACING.xs,
+    },
+    location: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginBottom: SPACING.xs,
+    },
+    rsvpSummary: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.secondary,
+      marginBottom: SPACING.sm,
+    },
+    avatarStackContainer: {
+      marginTop: SPACING.xs,
+    },
+  }), [colors]);
+
   const timeLabel = formatPlanTime(plan.scheduled_for);
   const rsvpSummary = getRsvpSummary(plan);
 
@@ -60,38 +98,3 @@ export function PlanCard({ plan, onPress }: PlanCardProps) {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    padding: SPACING.lg,
-  },
-  title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.xs,
-  },
-  timeLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.xs,
-  },
-  location: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.xs,
-  },
-  rsvpSummary: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.sm,
-  },
-  avatarStackContainer: {
-    marginTop: SPACING.xs,
-  },
-});
