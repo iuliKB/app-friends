@@ -2,24 +2,20 @@
 
 ## What This Is
 
-Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, lightweight expense tracking, and birthday coordination into a single React Native + Expo mobile app backed by Supabase. V1.4 adds IOU expense tracking, birthday profiles with wish lists + group gift coordination, a Squad Dashboard, and birthday social features — making the app useful for real-life coordination moments.
+Campfire is a "friendship OS" — an all-in-one social coordination app for close friend groups of 3–15 people. It combines availability status, event planning, group chat, lightweight expense tracking, birthday coordination, and shared photo memories into a single React Native + Expo mobile app backed by Supabase. V1.6 adds a user-selectable light/dark theme, a map for plan locations with nearby discovery in Explore, and a per-plan photo gallery where each participant can contribute up to 10 photos.
 
 ## Core Value
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone: v1.5 Chat & Profile
+## Current Milestone: v1.6 Places, Themes & Memories
 
-**Goal:** Elevate chat with reactions, media, threading, and polls while cleaning up a cluttered profile into a coherent, friend-focused UX.
+**Goal:** Give Campfire a sense of place (map for plans + explore nearby), user-selectable dark/light mode, and a shared photo gallery per plan to relive moments together.
 
 **Target features:**
-- Message reactions (emoji tapback on any message)
-- Media sharing in chat (photos from library + in-app camera, inline display)
-- Reply threading (reply to a specific message with quoted context)
-- Polls in chat (via existing attachment menu entry point)
-- Remove status duplication from profile (home is the single source of truth)
-- Profile rework: Notifications section, edit details separate from photo, cleaner layout
-- Friend profile page: tap friend → full screen with avatar, status, birthday, wish list
+- Light/dark theme toggle — user can switch between dark mode (current) and light mode, preference persisted
+- Map on plans — attach a location to a plan and see it on a map; view friend plans near you in Explore tab
+- Plan photo gallery — each participant can contribute up to 10 photos per plan; photos saved in a shared gallery visible to all plan members
 
 ## Requirements
 
@@ -92,7 +88,12 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Active
 
-(none — v1.5 not yet planned)
+- [ ] User can toggle between light and dark theme in Profile settings
+- [ ] User can attach a location to a plan (map pin)
+- [ ] User can view a plan's location on a map
+- [ ] User can browse nearby friend plans on a map in Explore tab
+- [ ] Each plan participant can upload up to 10 photos to a shared plan gallery
+- [ ] All plan members can view the plan photo gallery
 
 ### Out of Scope
 
@@ -106,7 +107,9 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - Public profiles or discoverability — friends-only by design
 - Web app / PWA — mobile only
 - Group size pagination — unnecessary for 3–15 person groups
-- Dark mode / theming — v1.4+ (semantic color naming positions for it)
+- Advanced map features (live friend location tracking) — privacy concerns, V2
+- Public plan discovery — friends-only by design
+- Video in plan gallery — storage cost, V2
 
 ## Context
 
@@ -186,4 +189,4 @@ Known technical considerations:
 | Wish list claims stored server-side with claimer_id (v1.4) | Client-side claim state would be lost on app restart and invisible to other group members | ✓ Good |
 
 ---
-*Last updated: 2026-04-21 after Phase 14 (Reply Threading — long-press reply with quoted block, soft-delete, Realtime propagation) complete*
+*Last updated: 2026-04-28 — Milestone v1.6 Places, Themes & Memories started*
