@@ -137,6 +137,93 @@
 
 ---
 
+## Milestone: v1.3.5 — Homescreen Redesign
+
+**Shipped:** 2026-04-11
+**Phases:** 4 | **Plans:** 15
+
+### What Was Built
+- Status pill in header with bottom sheet picker (replaces inline MoodPicker)
+- Radar view: spatial bubble layout with heartbeat freshness indicators
+- Card stack view: swipeable cards with Nudge (DM) / Skip actions
+- Unified friends section with Radar/Cards toggle, upcoming events with horizontal scroll
+
+### What Worked
+- Custom bottom sheet implementation (no @gorhom dependency) — Reanimated v4 incompatibility discovered early, avoided a late-phase blocker
+- Radar/Cards toggle pattern established a clean view-switching idiom reused later
+
+### Key Lessons
+1. @gorhom/bottom-sheet incompatible with Reanimated v4 — custom bottom sheet is the safe pattern for this stack
+2. expo-image-manipulator compression is mandatory before any Supabase Storage upload — raw iPhone photos exhaust 1GB free tier in days
+
+---
+
+## Milestone: v1.4 — Squad Dashboard & Social Tools
+
+**Shipped:** 2026-04-17
+**Phases:** 6 (phases 5–11) | **Plans:** 23
+
+### What Was Built
+- IOU expense tracking: `create_expense` atomic RPC, even/custom split, settle flow, net balance summary per friend
+- Birthday field (month/day/year as smallints) in profile with native DateTimePicker
+- Birthday group chat with collapsible wish list panel + gift claiming/voting
+- Squad Dashboard with scrollable FlatList+ListFooterComponent pattern
+- Chat attachment menu (Poll/Split Expenses/To-Do) with group participant sheet via tappable header
+
+### What Worked
+- INTEGER cents for IOU amounts — float arithmetic would have caused phantom debt bugs
+- Native DateTimePicker over custom ScrollView picker — locale, accessibility, no fragility
+- fetch().arrayBuffer() upload pattern locked in — FormData + file:// URI fails in React Native
+
+### What Was Inefficient
+- FlatList-inside-ScrollView for Squad Dashboard was caught early thanks to the established pattern prohibition
+- Plan cover image upload needed a second fix (ArrayBuffer pattern wasn't applied first time)
+
+### Key Lessons
+1. Birthday as separate month/day/year smallint columns prevents off-by-one errors in negative-UTC timezones
+2. create_expense as atomic RPC prevents orphan records from network failures between two client inserts
+3. Squad Dashboard: single outer FlatList with cards in ListFooterComponent is the mandatory pattern for nested lists
+
+---
+
+## Milestone: v1.5 — Chat & Profile
+
+**Shipped:** 2026-04-22
+**Phases:** 6 (phases 12–17) | **Plans:** 21 | **Files changed:** 122 TS/TSX, +14,548 / -847 lines
+**Timeline:** 5 days (2026-04-18 → 2026-04-22)
+
+### What Was Built
+- Schema foundation: Migration 0018+0019 with all additive columns, tables, RLS helpers, `is_channel_member()` SECURITY DEFINER helper, `create_poll()` atomic RPC, `chat-media` bucket, soft-delete
+- Profile rework: status removed from profile tab, notifications consolidated, edit details decoupled from avatar; new `/friends/[id]` friend profile screen with freshness-aware status, birthday, wish list
+- Reply threading: long-press context menu primitive, inline quoted reply in MessageBubble, scroll-to-original with highlight flash, soft-delete placeholder
+- Message reactions: 6-emoji tapback strip extending context menu, `message_reactions` table, live counts via postgres_changes Realtime, optimistic add/remove toggle
+- Media sharing: photo library + in-app camera, expo-image-manipulator compression (1280px max), ArrayBuffer upload to chat-media bucket, inline image bubbles, full-screen ImageViewerModal
+- Polls: PollCreationSheet via attachment menu, `polls`/`poll_options`/`poll_votes` tables, single-vote with change-vote, live counts via Realtime (reusing existing channel via lastPollVoteEvent bridge)
+
+### What Worked
+- Schema foundation phase (Phase 12) first: all DB objects live before any UI phase — zero migration surprises during feature phases
+- context menu primitive reused across reply, reactions — established once, reused 3× without modification
+- `lastPollVoteEvent` bridge pattern: useChatRoom Realtime signals usePoll re-fetch without a duplicate subscription — elegant solution to the free-tier Realtime budget constraint
+- `Math.random()` UUID template for Hermes: discovered once, documented, applied consistently for the rest of the milestone
+
+### What Was Inefficient
+- CHAT-01/02/03 (reactions) left unchecked in REQUIREMENTS.md through milestone — caught at close, not during execution
+- Phase directories were cleared by new-milestone flow before milestone close, so accomplishments couldn't be auto-extracted — had to reconstruct from git log
+
+### Patterns Established
+- `SECURITY DEFINER` helper functions (is_channel_member) keep RLS policies readable and composable
+- Friend profile route at root `/friends/[id]` — tab-nested routes break multi-entry-point back navigation
+- lastPollVoteEvent bridge: reuse existing Realtime channel to signal dependent hooks without new subscriptions
+- contentType: 'image/jpeg' forced on all uploads — prevents executable-disguised-as-image uploads
+
+### Key Lessons
+1. Mark requirements complete during execution, not at close — unchecked items are easy to miss at the summary stage
+2. Close milestone BEFORE running new-milestone — clearing phase dirs prevents accomplishment auto-extraction
+3. Math.random() UUID template is the Hermes-compatible polyfill; document it once, apply everywhere
+4. `onAttachmentAction` must fire after `setMenuVisible(false)` on iOS — two simultaneous modals are not supported
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -147,10 +234,16 @@
 | v1.1 | 33 commits | 3 | 11 | 1 day | Design system retrofit with ESLint enforcement |
 | v1.2 | 6 commits | 3 | 5 | 1 day | Navigation restructure, smallest milestone |
 | v1.3 | 142 files | 5 | 32 | 4 days | Largest milestone — push, liveness, notifications |
+| v1.3.5 | ~15 plans | 4 | 15 | 1 day | Homescreen redesign: radar, cards, status pill |
+| v1.4 | ~23 plans | 6 | 23 | 6 days | IOU + Birthday + Squad Dashboard |
+| v1.5 | 122 TS files +14.5K | 6 | 21 | 5 days | Full chat feature set + profile rework |
 
 ### Top Lessons (Verified Across Milestones)
 
-1. RLS + SECURITY DEFINER is the recurring pattern for safe server-side logic (v1.0 plan_members, v1.3 status_history, get_squad_streak)
+1. RLS + SECURITY DEFINER is the recurring pattern for safe server-side logic (v1.0 plan_members, v1.3 status_history, v1.5 is_channel_member)
 2. Enforce conventions via tooling not review (v1.1 ESLint, v1.3 copy review gate)
 3. Context discussions before planning surface better designs than upfront requirements alone (v1.3 heartbeat replaced clock reset)
 4. Small, focused phases with clear dependencies ship faster than large monolithic ones
+5. Schema foundation phases first — all DB objects live before UI phases prevents mid-feature migration surprises (v1.5)
+6. Close milestones before starting new ones — cleaning phase dirs before close breaks accomplishment extraction
+7. Mark requirements complete during execution, not at milestone close — easier to miss at summary stage
