@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { KeyboardTypeOptions, StyleSheet, Text, TextInput, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SPACING } from '@/theme';
 
 export interface FormFieldProps {
   label: string;
@@ -25,7 +25,57 @@ export function FormField({
   autoCapitalize,
   keyboardType,
 }: FormFieldProps) {
+  const { colors } = useTheme();
   const [focused, setFocused] = useState(false);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      marginBottom: 0,
+    },
+    label: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginBottom: SPACING.sm,
+    },
+    inputContainer: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 52,
+      paddingHorizontal: SPACING.lg,
+    },
+    inputFocused: {
+      borderColor: colors.interactive.accent,
+      borderWidth: 1.5,
+    },
+    inputError: {
+      borderColor: colors.interactive.destructive,
+    },
+    input: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      paddingVertical: 14, // no exact token — intentional per Phase 8 decision
+    },
+    errorText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+      marginTop: SPACING.xs,
+    },
+    helperText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+  }), [colors]);
 
   return (
     <View style={styles.container}>
@@ -42,7 +92,7 @@ export function FormField({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={COLORS.text.secondary}
+          placeholderTextColor={colors.text.secondary}
           secureTextEntry={secureTextEntry}
           autoCapitalize={autoCapitalize}
           keyboardType={keyboardType}
@@ -55,52 +105,3 @@ export function FormField({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 0,
-  },
-  label: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.sm,
-  },
-  inputContainer: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 52,
-    paddingHorizontal: SPACING.lg,
-  },
-  inputFocused: {
-    borderColor: COLORS.interactive.accent,
-    borderWidth: 1.5,
-  },
-  inputError: {
-    borderColor: COLORS.interactive.destructive,
-  },
-  input: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    paddingVertical: 14, // no exact token — intentional per Phase 8 decision
-  },
-  errorText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-    marginTop: SPACING.xs,
-  },
-  helperText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-});

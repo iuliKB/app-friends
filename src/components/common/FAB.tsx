@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SHADOWS, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SHADOWS, SPACING } from '@/theme';
 
 export interface FABProps {
   icon: React.ReactNode;
@@ -12,8 +12,36 @@ export interface FABProps {
 }
 
 export function FAB({ icon, label, onPress, accessibilityLabel, size = 56 }: FABProps) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const scale = useRef(new Animated.Value(1)).current;
+
+  const styles = useMemo(() => StyleSheet.create({
+    fabWrapper: {
+      position: 'absolute',
+    },
+    fab: {
+      backgroundColor: colors.interactive.accent,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...SHADOWS.fab,
+    },
+    pill: {
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.lg,
+      borderRadius: RADII.full,
+    },
+    circle: {
+      borderRadius: RADII.full,
+    },
+    label: {
+      color: colors.surface.base,
+      fontFamily: FONT_FAMILY.display.semibold,
+      fontSize: FONT_SIZE.lg,
+      marginLeft: SPACING.sm,
+    },
+  }), [colors]);
 
   const handlePressIn = () => {
     Animated.spring(scale, {
@@ -61,30 +89,3 @@ export function FAB({ icon, label, onPress, accessibilityLabel, size = 56 }: FAB
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  fabWrapper: {
-    position: 'absolute',
-  },
-  fab: {
-    backgroundColor: COLORS.interactive.accent,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOWS.fab,
-  },
-  pill: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    borderRadius: RADII.full,
-  },
-  circle: {
-    borderRadius: RADII.full,
-  },
-  label: {
-    color: COLORS.surface.base,
-    fontWeight: FONT_WEIGHT.semibold,
-    fontSize: FONT_SIZE.lg,
-    marginLeft: SPACING.sm,
-  },
-});

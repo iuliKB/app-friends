@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, SPACING } from '@/theme';
 
 export interface ScreenHeaderProps {
   title: string;
@@ -9,6 +9,30 @@ export interface ScreenHeaderProps {
 }
 
 export function ScreenHeader({ title, subtitle, rightAction }: ScreenHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      paddingBottom: SPACING.lg,
+    },
+    left: {
+      flex: 1,
+    },
+    title: {
+      fontSize: FONT_SIZE.xxl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    subtitle: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -19,26 +43,3 @@ export function ScreenHeader({ title, subtitle, rightAction }: ScreenHeaderProps
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingBottom: SPACING.lg,
-  },
-  left: {
-    flex: 1,
-  },
-  title: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  subtitle: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-});

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Keyboard,
   Modal,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SPACING } from '@/theme';
 
 // ---------------------------------------------------------------------------
 // Data constants
@@ -47,8 +47,80 @@ interface BirthdayPickerProps {
 // ---------------------------------------------------------------------------
 
 export function BirthdayPicker({ month, day, year, onChange, disabled = false }: BirthdayPickerProps) {
+  const { colors } = useTheme();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerDate, setPickerDate] = useState<Date>(new Date(1990, 0, 1));
+
+  const styles = useMemo(() => StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      gap: SPACING.md,
+    },
+    trigger: {
+      flex: 1,
+      height: 52,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      paddingHorizontal: SPACING.lg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    triggerDisabled: {
+      opacity: 0.5,
+    },
+    triggerTextPlaceholder: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    triggerTextSelected: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    clearLink: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.accent,
+      textAlign: 'right',
+      marginTop: SPACING.xs,
+    },
+    modalBackdrop: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    sheet: {
+      backgroundColor: colors.surface.card,
+      borderTopLeftRadius: RADII.lg,
+      borderTopRightRadius: RADII.lg,
+      paddingBottom: SPACING.xxl,
+    },
+    sheetHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    sheetTitle: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    doneButton: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.interactive.accent,
+    },
+    pickerCenter: {
+      alignItems: 'center',
+    },
+  }), [colors]);
 
   function handleOpenPicker() {
     if (disabled) return;
@@ -183,78 +255,3 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
     </View>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-  },
-  trigger: {
-    flex: 1,
-    height: 52,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    paddingHorizontal: SPACING.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  triggerDisabled: {
-    opacity: 0.5,
-  },
-  triggerTextPlaceholder: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  triggerTextSelected: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  clearLink: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.accent,
-    textAlign: 'right',
-    marginTop: SPACING.xs,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  sheet: {
-    backgroundColor: COLORS.surface.card,
-    borderTopLeftRadius: RADII.lg,
-    borderTopRightRadius: RADII.lg,
-    paddingBottom: SPACING.xxl,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  sheetTitle: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  doneButton: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.interactive.accent,
-  },
-  pickerCenter: {
-    alignItems: 'center',
-  },
-});

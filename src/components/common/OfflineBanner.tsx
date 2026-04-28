@@ -1,11 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE } from '@/theme';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 export function OfflineBanner() {
+  const { colors } = useTheme();
   const { isConnected } = useNetworkStatus();
   const heightAnim = useRef(new Animated.Value(isConnected ? 0 : 32)).current;
+
+  const styles = useMemo(() => StyleSheet.create({
+    banner: {
+      backgroundColor: colors.offline.bg,
+      overflow: 'hidden',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    text: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.offline.text,
+      textAlign: 'center',
+    },
+  }), [colors]);
 
   useEffect(() => {
     Animated.timing(heightAnim, {
@@ -21,18 +37,3 @@ export function OfflineBanner() {
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  banner: {
-    backgroundColor: COLORS.offline.bg,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.offline.text,
-    textAlign: 'center',
-  },
-});

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE } from '@/theme';
 
 interface AvatarCircleProps {
   size?: number;
@@ -19,6 +19,26 @@ function getInitials(displayName: string): string {
 }
 
 export function AvatarCircle({ size = 80, imageUri, displayName, onPress }: AvatarCircleProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    circle: {
+      backgroundColor: colors.surface.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    image: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+    },
+    initials: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.interactive.accent,
+    },
+  }), [colors]);
+
   const circleStyle = {
     width: size,
     height: size,
@@ -45,22 +65,3 @@ export function AvatarCircle({ size = 80, imageUri, displayName, onPress }: Avat
 
   return content;
 }
-
-const styles = StyleSheet.create({
-  circle: {
-    backgroundColor: COLORS.surface.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  image: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-  },
-  initials: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.interactive.accent,
-  },
-});
