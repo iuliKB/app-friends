@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.5
-milestone_name: Chat & Profile
-status: Defining requirements
-stopped_at: Milestone v1.6 started — defining requirements
-last_updated: "2026-04-28T11:43:08.436Z"
+milestone: v1.6
+milestone_name: Places, Themes & Memories
+status: Ready to plan
+stopped_at: Roadmap created — Phase 18 ready for planning
+last_updated: "2026-04-28T12:00:00.000Z"
 last_activity: 2026-04-28
 progress:
-  total_phases: 6
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,25 +20,33 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Defining v1.6 requirements
+**Current focus:** v1.6 Phase 18 — Theme Foundation
 
 ## Current Position
 
 Milestone: v1.6 Places, Themes & Memories
-Phase: Not started (defining requirements)
+Phase: 18 of 22 (Theme Foundation) — Not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-28
+Status: Ready to plan Phase 18
+Last activity: 2026-04-28 — Roadmap created, 18 requirements mapped across 5 phases
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Phase Structure
 
-(TBD — roadmap pending)
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 18 | Theme Foundation | THEME-01, 02, 03, 05 | Not started |
+| 19 | Theme Migration | THEME-04 | Not started |
+| 20 | Map Feature | MAP-01, 02, 03, 04, 05 | Not started |
+| 21 | Gallery Foundation | GALL-01, 02, 03 | Not started |
+| 22 | Gallery UI | GALL-04, 05, 06, 07, 08 | Not started |
 
 ## Performance Metrics
 
 Plans executed this milestone: 0
 Phases completed: 0
-Requirements covered: 0
+Requirements covered: 0/18
 
 ## Accumulated Context
 
@@ -50,6 +58,10 @@ Requirements covered: 0
 - [v1.5]: expo-image-manipulator compression is mandatory before upload (not optional) — raw iPhone photos exhaust 1GB storage in days
 - [v1.5]: contentType forced to image/jpeg in upload — client cannot upload executable disguised as image
 - [v1.5]: crypto.randomUUID() unavailable in Hermes — use Math.random UUID template for all optimistic IDs
+- [v1.6 pre]: useTheme() context pattern chosen over per-screen COLORS import — StyleSheet.create must be inside component body wrapped in useMemo([colors]) for themed styles
+- [v1.6 pre]: react-native-maps iOS must use Apple Maps (PROVIDER_DEFAULT) — Google Maps iOS config plugin broken in SDK 55; no API key needed for dev
+- [v1.6 pre]: plan-gallery Storage bucket is PRIVATE (signed URLs) — plan covers are public, gallery photos are not
+- [v1.6 pre]: add_plan_photo SECURITY DEFINER RPC enforces 10-photo cap server-side — client-side check is UI only
 
 ### Pending Todos
 
@@ -61,5 +73,5 @@ Requirements covered: 0
 
 ## Session Continuity
 
-Last session: 2026-04-28T00:00:00.000Z
-Stopped at: Milestone v1.6 started — defining requirements
+Last session: 2026-04-28T12:00:00.000Z
+Stopped at: Roadmap created — ready to plan Phase 18

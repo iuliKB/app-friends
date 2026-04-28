@@ -67,30 +67,30 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| THEME-01 | TBD | Pending |
-| THEME-02 | TBD | Pending |
-| THEME-03 | TBD | Pending |
-| THEME-04 | TBD | Pending |
-| THEME-05 | TBD | Pending |
-| MAP-01 | TBD | Pending |
-| MAP-02 | TBD | Pending |
-| MAP-03 | TBD | Pending |
-| MAP-04 | TBD | Pending |
-| MAP-05 | TBD | Pending |
-| GALL-01 | TBD | Pending |
-| GALL-02 | TBD | Pending |
-| GALL-03 | TBD | Pending |
-| GALL-04 | TBD | Pending |
-| GALL-05 | TBD | Pending |
-| GALL-06 | TBD | Pending |
-| GALL-07 | TBD | Pending |
-| GALL-08 | TBD | Pending |
+| THEME-01 | Phase 18 | Pending |
+| THEME-02 | Phase 18 | Pending |
+| THEME-03 | Phase 18 | Pending |
+| THEME-05 | Phase 18 | Pending |
+| THEME-04 | Phase 19 | Pending |
+| MAP-01 | Phase 20 | Pending |
+| MAP-02 | Phase 20 | Pending |
+| MAP-03 | Phase 20 | Pending |
+| MAP-04 | Phase 20 | Pending |
+| MAP-05 | Phase 20 | Pending |
+| GALL-01 | Phase 21 | Pending |
+| GALL-02 | Phase 21 | Pending |
+| GALL-03 | Phase 21 | Pending |
+| GALL-04 | Phase 22 | Pending |
+| GALL-05 | Phase 22 | Pending |
+| GALL-06 | Phase 22 | Pending |
+| GALL-07 | Phase 22 | Pending |
+| GALL-08 | Phase 22 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: 0 (TBD — roadmap pending)
-- Unmapped: 18 ⚠
+- Mapped to phases: 18 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-28*
-*Last updated: 2026-04-28 after initial definition*
+*Last updated: 2026-04-28 — traceability table completed after roadmap creation*
