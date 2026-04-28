@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SPACING } from '@/theme';
 
 interface AuthTabSwitcherProps {
   activeTab: 'login' | 'signup';
@@ -8,6 +8,36 @@ interface AuthTabSwitcherProps {
 }
 
 export function AuthTabSwitcher({ activeTab, onTabChange }: AuthTabSwitcherProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      padding: SPACING.xs,
+      marginHorizontal: SPACING.lg,
+    },
+    tab: {
+      flex: 1,
+      height: 40, // no exact token — not flagged by rule
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: RADII.md,
+    },
+    activeTab: {
+      backgroundColor: colors.border,
+    },
+    tabText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    activeTabText: {
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -29,32 +59,3 @@ export function AuthTabSwitcher({ activeTab, onTabChange }: AuthTabSwitcherProps
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    padding: SPACING.xs,
-    marginHorizontal: SPACING.lg,
-  },
-  tab: {
-    flex: 1,
-    height: 40, // no exact token — not flagged by rule
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: RADII.md,
-  },
-  activeTab: {
-    backgroundColor: COLORS.border,
-  },
-  tabText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  activeTabText: {
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-});

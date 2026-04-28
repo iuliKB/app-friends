@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
 import { formatWindowLabel } from '@/lib/windows';
 import type { StatusValue } from '@/types/app';
@@ -30,11 +30,31 @@ export function StatusPill({
   last_active_at,
   context_tag,
 }: StatusPillProps) {
+  const { colors } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    pill: {
+      height: 24,
+      paddingHorizontal: SPACING.sm,
+      borderRadius: RADII.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    fadingPill: {
+      opacity: 0.6,
+    },
+    label: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.surface.base,
+    },
+  }), [colors]);
+
   // Legacy path: caller did not pass heartbeat fields → bare mood pill.
   const hasHeartbeatData = status_expires_at !== undefined && last_active_at !== undefined;
   if (!hasHeartbeatData) {
     return (
-      <View style={[styles.pill, { backgroundColor: COLORS.status[status] }]}>
+      <View style={[styles.pill, { backgroundColor: colors.status[status] }]}>
         <Text style={styles.label}>{MOOD_LABEL[status]}</Text>
       </View>
     );
@@ -56,7 +76,7 @@ export function StatusPill({
     pillLabel = segments.join(' · ');
   }
 
-  const bgColor = heartbeatState === 'dead' ? COLORS.surface.card : COLORS.status[status];
+  const bgColor = heartbeatState === 'dead' ? colors.surface.card : colors.status[status];
   const pillStyle = [
     styles.pill,
     { backgroundColor: bgColor },
@@ -69,21 +89,3 @@ export function StatusPill({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  pill: {
-    height: 24,
-    paddingHorizontal: SPACING.sm,
-    borderRadius: RADII.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fadingPill: {
-    opacity: 0.6,
-  },
-  label: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.surface.base,
-  },
-});

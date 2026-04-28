@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { useStatus } from '@/hooks/useStatus';
 import { MOOD_PRESETS } from '@/components/status/moodPresets';
 import { getWindowOptions } from '@/lib/windows';
@@ -23,20 +23,85 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const MOOD_ROWS: { value: StatusValue; label: string; color: string }[] = [
-  { value: 'free', label: 'Free', color: COLORS.status.free },
-  { value: 'maybe', label: 'Maybe', color: COLORS.status.maybe },
-  { value: 'busy', label: 'Busy', color: COLORS.status.busy },
-];
-
 interface MoodPickerProps {
   onCommit?: () => void;
 }
 
 export function MoodPicker({ onCommit }: MoodPickerProps) {
+  const { colors } = useTheme();
   const { currentStatus, saving, setStatus } = useStatus();
   const [expandedMood, setExpandedMood] = useState<StatusValue | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  const MOOD_ROWS: { value: StatusValue; label: string; color: string }[] = useMemo(() => [
+    { value: 'free', label: 'Free', color: colors.status.free },
+    { value: 'maybe', label: 'Maybe', color: colors.status.maybe },
+    { value: 'busy', label: 'Busy', color: colors.status.busy },
+  ], [colors]);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      marginHorizontal: SPACING.lg,
+      gap: SPACING.sm,
+    },
+    moodRow: {
+      minHeight: 56,
+      borderRadius: RADII.md,
+      backgroundColor: colors.surface.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: SPACING.lg,
+    },
+    pressed: {
+      opacity: 0.8,
+    },
+    moodLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.regular,
+      color: colors.text.primary,
+    },
+    moodLabelActive: {
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.surface.base,
+    },
+    expandedPanel: {
+      marginTop: SPACING.sm,
+      gap: SPACING.sm,
+    },
+    chipsRow: {
+      paddingVertical: SPACING.xs,
+      gap: SPACING.sm,
+    },
+    presetChip: {
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.xs,
+      borderRadius: RADII.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface.card,
+    },
+    presetChipLabel: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    presetChipLabelActive: {
+      color: colors.surface.base,
+      fontFamily: FONT_FAMILY.body.semibold,
+    },
+    windowChip: {
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      borderRadius: RADII.md,
+      borderWidth: 1,
+      backgroundColor: colors.surface.card,
+    },
+    windowChipLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.primary,
+    },
+  }), [colors]);
 
   // When currentStatus changes externally (e.g., committed from the other screen
   // via Zustand sync), collapse the picker. D-25 + OVR-02.
@@ -97,7 +162,7 @@ export function MoodPicker({ onCommit }: MoodPickerProps) {
               accessibilityLabel={`${row.label} status`}
             >
               {saving && isExpanded ? (
-                <ActivityIndicator color={COLORS.surface.base} />
+                <ActivityIndicator color={colors.surface.base} />
               ) : (
                 <Text style={[styles.moodLabel, isActive && styles.moodLabelActive]}>
                   {row.label}
@@ -167,67 +232,3 @@ export function MoodPicker({ onCommit }: MoodPickerProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: SPACING.lg,
-    gap: SPACING.sm,
-  },
-  moodRow: {
-    minHeight: 56,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.surface.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.lg,
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-  moodLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  moodLabelActive: {
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.surface.base,
-  },
-  expandedPanel: {
-    marginTop: SPACING.sm,
-    gap: SPACING.sm,
-  },
-  chipsRow: {
-    paddingVertical: SPACING.xs,
-    gap: SPACING.sm,
-  },
-  presetChip: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADII.full,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.surface.card,
-  },
-  presetChipLabel: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  presetChipLabelActive: {
-    color: COLORS.surface.base,
-    fontWeight: FONT_WEIGHT.semibold,
-  },
-  windowChip: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: RADII.md,
-    borderWidth: 1,
-    backgroundColor: COLORS.surface.card,
-  },
-  windowChipLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-});

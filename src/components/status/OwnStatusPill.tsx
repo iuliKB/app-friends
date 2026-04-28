@@ -5,9 +5,9 @@
 // Props: onPress (opens StatusPickerSheet), sessionCount (gates pulse animation).
 // Lives in ScreenHeader rightAction slot — wired by Plan 03.
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { computeHeartbeatState } from '@/lib/heartbeat';
@@ -17,12 +17,6 @@ interface OwnStatusPillProps {
   onPress: () => void;
   sessionCount: number;
 }
-
-const DOT_COLOR: Record<HeartbeatState, string> = {
-  alive: COLORS.status.free,    // green
-  fading: COLORS.status.maybe,  // yellow
-  dead: COLORS.text.secondary,  // gray
-};
 
 const MOOD_LABEL: Record<string, string> = { free: 'Free', maybe: 'Maybe', busy: 'Busy' };
 
@@ -38,6 +32,39 @@ function formatUntil(expiresAt: string): string {
 }
 
 export function OwnStatusPill({ onPress, sessionCount }: OwnStatusPillProps) {
+  const { colors } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    pill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.xs,
+      gap: SPACING.xs,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      maxWidth: 200,  // prevents overflow into title — no exact token
+    },
+    dot: {
+      width: 8,
+      height: 8,
+      borderRadius: RADII.full,
+    },
+    label: {
+      flex: 1,
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    editIcon: {
+      fontSize: FONT_SIZE.sm,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   // 1. Status reading
   const currentStatus = useStatusStore((s) => s.currentStatus);
   const heartbeatState = computeHeartbeatState(
@@ -84,7 +111,13 @@ export function OwnStatusPill({ onPress, sessionCount }: OwnStatusPillProps) {
   }, [shouldPulse, pulseAnim]);
 
   // 4. Dot color
-  const dotColor = hasActiveStatus ? DOT_COLOR[heartbeatState] : COLORS.text.secondary;
+  const dotColorMap: Record<HeartbeatState, string> = {
+    alive: colors.status.free,    // green
+    fading: colors.status.maybe,  // yellow
+    dead: colors.text.secondary,  // gray
+  };
+
+  const dotColor = hasActiveStatus ? dotColorMap[heartbeatState] : colors.text.secondary;
 
   // 5. Pill text
   let pillText: string;
@@ -119,34 +152,3 @@ export function OwnStatusPill({ onPress, sessionCount }: OwnStatusPillProps) {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.full,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    gap: SPACING.xs,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    maxWidth: 200,  // prevents overflow into title — no exact token
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: RADII.full,
-  },
-  label: {
-    flex: 1,
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  editIcon: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-  },
-});

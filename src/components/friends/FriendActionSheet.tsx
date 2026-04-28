@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
@@ -34,8 +34,130 @@ export function FriendActionSheet({
   onRemoveFriend,
   loadingDM = false,
 }: FriendActionSheetProps) {
+  const { colors } = useTheme();
   const translateY = useRef(new Animated.Value(300)).current;
   const [confirming, setConfirming] = useState(false);
+
+  const styles = useMemo(() => StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.6)', // no exact token — modal scrim
+    },
+    sheet: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.surface.card,
+      borderTopLeftRadius: RADII.xl,
+      borderTopRightRadius: RADII.xl,
+      paddingTop: SPACING.sm,
+      paddingBottom: SPACING.xxl,
+    },
+    dragHandle: {
+      width: 40,
+      height: 4,
+      borderRadius: RADII.xs,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+      marginBottom: SPACING.sm,
+    },
+    friendHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    friendHeaderInfo: {
+      marginLeft: SPACING.lg,
+    },
+    friendDisplayName: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.primary,
+    },
+    friendUsername: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    actionRow: {
+      height: 52,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+    },
+    disabledRow: {
+      opacity: 0.5,
+    },
+    actionIcon: {
+      marginRight: SPACING.lg,
+    },
+    actionLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    destructiveLabel: {
+      color: colors.interactive.destructive,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: SPACING.lg,
+    },
+    confirmContainer: {
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.lg,
+      alignItems: 'center',
+    },
+    confirmHeading: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      textAlign: 'center',
+    },
+    confirmBody: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.xl,
+    },
+    removeButton: {
+      width: '100%',
+      height: 52,
+      backgroundColor: colors.interactive.destructive,
+      borderRadius: RADII.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: SPACING.sm,
+    },
+    removeButtonText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    keepButton: {
+      width: '100%',
+      height: 52,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    keepButtonText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.regular,
+      color: colors.text.primary,
+    },
+  }), [colors]);
 
   useEffect(() => {
     if (visible) {
@@ -104,7 +226,7 @@ export function FriendActionSheet({
               <Ionicons
                 name="person-outline"
                 size={22}
-                color={COLORS.text.secondary}
+                color={colors.text.secondary}
                 style={styles.actionIcon}
               />
               <Text style={styles.actionLabel}>View profile</Text>
@@ -120,14 +242,14 @@ export function FriendActionSheet({
               {loadingDM ? (
                 <ActivityIndicator
                   size="small"
-                  color={COLORS.text.secondary}
+                  color={colors.text.secondary}
                   style={styles.actionIcon}
                 />
               ) : (
                 <Ionicons
                   name="chatbubble-outline"
                   size={22}
-                  color={COLORS.text.secondary}
+                  color={colors.text.secondary}
                   style={styles.actionIcon}
                 />
               )}
@@ -143,7 +265,7 @@ export function FriendActionSheet({
               <Ionicons
                 name="person-remove-outline"
                 size={22}
-                color={COLORS.interactive.destructive}
+                color={colors.interactive.destructive}
                 style={styles.actionIcon}
               />
               <Text style={[styles.actionLabel, styles.destructiveLabel]}>Remove friend</Text>
@@ -173,124 +295,3 @@ export function FriendActionSheet({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.6)', // no exact token — modal scrim
-  },
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.surface.card,
-    borderTopLeftRadius: RADII.xl,
-    borderTopRightRadius: RADII.xl,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xxl,
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: RADII.xs,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    marginBottom: SPACING.sm,
-  },
-  friendHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  friendHeaderInfo: {
-    marginLeft: SPACING.lg,
-  },
-  friendDisplayName: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  friendUsername: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  actionRow: {
-    height: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-  },
-  disabledRow: {
-    opacity: 0.5,
-  },
-  actionIcon: {
-    marginRight: SPACING.lg,
-  },
-  actionLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  destructiveLabel: {
-    color: COLORS.interactive.destructive,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginHorizontal: SPACING.lg,
-  },
-  confirmContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    alignItems: 'center',
-  },
-  confirmHeading: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    textAlign: 'center',
-  },
-  confirmBody: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.xl,
-  },
-  removeButton: {
-    width: '100%',
-    height: 52,
-    backgroundColor: COLORS.interactive.destructive,
-    borderRadius: RADII.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
-  },
-  removeButtonText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  keepButton: {
-    width: '100%',
-    height: 52,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  keepButtonText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-});

@@ -1,6 +1,7 @@
+import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import type { StatusValue } from '@/types/app';
 
 interface SegmentProps {
@@ -9,13 +10,41 @@ interface SegmentProps {
   saving: boolean;
 }
 
-const SEGMENTS: { label: string; value: StatusValue; color: string }[] = [
-  { label: 'Free', value: 'free', color: COLORS.status.free },
-  { label: 'Busy', value: 'busy', color: COLORS.status.busy },
-  { label: 'Maybe', value: 'maybe', color: COLORS.status.maybe },
-];
-
 export function SegmentedControl({ value, onValueChange, saving }: SegmentProps) {
+  const { colors } = useTheme();
+
+  const SEGMENTS: { label: string; value: StatusValue; color: string }[] = useMemo(() => [
+    { label: 'Free', value: 'free', color: colors.status.free },
+    { label: 'Busy', value: 'busy', color: colors.status.busy },
+    { label: 'Maybe', value: 'maybe', color: colors.status.maybe },
+  ], [colors]);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.xs,
+      height: 44,
+      marginHorizontal: SPACING.lg,
+    },
+    segment: {
+      flex: 1,
+      borderRadius: RADII.sm,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    label: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.regular,
+      color: colors.text.secondary,
+    },
+    activeLabel: {
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.surface.base,
+    },
+  }), [colors]);
+
   async function handlePress(segValue: StatusValue) {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onValueChange(segValue);
@@ -34,7 +63,7 @@ export function SegmentedControl({ value, onValueChange, saving }: SegmentProps)
             activeOpacity={0.8}
           >
             {saving && isActive ? (
-              <ActivityIndicator size="small" color={COLORS.surface.base} />
+              <ActivityIndicator size="small" color={colors.surface.base} />
             ) : (
               <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
             )}
@@ -44,29 +73,3 @@ export function SegmentedControl({ value, onValueChange, saving }: SegmentProps)
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.xs,
-    height: 44,
-    marginHorizontal: SPACING.lg,
-  },
-  segment: {
-    flex: 1,
-    borderRadius: RADII.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  activeLabel: {
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.surface.base,
-  },
-});

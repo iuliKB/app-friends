@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import {
   Animated,
   BackHandler,
@@ -8,7 +8,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { COLORS, SPACING, RADII } from '@/theme';
+import { useTheme, SPACING, RADII } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { MoodPicker } from './MoodPicker';
 
@@ -18,7 +18,36 @@ interface StatusPickerSheetProps {
 }
 
 export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) {
+  const { colors } = useTheme();
   const translateY = useRef(new Animated.Value(600)).current;
+
+  const styles = useMemo(() => StyleSheet.create({
+    backdrop: {
+      backgroundColor: colors.overlay,
+    },
+    sheet: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.surface.card,
+      borderTopLeftRadius: RADII.xl,
+      borderTopRightRadius: RADII.xl,
+      paddingTop: SPACING.sm,
+      paddingBottom: SPACING.xxl,
+    },
+    dragHandleArea: {
+      paddingVertical: SPACING.sm,
+      alignItems: 'center',
+    },
+    dragHandle: {
+      width: 40,
+      height: 4,
+      borderRadius: RADII.xs,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+    },
+  }), [colors]);
 
   // Slide animation — replicates FriendActionSheet motion model exactly.
   useEffect(() => {
@@ -107,31 +136,3 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    backgroundColor: COLORS.overlay,
-  },
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.surface.card,
-    borderTopLeftRadius: RADII.xl,
-    borderTopRightRadius: RADII.xl,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xxl,
-  },
-  dragHandleArea: {
-    paddingVertical: SPACING.sm,
-    alignItems: 'center',
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: RADII.xs,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-  },
-});

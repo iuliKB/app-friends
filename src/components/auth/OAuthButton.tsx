@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SPACING } from '@/theme';
 
 interface OAuthButtonProps {
   provider: 'google' | 'apple';
@@ -21,7 +21,31 @@ const PROVIDER_CONFIG = {
 };
 
 export function OAuthButton({ provider, onPress, loading = false }: OAuthButtonProps) {
+  const { colors } = useTheme();
   const config = PROVIDER_CONFIG[provider];
+
+  const styles = useMemo(() => StyleSheet.create({
+    button: {
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: RADII.lg,
+      height: 52, // no exact token — matches FormField minHeight
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: SPACING.sm,
+    },
+    text: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.regular,
+      color: colors.text.primary,
+    },
+  }), [colors]);
 
   return (
     <TouchableOpacity
@@ -31,36 +55,13 @@ export function OAuthButton({ provider, onPress, loading = false }: OAuthButtonP
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.text.primary} />
+        <ActivityIndicator color={colors.text.primary} />
       ) : (
         <View style={styles.content}>
-          <Ionicons name={config.icon} size={20} color={COLORS.text.primary} />
+          <Ionicons name={config.icon} size={20} color={colors.text.primary} />
           <Text style={styles.text}>{config.label}</Text>
         </View>
       )}
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: COLORS.surface.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADII.lg,
-    height: 52, // no exact token — matches FormField minHeight
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-  },
-  text: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-});

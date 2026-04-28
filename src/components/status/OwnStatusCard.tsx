@@ -3,10 +3,10 @@
 // Shows current status with large bold text, heartbeat dot, context + window subtitle,
 // and edit affordance. Pulse always active when status is set.
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 
@@ -23,15 +23,64 @@ function formatUntil(expiresAt: string): string {
   return m === 0 ? `until ${h12}${period}` : `until ${h12}:${String(m).padStart(2, '0')}${period}`;
 }
 
-const STATUS_DOT_COLOR: Record<string, string> = {
-  free: COLORS.status.free,
-  maybe: COLORS.status.maybe,
-  busy: COLORS.status.busy,
-};
-
 const MOOD_DISPLAY: Record<string, string> = { free: "I'm Free", maybe: 'Maybe', busy: 'Busy' };
 
 export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
+  const { colors } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+    },
+    topRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: SPACING.sm,
+    },
+    label: {
+      fontSize: FONT_SIZE.xs,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.interactive.accent,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      letterSpacing: 1, // no exact token — design spec requires 1pt letter-spacing for small caps label
+    },
+    dot: {
+      width: 10,
+      height: 10,
+      borderRadius: RADII.full,
+    },
+    bottomRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    textContainer: {
+      flex: 1,
+    },
+    title: {
+      fontSize: FONT_SIZE.xxl,
+      fontFamily: FONT_FAMILY.display.bold,
+      color: colors.text.primary,
+    },
+    titleInactive: {
+      color: colors.text.secondary,
+    },
+    subtitle: {
+      fontSize: FONT_SIZE.sm,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    editIcon: {
+      marginLeft: SPACING.md,
+    },
+  }), [colors]);
+
   // 1. Status reading (same pattern as OwnStatusPill)
   const currentStatus = useStatusStore((s) => s.currentStatus);
   const heartbeatState = computeHeartbeatState(
@@ -69,10 +118,16 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
   }, [hasActiveStatus, pulseAnim]);
 
   // 3. Dot color — matches status when active, gray when inactive
+  const statusDotColor: Record<string, string> = {
+    free: colors.status.free,
+    maybe: colors.status.maybe,
+    busy: colors.status.busy,
+  };
+
   const dotColor =
     hasActiveStatus && currentStatus
-      ? (STATUS_DOT_COLOR[currentStatus.status] ?? COLORS.text.secondary)
-      : COLORS.text.secondary;
+      ? (statusDotColor[currentStatus.status] ?? colors.text.secondary)
+      : colors.text.secondary;
 
   // 4. Text content
   let titleText: string;
@@ -114,61 +169,8 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
             </Text>
           )}
         </View>
-        <Ionicons name="pencil" size={18} color={COLORS.text.secondary} style={styles.editIcon} />
+        <Ionicons name="pencil" size={18} color={colors.text.secondary} style={styles.editIcon} />
       </View>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  label: {
-    fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.interactive.accent,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    letterSpacing: 1, // no exact token — design spec requires 1pt letter-spacing for small caps label
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: RADII.full,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  textContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.bold,
-    color: COLORS.text.primary,
-  },
-  titleInactive: {
-    color: COLORS.text.secondary,
-  },
-  subtitle: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  editIcon: {
-    marginLeft: SPACING.md,
-  },
-});

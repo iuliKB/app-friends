@@ -1,5 +1,6 @@
+import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import type { EmojiTag, StatusValue } from '@/types/app';
 
 interface EmojiTagPickerProps {
@@ -25,19 +26,6 @@ function getStatusActiveBackground(status: StatusValue | null): string {
   }
 }
 
-function getStatusBorderColor(status: StatusValue | null): string {
-  switch (status) {
-    case 'free':
-      return COLORS.status.free;
-    case 'busy':
-      return COLORS.status.busy;
-    case 'maybe':
-      return COLORS.status.maybe;
-    default:
-      return COLORS.status.maybe;
-  }
-}
-
 export function EmojiTagPicker({
   selectedTag,
   onTagChange,
@@ -45,6 +33,51 @@ export function EmojiTagPicker({
   saving,
   savingTag,
 }: EmojiTagPickerProps) {
+  const { colors } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    sectionLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginBottom: SPACING.sm,
+      paddingHorizontal: SPACING.lg,
+    },
+    row: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: SPACING.sm,
+      paddingHorizontal: SPACING.lg,
+      marginTop: SPACING.xl,
+    },
+    button: {
+      width: 44,
+      height: 44,
+      borderRadius: 22, // no exact token — circular with equal width/height
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    emoji: {
+      fontSize: FONT_SIZE.xxl,
+    },
+  }), [colors]);
+
+  function getStatusBorderColor(status: StatusValue | null): string {
+    switch (status) {
+      case 'free':
+        return colors.status.free;
+      case 'busy':
+        return colors.status.busy;
+      case 'maybe':
+        return colors.status.maybe;
+      default:
+        return colors.status.maybe;
+    }
+  }
+
   const activeBg = getStatusActiveBackground(currentStatus);
   const activeBorder = getStatusBorderColor(currentStatus);
 
@@ -71,7 +104,7 @@ export function EmojiTagPicker({
               activeOpacity={0.7}
             >
               {isSaving ? (
-                <ActivityIndicator size="small" color={COLORS.text.secondary} />
+                <ActivityIndicator size="small" color={colors.text.secondary} />
               ) : (
                 <Text style={styles.emoji}>{emoji}</Text>
               )}
@@ -82,33 +115,3 @@ export function EmojiTagPicker({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.sm,
-    paddingHorizontal: SPACING.lg,
-  },
-  row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-    paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
-  },
-  button: {
-    width: 44,
-    height: 44,
-    borderRadius: 22, // no exact token — circular with equal width/height
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  emoji: {
-    fontSize: FONT_SIZE.xxl,
-  },
-});

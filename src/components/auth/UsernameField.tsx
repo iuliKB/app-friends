@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, SPACING } from '@/theme';
 import { APP_CONFIG } from '@/constants/config';
 import { supabase } from '@/lib/supabase';
 import { FormField } from '@/components/common/FormField';
@@ -20,8 +20,17 @@ export function UsernameField({
   error,
   onAvailabilityChange,
 }: UsernameFieldProps) {
+  const { colors } = useTheme();
   const [availability, setAvailability] = useState<AvailabilityState>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const styles = useMemo(() => StyleSheet.create({
+    availability: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      marginTop: SPACING.xs,
+    },
+  }), []);
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -63,9 +72,9 @@ export function UsernameField({
 
   const availabilityMessage = {
     idle: null,
-    checking: { text: 'Checking...', color: COLORS.text.secondary },
-    available: { text: 'Available', color: COLORS.status.free },
-    taken: { text: 'Taken — try another', color: COLORS.interactive.destructive },
+    checking: { text: 'Checking...', color: colors.text.secondary },
+    available: { text: 'Available', color: colors.status.free },
+    taken: { text: 'Taken — try another', color: colors.interactive.destructive },
   }[availability];
 
   return (
@@ -87,11 +96,3 @@ export function UsernameField({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  availability: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    marginTop: SPACING.xs,
-  },
-});

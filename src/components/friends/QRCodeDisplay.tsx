@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -11,9 +11,47 @@ interface ProfileData {
 }
 
 export function QRCodeDisplay() {
+  const { colors } = useTheme();
   const session = useAuthStore((s) => s.session);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    card: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.xl,
+      padding: SPACING.xl,
+      alignItems: 'center',
+    },
+    displayName: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.primary,
+      textAlign: 'center',
+      marginTop: SPACING.lg,
+    },
+    username: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginTop: SPACING.xs,
+    },
+    hint: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      paddingHorizontal: SPACING.xxl,
+      marginTop: SPACING.xl,
+    },
+  }), [colors]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -37,13 +75,13 @@ export function QRCodeDisplay() {
     <View style={styles.container}>
       <View style={styles.card}>
         {loading ? (
-          <ActivityIndicator color={COLORS.text.primary} size="large" />
+          <ActivityIndicator color={colors.text.primary} size="large" />
         ) : (
           <QRCode
             value={session.user.id}
             size={240}
-            color={COLORS.text.primary}
-            backgroundColor={COLORS.surface.base}
+            color={colors.text.primary}
+            backgroundColor={colors.surface.base}
             ecl="M"
           />
         )}
@@ -58,40 +96,3 @@ export function QRCodeDisplay() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.xl,
-    padding: SPACING.xl,
-    alignItems: 'center',
-  },
-  displayName: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    textAlign: 'center',
-    marginTop: SPACING.lg,
-  },
-  username: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginTop: SPACING.xs,
-  },
-  hint: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    paddingHorizontal: SPACING.xxl,
-    marginTop: SPACING.xl,
-  },
-});

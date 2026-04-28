@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { Profile } from '@/types/app';
 
@@ -12,6 +12,59 @@ interface SearchResultCardProps {
 }
 
 export function SearchResultCard({ profile, status, onAddFriend, isSelf }: SearchResultCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+    },
+    info: {
+      flex: 1,
+      marginLeft: SPACING.lg,
+    },
+    displayName: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    username: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    addButton: {
+      height: 36,
+      paddingHorizontal: SPACING.lg,
+      borderRadius: RADII.md,
+      backgroundColor: colors.interactive.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addButtonText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.surface.base,
+    },
+    pendingButton: {
+      height: 36,
+      paddingHorizontal: SPACING.lg,
+      borderRadius: RADII.md,
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pendingButtonText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       <AvatarCircle size={40} imageUri={profile.avatar_url} displayName={profile.display_name} />
@@ -27,7 +80,7 @@ export function SearchResultCard({ profile, status, onAddFriend, isSelf }: Searc
               <Text style={styles.addButtonText}>Add Friend</Text>
             </TouchableOpacity>
           )}
-          {status === 'loading' && <ActivityIndicator color={COLORS.text.secondary} />}
+          {status === 'loading' && <ActivityIndicator color={colors.text.secondary} />}
           {status === 'pending' && (
             <View style={styles.pendingButton}>
               <Text style={styles.pendingButtonText}>Pending</Text>
@@ -38,55 +91,3 @@ export function SearchResultCard({ profile, status, onAddFriend, isSelf }: Searc
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-  },
-  info: {
-    flex: 1,
-    marginLeft: SPACING.lg,
-  },
-  displayName: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  username: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  addButton: {
-    height: 36,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.interactive.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.surface.base,
-  },
-  pendingButton: {
-    height: 36,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.surface.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pendingButtonText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-});
