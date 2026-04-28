@@ -8,14 +8,16 @@
 
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING } from '@/theme';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ExpenseHistoryRow } from '@/components/iou/ExpenseHistoryRow';
 import { useExpensesWithFriend } from '@/hooks/useExpensesWithFriend';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 import type { ExpenseWithFriend } from '@/hooks/useExpensesWithFriend';
+import { useMemo } from 'react';
 
 export default function FriendExpenseHistoryScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { id, friendName, netAmountCents } = useLocalSearchParams<{
     id: string;
@@ -27,7 +29,7 @@ export default function FriendExpenseHistoryScreen() {
   const parsedNetCents = parseInt(netAmountCents ?? '0', 10);
   const isPositive = parsedNetCents >= 0;
   const absAmount = formatCentsDisplay(Math.abs(parsedNetCents));
-  const netBalanceColor = isPositive ? COLORS.status.free : COLORS.interactive.destructive;
+  const netBalanceColor = isPositive ? colors.status.free : colors.interactive.destructive;
   const netBalanceLabel = isPositive ? `+${absAmount}` : `-${absAmount}`;
 
   const friendTitle = friendName ? `Expenses with ${friendName}` : 'Expenses';
@@ -36,6 +38,79 @@ export default function FriendExpenseHistoryScreen() {
   const handleRowPress = (expense: ExpenseWithFriend) => {
     router.push(`/squad/expenses/${expense.id}` as never);
   };
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    netBalanceStrip: {
+      backgroundColor: colors.surface.card,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: SPACING.lg,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 48,
+    },
+    netBalanceLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    netBalanceAmount: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+    },
+    listContent: {
+      paddingTop: SPACING.lg,
+    },
+    emptyContainer: {
+      flex: 1,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: SPACING.lg,
+    },
+    // Skeleton styles
+    skeletonRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      opacity: 0.5,
+    },
+    skeletonLeft: {
+      flex: 1,
+      marginRight: SPACING.sm,
+    },
+    skeletonTitle: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 160,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 16,
+      backgroundColor: colors.border,
+      borderRadius: SPACING.xs,
+    },
+    skeletonMeta: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 120,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 14,
+      backgroundColor: colors.border,
+      borderRadius: SPACING.xs,
+      marginTop: SPACING.xs,
+    },
+    skeletonAmount: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 60,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 16,
+      backgroundColor: colors.border,
+      borderRadius: SPACING.xs,
+    },
+  }), [colors]);
 
   const renderSkeletons = () => (
     <>
@@ -74,13 +149,14 @@ export default function FriendExpenseHistoryScreen() {
             <RefreshControl
               refreshing={false}
               onRefresh={refetch}
-              tintColor={COLORS.interactive.accent}
+              tintColor={colors.interactive.accent}
               accessibilityLabel="Refresh expenses"
             />
           }
           ListEmptyComponent={
             <EmptyState
-              icon="⚠️"
+              icon="warning-outline"
+              iconType="ionicons"
               heading="Couldn't load expenses"
               body="Couldn't load expenses. Pull down to refresh."
             />
@@ -106,13 +182,14 @@ export default function FriendExpenseHistoryScreen() {
             <RefreshControl
               refreshing={false}
               onRefresh={refetch}
-              tintColor={COLORS.interactive.accent}
+              tintColor={colors.interactive.accent}
               accessibilityLabel="Refresh expenses"
             />
           }
           ListEmptyComponent={
             <EmptyState
-              icon="🧾"
+              icon="receipt-outline"
+              iconType="ionicons"
               heading="No shared expenses"
               body="Expenses you create together will appear here."
             />
@@ -122,76 +199,3 @@ export default function FriendExpenseHistoryScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  netBalanceStrip: {
-    backgroundColor: COLORS.surface.card,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 48,
-  },
-  netBalanceLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  netBalanceAmount: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-  },
-  listContent: {
-    paddingTop: SPACING.lg,
-  },
-  emptyContainer: {
-    flex: 1,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginHorizontal: SPACING.lg,
-  },
-  // Skeleton styles
-  skeletonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    opacity: 0.5,
-  },
-  skeletonLeft: {
-    flex: 1,
-    marginRight: SPACING.sm,
-  },
-  skeletonTitle: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 160,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 16,
-    backgroundColor: COLORS.border,
-    borderRadius: SPACING.xs,
-  },
-  skeletonMeta: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 120,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 14,
-    backgroundColor: COLORS.border,
-    borderRadius: SPACING.xs,
-    marginTop: SPACING.xs,
-  },
-  skeletonAmount: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 60,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 16,
-    backgroundColor: COLORS.border,
-    borderRadius: SPACING.xs,
-  },
-});

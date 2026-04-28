@@ -6,11 +6,12 @@
 
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useUpcomingBirthdays, type BirthdayEntry } from '@/hooks/useUpcomingBirthdays';
 import { formatDaysUntil, formatBirthdayDate, formatTurningAge } from '@/utils/birthdayFormatters';
+import { useMemo } from 'react';
 
 export const options = { title: 'Birthdays' };
 
@@ -18,7 +19,54 @@ export const options = { title: 'Birthdays' };
 const TODAY_BG = 'rgba(249, 115, 22, 0.12)'; // accent orange at 12% opacity — no theme token for this
 
 export default function BirthdaysScreen() {
+  const { colors } = useTheme();
   const { entries, loading, refetch } = useUpcomingBirthdays();
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    list: {
+      flex: 1,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 64, // matches FriendCard pattern — no token for this exact size
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      backgroundColor: colors.surface.base,
+    },
+    rowMiddle: {
+      flex: 1,
+      marginLeft: SPACING.lg,
+    },
+    rowName: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    rowDate: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    rowDays: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    rowDaysToday: {
+      color: colors.interactive.accent,
+    },
+  }), [colors]);
 
   return (
     <View style={styles.container}>
@@ -26,12 +74,13 @@ export default function BirthdaysScreen() {
         style={styles.list}
         data={entries}
         keyExtractor={(item) => item.friend_id}
-        renderItem={({ item }) => <BirthdayRow entry={item} />}
+        renderItem={({ item }) => <BirthdayRow entry={item} styles={styles} />}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
           loading ? null : (
             <EmptyState
-              icon="🎂"
+              icon="gift-outline"
+              iconType="ionicons"
               heading="No birthdays yet"
               body="Ask your friends to add theirs!"
             />
@@ -41,7 +90,7 @@ export default function BirthdaysScreen() {
           <RefreshControl
             refreshing={loading}
             onRefresh={refetch}
-            tintColor={COLORS.interactive.accent}
+            tintColor={colors.interactive.accent}
           />
         }
       />
@@ -51,9 +100,10 @@ export default function BirthdaysScreen() {
 
 interface BirthdayRowProps {
   entry: BirthdayEntry;
+  styles: ReturnType<typeof StyleSheet.create>;
 }
 
-function BirthdayRow({ entry }: BirthdayRowProps) {
+function BirthdayRow({ entry, styles }: BirthdayRowProps) {
   const router = useRouter();
   const isToday = entry.days_until === 0;
   const dateLabel = formatBirthdayDate(entry.birthday_month, entry.birthday_day);
@@ -91,49 +141,3 @@ function BirthdayRow({ entry }: BirthdayRowProps) {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  list: {
-    flex: 1,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    minHeight: 64, // matches FriendCard pattern — no token for this exact size
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    backgroundColor: COLORS.surface.base,
-  },
-  rowMiddle: {
-    flex: 1,
-    marginLeft: SPACING.lg,
-  },
-  rowName: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  rowDate: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  rowDays: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  rowDaysToday: {
-    color: COLORS.interactive.accent,
-  },
-});

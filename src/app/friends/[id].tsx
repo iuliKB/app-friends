@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -7,7 +7,7 @@ import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { useFriendWishList } from '@/hooks/useFriendWishList';
 import { WishListItem } from '@/components/squad/WishListItem';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -41,6 +41,7 @@ function formatBirthday(month: number, day: number): string {
 }
 
 export default function FriendProfileScreen() {
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{ id: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const session = useAuthStore((s) => s.session);
@@ -128,6 +129,96 @@ export default function FriendProfileScreen() {
     );
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    scroll: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scrollContent: {
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.xxl,
+      paddingBottom: SPACING.xxl,
+    },
+    topSection: {
+      alignItems: 'center',
+    },
+    displayName: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginTop: SPACING.lg,
+      textAlign: 'center',
+    },
+    username: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+      textAlign: 'center',
+    },
+    birthday: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+      textAlign: 'center',
+    },
+    statusRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: SPACING.sm,
+    },
+    statusDot: {
+      width: SPACING.sm,
+      height: SPACING.sm,
+      borderRadius: RADII.xs,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginRight: 6, // no exact token
+    },
+    statusText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+    },
+    contextTag: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    actionsSection: {
+      marginTop: SPACING.xl,
+    },
+    removeFriendButton: {
+      height: 52,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: SPACING.sm,
+    },
+    removeFriendText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+    },
+    wishListSection: {
+      marginTop: SPACING.xl,
+    },
+    sectionHeader: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xl,
+      marginBottom: SPACING.md,
+      paddingHorizontal: SPACING.lg,
+    },
+    emptyWishList: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+    },
+  }), [colors]);
+
   if (loading) {
     return <LoadingIndicator />;
   }
@@ -162,8 +253,8 @@ export default function FriendProfileScreen() {
           {/* Status row — only render when effective_status is non-null (D-09) */}
           {status !== null ? (
             <View style={styles.statusRow}>
-              <View style={[styles.statusDot, { backgroundColor: COLORS.status[status] }]} />
-              <Text style={[styles.statusText, { color: COLORS.status[status] }]}>
+              <View style={[styles.statusDot, { backgroundColor: colors.status[status] }]} />
+              <Text style={[styles.statusText, { color: colors.status[status] }]}>
                 {status.charAt(0).toUpperCase() + status.slice(1)}
               </Text>
               {contextTag ? <Text style={styles.contextTag}> {contextTag}</Text> : null}
@@ -202,93 +293,3 @@ export default function FriendProfileScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
-    paddingBottom: SPACING.xxl,
-  },
-  topSection: {
-    alignItems: 'center',
-  },
-  displayName: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginTop: SPACING.lg,
-    textAlign: 'center',
-  },
-  username: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-    textAlign: 'center',
-  },
-  birthday: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-    textAlign: 'center',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: SPACING.sm,
-  },
-  statusDot: {
-    width: SPACING.sm,
-    height: SPACING.sm,
-    borderRadius: RADII.xs,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginRight: 6, // no exact token
-  },
-  statusText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-  },
-  contextTag: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  actionsSection: {
-    marginTop: SPACING.xl,
-  },
-  removeFriendButton: {
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: SPACING.sm,
-  },
-  removeFriendText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-  },
-  wishListSection: {
-    marginTop: SPACING.xl,
-  },
-  sectionHeader: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-  },
-  emptyWishList: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-  },
-});

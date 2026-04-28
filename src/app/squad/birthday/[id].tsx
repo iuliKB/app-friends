@@ -4,7 +4,7 @@
 //        and a "Plan Birthday" button that creates a private group chat.
 // Birthday friend is NOT selectable in the group picker (D-16).
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useChatStore } from '@/stores/useChatStore';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -24,6 +24,7 @@ import { useFriendWishList } from '@/hooks/useFriendWishList';
 import { useFriendsOfFriend, type FriendOfFriend } from '@/hooks/useFriendsOfFriend';
 
 export default function FriendBirthdayPage() {
+  const { colors } = useTheme();
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
   const router = useRouter();
   const friendId = id ?? '';
@@ -88,10 +89,113 @@ export default function FriendBirthdayPage() {
 
   const isLoading = wishListLoading || friendsLoading;
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.surface.base,
+    },
+    sectionLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.xl,
+      paddingBottom: SPACING.sm,
+    },
+    sectionSub: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      paddingHorizontal: SPACING.lg,
+      marginBottom: SPACING.sm,
+    },
+    emptyText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.md,
+    },
+    errorText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.md,
+    },
+    pickerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      gap: SPACING.md,
+      backgroundColor: colors.surface.base,
+    },
+    pickerRowSelected: {
+      backgroundColor: colors.surface.card,
+    },
+    pickerName: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderRadius: RADII.sm,
+      borderWidth: 2,
+      borderColor: colors.border,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    checkboxSelected: {
+      backgroundColor: colors.interactive.accent,
+      borderColor: colors.interactive.accent,
+    },
+    checkmark: {
+      fontSize: FONT_SIZE.sm,
+      color: colors.surface.base,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontWeight: '700',
+    },
+    buttonWrapper: {
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.xl,
+    },
+    planButton: {
+      backgroundColor: colors.interactive.accent,
+      borderRadius: RADII.lg,
+      paddingVertical: SPACING.md,
+      alignItems: 'center',
+    },
+    planButtonDisabled: {
+      opacity: 0.4,
+    },
+    planButtonText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.bold,
+      color: colors.surface.base,
+    },
+    planButtonHint: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginTop: SPACING.sm,
+    },
+  }), [colors]);
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={COLORS.interactive.accent} />
+        <ActivityIndicator color={colors.interactive.accent} />
       </View>
     );
   }
@@ -103,7 +207,7 @@ export default function FriendBirthdayPage() {
         <RefreshControl
           refreshing={isLoading}
           onRefresh={handleRefresh}
-          tintColor={COLORS.interactive.accent}
+          tintColor={colors.interactive.accent}
         />
       }
     >
@@ -153,6 +257,7 @@ export default function FriendBirthdayPage() {
             friend={friend}
             selected={selectedIds.has(friend.friend_id)}
             onToggle={() => toggleSelectFriend(friend.friend_id)}
+            styles={styles}
           />
         ))
       )}
@@ -187,9 +292,10 @@ interface FriendPickerRowProps {
   friend: FriendOfFriend;
   selected: boolean;
   onToggle: () => void;
+  styles: ReturnType<typeof StyleSheet.create>;
 }
 
-function FriendPickerRow({ friend, selected, onToggle }: FriendPickerRowProps) {
+function FriendPickerRow({ friend, selected, onToggle, styles }: FriendPickerRowProps) {
   return (
     <Pressable
       style={({ pressed }) => [
@@ -214,107 +320,3 @@ function FriendPickerRow({ friend, selected, onToggle }: FriendPickerRowProps) {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.base,
-  },
-  sectionLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.sm,
-  },
-  sectionSub: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.sm,
-  },
-  emptyText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
-  },
-  errorText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    gap: SPACING.md,
-    backgroundColor: COLORS.surface.base,
-  },
-  pickerRowSelected: {
-    backgroundColor: COLORS.surface.card,
-  },
-  pickerName: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: RADII.sm,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxSelected: {
-    backgroundColor: COLORS.interactive.accent,
-    borderColor: COLORS.interactive.accent,
-  },
-  checkmark: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.surface.base,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontWeight: '700',
-  },
-  buttonWrapper: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xl,
-  },
-  planButton: {
-    backgroundColor: COLORS.interactive.accent,
-    borderRadius: RADII.lg,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-  },
-  planButtonDisabled: {
-    opacity: 0.4,
-  },
-  planButtonText: {
-    fontSize: FONT_SIZE.lg,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontWeight: '700',
-    color: COLORS.surface.base,
-  },
-  planButtonHint: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginTop: SPACING.sm,
-  },
-});

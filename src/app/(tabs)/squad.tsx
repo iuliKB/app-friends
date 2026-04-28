@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING, RADII } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { CompactFriendRow } from '@/components/squad/CompactFriendRow';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
@@ -34,6 +34,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const TABS = ['Squad', 'Activity'] as const;
 
 export default function SquadScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -176,6 +177,118 @@ export default function SquadScreen() {
     );
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    headerContainer: {
+      paddingHorizontal: SPACING.lg,
+    },
+
+    // Tab header
+    tabHeader: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      position: 'relative',
+    },
+    tabButton: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: SPACING.md,
+    },
+    tabLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    tabIndicator: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: '50%',        // exactly half — one tab's width
+      height: 2,
+      backgroundColor: colors.interactive.accent,
+      borderRadius: RADII.xs,
+    },
+
+    // Pager
+    pager: {
+      flex: 1,
+    },
+    page: {
+      width: SCREEN_WIDTH,
+      flex: 1,
+    },
+
+    // Squad tab
+    listContent: {
+      flexGrow: 1,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginLeft: SPACING.lg + 36 + SPACING.md,
+    },
+    requestsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface.card,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.lg,
+      marginBottom: SPACING.sm,
+      gap: SPACING.md,
+    },
+    requestsLabel: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: SPACING.xxl * 2,
+      gap: SPACING.md,
+    },
+    emptyText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+
+    // Activity tab
+    activityContent: {
+      padding: SPACING.lg,
+      gap: SPACING.md,
+    },
+
+    // Coming Soon card
+    comingSoonCard: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.xl,
+      alignItems: 'center',
+      gap: SPACING.sm,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: colors.border,
+    },
+    comingSoonTitle: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.secondary,
+    },
+    comingSoonBody: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+    },
+  }), [colors]);
+
   return (
     <View style={[styles.container, { paddingTop: insets.top + SPACING.sm }]}>
       <View style={styles.headerContainer}>
@@ -187,7 +300,7 @@ export default function SquadScreen() {
               accessibilityLabel="Add friend"
               accessibilityRole="button"
             >
-              <Ionicons name="person-add-outline" size={24} color={COLORS.text.primary} />
+              <Ionicons name="person-add-outline" size={24} color={colors.text.primary} />
             </TouchableOpacity>
           }
         />
@@ -261,15 +374,15 @@ export default function SquadScreen() {
                   onPress={() => router.push('/friends/requests')}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="person-add-outline" size={FONT_SIZE.xl} color={COLORS.text.secondary} />
+                  <Ionicons name="person-add-outline" size={FONT_SIZE.xl} color={colors.text.secondary} />
                   <Text style={styles.requestsLabel}>Friend Requests ({pendingCount})</Text>
-                  <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+                  <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
                 </TouchableOpacity>
               ) : null
             }
             ListEmptyComponent={
               <View style={styles.emptyState}>
-                <Ionicons name="people-outline" size={48} color={COLORS.border} />
+                <Ionicons name="people-outline" size={48} color={colors.border} />
                 <Text style={styles.emptyText}>No friends yet</Text>
               </View>
             }
@@ -278,7 +391,7 @@ export default function SquadScreen() {
               <RefreshControl
                 refreshing={refreshingSquad}
                 onRefresh={handleRefreshSquad}
-                tintColor={COLORS.interactive.accent}
+                tintColor={colors.interactive.accent}
               />
             }
           />
@@ -293,7 +406,7 @@ export default function SquadScreen() {
               <RefreshControl
                 refreshing={refreshingActivity}
                 onRefresh={handleRefreshActivity}
-                tintColor={COLORS.interactive.accent}
+                tintColor={colors.interactive.accent}
               />
             }
           >
@@ -309,7 +422,7 @@ export default function SquadScreen() {
             {/* Coming Soon placeholder — future features slot */}
             <AnimatedCard anim={cardAnims[3]!}>
               <View style={styles.comingSoonCard}>
-                <Ionicons name="lock-closed-outline" size={28} color={COLORS.border} />
+                <Ionicons name="lock-closed-outline" size={28} color={colors.border} />
                 <Text style={styles.comingSoonTitle}>More coming soon</Text>
                 <Text style={styles.comingSoonBody}>New features will appear here</Text>
               </View>
@@ -330,113 +443,3 @@ export default function SquadScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  headerContainer: {
-    paddingHorizontal: SPACING.lg,
-  },
-
-  // Tab header
-  tabHeader: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    position: 'relative',
-  },
-  tabButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-  },
-  tabLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  tabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '50%',        // exactly half — one tab's width
-    height: 2,
-    backgroundColor: COLORS.interactive.accent,
-    borderRadius: RADII.xs,
-  },
-
-  // Pager
-  pager: {
-    flex: 1,
-  },
-  page: {
-    width: SCREEN_WIDTH,
-    flex: 1,
-  },
-
-  // Squad tab
-  listContent: {
-    flexGrow: 1,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginLeft: SPACING.lg + 36 + SPACING.md,
-  },
-  requestsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.card,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    marginBottom: SPACING.sm,
-    gap: SPACING.md,
-  },
-  requestsLabel: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: SPACING.xxl * 2,
-    gap: SPACING.md,
-  },
-  emptyText: {
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.secondary,
-  },
-
-  // Activity tab
-  activityContent: {
-    padding: SPACING.lg,
-    gap: SPACING.md,
-  },
-
-  // Coming Soon card
-  comingSoonCard: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.xl,
-    alignItems: 'center',
-    gap: SPACING.sm,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: COLORS.border,
-  },
-  comingSoonTitle: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-  },
-  comingSoonBody: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-  },
-});

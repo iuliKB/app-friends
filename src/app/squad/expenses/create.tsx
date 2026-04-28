@@ -5,7 +5,7 @@
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { useExpenseCreate } from '@/hooks/useExpenseCreate';
 import { SplitModeControl } from '@/components/iou/SplitModeControl';
 import { RemainingIndicator } from '@/components/iou/RemainingIndicator';
@@ -13,10 +13,79 @@ import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { formatCentsDisplay, parseCentsFromInput } from '@/utils/currencyFormat';
+import { useMemo } from 'react';
 
 export default function ExpenseCreateScreen() {
+  const { colors } = useTheme();
   const { group_channel_id } = useLocalSearchParams<{ group_channel_id?: string }>();
   const form = useExpenseCreate({ groupChannelId: group_channel_id });
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.surface.base },
+    content: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
+    sectionLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.secondary,
+      marginBottom: SPACING.sm,
+    },
+    sectionGap: { marginTop: SPACING.xl },
+    textInput: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.lg,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    friendRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: SPACING.md,
+      gap: SPACING.sm,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+    },
+    friendName: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    customSection: { marginTop: SPACING.lg },
+    customRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: SPACING.sm,
+      gap: SPACING.md,
+    },
+    customName: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    customAmountInput: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.md,
+      fontSize: FONT_SIZE.md,
+      color: colors.text.primary,
+      borderWidth: 1,
+      borderColor: colors.border,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 100,
+    },
+    errorText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+      marginTop: SPACING.md,
+    },
+    buttonGap: { marginTop: SPACING.xl },
+  }), [colors]);
 
   return (
     <ScrollView
@@ -31,7 +100,7 @@ export default function ExpenseCreateScreen() {
         value={form.title}
         onChangeText={form.setTitle}
         placeholder="What's this for?"
-        placeholderTextColor={COLORS.text.secondary}
+        placeholderTextColor={colors.text.secondary}
       />
 
       {/* Amount section */}
@@ -41,16 +110,16 @@ export default function ExpenseCreateScreen() {
         value={form.rawDigits ? formatCentsDisplay(parseInt(form.rawDigits || '0', 10)) : ''}
         onChangeText={(text) => form.setRawDigits(parseCentsFromInput(text))}
         placeholder="$0.00"
-        placeholderTextColor={COLORS.text.secondary}
+        placeholderTextColor={colors.text.secondary}
         keyboardType="numeric"
       />
 
       {/* Split with section */}
       <Text style={[styles.sectionLabel, styles.sectionGap]}>Split with</Text>
       {form.friendsLoading ? (
-        <ActivityIndicator color={COLORS.interactive.accent} />
+        <ActivityIndicator color={colors.interactive.accent} />
       ) : form.friends.length === 0 ? (
-        <EmptyState icon="👥" heading="No friends yet" body="Add friends to split expenses with them" />
+        <EmptyState icon="people-outline" iconType="ionicons" heading="No friends yet" body="Add friends to split expenses with them" />
       ) : (
         <FlatList
           data={form.friends}
@@ -71,7 +140,7 @@ export default function ExpenseCreateScreen() {
                 <Ionicons
                   name={selected ? 'checkbox' : 'square-outline'}
                   size={20}
-                  color={COLORS.interactive.accent}
+                  color={colors.interactive.accent}
                 />
               </TouchableOpacity>
             );
@@ -99,7 +168,7 @@ export default function ExpenseCreateScreen() {
                     : ''}
                   onChangeText={(text) => form.setCustomAmount(friendId, parseCentsFromInput(text))}
                   placeholder="$0.00"
-                  placeholderTextColor={COLORS.text.secondary}
+                  placeholderTextColor={colors.text.secondary}
                   keyboardType="numeric"
                 />
               </View>
@@ -126,69 +195,3 @@ export default function ExpenseCreateScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.surface.base },
-  content: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
-  sectionLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.sm,
-  },
-  sectionGap: { marginTop: SPACING.xl },
-  textInput: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.lg,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  friendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-    gap: SPACING.sm,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    minHeight: 44,
-  },
-  friendName: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  customSection: { marginTop: SPACING.lg },
-  customRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-    gap: SPACING.md,
-  },
-  customName: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  customAmountInput: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.md,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.text.primary,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 100,
-  },
-  errorText: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.interactive.destructive,
-    marginTop: SPACING.md,
-  },
-  buttonGap: { marginTop: SPACING.xl },
-});

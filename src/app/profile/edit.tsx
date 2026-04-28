@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -16,11 +16,12 @@ import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { APP_CONFIG } from '@/constants/config';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function EditProfileScreen() {
+  const { colors } = useTheme();
   const session = useAuthStore((s) => s.session);
 
   const [displayName, setDisplayName] = useState('');
@@ -105,6 +106,65 @@ export default function EditProfileScreen() {
     birthdayYear !== originalBirthdayYear;
   const canSave = displayName.trim().length > 0 && isDirty && !saving;
 
+  const styles = useMemo(() => StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scroll: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scrollContent: {
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.xxl,
+      paddingBottom: SPACING.xxl,
+    },
+    textInput: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      height: 52,
+      paddingHorizontal: SPACING.lg,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    inputDisabled: {
+      opacity: 0.5,
+    },
+    charCount: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 12,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'right',
+      marginTop: SPACING.xs,
+    },
+    fieldLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xl,
+      marginBottom: SPACING.sm,
+    },
+    usernameValue: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      paddingHorizontal: SPACING.lg,
+    },
+    birthdayLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xl,
+      marginBottom: SPACING.sm,
+    },
+    buttonWrapper: {
+      marginTop: SPACING.xl,
+    },
+  }), [colors]);
+
   if (loading) {
     return <LoadingIndicator />;
   }
@@ -127,7 +187,7 @@ export default function EditProfileScreen() {
           value={displayName}
           onChangeText={setDisplayName}
           placeholder="Display name"
-          placeholderTextColor={COLORS.text.secondary}
+          placeholderTextColor={colors.text.secondary}
           maxLength={APP_CONFIG.displayNameMaxLength}
           editable={!saving}
         />
@@ -166,61 +226,3 @@ export default function EditProfileScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scroll: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
-    paddingBottom: SPACING.xxl,
-  },
-  textInput: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    height: 52,
-    paddingHorizontal: SPACING.lg,
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.primary,
-  },
-  inputDisabled: {
-    opacity: 0.5,
-  },
-  charCount: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'right',
-    marginTop: SPACING.xs,
-  },
-  fieldLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.sm,
-  },
-  usernameValue: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    paddingHorizontal: SPACING.lg,
-  },
-  birthdayLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.sm,
-  },
-  buttonWrapper: {
-    marginTop: SPACING.xl,
-  },
-});

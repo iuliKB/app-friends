@@ -23,7 +23,7 @@ import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, FONT_FAMILY, ThemeProvider } from '@/theme';
+import { DARK, SPACING, FONT_SIZE, FONT_WEIGHT, FONT_FAMILY, ThemeProvider, useTheme } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeWindowExpiry, nextLargerWindow } from '@/lib/windows';
 import { computeHeartbeatState } from '@/lib/heartbeat';
@@ -201,6 +201,40 @@ async function handleNotificationResponse(
   }
 }
 
+// Inner component lives inside ThemeProvider — safe to call useTheme()
+function RootLayoutStack({
+  session,
+  needsProfileSetup,
+}: {
+  session: { user: { id: string } } | null;
+  needsProfileSetup: boolean;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.surface.base },
+      }}
+    >
+      <Stack.Protected guard={!!session && !needsProfileSetup}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="plan-create"
+          options={{ presentation: 'modal', headerShown: false }}
+        />
+        <Stack.Screen name="plans" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={!!session && needsProfileSetup}>
+        <Stack.Screen name="profile-setup" />
+      </Stack.Protected>
+      <Stack.Protected guard={!session}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+    </Stack>
+  );
+}
+
 export default function RootLayout() {
   const { session, setSession, setLoading, needsProfileSetup, setNeedsProfileSetup } =
     useAuthStore();
@@ -298,41 +332,21 @@ export default function RootLayout() {
   if (!ready || !fontsLoaded) {
     return (
       <LinearGradient
-        colors={[COLORS.splash.gradientStart, COLORS.splash.gradientEnd]}
+        colors={[DARK.splash.gradientStart, DARK.splash.gradientEnd]}
         style={styles.splash}
       >
         <Text style={styles.splashEmoji}>🔥</Text>
         <Text style={styles.splashTitle}>Campfire</Text>
-        <ActivityIndicator color={COLORS.splash.text} style={styles.splashLoader} />
+        <ActivityIndicator color={DARK.splash.text} style={styles.splashLoader} />
       </LinearGradient>
     );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: COLORS.surface.base }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: DARK.surface.base }}>
       <ThemeProvider>
         <OfflineBanner />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: COLORS.surface.base },
-          }}
-        >
-          <Stack.Protected guard={!!session && !needsProfileSetup}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="plan-create"
-              options={{ presentation: 'modal', headerShown: false }}
-            />
-            <Stack.Screen name="plans" options={{ headerShown: false }} />
-          </Stack.Protected>
-          <Stack.Protected guard={!!session && needsProfileSetup}>
-            <Stack.Screen name="profile-setup" />
-          </Stack.Protected>
-          <Stack.Protected guard={!session}>
-            <Stack.Screen name="(auth)" />
-          </Stack.Protected>
-        </Stack>
+        <RootLayoutStack session={session} needsProfileSetup={needsProfileSetup} />
       </ThemeProvider>
     </GestureHandlerRootView>
   );
@@ -353,7 +367,7 @@ const styles = StyleSheet.create({
     // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 28,
     fontFamily: FONT_FAMILY.display.extrabold,
-    color: COLORS.splash.text,
+    color: DARK.splash.text,
     marginBottom: SPACING.xxl,
   },
   splashLoader: {

@@ -1,16 +1,17 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { COLORS } from '@/theme';
+import { useTheme } from '@/theme';
 import { QRCodeDisplay } from '@/components/friends/QRCodeDisplay';
 
 export default function QRCodeScreen() {
+  const { colors } = useTheme();
   return (
     <>
       <Stack.Screen
         options={{
           title: 'My QR Code',
-          headerStyle: { backgroundColor: COLORS.surface.base },
-          headerTintColor: COLORS.text.primary,
+          headerStyle: { backgroundColor: colors.surface.base },
+          headerTintColor: colors.text.primary,
         }}
       />
       <QRCodeDisplay />

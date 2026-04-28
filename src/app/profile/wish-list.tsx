@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,9 +12,10 @@ import {
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useMyWishList } from '@/hooks/useMyWishList';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 export default function WishListScreen() {
+  const { colors } = useTheme();
   const { items: wishListItems, addItem, deleteItem, loading } = useMyWishList();
   const [addingWishItem, setAddingWishItem] = useState(false);
   const [newItemTitle, setNewItemTitle] = useState('');
@@ -31,6 +32,100 @@ export default function WishListScreen() {
     setNewItemNotes('');
     setAddingWishItem(false);
   }
+
+  const styles = useMemo(() => StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scroll: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scrollContent: {
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.xxl,
+      paddingBottom: SPACING.xxl,
+    },
+    addSectionLabel: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xl,
+      marginBottom: SPACING.sm,
+    },
+    textInput: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      height: 52,
+      paddingHorizontal: SPACING.lg,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    wishItemInput: {
+      marginTop: SPACING.sm,
+    },
+    wishListRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      paddingVertical: SPACING.md,
+      gap: SPACING.sm,
+    },
+    wishListItemContent: {
+      flex: 1,
+    },
+    wishListItemTitle: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    wishListItemUrl: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.accent,
+      marginTop: SPACING.xs,
+    },
+    wishListItemNotes: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    wishListEmpty: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.md,
+    },
+    deleteWishItem: {
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      alignSelf: 'flex-start',
+      marginTop: SPACING.xs,
+    },
+    deleteWishItemText: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+    },
+    addWishItemButton: {
+      marginTop: SPACING.md,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      paddingVertical: SPACING.md,
+      alignItems: 'center',
+    },
+    addWishItemButtonDisabled: {
+      opacity: 0.5,
+    },
+    addWishItemButtonText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+  }), [colors]);
 
   if (loading) return <LoadingIndicator />;
 
@@ -85,7 +180,7 @@ export default function WishListScreen() {
           value={newItemTitle}
           onChangeText={setNewItemTitle}
           placeholder="Item title (required)"
-          placeholderTextColor={COLORS.text.secondary}
+          placeholderTextColor={colors.text.secondary}
           maxLength={120}
           editable={!addingWishItem}
         />
@@ -94,7 +189,7 @@ export default function WishListScreen() {
           value={newItemUrl}
           onChangeText={setNewItemUrl}
           placeholder="Link (optional)"
-          placeholderTextColor={COLORS.text.secondary}
+          placeholderTextColor={colors.text.secondary}
           maxLength={500}
           editable={!addingWishItem}
           keyboardType="url"
@@ -105,7 +200,7 @@ export default function WishListScreen() {
           value={newItemNotes}
           onChangeText={setNewItemNotes}
           placeholder="Notes (optional)"
-          placeholderTextColor={COLORS.text.secondary}
+          placeholderTextColor={colors.text.secondary}
           maxLength={200}
           editable={!addingWishItem}
         />
@@ -126,96 +221,3 @@ export default function WishListScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scroll: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
-    paddingBottom: SPACING.xxl,
-  },
-  addSectionLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.sm,
-  },
-  textInput: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    height: 52,
-    paddingHorizontal: SPACING.lg,
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.primary,
-  },
-  wishItemInput: {
-    marginTop: SPACING.sm,
-  },
-  wishListRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: SPACING.md,
-    gap: SPACING.sm,
-  },
-  wishListItemContent: {
-    flex: 1,
-  },
-  wishListItemTitle: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  wishListItemUrl: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.accent,
-    marginTop: SPACING.xs,
-  },
-  wishListItemNotes: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  wishListEmpty: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  deleteWishItem: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    alignSelf: 'flex-start',
-    marginTop: SPACING.xs,
-  },
-  deleteWishItemText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-  },
-  addWishItemButton: {
-    marginTop: SPACING.md,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-  },
-  addWishItemButtonDisabled: {
-    opacity: 0.5,
-  },
-  addWishItemButtonText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-});
