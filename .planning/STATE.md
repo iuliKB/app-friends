@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
-status: completed
-stopped_at: Phase 19 context gathered
-last_updated: "2026-04-28T20:10:06.615Z"
+status: executing
+stopped_at: Completed 19-01-PLAN.md — 30 shared components migrated to useTheme()
+last_updated: "2026-04-28T20:46:08.363Z"
 last_activity: 2026-04-28
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 100
+  total_plans: 6
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 18 — theme-foundation
+**Current focus:** Phase 19 — theme-migration
 
 ## Current Position
 
 Milestone: v1.6 Places, Themes & Memories
-Phase: 19
-Plan: Not started
-Status: Phase complete — ready for Phase 19
+Phase: 19 (theme-migration) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-28
 
 Progress: [██████████] 100% (Phase 18 complete)
@@ -69,6 +69,8 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 18-02]: Splash early-return excluded from ThemeProvider — renders with static COLORS before context is relevant
 - [Phase 18-03]: ThemeSegmentedControl active colors (#B9FF3B / #0E0F11) hardcoded per D-07 — same values in both palettes; no migration needed in Phase 19
 - [Phase 18-03]: StyleSheet.create at module scope in ThemeSegmentedControl — acceptable (D-09 static COLORS compat shim); D-05 useMemo applies only to components consuming useTheme().colors for dynamic styles
+- [Phase 19-theme-migration]: Module-level COLORS constant arrays (MOOD_ROWS, STATUS_DOT_COLOR, DOT_COLOR, SEGMENTS) moved inside component body in useMemo([colors]) for theme reactivity
+- [Phase 19-theme-migration]: LoadingIndicator nullable-default pattern: prop signature uses color?: string (no default), body resolves resolvedColor = color ?? colors.text.secondary
 
 ### Pending Todos
 
@@ -80,5 +82,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-28T20:10:06.611Z
-Stopped at: Phase 19 context gathered
+Last session: 2026-04-28T20:46:08.357Z
+Stopped at: Completed 19-01-PLAN.md — 30 shared components migrated to useTheme()

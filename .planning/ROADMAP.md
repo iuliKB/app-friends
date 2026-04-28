@@ -139,7 +139,7 @@ Plans:
   4. Theme preference set to Light or Dark survives an app restart and takes effect before the splash screen clears
 **Plans**: 3 plans
 Plans:
-- [ ] 19-01-PLAN.md — Migrate shared/auth/status/friends/notifications components (30 files)
+- [x] 19-01-PLAN.md — Migrate shared/auth/status/friends/notifications components (30 files)
 - [ ] 19-02-PLAN.md — Migrate feature components: chat/home/iou/plans/squad (39 files)
 - [ ] 19-03-PLAN.md — Migrate app routes + screens (31 files) + remove compat shim
 **UI hint**: yes
@@ -193,7 +193,7 @@ Plans:
 | 16. Media Sharing | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
-| 19. Theme Migration | v1.6 | 0/? | Not started | - |
+| 19. Theme Migration | v1.6 | 1/3 | In Progress|  |
 | 20. Map Feature | v1.6 | 0/? | Not started | - |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
 | 22. Gallery UI | v1.6 | 0/? | Not started | - |

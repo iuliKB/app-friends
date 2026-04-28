@@ -10,7 +10,7 @@
 - [ ] **THEME-01**: User can select Light, Dark, or System theme from Profile settings
 - [x] **THEME-02**: Selected theme persists across app restarts without re-selecting
 - [x] **THEME-03**: App launches with the correct theme immediately — no flash of wrong theme on startup
-- [ ] **THEME-04**: All existing screens render correctly in both light and dark modes
+- [x] **THEME-04**: All existing screens render correctly in both light and dark modes
 - [x] **THEME-05**: Theme applies instantly when user selects an option (no save button required)
 
 ### Map
@@ -71,7 +71,7 @@
 | THEME-02 | Phase 18 | Complete |
 | THEME-03 | Phase 18 | Complete |
 | THEME-05 | Phase 18 | Complete |
-| THEME-04 | Phase 19 | Pending |
+| THEME-04 | Phase 19 | Complete |
 | MAP-01 | Phase 20 | Pending |
 | MAP-02 | Phase 20 | Pending |
 | MAP-03 | Phase 20 | Pending |
