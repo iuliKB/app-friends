@@ -114,7 +114,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   }), [colors]);
 
   const focusedRoute = state.routes[state.index];
-  const nestedState = focusedRoute.state;
+  const nestedState = focusedRoute?.state;
   if (nestedState) {
     const nestedIndex = nestedState.index ?? 0;
     const nestedRoute = nestedState.routes[nestedIndex];
@@ -145,6 +145,8 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               navigation.navigate(route.name);
             }
           };
+
+          if (!config) return null;
 
           if (isCenter) {
             return (
