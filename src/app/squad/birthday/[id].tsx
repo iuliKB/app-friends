@@ -12,7 +12,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextStyle,
   View,
+  ViewStyle,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
@@ -288,11 +290,20 @@ export default function FriendBirthdayPage() {
   );
 }
 
+interface FriendPickerRowStyles {
+  pickerRow: ViewStyle;
+  pickerRowSelected: ViewStyle;
+  pickerName: TextStyle;
+  checkbox: ViewStyle;
+  checkboxSelected: ViewStyle;
+  checkmark: TextStyle;
+}
+
 interface FriendPickerRowProps {
   friend: FriendOfFriend;
   selected: boolean;
   onToggle: () => void;
-  styles: ReturnType<typeof StyleSheet.create>;
+  styles: FriendPickerRowStyles;
 }
 
 function FriendPickerRow({ friend, selected, onToggle, styles }: FriendPickerRowProps) {

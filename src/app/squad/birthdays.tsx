@@ -4,7 +4,7 @@
 // Today rows get accent-tinted background (D-03). Pull-to-refresh supported.
 // DO NOT wrap FlatList in a ScrollView — breaks Android scroll silently.
 
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -98,9 +98,18 @@ export default function BirthdaysScreen() {
   );
 }
 
+interface BirthdayRowStyles {
+  row: ViewStyle;
+  rowMiddle: ViewStyle;
+  rowName: TextStyle;
+  rowDate: TextStyle;
+  rowDays: TextStyle;
+  rowDaysToday: TextStyle;
+}
+
 interface BirthdayRowProps {
   entry: BirthdayEntry;
-  styles: ReturnType<typeof StyleSheet.create>;
+  styles: BirthdayRowStyles;
 }
 
 function BirthdayRow({ entry, styles }: BirthdayRowProps) {

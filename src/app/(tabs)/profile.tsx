@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,7 +21,7 @@ import { decode } from 'base64-arraybuffer';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { COLORS, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { APP_CONFIG } from '@/constants/config';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -35,6 +35,7 @@ import { ensureMorningPromptScheduled, cancelMorningPrompt } from '@/lib/morning
 import { PrePromptModal } from '@/components/notifications/PrePromptModal';
 
 export default function ProfileScreen() {
+  const { colors } = useTheme();
   const session = useAuthStore((s) => s.session);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -286,6 +287,132 @@ export default function ProfileScreen() {
     return `Member since ${date.toLocaleString('en-US', { month: 'short', year: 'numeric' })}`;
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    content: {
+      paddingBottom: SPACING.xxl,
+    },
+    headerWrapper: {
+      paddingHorizontal: SPACING.lg,
+    },
+    avatarHeader: {
+      alignItems: 'center',
+      paddingBottom: SPACING.xl,
+      paddingHorizontal: SPACING.lg,
+    },
+    avatarOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      borderRadius: 40,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.5)', // no exact token for avatar upload scrim
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pencilOverlay: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: SPACING.xl,
+      height: SPACING.xl,
+      borderRadius: RADII.full,
+      backgroundColor: colors.surface.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    displayName: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginTop: SPACING.md,
+      textAlign: 'center',
+    },
+    username: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+      textAlign: 'center',
+    },
+    sectionHeader: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xl,
+      marginBottom: SPACING.md,
+      paddingHorizontal: SPACING.lg,
+    },
+    loader: {
+      marginTop: SPACING.xl,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 52,
+      paddingHorizontal: SPACING.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    rowIcon: {
+      marginRight: SPACING.md,
+    },
+    rowLabel: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    rowRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.sm,
+    },
+    logoutRow: {
+      height: 52,
+      paddingHorizontal: SPACING.lg,
+      justifyContent: 'center',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginTop: 48,
+    },
+    logoutText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+    },
+    versionText: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginTop: SPACING.xxl,
+    },
+    rowDisabled: {
+      opacity: 0.4,
+    },
+    rowTrailingText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    morningHint: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.sm,
+      paddingBottom: SPACING.md,
+    },
+  }), [colors]);
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
     <ScrollView
@@ -308,11 +435,11 @@ export default function ProfileScreen() {
           />
           {avatarLoading && (
             <View style={styles.avatarOverlay}>
-              <ActivityIndicator color={COLORS.text.primary} size="small" />
+              <ActivityIndicator color={colors.text.primary} size="small" />
             </View>
           )}
           <View style={styles.pencilOverlay}>
-            <Ionicons name="pencil-outline" size={SPACING.lg} color={COLORS.interactive.accent} />
+            <Ionicons name="pencil-outline" size={SPACING.lg} color={colors.interactive.accent} />
           </View>
         </View>
         <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
@@ -328,12 +455,12 @@ export default function ProfileScreen() {
         <Ionicons
           name="person-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>Edit Profile</Text>
         <View style={styles.rowRight}>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
         </View>
       </TouchableOpacity>
 
@@ -346,12 +473,12 @@ export default function ProfileScreen() {
         <Ionicons
           name="gift-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>My Wish List</Text>
         <View style={styles.rowRight}>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
         </View>
       </TouchableOpacity>
 
@@ -364,12 +491,12 @@ export default function ProfileScreen() {
         <Ionicons
           name="qr-code-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>My QR Code</Text>
         <View style={styles.rowRight}>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={COLORS.border} />
+          <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
         </View>
       </TouchableOpacity>
 
@@ -380,7 +507,7 @@ export default function ProfileScreen() {
         <Ionicons
           name="mail-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel} numberOfLines={1} ellipsizeMode="tail">
@@ -392,7 +519,7 @@ export default function ProfileScreen() {
         <Ionicons
           name="calendar-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>
@@ -413,15 +540,15 @@ export default function ProfileScreen() {
         <Ionicons
           name="notifications-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>Plan invites</Text>
         <Switch
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
-          trackColor={{ false: COLORS.border, true: COLORS.interactive.accent + '40' }}
-          thumbColor={notificationsEnabled ? COLORS.interactive.accent : COLORS.border}
+          trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+          thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
         />
       </View>
 
@@ -429,15 +556,15 @@ export default function ProfileScreen() {
         <Ionicons
           name="people-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>Friend availability</Text>
         <Switch
           value={friendFreeEnabled}
           onValueChange={handleToggleFriendFree}
-          trackColor={{ false: COLORS.border, true: COLORS.interactive.accent + '40' }}
-          thumbColor={friendFreeEnabled ? COLORS.interactive.accent : COLORS.border}
+          trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+          thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
         />
       </View>
 
@@ -445,15 +572,15 @@ export default function ProfileScreen() {
         <Ionicons
           name="sunny-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>Morning prompt</Text>
         <Switch
           value={morningEnabled}
           onValueChange={handleToggleMorning}
-          trackColor={{ false: COLORS.border, true: COLORS.interactive.accent + '40' }}
-          thumbColor={morningEnabled ? COLORS.interactive.accent : COLORS.border}
+          trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+          thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
         />
       </View>
 
@@ -466,7 +593,7 @@ export default function ProfileScreen() {
         <Ionicons
           name="time-outline"
           size={FONT_SIZE.xl}
-          color={COLORS.text.secondary}
+          color={colors.text.secondary}
           style={styles.rowIcon}
         />
         <Text style={styles.rowLabel}>Time</Text>
@@ -496,7 +623,7 @@ export default function ProfileScreen() {
       {/* Logout row per UI-SPEC: full width, 52px, destructive color */}
       <TouchableOpacity style={styles.logoutRow} onPress={handleLogout} disabled={loggingOut}>
         {loggingOut ? (
-          <ActivityIndicator color={COLORS.interactive.destructive} />
+          <ActivityIndicator color={colors.interactive.destructive} />
         ) : (
           <Text style={styles.logoutText}>Log out</Text>
         )}
@@ -513,129 +640,3 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    paddingBottom: SPACING.xxl,
-  },
-  headerWrapper: {
-    paddingHorizontal: SPACING.lg,
-  },
-  avatarHeader: {
-    alignItems: 'center',
-    paddingBottom: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
-  },
-  avatarOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 40,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)', // no exact token for avatar upload scrim
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pencilOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: SPACING.xl,
-    height: SPACING.xl,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.surface.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  displayName: {
-    fontSize: FONT_SIZE.xl,
-    fontFamily: FONT_FAMILY.display.semibold,
-    color: COLORS.text.primary,
-    marginTop: SPACING.md,
-    textAlign: 'center',
-  },
-  username: {
-    fontSize: FONT_SIZE.md,
-    fontFamily: FONT_FAMILY.body.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-    textAlign: 'center',
-  },
-  sectionHeader: {
-    fontSize: FONT_SIZE.md,
-    fontFamily: FONT_FAMILY.body.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-  },
-  loader: {
-    marginTop: SPACING.xl,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 52,
-    paddingHorizontal: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  rowIcon: {
-    marginRight: SPACING.md,
-  },
-  rowLabel: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontFamily: FONT_FAMILY.body.regular,
-    color: COLORS.text.primary,
-  },
-  rowRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  logoutRow: {
-    height: 52,
-    paddingHorizontal: SPACING.lg,
-    justifyContent: 'center',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginTop: 48,
-  },
-  logoutText: {
-    fontSize: FONT_SIZE.lg,
-    fontFamily: FONT_FAMILY.body.regular,
-    color: COLORS.interactive.destructive,
-  },
-  versionText: {
-    fontSize: FONT_SIZE.sm,
-    fontFamily: FONT_FAMILY.body.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginTop: SPACING.xxl,
-  },
-  rowDisabled: {
-    opacity: 0.4,
-  },
-  rowTrailingText: {
-    fontSize: FONT_SIZE.md,
-    fontFamily: FONT_FAMILY.body.regular,
-    color: COLORS.text.secondary,
-  },
-  morningHint: {
-    fontSize: FONT_SIZE.sm,
-    fontFamily: FONT_FAMILY.body.regular,
-    color: COLORS.text.secondary,
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.md,
-  },
-});
