@@ -2,6 +2,20 @@ import '@/lib/notifications-init';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import {
+  BricolageGrotesque_400Regular,
+  BricolageGrotesque_500Medium,
+  BricolageGrotesque_600SemiBold,
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from '@expo-google-fonts/bricolage-grotesque';
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,7 +23,7 @@ import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, FONT_FAMILY, ThemeProvider } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeWindowExpiry, nextLargerWindow } from '@/lib/windows';
 import { computeHeartbeatState } from '@/lib/heartbeat';
@@ -193,6 +207,18 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const router = useRouter();
 
+  const [fontsLoaded] = useFonts({
+    BricolageGrotesque_400Regular,
+    BricolageGrotesque_500Medium,
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+  });
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       setSession(s);
@@ -211,7 +237,6 @@ export default function RootLayout() {
 
       setReady(true);
       setLoading(false);
-      SplashScreen.hideAsync();
     });
 
     const {
@@ -264,7 +289,13 @@ export default function RootLayout() {
     return () => responseSub.remove();
   }, [router]);
 
-  if (!ready) {
+  useEffect(() => {
+    if (ready && fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [ready, fontsLoaded]);
+
+  if (!ready || !fontsLoaded) {
     return (
       <LinearGradient
         colors={[COLORS.splash.gradientStart, COLORS.splash.gradientEnd]}
@@ -279,28 +310,30 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: COLORS.surface.base }}>
-      <OfflineBanner />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: COLORS.surface.base },
-        }}
-      >
-        <Stack.Protected guard={!!session && !needsProfileSetup}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="plan-create"
-            options={{ presentation: 'modal', headerShown: false }}
-          />
-          <Stack.Screen name="plans" options={{ headerShown: false }} />
-        </Stack.Protected>
-        <Stack.Protected guard={!!session && needsProfileSetup}>
-          <Stack.Screen name="profile-setup" />
-        </Stack.Protected>
-        <Stack.Protected guard={!session}>
-          <Stack.Screen name="(auth)" />
-        </Stack.Protected>
-      </Stack>
+      <ThemeProvider>
+        <OfflineBanner />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: COLORS.surface.base },
+          }}
+        >
+          <Stack.Protected guard={!!session && !needsProfileSetup}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="plan-create"
+              options={{ presentation: 'modal', headerShown: false }}
+            />
+            <Stack.Screen name="plans" options={{ headerShown: false }} />
+          </Stack.Protected>
+          <Stack.Protected guard={!!session && needsProfileSetup}>
+            <Stack.Screen name="profile-setup" />
+          </Stack.Protected>
+          <Stack.Protected guard={!session}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
+        </Stack>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }
@@ -319,7 +352,7 @@ const styles = StyleSheet.create({
   splashTitle: {
     // eslint-disable-next-line campfire/no-hardcoded-styles
     fontSize: 28,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONT_FAMILY.display.extrabold,
     color: COLORS.splash.text,
     marginBottom: SPACING.xxl,
   },
