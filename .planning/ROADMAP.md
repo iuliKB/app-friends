@@ -137,7 +137,11 @@ Plans:
   2. Opening any screen (Home, Squad, Explore, Chats, Profile, Plan Dashboard, Chat Room, Friend Profile, etc.) in light mode shows a white/light background with dark text — not the dark palette
   3. The COLORS compat shim is absent from src/theme/index.ts — no file in the codebase imports the bare COLORS symbol
   4. Theme preference set to Light or Dark survives an app restart and takes effect before the splash screen clears
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 19-01-PLAN.md — Migrate shared/auth/status/friends/notifications components (30 files)
+- [ ] 19-02-PLAN.md — Migrate feature components: chat/home/iou/plans/squad (39 files)
+- [ ] 19-03-PLAN.md — Migrate app routes + screens (31 files) + remove compat shim
 **UI hint**: yes
 
 ### Phase 20: Map Feature
