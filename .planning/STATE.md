@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
 status: executing
-stopped_at: Completed 18-01-PLAN.md
-last_updated: "2026-04-28T18:15:57.399Z"
+stopped_at: Completed 18-02-PLAN.md
+last_updated: "2026-04-28T18:20:00Z"
 last_activity: 2026-04-28
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -27,11 +27,11 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 Milestone: v1.6 Places, Themes & Memories
 Phase: 18 (theme-foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-28
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████░░░░] 67%
 
 ## Phase Structure
 
@@ -65,6 +65,8 @@ Requirements covered: 0/18
 - [v1.6 pre]: add_plan_photo SECURITY DEFINER RPC enforces 10-photo cap server-side — client-side check is UI only
 - [Phase 18-theme-foundation]: colors typed as typeof DARK | typeof LIGHT union — required to allow palette switching without TypeScript error
 - [Phase 18-theme-foundation]: ThemeContext internal (not exported) — ThemeProvider and useTheme are the public API surface
+- [Phase 18-02]: ThemeProvider is inside GestureHandlerRootView (not outside) — GestureHandlerRootView remains outermost element
+- [Phase 18-02]: Splash early-return excluded from ThemeProvider — renders with static COLORS before context is relevant
 
 ### Pending Todos
 
@@ -76,5 +78,5 @@ Requirements covered: 0/18
 
 ## Session Continuity
 
-Last session: 2026-04-28T18:15:57.395Z
-Stopped at: Completed 18-01-PLAN.md
+Last session: 2026-04-28T18:20:00Z
+Stopped at: Completed 18-02-PLAN.md
