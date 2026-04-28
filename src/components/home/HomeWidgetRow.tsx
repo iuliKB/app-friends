@@ -1,6 +1,7 @@
+import React, { useMemo } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 import { formatDaysUntil } from '@/utils/birthdayFormatters';
 import type { IOUSummaryData } from '@/hooks/useIOUSummary';
@@ -12,6 +13,72 @@ interface HomeWidgetRowProps {
 }
 
 export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
+  const { colors } = useTheme();
+
+  const shadow = Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 6,
+    },
+    android: {
+      elevation: 4,
+    },
+    default: {},
+  });
+
+  const styles = useMemo(() => StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      gap: SPACING.md,
+      paddingHorizontal: SPACING.lg,
+      marginTop: SPACING.xl,
+    },
+    tile: {
+      flex: 1,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      maxWidth: 140,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      padding: SPACING.md,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      aspectRatio: 1,
+      justifyContent: 'space-between',
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...shadow,
+    },
+    tilePressed: {
+      opacity: 0.75,
+    },
+    tileTitle: {
+      fontSize: FONT_SIZE.xs,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.secondary,
+      textTransform: 'uppercase',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      letterSpacing: 0.5,
+    },
+    icon: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 22,
+      marginTop: SPACING.xs,
+    },
+    main: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginTop: SPACING.xs,
+    },
+    sub: {
+      fontSize: FONT_SIZE.xs,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: 2,
+    },
+  }), [colors, shadow]);
+
   const router = useRouter();
 
   const hasIOU = iouSummary.unsettledCount > 0;
@@ -63,67 +130,3 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
     </View>
   );
 }
-
-const shadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-  },
-  android: {
-    elevation: 4,
-  },
-  default: {},
-});
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
-  },
-  tile: {
-    flex: 1,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    maxWidth: 140,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    padding: SPACING.md,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    aspectRatio: 1,
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...shadow,
-  },
-  tilePressed: {
-    opacity: 0.75,
-  },
-  tileTitle: {
-    fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-    textTransform: 'uppercase',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    letterSpacing: 0.5,
-  },
-  icon: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 22,
-    marginTop: SPACING.xs,
-  },
-  main: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginTop: SPACING.xs,
-  },
-  sub: {
-    fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: 2,
-  },
-});

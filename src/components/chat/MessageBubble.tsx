@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -12,7 +12,7 @@ import {
 import { Image } from 'expo-image';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { ReactionsSheet } from '@/components/chat/ReactionsSheet';
 import { PollCard } from '@/components/chat/PollCard';
@@ -94,18 +94,20 @@ function QuotedBlock({
   allMessages,
   isOwn,
   onPress,
+  colors,
 }: {
   replyToId: string;
   allMessages: MessageWithProfile[];
   isOwn: boolean;
   onPress: () => void;
+  colors: ReturnType<typeof useTheme>['colors'];
 }) {
   const original = allMessages.find((m) => m.id === replyToId);
   // Own bubbles are orange — use white + dark overlay so the block is visible.
   // Others' bubbles are dark — use orange accent + light overlay.
-  const accentColor = isOwn ? 'rgba(255,255,255,0.9)' : COLORS.interactive.accent;
-  const quotedBg = isOwn ? 'rgba(0,0,0,0.2)' : COLORS.surface.overlay;
-  const previewColor = isOwn ? 'rgba(255,255,255,0.7)' : COLORS.text.secondary;
+  const accentColor = isOwn ? 'rgba(255,255,255,0.9)' : colors.interactive.accent;
+  const quotedBg = isOwn ? 'rgba(0,0,0,0.2)' : colors.surface.overlay;
+  const previewColor = isOwn ? 'rgba(255,255,255,0.7)' : colors.text.secondary;
 
   const senderName = original?.sender_display_name ?? 'Unknown';
   const previewText = original
@@ -149,6 +151,236 @@ export function MessageBubble({
   onImagePress,
   lastPollVoteEvent,
 }: MessageBubbleProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    ownContainer: {
+      alignSelf: 'flex-end',
+      maxWidth: '75%',
+      marginBottom: SPACING.xs,
+      alignItems: 'flex-end',
+    },
+    ownBubble: {
+      backgroundColor: colors.interactive.accent,
+      borderRadius: RADII.pill,
+      borderBottomRightRadius: RADII.xs,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    pendingOpacity: {
+      opacity: 0.7,
+    },
+    replyMinWidth: {
+      minWidth: 180,
+    },
+    ownBody: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.surface.base,
+    },
+    ownTimestamp: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 12,
+      fontFamily: FONT_FAMILY.body.regular,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      color: 'rgba(245,245,245,0.5)',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginTop: 2,
+    },
+    othersContainer: {
+      alignSelf: 'flex-start',
+      maxWidth: '75%',
+      flexDirection: 'row',
+      gap: SPACING.sm,
+      marginBottom: SPACING.xs,
+    },
+    avatarSpacer: {
+      width: 32,
+    },
+    othersContent: {
+      flexDirection: 'column',
+    },
+    senderName: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginBottom: 2,
+    },
+    othersBubble: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.pill,
+      borderBottomLeftRadius: RADII.xs,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    othersBody: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    othersTimestamp: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 12,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginTop: 2,
+    },
+    deletedBody: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      fontStyle: 'italic',
+    },
+    // QuotedBlock styles
+    quotedBlock: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface.overlay,
+      borderRadius: RADII.xs,
+      marginBottom: SPACING.xs,
+      overflow: 'hidden',
+    },
+    accentBar: {
+      width: 4,
+      borderRadius: RADII.xs,
+    },
+    quotedContent: {
+      flex: 1,
+      paddingVertical: SPACING.xs,
+      paddingHorizontal: SPACING.sm,
+    },
+    quotedSender: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.semibold,
+    },
+    quotedPreview: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    // Context menu styles
+    backdrop: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    contextPill: {
+      position: 'absolute',
+      alignSelf: 'center',
+      flexDirection: 'row',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      paddingHorizontal: SPACING.sm,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    pillAction: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.xs,
+      paddingHorizontal: SPACING.sm,
+      minHeight: 44,
+      paddingVertical: SPACING.sm,
+    },
+    pillActionLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    pillDivider: {
+      width: 1,
+      height: 24,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+    },
+    // Phase 15 — emoji strip styles
+    emojiStrip: {
+      position: 'absolute',
+      alignSelf: 'center',
+      flexDirection: 'row',
+      backgroundColor: colors.surface.overlay,
+      borderRadius: RADII.lg,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    emojiButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: 44,
+      minHeight: 44,
+      borderRadius: RADII.full,
+    },
+    emojiButtonActive: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(249, 115, 22, 0.20)',
+    },
+    // Phase 15 — reaction badge row styles
+    reactionBadgeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: SPACING.xs,
+      marginTop: SPACING.xs,
+      alignSelf: 'flex-end',
+    },
+    reactionBadgeRowOthers: {
+      alignSelf: 'flex-start',
+    },
+    reactionBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.xs,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.full,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      borderWidth: 1,
+      borderColor: 'transparent',
+    },
+    reactionBadgeOwn: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(249, 115, 22, 0.20)',
+      borderColor: colors.interactive.accent,
+    },
+    reactionBadgeCount: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    // Phase 17 — poll container style
+    pollContainer: {
+      width: '100%',
+      paddingHorizontal: SPACING.lg,
+      marginBottom: SPACING.xs,
+    },
+    // Phase 16 — image bubble styles
+    imageBubbleWrapper: {
+      width: 240,
+      maxHeight: 320,
+      aspectRatio: 4 / 3,
+      borderRadius: RADII.md,
+      overflow: 'hidden',
+    },
+    inlineImage: {
+      width: '100%',
+      height: '100%',
+    },
+    spinnerOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  }), [colors]);
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [pillY, setPillY] = useState(0);
@@ -271,7 +503,7 @@ export function MessageBubble({
             style={styles.pillAction}
             accessibilityLabel="Reply to message"
           >
-            <Ionicons name="return-up-back" size={20} color={COLORS.text.primary} />
+            <Ionicons name="return-up-back" size={20} color={colors.text.primary} />
             <Text style={styles.pillActionLabel}>Reply</Text>
           </TouchableOpacity>
         )}
@@ -283,7 +515,7 @@ export function MessageBubble({
               style={styles.pillAction}
               accessibilityLabel="Copy message text"
             >
-              <Ionicons name="copy-outline" size={20} color={COLORS.text.primary} />
+              <Ionicons name="copy-outline" size={20} color={colors.text.primary} />
               <Text style={styles.pillActionLabel}>Copy</Text>
             </TouchableOpacity>
           </>
@@ -296,8 +528,8 @@ export function MessageBubble({
               style={styles.pillAction}
               accessibilityLabel="Delete message"
             >
-              <Ionicons name="trash-outline" size={20} color={COLORS.interactive.destructive} />
-              <Text style={[styles.pillActionLabel, { color: COLORS.interactive.destructive }]}>
+              <Ionicons name="trash-outline" size={20} color={colors.interactive.destructive} />
+              <Text style={[styles.pillActionLabel, { color: colors.interactive.destructive }]}>
                 Delete
               </Text>
             </TouchableOpacity>
@@ -348,6 +580,7 @@ export function MessageBubble({
                 allMessages={allMessages}
                 isOwn={isOwn}
                 onPress={() => onScrollToMessage(message.reply_to_message_id!)}
+                colors={colors}
               />
             )}
             {isImage ? (
@@ -368,7 +601,7 @@ export function MessageBubble({
                   />
                   {message.pending && (
                     <View style={styles.spinnerOverlay}>
-                      <ActivityIndicator size="large" color={COLORS.interactive.accent} />
+                      <ActivityIndicator size="large" color={colors.interactive.accent} />
                     </View>
                   )}
                 </View>
@@ -451,6 +684,7 @@ export function MessageBubble({
                 allMessages={allMessages}
                 isOwn={isOwn}
                 onPress={() => onScrollToMessage(message.reply_to_message_id!)}
+                colors={colors}
               />
             )}
             {isImage ? (
@@ -471,7 +705,7 @@ export function MessageBubble({
                   />
                   {message.pending && (
                     <View style={styles.spinnerOverlay}>
-                      <ActivityIndicator size="large" color={COLORS.interactive.accent} />
+                      <ActivityIndicator size="large" color={colors.interactive.accent} />
                     </View>
                   )}
                 </View>
@@ -523,248 +757,3 @@ export function MessageBubble({
   );
 }
 
-const styles = StyleSheet.create({
-  ownContainer: {
-    alignSelf: 'flex-end',
-    maxWidth: '75%',
-    marginBottom: SPACING.xs,
-    alignItems: 'flex-end',
-  },
-  ownBubble: {
-    backgroundColor: COLORS.interactive.accent,
-    borderRadius: RADII.pill,
-    borderBottomRightRadius: RADII.xs,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  pendingOpacity: {
-    opacity: 0.7,
-  },
-  replyMinWidth: {
-    minWidth: 180,
-  },
-  ownBody: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.surface.base,
-  },
-  ownTimestamp: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12,
-    fontWeight: FONT_WEIGHT.regular,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    color: 'rgba(245,245,245,0.5)',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginTop: 2,
-  },
-  othersContainer: {
-    alignSelf: 'flex-start',
-    maxWidth: '75%',
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    marginBottom: SPACING.xs,
-  },
-  avatarSpacer: {
-    width: 32,
-  },
-  othersContent: {
-    flexDirection: 'column',
-  },
-  senderName: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginBottom: 2,
-  },
-  othersBubble: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.pill,
-    borderBottomLeftRadius: RADII.xs,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  othersBody: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  othersTimestamp: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginTop: 2,
-  },
-  deletedBody: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-
-    fontStyle: 'italic',
-  },
-  // QuotedBlock styles
-  quotedBlock: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface.overlay,
-    borderRadius: RADII.xs,
-    marginBottom: SPACING.xs,
-    overflow: 'hidden',
-  },
-  accentBar: {
-    width: 4,
-    borderRadius: RADII.xs,
-  },
-  quotedContent: {
-    flex: 1,
-    paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-  },
-  quotedSender: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
-  },
-  quotedPreview: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  // Context menu styles
-  backdrop: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  contextPill: {
-    position: 'absolute',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    paddingHorizontal: SPACING.sm,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    shadowColor: '#000',
-
-    shadowOffset: { width: 0, height: 2 },
-
-    shadowOpacity: 0.3,
-
-    shadowRadius: 8,
-
-    elevation: 8,
-  },
-  pillAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-
-    minHeight: 44,
-    paddingVertical: SPACING.sm,
-  },
-  pillActionLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  pillDivider: {
-    width: 1,
-
-    height: 24,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-  },
-  // Phase 15 — emoji strip styles
-  emojiStrip: {
-    position: 'absolute',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface.overlay,
-    borderRadius: RADII.lg,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    shadowColor: '#000',
-
-    shadowOffset: { width: 0, height: 2 },
-
-    shadowOpacity: 0.3,
-
-    shadowRadius: 8,
-
-    elevation: 8,
-  },
-  emojiButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    minWidth: 44,
-
-    minHeight: 44,
-    borderRadius: RADII.full,
-  },
-  emojiButtonActive: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(249, 115, 22, 0.20)',
-  },
-  // Phase 15 — reaction badge row styles
-  reactionBadgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.xs,
-    marginTop: SPACING.xs,
-    alignSelf: 'flex-end',
-  },
-  reactionBadgeRowOthers: {
-    alignSelf: 'flex-start',
-  },
-  reactionBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.full,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  reactionBadgeOwn: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(249, 115, 22, 0.20)',
-    borderColor: COLORS.interactive.accent,
-  },
-  reactionBadgeCount: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  // Phase 17 — poll container style
-  pollContainer: {
-    width: '100%',
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xs,
-  },
-  // Phase 16 — image bubble styles
-  imageBubbleWrapper: {
-    width: 240,
-
-    maxHeight: 320,
-
-    aspectRatio: 4 / 3,
-    borderRadius: RADII.md,
-    overflow: 'hidden',
-  },
-  inlineImage: {
-    width: '100%',
-    height: '100%',
-  },
-  spinnerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

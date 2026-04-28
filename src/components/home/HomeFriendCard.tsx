@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
 import { formatWindowLabel } from '@/lib/windows';
@@ -21,6 +21,54 @@ const MOOD_LABEL: Record<StatusValue, string> = {
 };
 
 export function HomeFriendCard({ friend }: HomeFriendCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      flex: 1,
+      alignItems: 'center',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      paddingVertical: SPACING.lg,
+      paddingHorizontal: SPACING.lg,
+      margin: SPACING.xs,
+    },
+    pressed: {
+      opacity: 0.7,
+    },
+    fadingCard: {
+      opacity: 0.6,
+    },
+    avatarWrapper: {
+      position: 'relative',
+      marginBottom: SPACING.sm,
+    },
+    emojiBadge: {
+      position: 'absolute',
+      bottom: 0,
+      right: -2, // no exact token
+      backgroundColor: colors.surface.base,
+      borderRadius: RADII.md,
+      padding: 1,
+    },
+    emojiText: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 12, // no exact token
+    },
+    displayName: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      textAlign: 'center',
+    },
+    statusLabel: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginTop: SPACING.xs,
+    },
+  }), [colors]);
+
   const router = useRouter();
 
   // HEART-04 / TTL-03: compute heartbeat per render so the screen-level 60s
@@ -101,49 +149,3 @@ export function HomeFriendCard({ friend }: HomeFriendCardProps) {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-    margin: SPACING.xs,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  fadingCard: {
-    opacity: 0.6,
-  },
-  avatarWrapper: {
-    position: 'relative',
-    marginBottom: SPACING.sm,
-  },
-  emojiBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: -2, // no exact token
-    backgroundColor: COLORS.surface.base,
-    borderRadius: RADII.md,
-    padding: 1,
-  },
-  emojiText: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12, // no exact token
-  },
-  displayName: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    textAlign: 'center',
-  },
-  statusLabel: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginTop: SPACING.xs,
-  },
-});

@@ -2,11 +2,11 @@
 // Renders a friend as a sized bubble with optional pulse ring (ALIVE only),
 // status gradient (ALIVE non-FADING only), depth effect, and tap/long-press interactions.
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Alert, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { showActionSheet } from '@/lib/action-sheet';
@@ -19,15 +19,7 @@ export const BubbleSizeMap: Record<string, number> = {
   free: 80,
   maybe: 64,
   busy: 48,
-  dead: 44,
-};
-
-// --- Status color map ---
-
-const STATUS_COLORS: Record<string, string> = {
-  free: COLORS.status.free, // #22c55e
-  maybe: COLORS.status.maybe, // #eab308
-  busy: COLORS.status.busy, // #ef4444
+  dead: 48,
 };
 
 // --- Gradient color map (center color → transparent) ---
@@ -90,7 +82,7 @@ function PulseRing({ size, statusColor }: PulseRingProps) {
   return (
     <Animated.View
       style={[
-        styles.pulseRing,
+        pulseRingStyle,
         {
           width: size,
           height: size,
@@ -105,6 +97,13 @@ function PulseRing({ size, statusColor }: PulseRingProps) {
   );
 }
 
+const pulseRingStyle = StyleSheet.create({
+  ring: {
+    position: 'absolute',
+    borderWidth: 2,
+  },
+}).ring;
+
 // --- RadarBubble ---
 
 interface RadarBubbleProps {
@@ -116,13 +115,37 @@ interface RadarBubbleProps {
 }
 
 export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: RadarBubbleProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    outerWrapper: {
+      alignItems: 'center',
+    },
+    bubbleContainer: {
+      position: 'relative',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    nameLabel: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      textAlign: 'center',
+      marginTop: SPACING.xs,
+    },
+  }), [colors]);
+
+  const STATUS_COLORS: Record<string, string> = useMemo(() => ({
+    free: colors.status.free,
+    maybe: colors.status.maybe,
+    busy: colors.status.busy,
+  }), [colors]);
+
   const router = useRouter();
 
   // 1. Compute heartbeat state each render
   const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
 
   // 2. Bubble size
-  const targetSize = heartbeatState === 'dead' ? 36 : (BubbleSizeMap[friend.status] ?? 36);
+  const targetSize = heartbeatState === 'dead' ? BubbleSizeMap.dead : (BubbleSizeMap[friend.status] ?? 36);
 
   // 3. Outer opacity
   let baseOpacity: number;
@@ -160,7 +183,7 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
   // 6. Derived flags
   const isAlive = heartbeatState === 'alive';
   const showGradient = isAlive; // Gradient only for ALIVE (not FADING)
-  const statusColor = STATUS_COLORS[friend.status] ?? COLORS.text.secondary;
+  const statusColor = STATUS_COLORS[friend.status] ?? colors.text.secondary;
   const gradientColors = GRADIENT_COLORS[friend.status] ?? ['transparent', 'transparent'];
   const moodLabel = MOOD_LABEL[friend.status] ?? friend.status;
 
@@ -203,7 +226,7 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
       : `${friend.display_name}, ${moodLabel}. Tap to message, hold for more.`;
 
   // 11. Name label color
-  const nameLabelColor = heartbeatState === 'fading' ? COLORS.text.secondary : COLORS.text.primary;
+  const nameLabelColor = heartbeatState === 'fading' ? colors.text.secondary : colors.text.primary;
 
   return (
     <Animated.View
@@ -243,24 +266,3 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  outerWrapper: {
-    alignItems: 'center',
-  },
-  bubbleContainer: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pulseRing: {
-    position: 'absolute',
-    borderWidth: 2,
-  },
-  nameLabel: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    textAlign: 'center',
-    marginTop: SPACING.xs,
-  },
-});

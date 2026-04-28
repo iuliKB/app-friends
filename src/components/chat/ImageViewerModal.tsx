@@ -14,7 +14,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING } from '@/theme';
+import { useTheme, SPACING } from '@/theme';
 
 interface ImageViewerModalProps {
   visible: boolean;
@@ -25,6 +25,7 @@ interface ImageViewerModalProps {
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export function ImageViewerModal({ visible, imageUrl, onClose }: ImageViewerModalProps) {
+  const { colors } = useTheme();
   const [saving, setSaving] = useState(false);
   const insets = useSafeAreaInsets();
   const btnTop = insets.top + SPACING.xl;
@@ -91,7 +92,7 @@ export function ImageViewerModal({ visible, imageUrl, onClose }: ImageViewerModa
           accessibilityLabel="Save to camera roll"
           disabled={saving}
         >
-          <Ionicons name="download-outline" size={24} color={COLORS.text.primary} />
+          <Ionicons name="download-outline" size={24} color={colors.text.primary} />
         </TouchableOpacity>
 
         {/* Close button — top-right — D-14 */}
@@ -100,7 +101,7 @@ export function ImageViewerModal({ visible, imageUrl, onClose }: ImageViewerModa
           onPress={onClose}
           accessibilityLabel="Close image viewer"
         >
-          <Ionicons name="close" size={28} color={COLORS.text.primary} />
+          <Ionicons name="close" size={28} color={colors.text.primary} />
         </TouchableOpacity>
       </View>
     </Modal>

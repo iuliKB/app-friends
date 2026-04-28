@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Modal,
@@ -8,7 +8,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 
@@ -25,6 +25,70 @@ interface GroupParticipantsSheetProps {
 }
 
 export function GroupParticipantsSheet({ visible, onClose, groupChannelId }: GroupParticipantsSheetProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    sheet: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.surface.card,
+      borderTopLeftRadius: RADII.lg,
+      borderTopRightRadius: RADII.lg,
+      paddingBottom: SPACING.xxl,
+    },
+    dragHandle: {
+      width: 40,
+      height: 4,
+      borderRadius: RADII.xs,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.md,
+    },
+    title: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      paddingHorizontal: SPACING.lg,
+      marginBottom: SPACING.sm,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      gap: SPACING.md,
+    },
+    rowBorder: {
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    name: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    closeBtn: {
+      marginTop: SPACING.md,
+      marginHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      borderRadius: RADII.lg,
+      backgroundColor: colors.surface.base,
+      alignItems: 'center',
+    },
+    closeBtnText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const translateY = useRef(new Animated.Value(400)).current;
 
@@ -87,66 +151,3 @@ export function GroupParticipantsSheet({ visible, onClose, groupChannelId }: Gro
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.surface.card,
-    borderTopLeftRadius: RADII.lg,
-    borderTopRightRadius: RADII.lg,
-    paddingBottom: SPACING.xxl,
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: RADII.xs,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  title: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    gap: SPACING.md,
-  },
-  rowBorder: {
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  name: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  closeBtn: {
-    marginTop: SPACING.md,
-    marginHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: RADII.lg,
-    backgroundColor: COLORS.surface.base,
-    alignItems: 'center',
-  },
-  closeBtnText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-  },
-});

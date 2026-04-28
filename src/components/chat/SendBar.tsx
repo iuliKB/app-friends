@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Modal,
@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 export type AttachmentAction = 'poll' | 'split' | 'todo';
 
@@ -29,13 +29,130 @@ interface SendBarProps {
   onPhotoPress?: () => void;
 }
 
-const ACTIONS: { id: AttachmentAction; icon: string; label: string; sub: string }[] = [
-  { id: 'poll', icon: '📊', label: 'Poll', sub: 'Ask the group a question' },
-  { id: 'split', icon: '💸', label: 'Split Expenses', sub: 'Track who owes what' },
-  { id: 'todo', icon: '✅', label: 'To-Do List', sub: 'Assign tasks to the group' },
+type ActionIconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const ACTIONS: { id: AttachmentAction; icon: ActionIconName; label: string; sub: string }[] = [
+  { id: 'poll', icon: 'bar-chart-outline', label: 'Poll', sub: 'Ask the group a question' },
+  { id: 'split', icon: 'cash-outline', label: 'Split Expenses', sub: 'Track who owes what' },
+  { id: 'todo', icon: 'checkbox-outline', label: 'To-Do List', sub: 'Assign tasks to the group' },
 ];
 
 export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply, onPhotoPress }: SendBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      height: 58,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.sm,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      backgroundColor: colors.surface.card,
+    },
+    attachBtn: {
+      paddingHorizontal: SPACING.xs,
+    },
+    input: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      paddingHorizontal: SPACING.sm,
+      backgroundColor: 'transparent',
+    },
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    sheet: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.surface.card,
+      borderTopLeftRadius: RADII.lg,
+      borderTopRightRadius: RADII.lg,
+      paddingBottom: SPACING.xxl,
+    },
+    dragHandle: {
+      width: 40,
+      height: 4,
+      borderRadius: RADII.xs,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.md,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      gap: SPACING.md,
+    },
+    actionRowBorder: {
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    actionIconWrapper: {
+      width: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actionText: {
+      flex: 1,
+    },
+    actionLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    actionSub: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: 2,
+    },
+    replyBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 48,
+      backgroundColor: colors.surface.card,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      paddingHorizontal: SPACING.lg,
+    },
+    replyBarContent: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.sm,
+    },
+    replyBarText: {
+      flex: 1,
+    },
+    replyBarLabel: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.primary,
+    },
+    replyBarPreview: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    replyBarDismiss: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minWidth: 44,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+    },
+  }), [colors]);
+
   const [text, setText] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const translateY = useRef(new Animated.Value(300)).current;
@@ -94,10 +211,10 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
           style={styles.replyBar}
         >
           <View style={styles.replyBarContent}>
-            <Ionicons name="return-up-back" size={16} color={COLORS.interactive.accent} />
+            <Ionicons name="return-up-back" size={16} color={colors.text.secondary} />
             <View style={styles.replyBarText}>
               <Text style={styles.replyBarLabel} numberOfLines={1}>
-                {`↩ Replying to ${replyContext.senderName}`}
+                {`Replying to ${replyContext.senderName}`}
               </Text>
               <Text style={styles.replyBarPreview} numberOfLines={1}>
                 {replyContext.previewText}
@@ -110,7 +227,7 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             accessibilityLabel="Cancel reply"
           >
-            <Ionicons name="close" size={20} color={COLORS.text.secondary} />
+            <Ionicons name="close" size={20} color={colors.text.secondary} />
           </TouchableOpacity>
         </View>
       )}
@@ -121,7 +238,7 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
           accessibilityLabel="Attachment options"
           style={styles.attachBtn}
         >
-          <Ionicons name="add-circle" size={28} color={COLORS.interactive.accent} />
+          <Ionicons name="add-circle" size={28} color={colors.interactive.accent} />
         </TouchableOpacity>
 
         {/* Photo icon — D-01: inline between + and TextInput; always visible */}
@@ -129,9 +246,9 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
           onPress={onPhotoPress}
           activeOpacity={0.7}
           accessibilityLabel="Attach photo"
-          style={[styles.attachBtn, { minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }]}
+          style={styles.attachBtn}
         >
-          <Ionicons name="image-outline" size={28} color={COLORS.interactive.accent} />
+          <Ionicons name="image-outline" size={28} color={colors.text.secondary} />
         </TouchableOpacity>
 
         <TextInput
@@ -139,7 +256,7 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
           value={text}
           onChangeText={setText}
           placeholder="Message..."
-          placeholderTextColor={COLORS.text.secondary}
+          placeholderTextColor={colors.text.secondary}
           returnKeyType="send"
           onSubmitEditing={handleSend}
           multiline={false}
@@ -154,7 +271,7 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
           <Ionicons
             name="send"
             size={24}
-            color={canSend ? COLORS.interactive.accent : COLORS.text.secondary}
+            color={canSend ? colors.interactive.accent : colors.text.secondary}
           />
         </TouchableOpacity>
       </View>
@@ -179,12 +296,14 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
               activeOpacity={0.7}
               accessibilityLabel={action.label}
             >
-              <Text style={styles.actionIcon}>{action.icon}</Text>
+              <View style={styles.actionIconWrapper}>
+                <Ionicons name={action.icon} size={24} color={colors.text.primary} />
+              </View>
               <View style={styles.actionText}>
                 <Text style={styles.actionLabel}>{action.label}</Text>
                 <Text style={styles.actionSub}>{action.sub}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={COLORS.text.secondary} />
+              <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
             </TouchableOpacity>
           ))}
         </Animated.View>
@@ -192,116 +311,3 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    height: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    backgroundColor: COLORS.surface.card,
-  },
-  attachBtn: {
-    paddingHorizontal: SPACING.xs,
-  },
-  input: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.primary,
-    paddingHorizontal: SPACING.sm,
-    backgroundColor: 'transparent',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.surface.card,
-    borderTopLeftRadius: RADII.lg,
-    borderTopRightRadius: RADII.lg,
-    paddingBottom: SPACING.xxl,
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: RADII.xs,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    gap: SPACING.md,
-  },
-  actionRowBorder: {
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  actionIcon: {
-    fontSize: 28,
-    width: 40,
-    textAlign: 'center',
-  },
-  actionText: {
-    flex: 1,
-  },
-  actionLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  actionSub: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: 2,
-  },
-  replyBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 48,
-    backgroundColor: COLORS.surface.card,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingHorizontal: SPACING.lg,
-  },
-  replyBarContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  replyBarText: {
-    flex: 1,
-  },
-  replyBarLabel: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.interactive.accent,
-  },
-  replyBarPreview: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  replyBarDismiss: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    minWidth: 44,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
-});

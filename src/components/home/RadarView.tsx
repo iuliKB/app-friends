@@ -5,7 +5,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { RadarBubble, BubbleSizeMap } from '@/components/home/RadarBubble';
 import { OverflowChip } from '@/components/home/OverflowChip';
 import { computeHeartbeatState } from '@/lib/heartbeat';
@@ -88,6 +88,46 @@ function computeScatterPositions(
 // --- RadarView ---
 
 export function RadarView({ friends }: RadarViewProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    wrapper: {
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.md,
+    },
+    radarContainer: {
+      // height set dynamically via inline style
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyHeading: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginBottom: SPACING.xs,
+    },
+    emptyBody: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    overflowRow: {
+      marginTop: SPACING.sm,
+    },
+    overflowContent: {
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.sm,
+    },
+  }), [colors]);
+
   // Adaptive height: compact for few friends, taller for 4-6
   const radarRows = friends.length <= 3 ? 1 : 2;
   const RADAR_HEIGHT = radarRows === 1 ? 160 : 260;
@@ -162,38 +202,3 @@ export function RadarView({ friends }: RadarViewProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: {
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.md,
-  },
-  radarContainer: {
-    // height set dynamically via inline style
-    backgroundColor: COLORS.surface.base,
-    borderRadius: RADII.lg,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyHeading: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.xs,
-  },
-  emptyBody: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-  },
-  overflowRow: {
-    marginTop: SPACING.sm,
-  },
-  overflowContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-  },
-});

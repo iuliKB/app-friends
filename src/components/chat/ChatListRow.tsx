@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { ChatListItem } from '@/types/chat';
 
@@ -19,6 +19,60 @@ interface ChatListRowProps {
 }
 
 export function ChatListRow({ item, onPress }: ChatListRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    row: {
+      height: 72,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      backgroundColor: colors.surface.base,
+    },
+    iconContainer: {
+      width: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emoji: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 28,
+    },
+    content: {
+      flex: 1,
+      marginLeft: SPACING.md,
+    },
+    title: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    preview: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginTop: 2,
+    },
+    previewTime: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+    rightSide: {
+      justifyContent: 'center',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginLeft: 4,
+    },
+    unreadDot: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 12,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 12,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      borderRadius: 6,
+      backgroundColor: colors.interactive.accent,
+    },
+  }), [colors]);
   const relativeTime = formatRelativeTime(item.lastMessageAt);
 
   return (
@@ -53,56 +107,3 @@ export function ChatListRow({ item, onPress }: ChatListRowProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    height: 72,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface.base,
-  },
-  iconContainer: {
-    width: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emoji: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 28,
-  },
-  content: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  title: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  preview: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginTop: 2,
-  },
-  previewTime: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  rightSide: {
-    justifyContent: 'center',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginLeft: 4,
-  },
-  unreadDot: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 12,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 12,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    borderRadius: 6,
-    backgroundColor: COLORS.interactive.accent,
-  },
-});

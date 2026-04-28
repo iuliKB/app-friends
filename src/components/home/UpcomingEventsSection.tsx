@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { EventCard } from '@/components/home/EventCard';
 import { useUpcomingEvents } from '@/hooks/useUpcomingEvents';
@@ -20,6 +20,64 @@ const CARD_WIDTH = 200;
 const CARD_GAP = SPACING.md;
 
 export function UpcomingEventsSection() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      // Section container — no horizontal padding here; header and list handle their own
+    },
+    headerWrapper: {
+      // SectionHeader has no built-in horizontal padding — add it here
+      paddingHorizontal: SPACING.lg,
+    },
+    seeAllText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.accent, // UI-SPEC: accent color for "See all"
+    },
+    flatList: {
+      // RESEARCH.md Pitfall 1: horizontal FlatList in ScrollView needs explicit height
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 140, // matches EventCard height
+    },
+    listContent: {
+      // UI-SPEC: left pad aligns first card with screen content; right pad shows bleed
+      paddingLeft: SPACING.lg,
+      paddingRight: SPACING.sm,
+    },
+    listPadding: {
+      paddingHorizontal: SPACING.lg,
+    },
+    placeholderCard: {
+      // D-12: same 200x140 dimensions as EventCard but with dashed border
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 200,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 140,
+      borderRadius: RADII.xl,
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: SPACING.xs,
+      padding: SPACING.lg,
+    },
+    placeholderHeading: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.secondary,
+      textAlign: 'center',
+    },
+    placeholderBody: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      lineHeight: FONT_SIZE.md * 1.5,
+    },
+  }), [colors]);
+
   const router = useRouter();
   const upcomingEvents = useUpcomingEvents();
 
@@ -56,7 +114,7 @@ export function UpcomingEventsSection() {
             accessibilityRole="button"
             accessibilityLabel="No plans yet. Tap to create one."
           >
-            <Ionicons name="calendar-outline" size={32} color={COLORS.text.secondary} />
+            <Ionicons name="calendar-outline" size={32} color={colors.text.secondary} />
             <Text style={styles.placeholderHeading}>No plans yet</Text>
             <Text style={styles.placeholderBody}>Start one and invite your crew</Text>
           </TouchableOpacity>
@@ -82,60 +140,3 @@ export function UpcomingEventsSection() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    // Section container — no horizontal padding here; header and list handle their own
-  },
-  headerWrapper: {
-    // SectionHeader has no built-in horizontal padding — add it here
-    paddingHorizontal: SPACING.lg,
-  },
-  seeAllText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.accent, // UI-SPEC: accent color for "See all"
-  },
-  flatList: {
-    // RESEARCH.md Pitfall 1: horizontal FlatList in ScrollView needs explicit height
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 140, // matches EventCard height
-  },
-  listContent: {
-    // UI-SPEC: left pad aligns first card with screen content; right pad shows bleed
-    paddingLeft: SPACING.lg,
-    paddingRight: SPACING.sm,
-  },
-  listPadding: {
-    paddingHorizontal: SPACING.lg,
-  },
-  placeholderCard: {
-    // D-12: same 200x140 dimensions as EventCard but with dashed border
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 200,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 140,
-    borderRadius: RADII.xl,
-    backgroundColor: COLORS.surface.card,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.xs,
-    padding: SPACING.lg,
-  },
-  placeholderHeading: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-  },
-  placeholderBody: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    lineHeight: FONT_SIZE.md * 1.5,
-  },
-});

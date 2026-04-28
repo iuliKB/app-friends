@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII, SHADOWS } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, SHADOWS } from '@/theme';
 import { AvatarStack } from '@/components/plans/AvatarStack';
 import { formatEventCardDate } from '@/lib/formatEventCardDate';
 import type { PlanWithMembers } from '@/types/plans';
@@ -17,6 +17,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ plan }: EventCardProps) {
+  const { colors } = useTheme();
   const router = useRouter();
   const hasImage = Boolean(plan.cover_image_url);
 
@@ -26,7 +27,7 @@ export function EventCard({ plan }: EventCardProps) {
 
   // UI-SPEC: text is white on image cards, dark (#1a1a1a) on light pastel cards
   // eslint-disable-next-line campfire/no-hardcoded-styles
-  const textColor = hasImage ? COLORS.text.primary : '#1a1a1a';
+  const textColor = hasImage ? colors.text.primary : '#1a1a1a';
 
   const dateLabel = formatEventCardDate(plan.scheduled_for); // D-18, D-19
 
@@ -109,12 +110,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONT_FAMILY.display.semibold,
     lineHeight: FONT_SIZE.lg * 1.2,
   },
   date: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONT_FAMILY.body.regular,
     lineHeight: FONT_SIZE.sm * 1.3,
     opacity: 0.9,
   },

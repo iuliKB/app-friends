@@ -6,9 +6,9 @@
 // FriendSwipeCard (Plan 02) owns all gesture physics — this component only decides
 // which friend to hand to it and maintains deck-level state.
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { supabase } from '@/lib/supabase';
 import { FriendSwipeCard } from './FriendSwipeCard';
@@ -34,6 +34,51 @@ export interface CardStackViewProps {
 // --- CardStackView ---
 
 export function CardStackView({ friends }: CardStackViewProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      paddingVertical: SPACING.xl,
+    },
+    counter: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginBottom: SPACING.xl,
+    },
+    stackContainer: {
+      // Height accommodates front card (~160px) + deepest depth offset (16px) + buffer
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 200,
+      // width set dynamically via inline style from onLayout
+      position: 'relative',
+    },
+    depthCard: {
+      position: 'absolute',
+      top: 0,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 160, // matches front card content height
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.xl,
+    },
+    emptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: SPACING.xxl,
+    },
+    emptyHeading: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginBottom: SPACING.xs,
+    },
+    emptyBody: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   // Container width from onLayout — never from Dimensions.get (matches RadarView pattern)
   const [containerWidth, setContainerWidth] = useState(0);
   // eslint-disable-next-line campfire/no-hardcoded-styles
@@ -152,48 +197,3 @@ export function CardStackView({ friends }: CardStackViewProps) {
     </View>
   );
 }
-
-// --- Styles (design tokens throughout; hardcoded exceptions eslint-disabled) ---
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    paddingVertical: SPACING.xl,
-  },
-  counter: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.xl,
-  },
-  stackContainer: {
-    // Height accommodates front card (~160px) + deepest depth offset (16px) + buffer
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 200,
-    // width set dynamically via inline style from onLayout
-    position: 'relative',
-  },
-  depthCard: {
-    position: 'absolute',
-    top: 0,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 160, // matches front card content height
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.xl,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.xxl,
-  },
-  emptyHeading: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.xs,
-  },
-  emptyBody: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-  },
-});

@@ -6,7 +6,7 @@
 // CardStackView mounts/unmounts this component as the front card changes.
 // Each mount starts with fresh useSharedValue(0) state — no manual reset needed.
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   useSharedValue,
@@ -20,7 +20,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII, SHADOWS } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, SHADOWS } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
@@ -68,6 +68,80 @@ export interface SwipeCardProps {
 // --- FriendSwipeCard ---
 
 export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.xl,
+      ...SHADOWS.swipeCard,
+      overflow: 'hidden',
+    },
+    contentRow: {
+      flexDirection: 'row',
+      padding: SPACING.lg,
+      alignItems: 'center',
+    },
+    infoColumn: {
+      flex: 1,
+      marginLeft: SPACING.md,
+    },
+    nameText: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    moodText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    lastActiveText: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: SPACING.xl,
+      paddingBottom: SPACING.lg,
+    },
+    buttonWrapper: {
+      alignItems: 'center',
+    },
+    skipButton: {
+      width: BUTTON_SIZE,
+      height: BUTTON_SIZE,
+      borderRadius: RADII.full,
+      backgroundColor: colors.surface.overlay,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    skipLabel: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+      textAlign: 'center',
+    },
+    nudgeButton: {
+      width: BUTTON_SIZE,
+      height: BUTTON_SIZE,
+      borderRadius: RADII.full,
+      backgroundColor: colors.interactive.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    nudgeLabel: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginTop: SPACING.xs,
+      textAlign: 'center',
+    },
+  }), [colors]);
+
   // Reanimated shared values — fresh on each mount (no reset needed)
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -180,7 +254,7 @@ export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardPro
           <Animated.View
             style={[
               StyleSheet.absoluteFill,
-              { borderRadius: RADII.xl, backgroundColor: COLORS.interactive.accent },
+              { borderRadius: RADII.xl, backgroundColor: colors.interactive.accent },
               nudgeTintStyle,
             ]}
             pointerEvents="none"
@@ -190,7 +264,7 @@ export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardPro
           <Animated.View
             style={[
               StyleSheet.absoluteFill,
-              { borderRadius: RADII.xl, backgroundColor: COLORS.surface.base },
+              { borderRadius: RADII.xl, backgroundColor: colors.surface.base },
               skipTintStyle,
             ]}
             pointerEvents="none"
@@ -227,7 +301,7 @@ export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardPro
                 accessibilityLabel={`Skip ${friend.display_name}`}
                 accessibilityRole="button"
               >
-                <Ionicons name="close" size={24} color={COLORS.text.secondary} />
+                <Ionicons name="close" size={24} color={colors.text.secondary} />
               </Pressable>
               <Text style={styles.skipLabel}>Skip</Text>
             </View>
@@ -240,7 +314,7 @@ export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardPro
                 accessibilityLabel={`Nudge ${friend.display_name} — send a ping`}
                 accessibilityRole="button"
               >
-                <Ionicons name="chatbubble" size={24} color={COLORS.text.primary} />
+                <Ionicons name="chatbubble" size={24} color={colors.text.primary} />
               </Pressable>
               <Text style={styles.nudgeLabel}>Nudge</Text>
             </View>
@@ -250,75 +324,3 @@ export function FriendSwipeCard({ friend, onSkip, onNudge, width }: SwipeCardPro
     </View>
   );
 }
-
-// --- Styles ---
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.xl,
-    ...SHADOWS.swipeCard,
-    overflow: 'hidden',
-  },
-  contentRow: {
-    flexDirection: 'row',
-    padding: SPACING.lg,
-    alignItems: 'center',
-  },
-  infoColumn: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  nameText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  moodText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  lastActiveText: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: SPACING.xl,
-    paddingBottom: SPACING.lg,
-  },
-  buttonWrapper: {
-    alignItems: 'center',
-  },
-  skipButton: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.surface.overlay,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  skipLabel: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-    textAlign: 'center',
-  },
-  nudgeButton: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.interactive.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nudgeLabel: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.primary,
-    marginTop: SPACING.xs,
-    textAlign: 'center',
-  },
-});

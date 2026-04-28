@@ -1,7 +1,8 @@
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 import { formatDaysUntil } from '@/utils/birthdayFormatters';
 import type { IOUSummaryData } from '@/hooks/useIOUSummary';
@@ -13,6 +14,42 @@ interface HomeWidgetBannersProps {
 }
 
 export function HomeWidgetBanners({ iouSummary, birthdays }: HomeWidgetBannersProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.xl,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      overflow: 'hidden',
+    },
+    banner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      gap: SPACING.md,
+      height: 52,
+    },
+    bannerBorder: {
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    bannerPressed: {
+      backgroundColor: colors.surface.base,
+    },
+    icon: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 20,
+    },
+    label: {
+      flex: 1,
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+  }), [colors]);
+
   const router = useRouter();
 
   const nearest = birthdays.entries[0] ?? null;
@@ -39,7 +76,7 @@ export function HomeWidgetBanners({ iouSummary, birthdays }: HomeWidgetBannersPr
       >
         <Text style={styles.icon}>🎂</Text>
         <Text style={styles.label} numberOfLines={1}>{birthdayLabel}</Text>
-        <Ionicons name="chevron-forward" size={16} color={COLORS.text.secondary} />
+        <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
       </Pressable>
 
       <Pressable
@@ -50,43 +87,8 @@ export function HomeWidgetBanners({ iouSummary, birthdays }: HomeWidgetBannersPr
       >
         <Text style={styles.icon}>💸</Text>
         <Text style={styles.label} numberOfLines={1}>{iouLabel}</Text>
-        <Ionicons name="chevron-forward" size={16} color={COLORS.text.secondary} />
+        <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
       </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    overflow: 'hidden',
-  },
-  banner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    gap: SPACING.md,
-    height: 52,
-  },
-  bannerBorder: {
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  bannerPressed: {
-    backgroundColor: COLORS.surface.base,
-  },
-  icon: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 20,
-  },
-  label: {
-    flex: 1,
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-});

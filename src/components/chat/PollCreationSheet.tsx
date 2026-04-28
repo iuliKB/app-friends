@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   KeyboardAvoidingView,
@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 interface PollCreationSheetProps {
   visible: boolean;
@@ -21,6 +21,104 @@ interface PollCreationSheetProps {
 }
 
 export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSheetProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    kavContainer: { flex: 1, justifyContent: 'flex-end' },
+    sheet: {
+      backgroundColor: colors.surface.card,
+      borderTopLeftRadius: RADII.lg,
+      borderTopRightRadius: RADII.lg,
+      paddingBottom: SPACING.xxl,
+      paddingHorizontal: SPACING.lg,
+    },
+    dragHandle: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 40,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 4,
+      borderRadius: RADII.xs,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.md,
+    },
+    header: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginBottom: SPACING.md,
+    },
+    input: {
+      backgroundColor: colors.surface.base,
+      borderRadius: RADII.md,
+      padding: SPACING.sm,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+      marginBottom: SPACING.md,
+    },
+    optionRow: { flexDirection: 'row', alignItems: 'center' },
+    optionInput: { flex: 1, marginRight: SPACING.xs },
+    removeButton: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minWidth: 44,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    addOptionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+      marginBottom: SPACING.sm,
+    },
+    addOptionLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.interactive.accent,
+      marginLeft: SPACING.xs,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: SPACING.xl,
+    },
+    discardButton: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+      justifyContent: 'center',
+    },
+    discardLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.secondary,
+    },
+    sendButton: {
+      backgroundColor: colors.interactive.accent,
+      borderRadius: RADII.md,
+      paddingHorizontal: SPACING.lg,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    sendButtonDisabled: { backgroundColor: colors.surface.overlay },
+    sendLabel: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.surface.base,
+    },
+    sendLabelDisabled: { color: colors.text.secondary },
+  }), [colors]);
+
   const [question, setQuestion] = useState('');
   // Each option carries a stable id so React can key removable rows without index drift
   const [options, setOptions] = useState([
@@ -100,7 +198,7 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
             value={question}
             onChangeText={setQuestion}
             placeholder="Ask the group…"
-            placeholderTextColor={COLORS.text.secondary}
+            placeholderTextColor={colors.text.secondary}
             returnKeyType="next"
           />
           {/* Option rows */}
@@ -113,7 +211,7 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
                   setOptions((prev) => prev.map((o) => (o.id === opt.id ? { ...o, text } : o)))
                 }
                 placeholder={`Option ${idx + 1}`}
-                placeholderTextColor={COLORS.text.secondary}
+                placeholderTextColor={colors.text.secondary}
                 returnKeyType="next"
               />
               {idx >= 2 && (
@@ -122,7 +220,7 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
                   accessibilityLabel={`Remove option ${idx + 1}`}
                   style={styles.removeButton}
                 >
-                  <Ionicons name="close-circle-outline" size={20} color={COLORS.text.secondary} />
+                  <Ionicons name="close-circle-outline" size={20} color={colors.text.secondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -134,7 +232,7 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
               style={styles.addOptionRow}
               accessibilityLabel="Add another option"
             >
-              <Ionicons name="add" size={20} color={COLORS.interactive.accent} />
+              <Ionicons name="add" size={20} color={colors.interactive.accent} />
               <Text style={styles.addOptionLabel}>+ Add option</Text>
             </TouchableOpacity>
           )}
@@ -161,96 +259,3 @@ export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSh
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  kavContainer: { flex: 1, justifyContent: 'flex-end' },
-  sheet: {
-    backgroundColor: COLORS.surface.card,
-    borderTopLeftRadius: RADII.lg,
-    borderTopRightRadius: RADII.lg,
-    paddingBottom: SPACING.xxl,
-    paddingHorizontal: SPACING.lg,
-  },
-  dragHandle: {
-    width: 40,
-
-    height: 4,
-    borderRadius: RADII.xs,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  header: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.md,
-  },
-  input: {
-    backgroundColor: COLORS.surface.base,
-    borderRadius: RADII.md,
-    padding: SPACING.sm,
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.md,
-  },
-  optionRow: { flexDirection: 'row', alignItems: 'center' },
-  optionInput: { flex: 1, marginRight: SPACING.xs },
-  removeButton: {
-    minWidth: 44,
-
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addOptionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-
-    minHeight: 44,
-    marginBottom: SPACING.sm,
-  },
-  addOptionLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.interactive.accent,
-    marginLeft: SPACING.xs,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: SPACING.xl,
-  },
-  discardButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  discardLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-  },
-  sendButton: {
-    backgroundColor: COLORS.interactive.accent,
-    borderRadius: RADII.md,
-    paddingHorizontal: SPACING.lg,
-
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonDisabled: { backgroundColor: COLORS.surface.overlay },
-  sendLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.surface.base,
-  },
-  sendLabelDisabled: { color: COLORS.text.secondary },
-});

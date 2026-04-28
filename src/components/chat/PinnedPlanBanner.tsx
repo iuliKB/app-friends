@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { formatPlanTime } from '@/components/plans/PlanCard';
 
@@ -10,6 +10,29 @@ interface PinnedPlanBannerProps {
 }
 
 export function PinnedPlanBanner({ planId }: PinnedPlanBannerProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      height: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      backgroundColor: colors.surface.card,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    title: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      flex: 1,
+    },
+    secondary: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
   const router = useRouter();
   const { plan } = usePlanDetail(planId);
 
@@ -36,32 +59,9 @@ export function PinnedPlanBanner({ planId }: PinnedPlanBannerProps) {
     >
       <Text style={styles.title} numberOfLines={1}>
         {plan.title}
-        {timeLabel ? <Text style={styles.secondary}>{' \u2022 ' + timeLabel}</Text> : null}
-        <Text style={styles.secondary}>{' \u2022 ' + rsvpSummary}</Text>
+        {timeLabel ? <Text style={styles.secondary}>{' • ' + timeLabel}</Text> : null}
+        <Text style={styles.secondary}>{' • ' + rsvpSummary}</Text>
       </Text>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    height: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface.card,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  title: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    flex: 1,
-  },
-  secondary: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-});

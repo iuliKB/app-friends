@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { supabase } from '@/lib/supabase';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import type { MessageReaction } from '@/types/chat';
 
 interface ReactionRow {
@@ -39,6 +39,97 @@ export function ReactionsSheet({
   onReact,
   onClose,
 }: ReactionsSheetProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => StyleSheet.create({
+    sheet: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.surface.card,
+      borderTopLeftRadius: RADII.lg,
+      borderTopRightRadius: RADII.lg,
+      paddingBottom: SPACING.xl,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      maxHeight: '60%',
+    },
+    handle: {
+      alignSelf: 'center',
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      width: 36,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 4,
+      borderRadius: RADII.full,
+      backgroundColor: colors.border,
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.sm,
+    },
+    tabRow: {
+      flexDirection: 'row',
+      paddingHorizontal: SPACING.md,
+      gap: SPACING.xs,
+      flexWrap: 'wrap',
+    },
+    tab: {
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      borderRadius: RADII.full,
+      backgroundColor: colors.surface.overlay,
+    },
+    tabActive: {
+      backgroundColor: colors.interactive.accent,
+    },
+    tabText: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.text.secondary,
+    },
+    tabTextActive: {
+      color: colors.surface.base,
+    },
+    divider: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 1,
+      backgroundColor: colors.border,
+      marginTop: SPACING.sm,
+    },
+    loader: {
+      marginTop: SPACING.xl,
+    },
+    list: {
+      flex: 1,
+    },
+    listContent: {
+      paddingHorizontal: SPACING.md,
+      paddingTop: SPACING.sm,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    name: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.primary,
+    },
+    nameOwn: {
+      fontFamily: FONT_FAMILY.body.semibold,
+      color: colors.interactive.accent,
+    },
+    rowEmoji: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 22,
+    },
+    removeHint: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   const [rows, setRows] = useState<ReactionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(ALL_TAB);
@@ -142,7 +233,7 @@ export function ReactionsSheet({
         </View>
         <View style={styles.divider} />
         {loading ? (
-          <ActivityIndicator style={styles.loader} color={COLORS.interactive.accent} />
+          <ActivityIndicator style={styles.loader} color={colors.interactive.accent} />
         ) : (
           <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
             {visibleRows.map((row) => {
@@ -176,93 +267,3 @@ export function ReactionsSheet({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.surface.card,
-    borderTopLeftRadius: RADII.lg,
-    borderTopRightRadius: RADII.lg,
-    paddingBottom: SPACING.xl,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    maxHeight: '60%',
-  },
-  handle: {
-    alignSelf: 'center',
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 36,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 4,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.border,
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.xs,
-    flexWrap: 'wrap',
-  },
-  tab: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.surface.overlay,
-  },
-  tabActive: {
-    backgroundColor: COLORS.interactive.accent,
-  },
-  tabText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-  },
-  tabTextActive: {
-    color: COLORS.surface.base,
-  },
-  divider: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginTop: SPACING.sm,
-  },
-  loader: {
-    marginTop: SPACING.xl,
-  },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  name: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-  nameOwn: {
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.interactive.accent,
-  },
-  rowEmoji: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 22,
-  },
-  removeHint: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-});
