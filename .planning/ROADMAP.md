@@ -188,7 +188,7 @@ Plans:
 | 15. Message Reactions | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
-| 18. Theme Foundation | v1.6 | 3/3 | Complete | 2026-04-28 |
+| 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
 | 19. Theme Migration | v1.6 | 0/? | Not started | - |
 | 20. Map Feature | v1.6 | 0/? | Not started | - |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
