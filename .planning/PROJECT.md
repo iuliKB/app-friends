@@ -85,6 +85,12 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ Chat attachment menu (Poll, Split Expenses, To-Do) with group member pre-selection — v1.4
 - ✓ Group chat participant sheet via tappable title — v1.4
 - ✓ Plan cover image upload fix (ArrayBuffer pattern) — v1.4
+- ✓ Message reactions (6-emoji tapback strip, live counts, add/remove toggle) — v1.5
+- ✓ Media sharing in chat (photo library + camera, compressed inline bubbles, full-screen lightbox) — v1.5
+- ✓ Reply threading (long-press context menu, quoted reply, scroll-to-original, soft-delete) — v1.5
+- ✓ Polls in chat (creation via attachment menu, single-vote with change, live counts) — v1.5
+- ✓ Profile rework: status removed, notifications consolidated, edit details decoupled from avatar — v1.5
+- ✓ Friend profile page (/friends/[id]) with avatar, freshness-aware status, birthday, wish list — v1.5
 
 ### Active
 
@@ -97,23 +103,23 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Out of Scope
 
-- Interactive social map — V2 feature, high complexity
+- Interactive social map (live friend location tracking) — privacy concerns, V2
 - Calendar sync — V2, requires native calendar APIs
 - OCR receipt scanning — V2, needs camera + ML
 - Venue booking / B2B integrations — V3
 - AI social suggestions — V3
-- Media/image sharing in chat — V2
-- Read receipts, message reactions — V2
+- Read receipts — V2, requires presence tracking
 - Public profiles or discoverability — friends-only by design
 - Web app / PWA — mobile only
 - Group size pagination — unnecessary for 3–15 person groups
-- Advanced map features (live friend location tracking) — privacy concerns, V2
-- Public plan discovery — friends-only by design
 - Video in plan gallery — storage cost, V2
+- Public plan discovery — friends-only by design
+- Open emoji picker for reactions — V2 (curated 6-emoji set sufficient for small groups)
+- Multi-choice polls — V2 (single-choice covers 95% of use cases)
 
 ## Context
 
-Shipped v1.4 Squad Dashboard & Social Tools with 11 phases across milestones v1.0–v1.4. Total ~19,500 LOC.
+Shipped v1.5 Chat & Profile with 6 phases across milestones v1.0–v1.5. Total ~34,000 LOC.
 Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage + Edge Functions), Zustand.
 
 Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak, IOUs, Birthdays). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config, wish list, birthday).
@@ -187,6 +193,12 @@ Known technical considerations:
 | fetch().arrayBuffer() for Supabase Storage uploads in RN (v1.4) | FormData + file:// URI fails — Supabase SDK polyfill cannot stream local URIs | ✓ Good |
 | Group chat participants via tappable header title (v1.4) | More discoverable (Messenger pattern) than + menu; navigation.setOptions headerTitle activated only for group chats | ✓ Good |
 | Wish list claims stored server-side with claimer_id (v1.4) | Client-side claim state would be lost on app restart and invisible to other group members | ✓ Good |
+| Reactions via postgres_changes on message_reactions NOT JSONB broadcast (v1.5) | Free-tier Realtime budget: JSONB-on-row would exceed 2M msg/month at scale; per-row event is cheaper | ✓ Good |
+| Friend profile route at root `/friends/[id]` not in tab folders (v1.5) | Tab-nested route breaks back navigation from multiple entry points | ✓ Good |
+| expo-clipboard SDK-matched install (v1.5) | npx expo install ensures SDK 55 compatibility — not in package.json before v1.5 | ✓ Good |
+| Math.random UUID template instead of crypto.randomUUID() (v1.5) | Hermes JS engine does not expose crypto.randomUUID(); Math.random template is a reliable polyfill | ✓ Good |
+| contentType forced to image/jpeg in uploadChatMedia (v1.5) | Prevents executable files disguised as images from being uploaded | ✓ Good |
+| poll_votes Realtime via existing postgres_changes channel (v1.5) | No new subscription per poll card — stays within free-tier Realtime connection budget | ✓ Good |
 
 ---
-*Last updated: 2026-04-28 — Milestone v1.6 Places, Themes & Memories started*
+*Last updated: 2026-04-28 after v1.5 milestone close + v1.6 milestone start*

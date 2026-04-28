@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.5 Chat & Profile (Shipped: 2026-04-22)
+
+**Phases completed:** 6 phases, 21 plans | 122 TS/TSX files changed, +14,548 / -847 lines
+**Timeline:** 2026-04-18 → 2026-04-22 (5 days)
+
+**Key accomplishments:**
+
+- Migration 0018+0019: additive schema for reactions, reply threading, media, polls, and soft-delete — existing chat unaffected; `is_channel_member()` SECURITY DEFINER helper, `create_poll()` atomic RPC, `chat-media` bucket
+- Profile rework: status removed from profile, notifications consolidated, edit profile decoupled from avatar edit; new `/friends/[id]` screen with freshness-aware status, birthday, and wish list
+- Reply threading: long-press context menu, inline quoted reply in MessageBubble, scroll-to-original with highlight flash, soft-delete placeholder
+- Message reactions: 6-emoji tapback strip, `message_reactions` table, live counts via postgres_changes, optimistic UI with add/remove toggle
+- Media sharing: photo library + camera, expo-image-manipulator compression, ArrayBuffer upload to chat-media bucket, inline image bubbles, full-screen lightbox
+- Polls: PollCreationSheet via attachment menu, `polls`/`poll_options`/`poll_votes` tables, single-vote with change-vote, live counts via Realtime
+
+---
+
 ## v1.4 Squad Dashboard & Social Tools (Shipped: 2026-04-17)
 
 **Phases completed:** 6 phases, 23 plans, 31 tasks

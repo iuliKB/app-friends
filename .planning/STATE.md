@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.6
-milestone_name: Places, Themes & Memories
-status: defining_requirements
-stopped_at: Milestone started — defining requirements
-last_updated: "2026-04-28T00:00:00.000Z"
+milestone: v1.5
+milestone_name: Chat & Profile
+status: Defining requirements
+stopped_at: Milestone v1.6 started — defining requirements
+last_updated: "2026-04-28T11:43:08.436Z"
 last_activity: 2026-04-28
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 0
 ---
 
 # Project State
@@ -29,7 +28,7 @@ Milestone: v1.6 Places, Themes & Memories
 Phase: Not started (defining requirements)
 Plan: —
 Status: Defining requirements
-Last activity: 2026-04-28 — Milestone v1.6 started
+Last activity: 2026-04-28
 
 ## Phase Structure
 
