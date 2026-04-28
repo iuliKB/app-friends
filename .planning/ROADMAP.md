@@ -104,7 +104,7 @@
 ### Phases
 
 - [x] **Phase 18: Theme Foundation** - ThemeProvider context, DARK/LIGHT color split, useTheme() hook, app.config.ts fix, compat shim, ThemeSegmentedControl + Profile APPEARANCE section
-- [ ] **Phase 19: Theme Migration** - Migrate all ~98 COLORS import files to useTheme(); Profile APPEARANCE toggle; remove compat shim
+- [x] **Phase 19: Theme Migration** - Migrate all ~98 COLORS import files to useTheme(); Profile APPEARANCE toggle; remove compat shim (completed 2026-04-28)
 - [ ] **Phase 20: Map Feature** - Migration 0020 lat/lng columns, react-native-maps + expo-location install, LocationPicker, plan map view, Explore map
 - [ ] **Phase 21: Gallery Foundation** - plan_photos table + RLS + add_plan_photo RPC + plan-gallery Storage bucket, upload pipeline, usePlanPhotos hook
 - [ ] **Phase 22: Gallery UI** - PlanDashboardScreen ScrollView→FlatList refactor, photo grid, full-screen lightbox, camera capture, delete own, save to roll
@@ -141,7 +141,7 @@ Plans:
 Plans:
 - [x] 19-01-PLAN.md — Migrate shared/auth/status/friends/notifications components (30 files)
 - [x] 19-02-PLAN.md — Migrate feature components: chat/home/iou/plans/squad (39 files)
-- [ ] 19-03-PLAN.md — Migrate app routes + screens (31 files) + remove compat shim
+- [x] 19-03-PLAN.md — Migrate app routes + screens (31 files) + remove compat shim
 **UI hint**: yes
 
 ### Phase 20: Map Feature
@@ -193,7 +193,7 @@ Plans:
 | 16. Media Sharing | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
-| 19. Theme Migration | v1.6 | 2/3 | In Progress|  |
+| 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-28 |
 | 20. Map Feature | v1.6 | 0/? | Not started | - |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
 | 22. Gallery UI | v1.6 | 0/? | Not started | - |
