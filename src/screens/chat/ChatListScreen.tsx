@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING } from '@/theme';
+import { useTheme, SPACING } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
@@ -11,6 +11,7 @@ import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import type { ChatListItem } from '@/types/chat';
 
 export function ChatListScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { chatList, loading, refreshing, handleRefresh } = useChatList();
@@ -35,17 +36,37 @@ export function ChatListScreen() {
     }
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    list: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    flatList: {
+      flex: 1,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      marginLeft: 68,
+    },
+    emptyList: {
+      flex: 1,
+    },
+  }), [colors]);
+
   if (loading && chatList.length === 0) {
     return <LoadingIndicator />;
   }
 
   return (
+    <View style={[styles.list, { paddingTop: insets.top }]}>
     <FlatList
       data={chatList}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
       ListHeaderComponent={
-        <View style={{ paddingTop: insets.top + SPACING.sm, paddingHorizontal: SPACING.lg }}>
+        <View style={{ paddingTop: SPACING.sm, paddingHorizontal: SPACING.lg }}>
           <ScreenHeader title="Chats" />
         </View>
       }
@@ -54,34 +75,20 @@ export function ChatListScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          tintColor={COLORS.interactive.accent}
+          tintColor={colors.interactive.accent}
         />
       }
       contentContainerStyle={chatList.length === 0 ? styles.emptyList : undefined}
-      style={styles.list}
+      style={styles.flatList}
       ListEmptyComponent={
         <EmptyState
-          icon="💬"
+          icon="chatbubbles-outline"
+          iconType="ionicons"
           heading="No conversations yet"
           body="Start a DM from a friend's card, or create a plan to get a group chat going."
         />
       }
     />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  list: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    marginLeft: 68,
-  },
-  emptyList: {
-    flex: 1,
-  },
-});

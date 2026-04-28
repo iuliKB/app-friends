@@ -1,12 +1,13 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { COLORS } from '@/theme';
+import { useTheme } from '@/theme';
 import { useFriends } from '@/hooks/useFriends';
 import { RequestCard } from '@/components/friends/RequestCard';
 import { EmptyState } from '@/components/common/EmptyState';
 
 export function FriendRequests() {
+  const { colors } = useTheme();
   const {
     pendingRequests,
     loadingPending,
@@ -56,6 +57,20 @@ export function FriendRequests() {
     }
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    emptyList: {
+      flex: 1,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -84,7 +99,7 @@ export function FriendRequests() {
           <RefreshControl
             refreshing={loadingPending}
             onRefresh={fetchPendingRequests}
-            tintColor={COLORS.interactive.accent}
+            tintColor={colors.interactive.accent}
           />
         }
         contentContainerStyle={pendingRequests.length === 0 ? styles.emptyList : undefined}
@@ -92,17 +107,3 @@ export function FriendRequests() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-  },
-  emptyList: {
-    flex: 1,
-  },
-});

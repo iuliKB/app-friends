@@ -1,15 +1,16 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { AuthTabSwitcher } from '@/components/auth/AuthTabSwitcher';
 import { FormField } from '@/components/common/FormField';
 import { OAuthButton } from '@/components/auth/OAuthButton';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { APP_CONFIG } from '@/constants/config';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
 
 // Required at module level for expo-web-browser OAuth redirect completion
@@ -48,6 +49,7 @@ function mapAuthError(message: string): string {
 }
 
 export default function AuthScreen() {
+  const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState<Tab>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -188,7 +190,101 @@ export default function AuthScreen() {
     }
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    keyboardView: {
+      flex: 1,
+      backgroundColor: 'transparent',
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.xxl,
+    },
+    header: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      paddingTop: 64, // no exact token
+      paddingBottom: SPACING.xxl,
+      alignItems: 'center',
+    },
+    headerEmoji: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 32, // no exact token
+    },
+    headerTitle: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      marginTop: SPACING.xs,
+    },
+    headerTagline: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.sm,
+    },
+    form: {
+      marginTop: SPACING.xl,
+    },
+    fieldGap: {
+      height: SPACING.lg,
+    },
+    buttonTop: {
+      marginTop: SPACING.xl,
+    },
+    generalError: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+      marginTop: SPACING.sm,
+      textAlign: 'center',
+    },
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: SPACING.xl,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    dividerText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginHorizontal: SPACING.md,
+    },
+    oauthButtons: {
+      gap: SPACING.sm,
+    },
+    oauthGap: {
+      height: SPACING.sm,
+    },
+    bottomLink: {
+      marginTop: SPACING.lg,
+      alignItems: 'center',
+    },
+    bottomLinkText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+    },
+    bottomLinkAction: {
+      color: colors.interactive.accent,
+    },
+  }), [colors]);
+
   return (
+    <LinearGradient
+      colors={['#091A07', '#0E0F11', '#0A0C0E']}
+      locations={[0, 0.45, 1]}
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 0.8 }}
+      style={{ flex: 1 }}
+    >
     <KeyboardAvoidingView
       style={styles.keyboardView}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -297,92 +393,6 @@ export default function AuthScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xxl,
-  },
-  header: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    paddingTop: 64, // no exact token
-    paddingBottom: SPACING.xxl,
-    alignItems: 'center',
-  },
-  headerEmoji: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 32, // no exact token
-  },
-  headerTitle: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginTop: SPACING.xs,
-  },
-  headerTagline: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.sm,
-  },
-  form: {
-    marginTop: SPACING.xl,
-  },
-  fieldGap: {
-    height: SPACING.lg,
-  },
-  buttonTop: {
-    marginTop: SPACING.xl,
-  },
-  generalError: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: SPACING.xl,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.border,
-  },
-  dividerText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginHorizontal: SPACING.md,
-  },
-  oauthButtons: {
-    gap: SPACING.sm,
-  },
-  oauthGap: {
-    height: SPACING.sm,
-  },
-  bottomLink: {
-    marginTop: SPACING.lg,
-    alignItems: 'center',
-  },
-  bottomLinkText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-  },
-  bottomLinkAction: {
-    color: COLORS.interactive.accent,
-  },
-});

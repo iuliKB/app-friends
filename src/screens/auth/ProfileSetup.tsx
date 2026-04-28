@@ -1,6 +1,6 @@
 import { decode } from 'base64-arraybuffer';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -17,12 +17,13 @@ import { UsernameField } from '@/components/auth/UsernameField';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { APP_CONFIG } from '@/constants/config';
-import { COLORS, FONT_SIZE, FONT_WEIGHT, SPACING } from '@/theme';
+import { useTheme, FONT_FAMILY, FONT_SIZE, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { generateUsername } from '@/lib/username';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function ProfileSetup() {
+  const { colors } = useTheme();
   const session = useAuthStore((s) => s.session);
   const setNeedsProfileSetup = useAuthStore((s) => s.setNeedsProfileSetup);
 
@@ -119,6 +120,56 @@ export default function ProfileSetup() {
 
   const canSave = usernameAvailable && displayName.trim().length > 0 && !saving;
 
+  const styles = useMemo(() => StyleSheet.create({
+    keyboardView: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.xxl,
+    },
+    title: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      paddingTop: 48, // no exact token
+      marginBottom: SPACING.xxl,
+    },
+    avatarSection: {
+      alignItems: 'center',
+      marginBottom: SPACING.xxl,
+    },
+    addPhoto: {
+      marginTop: SPACING.sm,
+      minHeight: 32, // no exact token — not flagged by rule
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addPhotoText: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.accent,
+    },
+    fieldGap: {
+      height: SPACING.lg,
+    },
+    saveError: {
+      fontSize: FONT_SIZE.md,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+      marginTop: SPACING.sm,
+      textAlign: 'center',
+    },
+    buttonTop: {
+      marginTop: SPACING.xl,
+    },
+  }), [colors]);
+
   return (
     <KeyboardAvoidingView
       style={styles.keyboardView}
@@ -141,7 +192,7 @@ export default function ProfileSetup() {
           />
           <TouchableOpacity onPress={pickAvatar} disabled={avatarLoading} style={styles.addPhoto}>
             {avatarLoading ? (
-              <ActivityIndicator color={COLORS.interactive.accent} size="small" />
+              <ActivityIndicator color={colors.interactive.accent} size="small" />
             ) : (
               <Text style={styles.addPhotoText}>Add photo</Text>
             )}
@@ -181,53 +232,3 @@ export default function ProfileSetup() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xxl,
-  },
-  title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    paddingTop: 48, // no exact token
-    marginBottom: SPACING.xxl,
-  },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: SPACING.xxl,
-  },
-  addPhoto: {
-    marginTop: SPACING.sm,
-    minHeight: 32, // no exact token — not flagged by rule
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addPhotoText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.accent,
-  },
-  fieldGap: {
-    height: SPACING.lg,
-  },
-  saveError: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-  },
-  buttonTop: {
-    marginTop: SPACING.xl,
-  },
-});

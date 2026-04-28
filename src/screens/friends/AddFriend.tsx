@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -16,6 +16,7 @@ type SearchStatus = 'idle' | 'loading' | 'pending';
 type ScanState = 'scanning' | 'loading' | 'loaded' | 'error';
 
 export function AddFriend() {
+  const { colors } = useTheme();
   const session = useAuthStore((s) => s.session);
   const { searchUsers, sendRequest } = useFriends();
   const [activeTab, setActiveTab] = useState<'search' | 'qr'>('search');
@@ -133,6 +134,164 @@ export function AddFriend() {
     }
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    tabSwitcher: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      padding: SPACING.xs,
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.lg,
+    },
+    tab: {
+      flex: 1,
+      height: 40,
+      borderRadius: RADII.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    activeTab: {
+      backgroundColor: colors.border,
+    },
+    tabText: {
+      fontSize: FONT_SIZE.md,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+    },
+    activeTabText: {
+      fontWeight: FONT_WEIGHT.semibold,
+      color: colors.text.primary,
+    },
+    searchInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      height: 52,
+      marginTop: SPACING.lg,
+      marginHorizontal: SPACING.lg,
+      paddingLeft: SPACING.md,
+    },
+    searchIcon: {
+      marginRight: SPACING.sm,
+    },
+    searchInput: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.primary,
+      height: '100%',
+    },
+    placeholderContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: SPACING.xxl,
+    },
+    placeholderText: {
+      fontSize: FONT_SIZE.lg,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.lg,
+      textAlign: 'center',
+    },
+    noResultsText: {
+      fontSize: FONT_SIZE.lg,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      paddingTop: SPACING.xxl,
+      paddingHorizontal: SPACING.lg,
+    },
+    qrContainer: {
+      flex: 1,
+    },
+    qrErrorContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: SPACING.xl,
+    },
+    qrErrorText: {
+      fontSize: FONT_SIZE.lg,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.interactive.destructive,
+      textAlign: 'center',
+      marginTop: SPACING.lg,
+    },
+    scannedCardContainer: {
+      padding: SPACING.lg,
+      alignItems: 'stretch',
+    },
+    scannedCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.xl,
+      padding: SPACING.lg,
+    },
+    scannedInfo: {
+      flex: 1,
+      marginLeft: SPACING.md,
+    },
+    scannedDisplayName: {
+      fontSize: FONT_SIZE.lg,
+      fontWeight: FONT_WEIGHT.semibold,
+      color: colors.text.primary,
+    },
+    scannedUsername: {
+      fontSize: FONT_SIZE.md,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+    selfScanText: {
+      fontSize: FONT_SIZE.md,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginTop: SPACING.lg,
+    },
+    addFriendButton: {
+      marginTop: SPACING.md,
+    },
+    pendingButton: {
+      marginTop: SPACING.md,
+      height: 52,
+      borderRadius: RADII.lg,
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pendingButtonText: {
+      fontSize: FONT_SIZE.lg,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+    },
+    scanAgainButton: {
+      marginTop: SPACING.sm,
+      height: 52,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    scanAgainText: {
+      fontSize: FONT_SIZE.md,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       {/* Tab switcher */}
@@ -162,13 +321,13 @@ export function AddFriend() {
             <Ionicons
               name="search-outline"
               size={20}
-              color={COLORS.text.secondary}
+              color={colors.text.secondary}
               style={styles.searchIcon}
             />
             <TextInput
               style={styles.searchInput}
               placeholder="Search by username..."
-              placeholderTextColor={COLORS.text.secondary}
+              placeholderTextColor={colors.text.secondary}
               value={query}
               onChangeText={setQuery}
               autoCapitalize="none"
@@ -179,7 +338,7 @@ export function AddFriend() {
           {/* Results */}
           {!hasSearched ? (
             <View style={styles.placeholderContainer}>
-              <Ionicons name="search-outline" size={48} color={COLORS.border} />
+              <Ionicons name="search-outline" size={48} color={colors.border} />
               <Text style={styles.placeholderText}>Search by username to add friends</Text>
             </View>
           ) : results.length === 0 ? (
@@ -204,7 +363,7 @@ export function AddFriend() {
         <View style={styles.qrContainer}>
           {scanState === 'scanning' && <QRScanView onScanned={handleScanned} />}
 
-          {scanState === 'loading' && <LoadingIndicator color={COLORS.text.primary} />}
+          {scanState === 'loading' && <LoadingIndicator color={colors.text.primary} />}
 
           {scanState === 'error' && (
             <View style={styles.qrErrorContainer}>
@@ -268,161 +427,3 @@ export function AddFriend() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  tabSwitcher: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    padding: SPACING.xs,
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.lg,
-  },
-  tab: {
-    flex: 1,
-    height: 40,
-    borderRadius: RADII.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeTab: {
-    backgroundColor: COLORS.border,
-  },
-  tabText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  activeTabText: {
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    height: 52,
-    marginTop: SPACING.lg,
-    marginHorizontal: SPACING.lg,
-    paddingLeft: SPACING.md,
-  },
-  searchIcon: {
-    marginRight: SPACING.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    height: '100%',
-  },
-  placeholderContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: SPACING.xxl,
-  },
-  placeholderText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.lg,
-    textAlign: 'center',
-  },
-  noResultsText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    paddingTop: SPACING.xxl,
-    paddingHorizontal: SPACING.lg,
-  },
-  qrContainer: {
-    flex: 1,
-  },
-  qrErrorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.xl,
-  },
-  qrErrorText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.interactive.destructive,
-    textAlign: 'center',
-    marginTop: SPACING.lg,
-  },
-  scannedCardContainer: {
-    padding: SPACING.lg,
-    alignItems: 'stretch',
-  },
-  scannedCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.xl,
-    padding: SPACING.lg,
-  },
-  scannedInfo: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  scannedDisplayName: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  scannedUsername: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-  selfScanText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginTop: SPACING.lg,
-  },
-  addFriendButton: {
-    marginTop: SPACING.md,
-  },
-  pendingButton: {
-    marginTop: SPACING.md,
-    height: 52,
-    borderRadius: RADII.lg,
-    backgroundColor: COLORS.surface.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pendingButtonText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-  scanAgainButton: {
-    marginTop: SPACING.sm,
-    height: 52,
-    borderRadius: RADII.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scanAgainText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-  },
-});

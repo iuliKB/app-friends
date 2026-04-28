@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -8,8 +8,9 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { OwnStatusCard } from '@/components/status/OwnStatusCard';
@@ -25,7 +26,7 @@ import { UpcomingEventsSection } from '@/components/home/UpcomingEventsSection';
 import { HomeWidgetRow } from '@/components/home/HomeWidgetRow';
 
 export function HomeScreen() {
-
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { friends, error, refreshing, handleRefresh } = useHomeScreen();
   usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
@@ -88,16 +89,76 @@ export function HomeScreen() {
     }
   }, [view, radarOpacity, cardsOpacity]);
 
+  const styles = useMemo(() => StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      // no token — computed inline with safe area inset
+    },
+    headerContainer: {
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.sm,
+    },
+    statusCardContainer: {
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.lg,
+    },
+    errorText: {
+      color: colors.text.secondary,
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.sm,
+    },
+    toggleContainer: {
+      marginTop: SPACING.xl,
+    },
+    viewSwitcher: {
+      position: 'relative',
+      minHeight: 260,
+    },
+    absoluteFill: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+    },
+    freeHeaderContainer: {
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.xxl,
+      paddingBottom: SPACING.sm,
+    },
+    freeHeaderTitle: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+    },
+    freeHeaderSubtitle: {
+      fontSize: FONT_SIZE.sm,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      marginTop: SPACING.xs,
+    },
+  }), [colors]);
+
   return (
-    <View style={styles.root}>
+    <LinearGradient
+      colors={['#091A07', '#0E0F11', '#0A0C0E']}
+      locations={[0, 0.45, 1]}
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 0.8 }}
+      style={[styles.root, { paddingTop: insets.top }]}
+    >
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + SPACING.sm }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: SPACING.sm, paddingBottom: insets.bottom + 100 }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={COLORS.interactive.accent}
+            tintColor={colors.interactive.accent}
           />
         }
       >
@@ -116,7 +177,7 @@ export function HomeScreen() {
 
         {/* Friends status section header */}
         <View style={styles.freeHeaderContainer}>
-          <Text style={styles.freeHeaderTitle}>Free right now 🔥</Text>
+          <Text style={styles.freeHeaderTitle}>Free right now</Text>
           <Text style={styles.freeHeaderSubtitle}>
             {friends.filter((f) => f.status === 'free').length} friends available
           </Text>
@@ -154,61 +215,6 @@ export function HomeScreen() {
         onClose={() => setSheetVisible(false)}
       />
 
-    </View>
+    </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    paddingBottom: 100, // no exact token
-  },
-  headerContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.sm,
-  },
-  statusCardContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-  },
-  errorText: {
-    color: COLORS.text.secondary,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.sm,
-  },
-  toggleContainer: {
-    marginTop: SPACING.xl,
-  },
-  viewSwitcher: {
-    position: 'relative',
-  },
-  absoluteFill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-  },
-  freeHeaderContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
-    paddingBottom: SPACING.sm,
-  },
-  freeHeaderTitle: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  freeHeaderSubtitle: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    marginTop: SPACING.xs,
-  },
-});

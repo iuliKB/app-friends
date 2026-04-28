@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -17,7 +17,7 @@ import { ImageViewerModal } from '@/components/chat/ImageViewerModal';
 import { PollCreationSheet } from '@/components/chat/PollCreationSheet';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useNavigation, useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import {
@@ -46,6 +46,7 @@ export function ChatRoomScreen({
   friendName,
   birthdayPersonId,
 }: ChatRoomScreenProps) {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const router = useRouter();
   const [participantsVisible, setParticipantsVisible] = useState(false);
@@ -94,7 +95,7 @@ export function ChatRoomScreen({
             style={{
               fontSize: FONT_SIZE.md,
               fontWeight: FONT_WEIGHT.semibold,
-              color: COLORS.text.primary,
+              color: colors.text.primary,
             }}
           >
             {title}
@@ -102,7 +103,7 @@ export function ChatRoomScreen({
         </TouchableOpacity>
       ),
     });
-  }, [groupChannelId, friendName, navigation]);
+  }, [groupChannelId, friendName, navigation, colors]);
 
   function showToast(message?: string) {
     if (message) setToastMessage(message);
@@ -231,9 +232,49 @@ export function ChatRoomScreen({
     return next.sender_id !== current.sender_id;
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    emptyContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyText: {
+      fontSize: FONT_SIZE.lg,
+      color: colors.text.secondary,
+    },
+    listContent: {
+      paddingTop: SPACING.lg,
+      paddingBottom: SPACING.sm,
+    },
+    timeSeparator: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      fontSize: 12,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginVertical: SPACING.md,
+    },
+    toast: {
+      position: 'absolute',
+      bottom: SPACING.xxl,
+      alignSelf: 'center',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.pill,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    toastText: {
+      fontSize: FONT_SIZE.sm,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.primary,
+    },
+  }), [colors]);
+
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: COLORS.surface.base }}
+      style={{ flex: 1, backgroundColor: colors.surface.base }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={headerHeight}
     >
@@ -331,43 +372,3 @@ export function ChatRoomScreen({
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyText: {
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.secondary,
-  },
-  listContent: {
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.sm,
-  },
-  timeSeparator: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    fontSize: 12,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginVertical: SPACING.md,
-  },
-  toast: {
-    position: 'absolute',
-    bottom: SPACING.xxl,
-    alignSelf: 'center',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.pill,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  toastText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-  },
-});

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING } from '@/theme';
+import { useTheme, SPACING } from '@/theme';
 import { useFriends } from '@/hooks/useFriends';
 import { FriendCard } from '@/components/friends/FriendCard';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 export function FriendsList() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { friends, loadingFriends, fetchFriends, removeFriend } = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
@@ -66,6 +67,20 @@ export function FriendsList() {
     );
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    emptyList: {
+      flex: 1,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -78,7 +93,8 @@ export function FriendsList() {
         ListEmptyComponent={
           loadingFriends ? null : (
             <EmptyState
-              icon="👥"
+              icon="people-outline"
+              iconType="ionicons"
               heading="No friends yet"
               body="Add friends by username or share your QR code — tap the + button to get started."
               ctaLabel="Add Friend"
@@ -90,14 +106,14 @@ export function FriendsList() {
           <RefreshControl
             refreshing={loadingFriends}
             onRefresh={fetchFriends}
-            tintColor={COLORS.interactive.accent}
+            tintColor={colors.interactive.accent}
           />
         }
         contentContainerStyle={friends.length === 0 ? styles.emptyList : undefined}
       />
 
       <FAB
-        icon={<Ionicons name="person-add-outline" size={24} color={COLORS.surface.base} />}
+        icon={<Ionicons name="person-add-outline" size={24} color={colors.surface.base} />}
         onPress={() => router.push('/friends/add')}
         accessibilityLabel="Add a friend"
       />
@@ -114,17 +130,3 @@ export function FriendsList() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-  },
-  emptyList: {
-    flex: 1,
-  },
-});

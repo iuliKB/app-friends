@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Alert,
   FlatList,
@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
 import { usePlansStore } from '@/stores/usePlansStore';
 import { useFriends } from '@/hooks/useFriends';
@@ -50,6 +50,7 @@ function formatTime(date: Date): string {
 }
 
 export function PlanCreateModal() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { preselect_friend_id } = useLocalSearchParams<{ preselect_friend_id?: string }>();
   const { createPlan } = usePlans();
@@ -158,6 +159,118 @@ export function PlanCreateModal() {
     router.push(`/plans/${planId}` as never);
   }
 
+  const styles = useMemo(() => StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      paddingBottom: 40, // no exact token — between xxl(32) and 48
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.xl,
+      paddingBottom: SPACING.lg,
+    },
+    headerTitle: {
+      fontSize: FONT_SIZE.xxl,
+      fontWeight: FONT_WEIGHT.semibold,
+      color: colors.text.primary,
+    },
+    fieldGroup: {
+      paddingHorizontal: SPACING.lg,
+      marginBottom: SPACING.xl,
+    },
+    fieldLabel: {
+      fontSize: FONT_SIZE.md,
+      fontWeight: FONT_WEIGHT.semibold,
+      color: colors.text.secondary,
+      marginBottom: SPACING.sm,
+    },
+    textInput: {
+      fontSize: FONT_SIZE.lg,
+      fontWeight: FONT_WEIGHT.regular,
+      color: colors.text.primary,
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    coverImagePicker: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 100,
+      borderRadius: RADII.md,
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      overflow: 'hidden',
+    },
+    coverImagePlaceholder: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: SPACING.xs,
+    },
+    coverImagePlaceholderText: {
+      fontSize: FONT_SIZE.sm,
+      color: colors.text.secondary,
+    },
+    timeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.md,
+      padding: SPACING.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: SPACING.sm,
+    },
+    timeText: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      color: colors.text.primary,
+    },
+    friendSection: {
+      paddingHorizontal: SPACING.lg,
+      marginBottom: SPACING.xl,
+    },
+    friendSectionHeading: {
+      fontSize: FONT_SIZE.xl,
+      fontWeight: FONT_WEIGHT.semibold,
+      color: colors.text.primary,
+      marginBottom: SPACING.lg,
+    },
+    noFriendsText: {
+      fontSize: FONT_SIZE.lg,
+      color: colors.text.secondary,
+    },
+    friendRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: SPACING.md,
+      gap: SPACING.md,
+    },
+    friendName: {
+      flex: 1,
+      fontSize: FONT_SIZE.lg,
+      color: colors.text.primary,
+    },
+    checkbox: {
+      marginLeft: SPACING.xs,
+    },
+    createButton: {
+      paddingHorizontal: SPACING.lg,
+    },
+  }), [colors]);
+
   function renderFriendRow({ item }: { item: FriendWithStatus }) {
     const isSelected = selectedFriendIds.has(item.friend_id);
     return (
@@ -174,7 +287,7 @@ export function PlanCreateModal() {
         <Ionicons
           name={isSelected ? 'checkbox' : 'square-outline'}
           size={24}
-          color={isSelected ? COLORS.interactive.accent : COLORS.text.secondary}
+          color={isSelected ? colors.interactive.accent : colors.text.secondary}
           style={styles.checkbox}
         />
       </TouchableOpacity>
@@ -192,7 +305,7 @@ export function PlanCreateModal() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>New Plan</Text>
           <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-            <Ionicons name="close" size={24} color={COLORS.text.secondary} />
+            <Ionicons name="close" size={24} color={colors.text.secondary} />
           </TouchableOpacity>
         </View>
 
@@ -204,7 +317,7 @@ export function PlanCreateModal() {
             value={title}
             onChangeText={setTitle}
             placeholder="Tonight"
-            placeholderTextColor={COLORS.text.secondary}
+            placeholderTextColor={colors.text.secondary}
             autoCapitalize="words"
           />
         </View>
@@ -228,7 +341,7 @@ export function PlanCreateModal() {
               />
             ) : (
               <View style={styles.coverImagePlaceholder}>
-                <Ionicons name="image-outline" size={28} color={COLORS.text.secondary} />
+                <Ionicons name="image-outline" size={28} color={colors.text.secondary} />
                 <Text style={styles.coverImagePlaceholderText}>Tap to add cover image</Text>
               </View>
             )}
@@ -243,12 +356,12 @@ export function PlanCreateModal() {
             onPress={() => setShowTimePicker((v) => !v)}
             activeOpacity={0.7}
           >
-            <Ionicons name="time-outline" size={18} color={COLORS.text.secondary} />
+            <Ionicons name="time-outline" size={18} color={colors.text.secondary} />
             <Text style={styles.timeText}>{formatTime(scheduledFor)}</Text>
             <Ionicons
               name={showTimePicker ? 'chevron-up' : 'chevron-down'}
               size={16}
-              color={COLORS.text.secondary}
+              color={colors.text.secondary}
             />
           </TouchableOpacity>
           {showTimePicker && (
@@ -271,7 +384,7 @@ export function PlanCreateModal() {
             value={location}
             onChangeText={setLocation}
             placeholder="My place, a park, TBD..."
-            placeholderTextColor={COLORS.text.secondary}
+            placeholderTextColor={colors.text.secondary}
             autoCapitalize="words"
           />
         </View>
@@ -304,115 +417,3 @@ export function PlanCreateModal() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: COLORS.surface.base,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    paddingBottom: 40, // no exact token — between xxl(32) and 48
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-  },
-  fieldGroup: {
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
-  },
-  fieldLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.sm,
-  },
-  textInput: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
-    color: COLORS.text.primary,
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  coverImagePicker: {
-    // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 100,
-    borderRadius: RADII.md,
-    backgroundColor: COLORS.surface.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    overflow: 'hidden',
-  },
-  coverImagePlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.xs,
-  },
-  coverImagePlaceholderText: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.text.secondary,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface.card,
-    borderRadius: RADII.md,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: SPACING.sm,
-  },
-  timeText: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.primary,
-  },
-  friendSection: {
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
-  },
-  friendSectionHeading: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.lg,
-  },
-  noFriendsText: {
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.secondary,
-  },
-  friendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-    gap: SPACING.md,
-  },
-  friendName: {
-    flex: 1,
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.text.primary,
-  },
-  checkbox: {
-    marginLeft: SPACING.xs,
-  },
-  createButton: {
-    paddingHorizontal: SPACING.lg,
-  },
-});
