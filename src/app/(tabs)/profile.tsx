@@ -21,10 +21,11 @@ import { decode } from 'base64-arraybuffer';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { COLORS, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { COLORS, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { APP_CONFIG } from '@/constants/config';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { ThemeSegmentedControl } from '@/components/common/ThemeSegmentedControl';
 import {
   registerForPushNotifications,
   unregisterForPushNotifications,
@@ -286,9 +287,10 @@ export default function ProfileScreen() {
   }
 
   return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + SPACING.lg }]}
+      style={styles.scrollView}
+      contentContainerStyle={[styles.content, { paddingTop: SPACING.lg }]}
     >
       {/* Screen title */}
       <View style={styles.headerWrapper}>
@@ -398,6 +400,12 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
+      {/* APPEARANCE section (D-06) */}
+      <Text style={styles.sectionHeader}>APPEARANCE</Text>
+      <View style={{ paddingVertical: SPACING.md }}>
+        <ThemeSegmentedControl />
+      </View>
+
       {/* Notifications section (D-02) */}
       <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
 
@@ -502,6 +510,7 @@ export default function ProfileScreen() {
         onDecline={handleMorningPrePromptDecline}
       />
     </ScrollView>
+    </View>
   );
 }
 
@@ -509,6 +518,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.surface.base,
+  },
+  scrollView: {
+    flex: 1,
   },
   content: {
     paddingBottom: SPACING.xxl,
@@ -546,21 +558,21 @@ const styles = StyleSheet.create({
   },
   displayName: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONT_FAMILY.display.semibold,
     color: COLORS.text.primary,
     marginTop: SPACING.md,
     textAlign: 'center',
   },
   username: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONT_FAMILY.body.regular,
     color: COLORS.text.secondary,
     marginTop: SPACING.xs,
     textAlign: 'center',
   },
   sectionHeader: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONT_FAMILY.body.regular,
     color: COLORS.text.secondary,
     marginTop: SPACING.xl,
     marginBottom: SPACING.md,
@@ -583,7 +595,7 @@ const styles = StyleSheet.create({
   rowLabel: {
     flex: 1,
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONT_FAMILY.body.regular,
     color: COLORS.text.primary,
   },
   rowRight: {
@@ -600,11 +612,12 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONT_FAMILY.body.regular,
     color: COLORS.interactive.destructive,
   },
   versionText: {
     fontSize: FONT_SIZE.sm,
+    fontFamily: FONT_FAMILY.body.regular,
     color: COLORS.text.secondary,
     textAlign: 'center',
     marginTop: SPACING.xxl,
@@ -614,10 +627,12 @@ const styles = StyleSheet.create({
   },
   rowTrailingText: {
     fontSize: FONT_SIZE.md,
+    fontFamily: FONT_FAMILY.body.regular,
     color: COLORS.text.secondary,
   },
   morningHint: {
     fontSize: FONT_SIZE.sm,
+    fontFamily: FONT_FAMILY.body.regular,
     color: COLORS.text.secondary,
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.sm,
