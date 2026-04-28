@@ -121,7 +121,11 @@
   3. The selected theme is persisted to AsyncStorage and survives a full app restart — the correct palette is active before the splash screen disappears
   4. app.config.ts has userInterfaceStyle set to 'automatic' so the OS status bar and system chrome track the active theme
   5. All existing screens continue to render correctly via the COLORS compat shim — zero visual regression from this phase alone
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 18-01-PLAN.md — LIGHT palette + ThemeContext.tsx + barrel export extension
+- [ ] 18-02-PLAN.md — Wire ThemeProvider into _layout.tsx + app.config.ts automatic chrome
+- [ ] 18-03-PLAN.md — ThemeSegmentedControl component + Profile APPEARANCE section
 **UI hint**: yes
 
 ### Phase 19: Theme Migration
@@ -184,7 +188,7 @@
 | 15. Message Reactions | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
-| 18. Theme Foundation | v1.6 | 0/? | Not started | - |
+| 18. Theme Foundation | v1.6 | 0/3 | Not started | - |
 | 19. Theme Migration | v1.6 | 0/? | Not started | - |
 | 20. Map Feature | v1.6 | 0/? | Not started | - |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
@@ -192,4 +196,4 @@
 
 ---
 
-*Roadmap updated: 2026-04-28 — v1.5 archived, v1.6 Places, Themes & Memories phases 18-22 defined*
+*Roadmap updated: 2026-04-28 — v1.6 Phase 18 planned (3 plans, 3 waves)*
