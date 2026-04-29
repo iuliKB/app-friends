@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
@@ -15,18 +15,6 @@ interface HomeWidgetRowProps {
 export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
   const { colors } = useTheme();
 
-  const shadow = Platform.select({
-    ios: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
-      shadowRadius: 6,
-    },
-    android: {
-      elevation: 4,
-    },
-    default: {},
-  });
 
   const styles = useMemo(() => StyleSheet.create({
     row: {
@@ -47,7 +35,7 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
       justifyContent: 'space-between',
       borderWidth: 1,
       borderColor: colors.border,
-      ...shadow,
+      ...colors.cardElevation,
     },
     tilePressed: {
       opacity: 0.75,
@@ -77,7 +65,7 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
       color: colors.text.secondary,
       marginTop: 2,
     },
-  }), [colors, shadow]);
+  }), [colors]);
 
   const router = useRouter();
 

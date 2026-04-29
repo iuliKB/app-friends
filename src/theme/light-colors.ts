@@ -42,6 +42,17 @@ export const LIGHT = {
   // Shadows
   shadow: '#000000',
 
+  // Card elevation — spreads directly onto a StyleSheet style object.
+  // Light mode uses real shadows because card (#FFF) vs base (#F5F6F8) are too close
+  // to rely on colour contrast alone for depth hierarchy.
+  cardElevation: {
+    shadowColor: '#1A1D23',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+
   // Offline banner
   offline: {
     bg: '#F0FDF4',

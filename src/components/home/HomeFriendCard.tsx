@@ -24,10 +24,13 @@ export function HomeFriendCard({ friend }: HomeFriendCardProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => StyleSheet.create({
     card: {
+      ...colors.cardElevation,
       flex: 1,
       alignItems: 'center',
       backgroundColor: colors.surface.card,
       borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
       paddingVertical: SPACING.lg,
       paddingHorizontal: SPACING.lg,
       margin: SPACING.xs,

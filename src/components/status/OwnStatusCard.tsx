@@ -30,6 +30,7 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
 
   const styles = useMemo(() => StyleSheet.create({
     card: {
+      ...colors.cardElevation,
       backgroundColor: colors.surface.card,
       borderRadius: RADII.lg,
       borderWidth: 1,
