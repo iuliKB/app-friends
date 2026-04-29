@@ -119,6 +119,8 @@ export function usePlanDetail(planId: string): {
     title?: string;
     scheduled_for?: string;
     location?: string | null;
+    latitude?: number | null;     // Phase 20 MAP-01
+    longitude?: number | null;    // Phase 20 MAP-01
     cover_image_url?: string | null; // D-14 edit cover image
   }): Promise<{ error: Error | null }> {
     if (!session?.user) return { error: new Error('Not authenticated') };
