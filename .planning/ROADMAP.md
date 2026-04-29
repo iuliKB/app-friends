@@ -105,7 +105,7 @@
 
 - [x] **Phase 18: Theme Foundation** - ThemeProvider context, DARK/LIGHT color split, useTheme() hook, app.config.ts fix, compat shim, ThemeSegmentedControl + Profile APPEARANCE section
 - [x] **Phase 19: Theme Migration** - Migrate all ~98 COLORS import files to useTheme(); Profile APPEARANCE toggle; remove compat shim (completed 2026-04-28)
-- [ ] **Phase 20: Map Feature** - Migration 0020 lat/lng columns, react-native-maps + expo-location install, LocationPicker, plan map view, Explore map
+- [x] **Phase 20: Map Feature** - Migration 0020 lat/lng columns, react-native-maps + expo-location install, LocationPicker, plan map view, Explore map (completed 2026-04-29)
 - [ ] **Phase 21: Gallery Foundation** - plan_photos table + RLS + add_plan_photo RPC + plan-gallery Storage bucket, upload pipeline, usePlanPhotos hook
 - [ ] **Phase 22: Gallery UI** - PlanDashboardScreen ScrollView→FlatList refactor, photo grid, full-screen lightbox, camera capture, delete own, save to roll
 
@@ -161,7 +161,7 @@ Plans:
 - [x] 20-03-PLAN.md — LocationPicker modal + PlanCreateModal integration
 - [x] 20-04-PLAN.md — PlanDashboard map tile + directions button + edit mode picker
 - [x] 20-05-PLAN.md — ExploreMapView + Explore tab list/map toggle
-- [ ] 20-06-PLAN.md — EAS dev build + device verification checkpoint
+- [x] 20-06-PLAN.md — EAS dev build + device verification checkpoint
 **UI hint**: yes
 
 ### Phase 21: Gallery Foundation
@@ -201,7 +201,7 @@ Plans:
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
-| 20. Map Feature | v1.6 | 5/6 | In Progress|  |
+| 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
 | 22. Gallery UI | v1.6 | 0/? | Not started | - |
 
