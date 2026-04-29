@@ -9,9 +9,10 @@ export interface FABProps {
   onPress: () => void;
   accessibilityLabel: string;
   size?: number;
+  extraBottom?: number;
 }
 
-export function FAB({ icon, label, onPress, accessibilityLabel, size = 56 }: FABProps) {
+export function FAB({ icon, label, onPress, accessibilityLabel, size = 56, extraBottom = 0 }: FABProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const scale = useRef(new Animated.Value(1)).current;
@@ -62,7 +63,7 @@ export function FAB({ icon, label, onPress, accessibilityLabel, size = 56 }: FAB
   };
 
   const positionStyle = {
-    bottom: SPACING.xl + insets.bottom,
+    bottom: SPACING.xl + insets.bottom + extraBottom,
     right: SPACING.xl,
   };
 

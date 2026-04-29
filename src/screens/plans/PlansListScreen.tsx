@@ -19,6 +19,7 @@ import { PlanCard } from '@/components/plans/PlanCard';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FAB } from '@/components/common/FAB';
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_GAP } from '@/components/common/CustomTabBar';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { ExploreMapView } from '@/components/maps/ExploreMapView';
 import type { PlanWithMembers } from '@/types/plans';
@@ -412,6 +413,7 @@ export function PlansListScreen() {
         icon={<Ionicons name="add" size={24} color={colors.surface.base} />}
         onPress={() => router.push('/plan-create')}
         accessibilityLabel="Create a new plan"
+        extraBottom={TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_GAP}
       />
 
       {/* Invitations Modal */}

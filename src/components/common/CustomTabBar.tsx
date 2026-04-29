@@ -3,6 +3,11 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Height of the tab bar pill and its gap above the bottom safe area inset.
+// Used by screens with absolute-positioned elements (e.g. FAB) to clear the tab bar.
+export const TAB_BAR_HEIGHT = 64;
+export const TAB_BAR_BOTTOM_GAP = 12;
 import { useTheme, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useInvitationCount } from '@/hooks/useInvitationCount';

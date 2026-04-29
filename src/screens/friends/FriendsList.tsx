@@ -8,6 +8,7 @@ import { FriendCard } from '@/components/friends/FriendCard';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FAB } from '@/components/common/FAB';
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_GAP } from '@/components/common/CustomTabBar';
 import { supabase } from '@/lib/supabase';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
@@ -116,6 +117,7 @@ export function FriendsList() {
         icon={<Ionicons name="person-add-outline" size={24} color={colors.surface.base} />}
         onPress={() => router.push('/friends/add')}
         accessibilityLabel="Add a friend"
+        extraBottom={TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_GAP}
       />
 
       <FriendActionSheet
