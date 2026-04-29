@@ -32,7 +32,7 @@ export async function openInMapsApp(
   lat: number,
   lng: number,
   label: string,
-): Promise<void> {
+): Promise<boolean> {
   const encodedLabel = encodeURIComponent(label);
   const url =
     Platform.OS === 'ios'
@@ -41,7 +41,9 @@ export async function openInMapsApp(
   const canOpen = await Linking.canOpenURL(url);
   if (canOpen) {
     await Linking.openURL(url);
+    return true;
   }
+  return false;
 }
 
 /**

@@ -670,9 +670,10 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
             </Text>
             <TouchableOpacity
               style={styles.directionsButton}
-              onPress={() =>
-                openInMapsApp(plan.latitude!, plan.longitude!, plan.location ?? '')
-              }
+              onPress={async () => {
+                const opened = await openInMapsApp(plan.latitude!, plan.longitude!, plan.location ?? '');
+                if (!opened) Alert.alert('Maps unavailable', "Couldn't open the maps app.");
+              }}
               activeOpacity={0.7}
               accessibilityLabel={`Get directions to ${plan.location ?? 'plan location'}`}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
