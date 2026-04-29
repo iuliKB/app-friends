@@ -151,6 +151,10 @@ export function usePlanDetail(planId: string): {
     return { error: null };
   }
 
+  // Intentionally listing only the data-driving deps (planId, userId).
+  // refetch is defined in the same render scope and closes over these same values,
+  // so including it would be redundant and risk re-triggering on every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     refetch();
   }, [planId, session?.user?.id]);
