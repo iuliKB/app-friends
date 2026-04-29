@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
 status: executing
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-04-29T21:04:13.934Z"
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-04-29T21:06:20.983Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 12
-  completed_plans: 7
-  percent: 58
+  completed_plans: 8
+  percent: 67
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 Milestone: v1.6 Places, Themes & Memories
 Phase: 20 (map-feature) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-04-29
 
@@ -78,6 +78,7 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 19]: Card elevation system (shadow + border) added for light mode depth — contrast between #FAFAFA and #FFFFFF insufficient without it
 - [Phase 20]: androidGoogleMapsApiKey uses empty string fallback; Google Maps API key deferred by user — not blocking
 - [Phase 20]: No iosGoogleMapsApiKey in app.config.ts — iOS uses Apple Maps (PROVIDER_DEFAULT) to avoid SDK 55 EAS build conflict
+- [Phase 20]: location: string | null in CreatePlanInput — location always comes with coords (D-07)
 
 ### Pending Todos
 
@@ -89,5 +90,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-29T21:04:13.930Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-04-29T21:06:20.980Z
+Stopped at: Completed 20-02-PLAN.md

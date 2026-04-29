@@ -157,7 +157,7 @@ Plans:
 **Plans**: 6 plans
 Plans:
 - [x] 20-01-PLAN.md — Foundation: packages, app.config.ts, migration 0020, types, src/lib/maps.ts
-- [ ] 20-02-PLAN.md — Data layer: usePlans + usePlanDetail lat/lng wiring
+- [x] 20-02-PLAN.md — Data layer: usePlans + usePlanDetail lat/lng wiring
 - [ ] 20-03-PLAN.md — LocationPicker modal + PlanCreateModal integration
 - [ ] 20-04-PLAN.md — PlanDashboard map tile + directions button + edit mode picker
 - [ ] 20-05-PLAN.md — ExploreMapView + Explore tab list/map toggle
@@ -201,7 +201,7 @@ Plans:
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
-| 20. Map Feature | v1.6 | 1/6 | In Progress|  |
+| 20. Map Feature | v1.6 | 2/6 | In Progress|  |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
 | 22. Gallery UI | v1.6 | 0/? | Not started | - |
 
