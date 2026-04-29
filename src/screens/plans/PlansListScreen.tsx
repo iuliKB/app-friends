@@ -3,7 +3,6 @@ import {
   Alert,
   FlatList,
   Modal,
-  Platform,
   RefreshControl,
   StyleSheet,
   Text,
@@ -240,9 +239,7 @@ export function PlansListScreen() {
     },
     toggleButtonActive: {
       // D-15 UI-SPEC: 15% opacity accent background on active button
-      backgroundColor: Platform.OS === 'android'
-        ? 'rgba(185, 255, 59, 0.15)'
-        : 'rgba(185, 255, 59, 0.15)',
+      backgroundColor: 'rgba(185, 255, 59, 0.15)',
     },
   }), [colors]);
 
