@@ -5,7 +5,6 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useTheme } from '@/theme';
 import { haversineKm, DARK_MAP_STYLE } from '@/lib/maps';
-import { EmptyState } from '@/components/common/EmptyState';
 import type { PlanWithMembers } from '@/types/plans';
 
 interface ExploreMapViewProps {
@@ -90,19 +89,6 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator color={colors.interactive.accent} size="large" />
-      </View>
-    );
-  }
-
-  if (visiblePlans.length === 0) {
-    return (
-      <View style={styles.root}>
-        <EmptyState
-          icon="map-outline"
-          iconType="ionicons"
-          heading="No nearby plans yet"
-          body="When friends create plans with a location, they'll appear here."
-        />
       </View>
     );
   }
