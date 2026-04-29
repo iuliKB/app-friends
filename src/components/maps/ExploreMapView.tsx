@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useTheme } from '@/theme';
 import { haversineKm, DARK_MAP_STYLE } from '@/lib/maps';
@@ -100,8 +100,8 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
         initialRegion={initialRegion}
         showsUserLocation={permissionGranted}
         showsMyLocationButton={false}
-        provider={PROVIDER_GOOGLE}
-        customMapStyle={DARK_MAP_STYLE}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+        {...(Platform.OS === 'android' ? { customMapStyle: DARK_MAP_STYLE } : { userInterfaceStyle: 'dark' })}
       >
         {visiblePlans.map((plan) => (
           <Marker

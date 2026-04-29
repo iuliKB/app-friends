@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import { Platform } from 'react-native';
+import MapView, { PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import { DARK_MAP_STYLE } from '@/lib/maps';
 import type { Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -192,8 +193,8 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
         <View style={styles.mapContainer}>
           <MapView
             style={StyleSheet.absoluteFillObject}
-            provider={PROVIDER_GOOGLE}
-            customMapStyle={DARK_MAP_STYLE}
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+            {...(Platform.OS === 'android' ? { customMapStyle: DARK_MAP_STYLE } : { userInterfaceStyle: 'dark' })}
             region={region}
             onRegionChangeComplete={(r, { isGesture }) => {
               if (isGesture) setRegion(r);

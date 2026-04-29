@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { openInMapsApp, DARK_MAP_STYLE } from '@/lib/maps';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
@@ -633,8 +634,8 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
               zoomEnabled={false}
               rotateEnabled={false}
               pitchEnabled={false}
-              provider={PROVIDER_GOOGLE}
-              customMapStyle={DARK_MAP_STYLE}
+              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+              {...(Platform.OS === 'android' ? { customMapStyle: DARK_MAP_STYLE } : { userInterfaceStyle: 'dark' })}
               initialRegion={{
                 latitude: plan.latitude,
                 longitude: plan.longitude,

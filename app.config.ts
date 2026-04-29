@@ -42,7 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'react-native-maps',
       {
         androidGoogleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
-        iosGoogleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
+        // iosGoogleMapsApiKey: added at EAS build time — requires native rebuild
       },
     ],
     [
