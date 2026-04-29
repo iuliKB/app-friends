@@ -26,7 +26,7 @@ import { UpcomingEventsSection } from '@/components/home/UpcomingEventsSection';
 import { HomeWidgetRow } from '@/components/home/HomeWidgetRow';
 
 export function HomeScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { friends, error, refreshing, handleRefresh } = useHomeScreen();
   usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
@@ -143,14 +143,10 @@ export function HomeScreen() {
     },
   }), [colors]);
 
-  return (
-    <LinearGradient
-      colors={['#091A07', '#0E0F11', '#0A0C0E']}
-      locations={[0, 0.45, 1]}
-      start={{ x: 1, y: 0 }}
-      end={{ x: 0, y: 0.8 }}
-      style={[styles.root, { paddingTop: insets.top }]}
-    >
+  const rootStyle = [styles.root, { paddingTop: insets.top }];
+
+  const content = (
+    <>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingTop: SPACING.sm, paddingBottom: insets.bottom + 100 }]}
@@ -207,14 +203,32 @@ export function HomeScreen() {
         <UpcomingEventsSection />
 
         <HomeWidgetRow iouSummary={iouSummary} birthdays={birthdays} />
-
       </ScrollView>
 
       <StatusPickerSheet
         visible={sheetVisible}
         onClose={() => setSheetVisible(false)}
       />
+    </>
+  );
 
-    </LinearGradient>
+  if (isDark) {
+    return (
+      <LinearGradient
+        colors={['#091A07', '#0E0F11', '#0A0C0E']}
+        locations={[0, 0.45, 1]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 0.8 }}
+        style={rootStyle}
+      >
+        {content}
+      </LinearGradient>
+    );
+  }
+
+  return (
+    <View style={[rootStyle, { backgroundColor: colors.surface.base }]}>
+      {content}
+    </View>
   );
 }
