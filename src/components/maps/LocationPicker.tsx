@@ -34,7 +34,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
 
   const [region, setRegion] = useState<Region>(DEFAULT_REGION);
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [addressLabel, setAddressLabel] = useState<string>('');
+  // addressLabel preview deferred — geocode only on confirm (T-20-10)
 
   // On modal open: request permission and center on GPS position
   useEffect(() => {
@@ -216,7 +216,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
               <ActivityIndicator size="small" color={colors.interactive.accent} />
             ) : (
               <Text style={styles.addressLabel} numberOfLines={1}>
-                {addressLabel || 'Drag map to choose a location'}
+                {'Drag map to choose a location'}
               </Text>
             )}
           </View>
