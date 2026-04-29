@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
+import { openInMapsApp, DARK_MAP_STYLE } from '@/lib/maps';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { usePlansStore } from '@/stores/usePlansStore';
@@ -25,6 +28,7 @@ import { IOUNotesField } from '@/components/plans/IOUNotesField';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { formatPlanTime } from '@/components/plans/PlanCard';
+import { LocationPicker } from '@/components/maps/LocationPicker';
 
 interface PlanDashboardScreenProps {
   planId: string;
@@ -43,7 +47,10 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDate, setEditDate] = useState(new Date());
-  const [editLocation, setEditLocation] = useState('');
+  const [editLocation, setEditLocation] = useState<string | null>(null);
+  const [editLatitude, setEditLatitude] = useState<number | null>(null);
+  const [editLongitude, setEditLongitude] = useState<number | null>(null);
+  const [showEditLocationPicker, setShowEditLocationPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [respondingInvite, setRespondingInvite] = useState(false);
@@ -188,6 +195,65 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       paddingTop: SPACING.xl,
       paddingBottom: SPACING.lg,
     },
+    mapTileContainer: {
+      marginHorizontal: SPACING.lg,
+      marginTop: SPACING.md,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface.card,
+      overflow: 'hidden',
+    },
+    mapTile: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 160,
+    },
+    mapAddressRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.xs,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      paddingHorizontal: 12,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      paddingVertical: 10,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    mapAddressText: {
+      flex: 1,
+      fontSize: FONT_SIZE.sm,
+      color: colors.text.primary,
+    },
+    directionsButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.xs,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      minHeight: 44,
+    },
+    directionsText: {
+      fontSize: FONT_SIZE.sm,
+      fontWeight: FONT_WEIGHT.semibold,
+      color: colors.interactive.accent,
+    },
+    locationTrigger: {
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      height: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.sm,
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: RADII.lg,
+      paddingHorizontal: SPACING.md,
+      marginBottom: SPACING.md,
+    },
+    locationTriggerText: {
+      flex: 1,
+      fontSize: FONT_SIZE.md,
+      color: colors.text.primary,
+    },
     inviteBanner: {
       backgroundColor: colors.surface.card,
       marginHorizontal: SPACING.lg,
@@ -257,7 +323,9 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
     if (!plan) return;
     setEditTitle(plan.title);
     setEditDate(plan.scheduled_for ? new Date(plan.scheduled_for) : new Date());
-    setEditLocation(plan.location ?? '');
+    setEditLocation(plan.location ?? null);
+    setEditLatitude(plan.latitude);
+    setEditLongitude(plan.longitude);
     setEditing(true);
   }
 
@@ -272,6 +340,8 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       title: editTitle,
       scheduled_for: editDate.toISOString(),
       location: editLocation || null,
+      latitude: editLatitude,
+      longitude: editLongitude,
     });
     setSaving(false);
     if (saveError) {
@@ -488,12 +558,49 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
               />
             )}
 
-            <TextInput
-              style={styles.textInput}
-              value={editLocation}
-              onChangeText={setEditLocation}
-              placeholder="Location"
-              placeholderTextColor={colors.text.secondary}
+            {/* Edit mode location — same trigger pattern as PlanCreateModal */}
+            <TouchableOpacity
+              style={styles.locationTrigger}
+              onPress={() => setShowEditLocationPicker(true)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={editLocation ? 'Change location' : 'Add location'}
+            >
+              <Ionicons name="location-outline" size={20} color={colors.interactive.accent} />
+              <Text
+                style={[
+                  styles.locationTriggerText,
+                  !editLocation && { color: colors.text.secondary },
+                ]}
+                numberOfLines={1}
+              >
+                {editLocation ?? 'Add location'}
+              </Text>
+              {editLocation ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setEditLocation(null);
+                    setEditLatitude(null);
+                    setEditLongitude(null);
+                  }}
+                  hitSlop={8}
+                >
+                  <Ionicons name="close-circle" size={18} color={colors.text.secondary} />
+                </TouchableOpacity>
+              ) : (
+                <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
+              )}
+            </TouchableOpacity>
+
+            <LocationPicker
+              visible={showEditLocationPicker}
+              onConfirm={({ latitude: lat, longitude: lng, label }) => {
+                setEditLatitude(lat);
+                setEditLongitude(lng);
+                setEditLocation(label);
+                setShowEditLocationPicker(false);
+              }}
+              onCancel={() => setShowEditLocationPicker(false)}
             />
 
             <View style={styles.editActions}>
@@ -513,6 +620,73 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
           </View>
         )}
       </View>
+
+      {/* Map tile — absent when lat/lng null (D-13) */}
+      {plan.latitude != null && plan.longitude != null ? (
+        <View
+          style={[styles.mapTileContainer, colors.cardElevation]}
+          accessibilityLabel={`Map showing ${plan.location ?? 'plan location'}`}
+        >
+          <View pointerEvents="none">
+            <MapView
+              style={styles.mapTile}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              userInterfaceStyle="dark"
+              {...(Platform.OS === 'android'
+                ? { provider: PROVIDER_GOOGLE, customMapStyle: DARK_MAP_STYLE }
+                : {})}
+              initialRegion={{
+                latitude: plan.latitude,
+                longitude: plan.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <Marker
+                coordinate={{ latitude: plan.latitude, longitude: plan.longitude }}
+                pinColor={colors.interactive.accent}
+                tracksViewChanges={false}
+              />
+            </MapView>
+          </View>
+
+          {/* Address row */}
+          <View style={styles.mapAddressRow}>
+            <Ionicons
+              name="location-outline"
+              size={14}
+              color={colors.interactive.accent}
+            />
+            <Text
+              style={styles.mapAddressText}
+              numberOfLines={1}
+            >
+              {plan.location ?? ''}
+            </Text>
+            <TouchableOpacity
+              style={styles.directionsButton}
+              onPress={() =>
+                openInMapsApp(plan.latitude!, plan.longitude!, plan.location ?? '')
+              }
+              activeOpacity={0.7}
+              accessibilityLabel={`Get directions to ${plan.location ?? 'plan location'}`}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons
+                name="navigate-outline"
+                size={14}
+                color={colors.interactive.accent}
+              />
+              <Text style={styles.directionsText}>{'Directions'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : null}
 
       {/* Who's Going Section */}
       <View style={styles.section}>

@@ -13,6 +13,8 @@ export function usePlanDetail(planId: string): {
     title?: string;
     scheduled_for?: string;
     location?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
     cover_image_url?: string | null;
   }) => Promise<{ error: Error | null }>;
   deletePlan: () => Promise<{ error: Error | null }>;
