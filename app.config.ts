@@ -38,6 +38,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         mode: 'production',
       },
     ],
+    [
+      'react-native-maps',
+      {
+        androidGoogleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
+        // NO iosGoogleMapsApiKey — iOS uses Apple Maps (PROVIDER_DEFAULT)
+        // Adding iosGoogleMapsApiKey breaks SDK 55 EAS builds (AppDelegate conflict)
+      },
+    ],
+    [
+      'expo-location',
+      {
+        locationWhenInUsePermission:
+          'Campfire uses your location to center the map and show nearby plans.',
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
