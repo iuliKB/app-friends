@@ -53,14 +53,17 @@ decisions:
   - Use module-level RootLayoutStack component rather than nested function inside RootLayout to satisfy React hooks rules for useTheme()
   - Keep LinearGradient hardcoded hex colors in AuthScreen and HomeScreen — these are intentional design values not mapped to theme tokens
   - Use named typed interfaces instead of ReturnType<typeof StyleSheet.create> for sub-component style props to satisfy TypeScript strict mode
+requirements-completed: [THEME-04]
 metrics:
-  duration: ~90 minutes (session continuation)
+  duration: ~120 minutes (including post-checkpoint fixes and visual verification)
   completed: "2026-04-28"
-  tasks: 3
-  files_modified: 31
+  tasks: 4
+  files_modified: 33
 ---
 
 # Phase 19 Plan 03: App Routes and Screens Theme Migration Summary
+
+**All 30 app routes and screens migrated from static COLORS to useTheme(); compat shim removed and tsc-verified; light mode palette corrected and visually verified in Expo Go**
 
 Final migration wave removing all `COLORS` static imports from `src/app/**` routes and `src/screens/**` screens, plus removing the `COLORS` compat shim from `src/theme/index.ts`.
 
@@ -75,6 +78,13 @@ Replaced all remaining `import { COLORS } from '@/theme'` usages with `useTheme(
 | 1 | Migrate 19 src/app/** route files | d9bdfa1 |
 | 2 | Migrate 11 src/screens/** screen files | 8e4fab0 |
 | 3 | Remove compat shim + tsc gate | f872e5c |
+| 4 | Human-verify: light/dark/system modes in Expo Go | APPROVED |
+
+Post-checkpoint fix commits (applied before verification approval):
+- `d02851c` — fix light mode palette and tab bar theme switching
+- `8a269f3` — fix HomeScreen hardcoded dark gradient in light mode
+- `8576943` — replace neon green with readable accent in light mode
+- `8d8dcf7` — add card elevation system for light mode depth
 
 ## Deviations from Plan
 
@@ -109,18 +119,28 @@ The following type errors existed before this plan and are not related to the CO
 
 These were logged but not fixed (out of scope per deviation scope boundary rule).
 
-## Checkpoint Pending
+## Visual Verification (Task 4 — APPROVED)
 
-Task 4 (human-verify) requires visual verification in Expo Go that all screens render correctly under both light and dark themes. The app should be launched and tested before this plan is marked complete.
+Human verification in Expo Go confirmed:
+- Light mode: all five tabs (Home, Chats, Squad, Profile) rendered with correct light surfaces (#FAFAFA screens, #FFFFFF cards, #111827 text). The four post-checkpoint fixes (palette accent, HomeScreen gradient, tab bar, card elevation) were required before approval.
+- Dark mode: entire app switches back to dark surfaces (#0E0F11 screens, #1D2027 cards) instantly when toggling to Dark.
+- System mode: app respects the device OS setting after force-close and reopen — no flash of wrong theme before splash clears.
+- THEME-04 requirement satisfied: all existing screens render correctly in both light and dark modes.
 
 ## Self-Check: PASSED
 
-All 3 task commits verified:
+All task commits verified:
 - d9bdfa1: refactor(19-03): migrate src/app/** routes to useTheme hook
 - 8e4fab0: refactor(19-03): migrate src/screens/** to useTheme hook
 - f872e5c: refactor(19-03): remove COLORS compat shim; fix style prop typing
+- d02851c: fix(19): fix light mode palette and tab bar theme switching
+- 8a269f3: fix(19): fix HomeScreen hardcoded dark gradient in light mode
+- 8576943: fix(19): replace neon green with readable accent in light mode
+- 8d8dcf7: fix(19): add card elevation system for light mode depth
+- Task 4 (human-verify): APPROVED by user in Expo Go
 
 All key files confirmed modified:
 - src/theme/index.ts: compat shim removed (line 1 deleted)
 - src/app/(tabs)/profile.tsx: fully migrated
 - 29 additional route/screen files migrated
+- Light mode palette corrections in src/theme/colors.ts

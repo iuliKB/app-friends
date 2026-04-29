@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
 status: verifying
-stopped_at: "Completed 19-03-PLAN.md (awaiting checkpoint:human-verify)"
-last_updated: "2026-04-28T21:24:30.519Z"
-last_activity: 2026-04-28
+stopped_at: Completed 19-03-PLAN.md — Phase 19 theme-migration COMPLETE
+last_updated: "2026-04-29T14:06:32.558Z"
+last_activity: 2026-04-29
 progress:
   total_phases: 5
   completed_phases: 2
@@ -29,7 +29,7 @@ Milestone: v1.6 Places, Themes & Memories
 Phase: 19 (theme-migration) — EXECUTING
 Plan: 3 of 3
 Status: Phase complete — ready for verification
-Last activity: 2026-04-28
+Last activity: 2026-04-29
 
 Progress: [██████████] 100% (Phase 18 complete)
 
@@ -74,6 +74,8 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 19]: QuotedBlock in MessageBubble uses module-level quotedBlockStyles static StyleSheet; colors passed as prop
 - [Phase 19]: RSVPButtons RSVP_OPTIONS moved into useMemo([colors]) to make activeColor reactive to theme changes
 - [Phase 19-theme-migration]: Use module-level RootLayoutStack component for splash useTheme isolation
+- [Phase 19]: Light mode accent corrected from neon #B9FF3B to readable #16A34A — neon illegible on white backgrounds
+- [Phase 19]: Card elevation system (shadow + border) added for light mode depth — contrast between #FAFAFA and #FFFFFF insufficient without it
 
 ### Pending Todos
 
@@ -85,5 +87,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-28T21:24:30.515Z
-Stopped at: Completed 19-03-PLAN.md (awaiting checkpoint:human-verify)
+Last session: 2026-04-29T14:06:32.554Z
+Stopped at: Completed 19-03-PLAN.md — Phase 19 theme-migration COMPLETE
