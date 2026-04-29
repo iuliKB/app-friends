@@ -3,8 +3,8 @@ phase: 20-map-feature
 fixed_at: 2026-04-29T00:00:00Z
 review_path: .planning/phases/20-map-feature/20-REVIEW.md
 iteration: 1
-findings_in_scope: 5
-fixed: 5
+findings_in_scope: 8
+fixed: 8
 skipped: 0
 status: all_fixed
 ---
@@ -16,8 +16,8 @@ status: all_fixed
 **Iteration:** 1
 
 **Summary:**
-- Findings in scope: 5
-- Fixed: 5
+- Findings in scope: 8
+- Fixed: 8
 - Skipped: 0
 
 ## Fixed Issues
@@ -59,6 +59,30 @@ status: all_fixed
 **Files modified:** `src/hooks/usePlanDetail.ts`
 **Commit:** a47ce53
 **Applied fix:** Added an `// eslint-disable-next-line react-hooks/exhaustive-deps` comment with an explanatory note documenting why `refetch` is intentionally excluded from the dependency array (it closes over the same `planId` and session values that already appear in the deps). This prevents a false-positive lint warning and makes the intent explicit for future maintainers.
+
+---
+
+### IN-01: `addressLabel` state is never populated in LocationPicker — confirm bar always shows placeholder
+
+**Files modified:** `src/components/maps/LocationPicker.tsx`
+**Commit:** ed46d40
+**Applied fix:** Removed the unused `addressLabel` state variable and `setAddressLabel` call. Replaced the state declaration with a comment documenting that geocode preview is intentionally deferred until confirm (`T-20-10`). The JSX confirm bar now renders the placeholder string directly (`'Drag map to choose a location'`) rather than through a dead variable reference.
+
+---
+
+### IN-02: Duplicate `Platform.OS === 'android'` branch in `PlansListScreen` `toggleButtonActive` style
+
+**Files modified:** `src/screens/plans/PlansListScreen.tsx`
+**Commit:** 983aa60
+**Applied fix:** Collapsed the redundant `Platform.OS` ternary (both branches returned `'rgba(185, 255, 59, 0.15)'`) into a single `backgroundColor` assignment. Also removed the now-unused `Platform` import from the React Native import block to avoid a lint error.
+
+---
+
+### IN-03: Migration adds lat/lng without a `CHECK` constraint on valid coordinate ranges
+
+**Files modified:** `supabase/migrations/0020_map_feature.sql`
+**Commit:** 43583b3
+**Applied fix:** Added `CHECK (latitude BETWEEN -90 AND 90)` and `CHECK (longitude BETWEEN -180 AND 180)` inline on the `ADD COLUMN IF NOT EXISTS` clauses. The constraints are defence-in-depth; GPS/reverse-geocode inputs are valid in practice but this prevents out-of-range values from reaching the map renderer.
 
 ---
 
