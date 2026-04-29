@@ -15,11 +15,11 @@
 
 ### Map
 
-- [ ] **MAP-01**: User can attach a location (drop pin on map) to a plan when creating or editing it
+- [x] **MAP-01**: User can attach a location (drop pin on map) to a plan when creating or editing it
 - [ ] **MAP-02**: Plan detail screen shows the plan location on a map with a pin
-- [ ] **MAP-03**: Plan location is displayed as a human-readable address label (not raw coordinates)
+- [x] **MAP-03**: Plan location is displayed as a human-readable address label (not raw coordinates)
 - [ ] **MAP-04**: User can browse nearby friend plans as pins on a map in the Explore tab
-- [ ] **MAP-05**: User can open a plan's location in Google Maps, Waze, or Apple Maps with one tap
+- [x] **MAP-05**: User can open a plan's location in Google Maps, Waze, or Apple Maps with one tap
 
 ### Gallery
 
@@ -72,11 +72,11 @@
 | THEME-03 | Phase 18 | Complete |
 | THEME-05 | Phase 18 | Complete |
 | THEME-04 | Phase 19 | Complete |
-| MAP-01 | Phase 20 | Pending |
+| MAP-01 | Phase 20 | Complete |
 | MAP-02 | Phase 20 | Pending |
-| MAP-03 | Phase 20 | Pending |
+| MAP-03 | Phase 20 | Complete |
 | MAP-04 | Phase 20 | Pending |
-| MAP-05 | Phase 20 | Pending |
+| MAP-05 | Phase 20 | Complete |
 | GALL-01 | Phase 21 | Pending |
 | GALL-02 | Phase 21 | Pending |
 | GALL-03 | Phase 21 | Pending |

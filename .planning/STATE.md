@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
-status: verifying
-stopped_at: Phase 20 context gathered
-last_updated: "2026-04-29T18:54:15.369Z"
+status: executing
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-04-29T21:04:13.934Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_plans: 12
+  completed_plans: 7
+  percent: 58
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 19 — theme-migration
+**Current focus:** Phase 20 — map-feature
 
 ## Current Position
 
 Milestone: v1.6 Places, Themes & Memories
-Phase: 19 (theme-migration) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 20 (map-feature) — EXECUTING
+Plan: 2 of 6
+Status: Ready to execute
 Last activity: 2026-04-29
 
 Progress: [██████████] 100% (Phase 18 complete)
@@ -76,6 +76,8 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 19-theme-migration]: Use module-level RootLayoutStack component for splash useTheme isolation
 - [Phase 19]: Light mode accent corrected from neon #B9FF3B to readable #16A34A — neon illegible on white backgrounds
 - [Phase 19]: Card elevation system (shadow + border) added for light mode depth — contrast between #FAFAFA and #FFFFFF insufficient without it
+- [Phase 20]: androidGoogleMapsApiKey uses empty string fallback; Google Maps API key deferred by user — not blocking
+- [Phase 20]: No iosGoogleMapsApiKey in app.config.ts — iOS uses Apple Maps (PROVIDER_DEFAULT) to avoid SDK 55 EAS build conflict
 
 ### Pending Todos
 
@@ -87,5 +89,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-29T18:54:15.361Z
-Stopped at: Phase 20 context gathered
+Last session: 2026-04-29T21:04:13.930Z
+Stopped at: Completed 20-01-PLAN.md

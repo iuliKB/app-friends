@@ -156,7 +156,7 @@ Plans:
   5. Plans created before this phase (without lat/lng) are unaffected — no crashes, no blank map tiles
 **Plans**: 6 plans
 Plans:
-- [ ] 20-01-PLAN.md — Foundation: packages, app.config.ts, migration 0020, types, src/lib/maps.ts
+- [x] 20-01-PLAN.md — Foundation: packages, app.config.ts, migration 0020, types, src/lib/maps.ts
 - [ ] 20-02-PLAN.md — Data layer: usePlans + usePlanDetail lat/lng wiring
 - [ ] 20-03-PLAN.md — LocationPicker modal + PlanCreateModal integration
 - [ ] 20-04-PLAN.md — PlanDashboard map tile + directions button + edit mode picker
@@ -201,7 +201,7 @@ Plans:
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
-| 20. Map Feature | v1.6 | 0/? | Not started | - |
+| 20. Map Feature | v1.6 | 1/6 | In Progress|  |
 | 21. Gallery Foundation | v1.6 | 0/? | Not started | - |
 | 22. Gallery UI | v1.6 | 0/? | Not started | - |
 
