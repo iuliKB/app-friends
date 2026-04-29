@@ -8,7 +8,9 @@ import type { PlanWithMembers, PlanMember } from '@/types/plans';
 interface CreatePlanInput {
   title: string;
   scheduledFor: Date;
-  location: string;
+  location: string | null;      // nullable — location always comes with coords (D-07)
+  latitude: number | null;      // Phase 20 MAP-01
+  longitude: number | null;     // Phase 20 MAP-01
   invitedFriendIds: string[];
   coverImageUrl?: string; // D-16 optional cover image URL
 }
@@ -162,6 +164,8 @@ export function usePlans(): {
         title: input.title,
         scheduled_for: input.scheduledFor.toISOString(),
         location: input.location || null,
+        latitude: input.latitude ?? null,    // Phase 20 MAP-01
+        longitude: input.longitude ?? null,  // Phase 20 MAP-01
         created_by: session.user.id,
         cover_image_url: input.coverImageUrl ?? null,
       })
