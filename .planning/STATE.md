@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
 status: executing
-stopped_at: Completed 20-02-PLAN.md
-last_updated: "2026-04-29T21:06:20.983Z"
+stopped_at: Completed 20-03-PLAN.md
+last_updated: "2026-04-29T21:10:58.238Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 12
-  completed_plans: 8
-  percent: 67
+  completed_plans: 9
+  percent: 75
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 Milestone: v1.6 Places, Themes & Memories
 Phase: 20 (map-feature) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-04-29
 
@@ -79,6 +79,8 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 20]: androidGoogleMapsApiKey uses empty string fallback; Google Maps API key deferred by user — not blocking
 - [Phase 20]: No iosGoogleMapsApiKey in app.config.ts — iOS uses Apple Maps (PROVIDER_DEFAULT) to avoid SDK 55 EAS build conflict
 - [Phase 20]: location: string | null in CreatePlanInput — location always comes with coords (D-07)
+- [Phase 20-map-feature]: LocationPicker uses initialRegion (not controlled region prop) to prevent infinite MapView update loop
+- [Phase 20-map-feature]: Permission re-checked in handleConfirm before reverseGeocodeAsync per T-20-10 (prevents Android indefinite hang)
 
 ### Pending Todos
 
@@ -90,5 +92,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-29T21:06:20.980Z
-Stopped at: Completed 20-02-PLAN.md
+Last session: 2026-04-29T21:10:58.235Z
+Stopped at: Completed 20-03-PLAN.md
