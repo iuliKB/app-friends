@@ -3,5 +3,5 @@
 -- NULL means "no location set." Existing rows are unaffected.
 
 ALTER TABLE public.plans
-  ADD COLUMN IF NOT EXISTS latitude  FLOAT8 NULL,
-  ADD COLUMN IF NOT EXISTS longitude FLOAT8 NULL;
+  ADD COLUMN IF NOT EXISTS latitude  FLOAT8 NULL CHECK (latitude  BETWEEN -90  AND  90),
+  ADD COLUMN IF NOT EXISTS longitude FLOAT8 NULL CHECK (longitude BETWEEN -180 AND 180);
