@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import MapView from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import { DARK_MAP_STYLE } from '@/lib/maps';
 import type { Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, FONT_WEIGHT, RADII } from '@/theme';
@@ -191,11 +192,12 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
         <View style={styles.mapContainer}>
           <MapView
             style={StyleSheet.absoluteFillObject}
+            provider={PROVIDER_GOOGLE}
+            customMapStyle={DARK_MAP_STYLE}
             region={region}
             onRegionChangeComplete={(r, { isGesture }) => {
               if (isGesture) setRegion(r);
             }}
-            userInterfaceStyle="dark"
           />
 
           {/* Fixed pin at screen center — pointerEvents none so map drag-through works */}

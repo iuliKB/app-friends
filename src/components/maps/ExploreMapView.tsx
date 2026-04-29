@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -114,10 +114,8 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
         initialRegion={initialRegion}
         showsUserLocation={permissionGranted}
         showsMyLocationButton={false}
-        userInterfaceStyle="dark"
-        {...(Platform.OS === 'android'
-          ? { provider: PROVIDER_GOOGLE, customMapStyle: DARK_MAP_STYLE }
-          : {})}
+        provider={PROVIDER_GOOGLE}
+        customMapStyle={DARK_MAP_STYLE}
       >
         {visiblePlans.map((plan) => (
           <Marker

@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -634,10 +633,8 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
               zoomEnabled={false}
               rotateEnabled={false}
               pitchEnabled={false}
-              userInterfaceStyle="dark"
-              {...(Platform.OS === 'android'
-                ? { provider: PROVIDER_GOOGLE, customMapStyle: DARK_MAP_STYLE }
-                : {})}
+              provider={PROVIDER_GOOGLE}
+              customMapStyle={DARK_MAP_STYLE}
               initialRegion={{
                 latitude: plan.latitude,
                 longitude: plan.longitude,
