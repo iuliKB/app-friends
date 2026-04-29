@@ -637,6 +637,46 @@ export type Database = {
         };
         Relationships: [];
       };
+      // Phase 21 v1.6 (migration 0021) — plan gallery
+      plan_photos: {
+        Row: {
+          id: string;
+          plan_id: string;
+          uploader_id: string;
+          storage_path: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          plan_id: string;
+          uploader_id: string;
+          storage_path: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          plan_id?: string;
+          uploader_id?: string;
+          storage_path?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'plan_photos_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_photos_uploader_id_fkey';
+            columns: ['uploader_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
       // Phase 2 v1.3 (migration 0009) — effective status view (security_invoker=true).
@@ -812,3 +852,20 @@ export type IouMember = Tables<'iou_members'>;
 // Phase 15 v1.4 row-type alias for message reactions
 // Note: MessageReaction is already used in src/types/chat.ts for a different (aggregated) shape
 export type MessageReactionRow = Tables<'message_reactions'>;
+
+// Phase 21 v1.6 row-type alias for plan_photos
+export type PlanPhoto = Tables<'plan_photos'>;
+
+// Phase 21 v1.6 app-layer type for usePlanPhotos hook (D-14)
+export type PlanPhotoWithUploader = {
+  id: string;
+  planId: string;
+  uploaderId: string;
+  storagePath: string;
+  signedUrl: string;       // 1-hour TTL signed URL generated at fetch time
+  createdAt: string;
+  uploader: {
+    displayName: string;
+    avatarUrl: string | null;
+  };
+};
