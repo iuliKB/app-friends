@@ -88,6 +88,8 @@ export function usePlanDetail(planId: string): {
         created_at: planRow.created_at as string,
         updated_at: planRow.updated_at as string,
         cover_image_url: planRow.cover_image_url as string | null,
+        latitude: planRow.latitude as number | null,
+        longitude: planRow.longitude as number | null,
         members: assembledMembers,
       };
 

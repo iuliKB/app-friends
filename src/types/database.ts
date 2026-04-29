@@ -156,6 +156,9 @@ export type Database = {
           created_at: string;
           updated_at: string;
           cover_image_url: string | null;
+          // Phase 20 v1.6 (migration 0020) — map lat/lng
+          latitude: number | null;
+          longitude: number | null;
         };
         Insert: {
           id?: string;
@@ -168,6 +171,9 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           cover_image_url?: string | null;
+          // Phase 20 v1.6 (migration 0020) — map lat/lng
+          latitude?: number | null;
+          longitude?: number | null;
         };
         Update: {
           id?: string;
@@ -180,6 +186,9 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           cover_image_url?: string | null;
+          // Phase 20 v1.6 (migration 0020) — map lat/lng
+          latitude?: number | null;
+          longitude?: number | null;
         };
         Relationships: [
           {

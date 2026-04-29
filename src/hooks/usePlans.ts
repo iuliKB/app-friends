@@ -136,6 +136,8 @@ export function usePlans(): {
         created_at: p.created_at as string,
         updated_at: p.updated_at as string,
         cover_image_url: p.cover_image_url as string | null,
+        latitude: p.latitude as number | null,
+        longitude: p.longitude as number | null,
         members: membersMap.get(p.id as string) ?? [],
       }));
 
