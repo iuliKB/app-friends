@@ -154,7 +154,14 @@ Plans:
   3. In the Explore tab, a map/list toggle is visible; switching to map view shows pins for all friend plans that have a location; tapping a pin navigates to that plan's dashboard
   4. Tapping the location label on a plan (or a "Get directions" action) opens the user's preferred native maps app (Apple Maps / Google Maps / Waze) with the destination pre-filled
   5. Plans created before this phase (without lat/lng) are unaffected — no crashes, no blank map tiles
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 20-01-PLAN.md — Foundation: packages, app.config.ts, migration 0020, types, src/lib/maps.ts
+- [ ] 20-02-PLAN.md — Data layer: usePlans + usePlanDetail lat/lng wiring
+- [ ] 20-03-PLAN.md — LocationPicker modal + PlanCreateModal integration
+- [ ] 20-04-PLAN.md — PlanDashboard map tile + directions button + edit mode picker
+- [ ] 20-05-PLAN.md — ExploreMapView + Explore tab list/map toggle
+- [ ] 20-06-PLAN.md — EAS dev build + device verification checkpoint
 **UI hint**: yes
 
 ### Phase 21: Gallery Foundation
