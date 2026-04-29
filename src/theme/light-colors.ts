@@ -1,20 +1,22 @@
 export const LIGHT = {
   // Text
   text: {
-    primary: '#1A1D23',      // deep charcoal — readable without the harshness of pure black
-    secondary: '#64748B',    // slate-500 — clear hierarchy over base
+    primary: '#1A1D23',      // deep charcoal — 16.9:1 on white (AAA)
+    secondary: '#64748B',    // slate-500 — 4.8:1 on white (AA)
   },
 
   // Surfaces
   surface: {
-    base: '#F2F3F7',         // warm off-white — airy, not stark; cards visibly float above it
+    base: '#F5F6F8',         // neutral off-white — cards pop, not cold/blue
     card: '#FFFFFF',
     overlay: 'rgba(0,0,0,0.06)',
   },
 
   // Interactive
   interactive: {
-    accent: '#B9FF3B',       // neon green primary
+    // #4D7C00: deep lime — same hue as dark-mode neon, 5.0:1 on white (AA).
+    // #B9FF3B is 1.2:1 on white — invisible as text, fluorescent as icon.
+    accent: '#4D7C00',
     destructive: '#DC2626',
   },
 
