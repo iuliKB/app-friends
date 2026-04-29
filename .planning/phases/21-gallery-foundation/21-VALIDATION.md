@@ -17,20 +17,20 @@ created: 2026-04-30
 
 | Property | Value |
 |----------|-------|
-| **Framework** | jest (React Native / Expo) |
-| **Config file** | jest.config.js (or package.json jest field) |
-| **Quick run command** | `npx jest --testPathPattern=uploadPlanPhoto --passWithNoTests` |
-| **Full suite command** | `npx jest --passWithNoTests` |
-| **Estimated runtime** | ~15 seconds |
+| **Framework** | npx tsx + node:assert/strict (no test framework — project pattern) |
+| **Config file** | none — tests are plain TypeScript files run with `npx tsx` |
+| **Quick run command** | `npx tsx tests/unit/uploadPlanPhoto.test.ts` |
+| **Full suite command** | `npx tsx tests/unit/uploadPlanPhoto.test.ts && npx tsx tests/unit/usePlanPhotos.photoCap.test.ts` |
+| **Estimated runtime** | ~10 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `npx jest --testPathPattern=uploadPlanPhoto --passWithNoTests`
-- **After every plan wave:** Run `npx jest --passWithNoTests`
+- **After every task commit:** Run `npx tsx tests/unit/uploadPlanPhoto.test.ts`
+- **After every plan wave:** Run full suite command above
 - **Before `/gsd-verify-work`:** Full suite must be green
-- **Max feedback latency:** 20 seconds
+- **Max feedback latency:** 15 seconds
 
 ---
 
@@ -38,14 +38,16 @@ created: 2026-04-30
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 21-01-01 | 01 | 1 | GALL-01 | T-21-01 | Migration creates plan_photos table with correct schema | manual | `supabase db push && supabase db diff` | ❌ W0 | ⬜ pending |
-| 21-01-02 | 01 | 1 | GALL-01 | T-21-02 | RLS enforces plan membership on plan_photos | manual | Supabase Studio / SQL query | ❌ W0 | ⬜ pending |
-| 21-01-03 | 01 | 1 | GALL-02 | T-21-03 | add_plan_photo RPC rejects non-members | manual | Supabase RPC call test | ❌ W0 | ⬜ pending |
-| 21-01-04 | 01 | 1 | GALL-02 | T-21-04 | add_plan_photo RPC enforces 10-photo cap atomically | manual | Supabase RPC call test | ❌ W0 | ⬜ pending |
-| 21-02-01 | 02 | 2 | GALL-01 | — | uploadPlanPhoto returns storage path (not URL) for private bucket | unit | `npx jest --testPathPattern=uploadPlanPhoto` | ❌ W0 | ⬜ pending |
-| 21-02-02 | 02 | 2 | GALL-01 | — | uploadPlanPhoto compresses to 1920px / 0.85 quality | unit | `npx jest --testPathPattern=uploadPlanPhoto` | ❌ W0 | ⬜ pending |
-| 21-02-03 | 02 | 2 | GALL-03 | — | usePlanPhotos generates signed URLs via createSignedUrls batch call | unit | `npx jest --testPathPattern=usePlanPhotos` | ❌ W0 | ⬜ pending |
-| 21-02-04 | 02 | 2 | GALL-03 | — | usePlanPhotos uploadPhoto returns photo_cap_exceeded error when cap hit | unit | `npx jest --testPathPattern=usePlanPhotos` | ❌ W0 | ⬜ pending |
+| 21-01-01 | 01 | 1 | GALL-01 | — | Wave 0 test scaffolds created and exit 0 | unit | `npx tsx tests/unit/uploadPlanPhoto.test.ts && npx tsx tests/unit/usePlanPhotos.photoCap.test.ts` | ❌ W0 | ⬜ pending |
+| 21-01-02 | 01 | 1 | GALL-01 | T-21-01 | Migration creates plan_photos table with correct schema | manual | `supabase db push && supabase db diff` | ❌ W0 | ⬜ pending |
+| 21-01-03 | 01 | 1 | GALL-01 | T-21-02 | RLS enforces plan membership on plan_photos | manual | Supabase Studio / SQL query | ❌ W0 | ⬜ pending |
+| 21-01-04 | 01 | 1 | GALL-02 | T-21-03 | add_plan_photo RPC rejects non-members | manual | Supabase RPC call test | ❌ W0 | ⬜ pending |
+| 21-01-05 | 01 | 1 | GALL-02 | T-21-04 | add_plan_photo RPC enforces 10-photo cap atomically | manual | Supabase RPC call test | ❌ W0 | ⬜ pending |
+| 21-02-01 | 02 | 2 | GALL-01 | — | supabase db push applies migration without error | manual | `supabase db diff 2>&1 \| grep "No schema changes found"` | ✅ | ⬜ pending |
+| 21-02-02 | 02 | 2 | GALL-01 | — | uploadPlanPhoto returns storage path (not URL) for private bucket | unit | `npx tsx tests/unit/uploadPlanPhoto.test.ts` | ❌ W0 | ⬜ pending |
+| 21-02-03 | 02 | 2 | GALL-01 | — | uploadPlanPhoto compresses to 1920px / 0.85 quality | unit | `npx tsx tests/unit/uploadPlanPhoto.test.ts` | ❌ W0 | ⬜ pending |
+| 21-03-01 | 03 | 3 | GALL-03 | — | usePlanPhotos generates signed URLs via createSignedUrls batch call | unit | `npx tsx tests/unit/usePlanPhotos.photoCap.test.ts` | ❌ W0 | ⬜ pending |
+| 21-03-02 | 03 | 3 | GALL-03 | — | usePlanPhotos uploadPhoto returns photo_cap_exceeded error when cap hit | unit | `npx tsx tests/unit/usePlanPhotos.photoCap.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -53,9 +55,9 @@ created: 2026-04-30
 
 ## Wave 0 Requirements
 
-- [ ] `__tests__/lib/uploadPlanPhoto.test.ts` — stubs for GALL-01 upload lib
-- [ ] `__tests__/hooks/usePlanPhotos.test.ts` — stubs for GALL-03 hook
-- [ ] Jest mocks for `expo-image-manipulator`, `expo-image-picker`, `@supabase/supabase-js` storage client
+- [ ] `tests/unit/uploadPlanPhoto.test.ts` — stubs for GALL-01 upload lib (uses `node:assert/strict`, run with `npx tsx`)
+- [ ] `tests/unit/usePlanPhotos.photoCap.test.ts` — stubs for GALL-03 cap logic (uses `node:assert/strict`, run with `npx tsx`)
+- [ ] Inline mocks for `expo-image-manipulator`, `@supabase/supabase-js` storage client via module-level overrides in test files
 
 *Database/RLS tests are manual-only — see Manual-Only Verifications below.*
 
