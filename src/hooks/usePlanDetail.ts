@@ -131,7 +131,7 @@ export function usePlanDetail(planId: string): {
       .from('plans')
       .update(updates)
       .eq('id', planId)
-      .select();
+      .select('id', { count: 'exact' });
 
     if (error) return { error };
     if (count === 0) return { error: new Error('Update blocked — check RLS policies') };
