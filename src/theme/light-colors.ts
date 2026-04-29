@@ -1,15 +1,15 @@
 export const LIGHT = {
   // Text
   text: {
-    primary: '#111827',
-    secondary: '#6B7280',
+    primary: '#1A1D23',      // deep charcoal — readable without the harshness of pure black
+    secondary: '#64748B',    // slate-500 — clear hierarchy over base
   },
 
   // Surfaces
   surface: {
-    base: '#FAFAFA',
+    base: '#F2F3F7',         // warm off-white — airy, not stark; cards visibly float above it
     card: '#FFFFFF',
-    overlay: 'rgba(0,0,0,0.08)',
+    overlay: 'rgba(0,0,0,0.06)',
   },
 
   // Interactive
@@ -31,8 +31,8 @@ export const LIGHT = {
     maybe: '#D97706',
   },
 
-  // Borders
-  border: '#E5E7EB',
+  // Borders — bump up from #E5E7EB so card edges are visible on the off-white base
+  border: '#D1D5DB',
 
   // Overlays
   overlay: 'rgba(0,0,0,0.5)',

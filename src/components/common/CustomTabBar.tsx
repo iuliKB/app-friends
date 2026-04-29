@@ -26,7 +26,7 @@ const TAB_CONFIG: Record<string, { focused: IconName; unfocused: IconName }> = {
 };
 
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { count: pendingCount } = usePendingRequestsCount();
   const { count: invitationCount } = useInvitationCount();
@@ -40,11 +40,11 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
     bar: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: 'rgba(21, 23, 28, 0.92)',
+      backgroundColor: isDark ? 'rgba(21, 23, 28, 0.92)' : 'rgba(255, 255, 255, 0.92)',
       borderRadius: 28,
       borderWidth: 1,
-      borderColor: 'rgba(185, 255, 59, 0.12)',
-      borderTopColor: 'rgba(185, 255, 59, 0.12)',
+      borderColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+      borderTopColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(0, 0, 0, 0.08)',
       height: 64,
       paddingHorizontal: 8,
       overflow: 'visible',
@@ -111,7 +111,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       fontSize: 10,
       fontWeight: '700',
     },
-  }), [colors]);
+  }), [colors, isDark]);
 
   const focusedRoute = state.routes[state.index];
   const nestedState = focusedRoute?.state;
