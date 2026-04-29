@@ -191,7 +191,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
         <View style={styles.mapContainer}>
           <MapView
             style={StyleSheet.absoluteFillObject}
-            initialRegion={DEFAULT_REGION}
+            region={region}
             onRegionChangeComplete={(r, { isGesture }) => {
               if (isGesture) setRegion(r);
             }}
