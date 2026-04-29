@@ -24,6 +24,7 @@ import { uploadPlanCover } from '@/lib/uploadPlanCover';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { StatusPill } from '@/components/friends/StatusPill';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
+import { LocationPicker } from '@/components/maps/LocationPicker';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 function getDefaultTitle(): string {
@@ -58,7 +59,10 @@ export function PlanCreateModal() {
 
   const [title, setTitle] = useState(getDefaultTitle());
   const [scheduledFor, setScheduledFor] = useState(getNextRoundHour());
-  const [location, setLocation] = useState('');
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [friends, setFriends] = useState<FriendWithStatus[]>([]);
   const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(new Set());
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -124,7 +128,9 @@ export function PlanCreateModal() {
     const { planId, error } = await createPlan({
       title: title.trim(),
       scheduledFor,
-      location,
+      location: locationLabel,     // was: location (string), now: locationLabel (string | null)
+      latitude,                     // new — Phase 20
+      longitude,                    // new — Phase 20
       invitedFriendIds: Array.from(selectedFriendIds),
     });
     setCreating(false);
@@ -269,6 +275,22 @@ export function PlanCreateModal() {
     createButton: {
       paddingHorizontal: SPACING.lg,
     },
+    locationTrigger: {
+      height: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.sm,
+      backgroundColor: colors.surface.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: RADII.lg,
+      paddingHorizontal: SPACING.md,
+    },
+    locationTriggerText: {
+      flex: 1,
+      fontSize: FONT_SIZE.md,
+      color: colors.text.primary,
+    },
   }), [colors]);
 
   function renderFriendRow({ item }: { item: FriendWithStatus }) {
@@ -376,18 +398,58 @@ export function PlanCreateModal() {
           )}
         </View>
 
-        {/* Location field */}
+        {/* Where field — D-08: "Add location" button opens LocationPicker modal */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>Where</Text>
-          <TextInput
-            style={styles.textInput}
-            value={location}
-            onChangeText={setLocation}
-            placeholder="My place, a park, TBD..."
-            placeholderTextColor={colors.text.secondary}
-            autoCapitalize="words"
-          />
+          <Text style={styles.fieldLabel}>{'Where'}</Text>
+          <TouchableOpacity
+            style={styles.locationTrigger}
+            onPress={() => setShowLocationPicker(true)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={locationLabel ? 'Change location' : 'Add location'}
+          >
+            <Ionicons
+              name="location-outline"
+              size={20}
+              color={colors.interactive.accent}
+            />
+            <Text
+              style={[
+                styles.locationTriggerText,
+                !locationLabel && { color: colors.text.secondary },
+              ]}
+              numberOfLines={1}
+            >
+              {locationLabel ?? 'Add location'}
+            </Text>
+            {locationLabel ? (
+              <TouchableOpacity
+                onPress={() => {
+                  setLocationLabel(null);
+                  setLatitude(null);
+                  setLongitude(null);
+                }}
+                hitSlop={8}
+                accessibilityLabel="Remove location"
+              >
+                <Ionicons name="close-circle" size={18} color={colors.text.secondary} />
+              </TouchableOpacity>
+            ) : (
+              <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
+            )}
+          </TouchableOpacity>
         </View>
+
+        <LocationPicker
+          visible={showLocationPicker}
+          onConfirm={({ latitude: lat, longitude: lng, label }) => {
+            setLatitude(lat);
+            setLongitude(lng);
+            setLocationLabel(label);
+            setShowLocationPicker(false);
+          }}
+          onCancel={() => setShowLocationPicker(false)}
+        />
 
         {/* Friend selector */}
         <View style={styles.friendSection}>
