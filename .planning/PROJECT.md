@@ -95,9 +95,9 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 ### Active
 
 - [ ] User can toggle between light and dark theme in Profile settings
-- [ ] User can attach a location to a plan (map pin)
-- [ ] User can view a plan's location on a map
-- [ ] User can browse nearby friend plans on a map in Explore tab
+- [x] User can attach a location to a plan (map pin) — Validated in Phase 20: map-feature
+- [x] User can view a plan's location on a map — Validated in Phase 20: map-feature
+- [x] User can browse nearby friend plans on a map in Explore tab — Validated in Phase 20: map-feature
 - [ ] Each plan participant can upload up to 10 photos to a shared plan gallery
 - [ ] All plan members can view the plan photo gallery
 
@@ -201,4 +201,4 @@ Known technical considerations:
 | poll_votes Realtime via existing postgres_changes channel (v1.5) | No new subscription per poll card — stays within free-tier Realtime connection budget | ✓ Good |
 
 ---
-*Last updated: 2026-04-28 after v1.5 milestone close + v1.6 milestone start*
+*Last updated: 2026-04-30 after Phase 20 (map-feature) complete*
