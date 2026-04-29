@@ -172,7 +172,7 @@ export function usePlans(): {
       .select('id')
       .single();
 
-    if (planError) return { planId: null, error: planError };
+    if (planError) return { planId: null, error: new Error(planError.message) };
 
     const planId = plan.id as string;
 
@@ -188,7 +188,7 @@ export function usePlans(): {
 
     const { error: membersError } = await supabase.from('plan_members').insert(memberRows);
 
-    if (membersError) return { planId, error: membersError };
+    if (membersError) return { planId, error: new Error(membersError.message) };
 
     return { planId, error: null };
   }

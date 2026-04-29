@@ -113,7 +113,7 @@ export function usePlanDetail(planId: string): {
       .eq('plan_id', planId)
       .eq('user_id', session.user.id);
 
-    if (error) return { error };
+    if (error) return { error: new Error(error.message) };
     return { error: null };
   }
 
@@ -133,7 +133,7 @@ export function usePlanDetail(planId: string): {
       .eq('id', planId)
       .select('id', { count: 'exact' });
 
-    if (error) return { error };
+    if (error) return { error: new Error(error.message) };
     if (count === 0) return { error: new Error('Update blocked — check RLS policies') };
     return { error: null };
   }
@@ -147,7 +147,7 @@ export function usePlanDetail(planId: string): {
       .eq('id', planId)
       .eq('created_by', session.user.id);
 
-    if (error) return { error };
+    if (error) return { error: new Error(error.message) };
     return { error: null };
   }
 
