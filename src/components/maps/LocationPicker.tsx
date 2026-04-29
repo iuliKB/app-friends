@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -12,7 +12,6 @@ import * as Location from 'expo-location';
 import { Platform } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import { DARK_MAP_STYLE } from '@/lib/maps';
-import type { Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, FONT_WEIGHT, RADII } from '@/theme';
 import { formatAddress } from '@/lib/maps';
@@ -34,46 +33,48 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [region, setRegion] = useState<Region>(DEFAULT_REGION);
+  const mapRef = useRef<MapView>(null);
+  // Track the map center via ref — avoids controlled region re-render issues on iOS
+  const centerRef = useRef({ latitude: DEFAULT_REGION.latitude, longitude: DEFAULT_REGION.longitude });
   const [isGeocoding, setIsGeocoding] = useState(false);
-  // addressLabel preview deferred — geocode only on confirm (T-20-10)
 
-  // On modal open: request permission and center on GPS position
+  // On modal open: request permission and animate map to GPS position
   useEffect(() => {
     if (!visible) return;
+    centerRef.current = { latitude: DEFAULT_REGION.latitude, longitude: DEFAULT_REGION.longitude };
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return; // map stays on DEFAULT_REGION
+      if (status !== 'granted') return;
       const pos = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-      setRegion({
+      const gpsRegion = {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
-      });
+      };
+      centerRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+      mapRef.current?.animateToRegion(gpsRegion, 600);
     })();
   }, [visible]);
 
   async function handleConfirm() {
+    const { latitude, longitude } = centerRef.current;
     setIsGeocoding(true);
     try {
       // T-20-10: Always check permission before reverseGeocodeAsync (prevents Android hang)
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        const label = `${region.latitude.toFixed(5)}, ${region.longitude.toFixed(5)}`;
-        onConfirm({ latitude: region.latitude, longitude: region.longitude, label });
+        const label = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        onConfirm({ latitude, longitude, label });
         return;
       }
-      const results = await Location.reverseGeocodeAsync({
-        latitude: region.latitude,
-        longitude: region.longitude,
-      });
+      const results = await Location.reverseGeocodeAsync({ latitude, longitude });
       const label = results[0]
-        ? formatAddress(results[0], region.latitude, region.longitude)
-        : `${region.latitude.toFixed(5)}, ${region.longitude.toFixed(5)}`;
-      onConfirm({ latitude: region.latitude, longitude: region.longitude, label });
+        ? formatAddress(results[0], latitude, longitude)
+        : `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+      onConfirm({ latitude, longitude, label });
     } finally {
       setIsGeocoding(false);
     }
@@ -192,12 +193,13 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
         {/* Map + fixed pin overlay */}
         <View style={styles.mapContainer}>
           <MapView
+            ref={mapRef}
             style={StyleSheet.absoluteFillObject}
             provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
             {...(Platform.OS === 'android' ? { customMapStyle: DARK_MAP_STYLE } : { userInterfaceStyle: 'dark' })}
-            region={region}
-            onRegionChangeComplete={(r, { isGesture }) => {
-              if (isGesture) setRegion(r);
+            initialRegion={DEFAULT_REGION}
+            onRegionChangeComplete={(r) => {
+              centerRef.current = { latitude: r.latitude, longitude: r.longitude };
             }}
           />
 
