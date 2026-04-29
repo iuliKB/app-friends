@@ -68,6 +68,8 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       width: 54,
       height: 54,
       borderRadius: 27,
+      // Light mode: keep #B9FF3B (neon lime) as bg — icon is #0E0F11 (15.9:1 contrast).
+      // colors.interactive.accent is #4D7C00 in light (too dark for the dark icon).
       backgroundColor: isDark ? colors.interactive.accent : '#B9FF3B',
       alignItems: 'center',
       justifyContent: 'center',

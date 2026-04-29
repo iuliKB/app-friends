@@ -259,32 +259,6 @@ export function MessageBubble({
       color: colors.text.secondary,
       fontStyle: 'italic',
     },
-    // QuotedBlock styles
-    quotedBlock: {
-      flexDirection: 'row',
-      backgroundColor: colors.surface.overlay,
-      borderRadius: RADII.xs,
-      marginBottom: SPACING.xs,
-      overflow: 'hidden',
-    },
-    accentBar: {
-      width: 4,
-      borderRadius: RADII.xs,
-    },
-    quotedContent: {
-      flex: 1,
-      paddingVertical: SPACING.xs,
-      paddingHorizontal: SPACING.sm,
-    },
-    quotedSender: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.semibold,
-    },
-    quotedPreview: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
     // Context menu styles
     backdrop: {
       // eslint-disable-next-line campfire/no-hardcoded-styles

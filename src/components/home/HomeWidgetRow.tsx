@@ -27,6 +27,7 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
       flex: 1,
       // eslint-disable-next-line campfire/no-hardcoded-styles
       maxWidth: 140,
+      ...colors.cardElevation,
       backgroundColor: colors.surface.card,
       borderRadius: RADII.lg,
       padding: SPACING.md,
@@ -35,7 +36,6 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
       justifyContent: 'space-between',
       borderWidth: 1,
       borderColor: colors.border,
-      ...colors.cardElevation,
     },
     tilePressed: {
       opacity: 0.75,

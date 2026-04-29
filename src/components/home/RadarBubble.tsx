@@ -131,7 +131,7 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
       textAlign: 'center',
       marginTop: SPACING.xs,
     },
-  }), [colors]);
+  }), []);
 
   const STATUS_COLORS: Record<string, string> = useMemo(() => ({
     free: colors.status.free,
