@@ -3,6 +3,7 @@ import {
   Alert,
   FlatList,
   Modal,
+  Platform,
   RefreshControl,
   StyleSheet,
   Text,
@@ -20,6 +21,7 @@ import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FAB } from '@/components/common/FAB';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { ExploreMapView } from '@/components/maps/ExploreMapView';
 import type { PlanWithMembers } from '@/types/plans';
 
 function formatInviteTime(scheduledFor: string | null): string {
@@ -41,6 +43,8 @@ export function PlansListScreen() {
   const { plans, error, refreshing, handleRefresh, fetchPlans } = usePlans();
   const { invitations, count: inviteCount, accept, decline } = useInvitations();
   const [modalVisible, setModalVisible] = useState(false);
+  // D-15: map is default when Explore tab opens; not persisted across sessions
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
 
   async function handleAccept(planId: string) {
     const { error: err } = await accept(planId);
@@ -221,6 +225,25 @@ export function PlansListScreen() {
       fontWeight: FONT_WEIGHT.semibold,
       color: colors.text.secondary,
     },
+    // View mode toggle
+    viewToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    toggleButton: {
+      width: 36,
+      height: 36,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: RADII.md,
+    },
+    toggleButtonActive: {
+      // D-15 UI-SPEC: 15% opacity accent background on active button
+      backgroundColor: Platform.OS === 'android'
+        ? 'rgba(185, 255, 59, 0.15)'
+        : 'rgba(185, 255, 59, 0.15)',
+    },
   }), [colors]);
 
   function renderInvitation({ item }: { item: PlanInvitation }) {
@@ -290,6 +313,53 @@ export function PlansListScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
+      <View style={{ paddingTop: SPACING.sm, paddingHorizontal: SPACING.lg }}>
+        <ScreenHeader
+          title="Your Plans"
+          rightAction={
+            <View
+              style={styles.viewToggle}
+              accessibilityRole="radiogroup"
+            >
+              <TouchableOpacity
+                style={[
+                  styles.toggleButton,
+                  viewMode === 'list' && styles.toggleButtonActive,
+                ]}
+                onPress={() => setViewMode('list')}
+                hitSlop={8}
+                accessibilityLabel="List view"
+                accessibilityState={{ selected: viewMode === 'list' }}
+              >
+                <Ionicons
+                  name="list"
+                  size={20}
+                  color={viewMode === 'list' ? colors.interactive.accent : colors.text.secondary}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.toggleButton,
+                  viewMode === 'map' && styles.toggleButtonActive,
+                ]}
+                onPress={() => setViewMode('map')}
+                hitSlop={8}
+                accessibilityLabel="Map view"
+                accessibilityState={{ selected: viewMode === 'map' }}
+              >
+                <Ionicons
+                  name="map-outline"
+                  size={20}
+                  color={viewMode === 'map' ? colors.interactive.accent : colors.text.secondary}
+                />
+              </TouchableOpacity>
+            </View>
+          }
+        />
+      </View>
+      {viewMode === 'map' ? (
+        <ExploreMapView plans={plans} />
+      ) : (
       <FlatList<PlanWithMembers>
         data={plans}
         keyExtractor={(item) => item.id}
@@ -297,8 +367,7 @@ export function PlansListScreen() {
           <PlanCard plan={item} onPress={() => router.push(`/plans/${item.id}` as never)} />
         )}
         ListHeaderComponent={
-          <View style={{ paddingTop: SPACING.sm, paddingHorizontal: SPACING.lg }}>
-            <ScreenHeader title="Your Plans" />
+          <View style={{ paddingHorizontal: SPACING.lg }}>
             {inviteCount > 0 && (
               <TouchableOpacity
                 style={styles.inviteBanner}
@@ -340,6 +409,7 @@ export function PlansListScreen() {
           />
         }
       />
+      )}
 
       <FAB
         icon={<Ionicons name="add" size={24} color={colors.surface.base} />}
