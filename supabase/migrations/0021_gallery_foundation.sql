@@ -73,12 +73,13 @@ CREATE POLICY "plan_gallery_select_member"
     AND public.is_plan_member((storage.foldername(name))[1]::uuid)
   );
 
--- INSERT: plan members may upload to their plan's folder
+-- INSERT: plan members may upload to their plan's folder, path[2] must match their own uid
 CREATE POLICY "plan_gallery_insert_member"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (
     bucket_id = 'plan-gallery'
     AND public.is_plan_member((storage.foldername(name))[1]::uuid)
+    AND (storage.foldername(name))[2] = auth.uid()::text
   );
 
 -- DELETE: path owner only — segment [2] = user_id (D-03, D-04)
