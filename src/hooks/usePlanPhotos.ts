@@ -132,18 +132,7 @@ export function usePlanPhotos(planId: string): {
       const photo = photos.find((p) => p.id === photoId);
       if (!photo) return { error: new Error('Photo not found in local state') };
 
-      // Step 1: Remove storage object
-      // RLS: plan_gallery_delete_own — (storage.foldername(name))[2] = auth.uid()::text
-      const { error: storageError } = await supabase.storage
-        .from('plan-gallery')
-        .remove([photo.storagePath]);
-
-      if (storageError) {
-        console.error('[usePlanPhotos] Storage delete failed:', storageError.message);
-        // Continue to DB delete — Storage errors do not prevent row cleanup
-      }
-
-      // Step 2: Delete DB row
+      // Step 1: Delete DB row first — if this fails, storage object survives and is retryable
       // RLS: plan_photos_delete_own — uploader_id = auth.uid()
       const { error: dbError } = await supabase
         .from('plan_photos')
@@ -151,6 +140,18 @@ export function usePlanPhotos(planId: string): {
         .eq('id', photoId);
 
       if (dbError) return { error: new Error(dbError.message) };
+
+      // Step 2: Remove storage object — DB row is already gone; a dangling storage object
+      // here is invisible to the app but recoverable; a dangling object with no DB row is not.
+      // RLS: plan_gallery_delete_own — (storage.foldername(name))[2] = auth.uid()::text
+      const { error: storageError } = await supabase.storage
+        .from('plan-gallery')
+        .remove([photo.storagePath]);
+
+      if (storageError) {
+        console.error('[usePlanPhotos] Storage delete failed (row already deleted):', storageError.message);
+        // Acceptable — row is gone; storage cleanup can be handled separately
+      }
 
       await refetch();
       return { error: null };
