@@ -77,7 +77,7 @@ export function usePlanPhotos(planId: string): {
           planId: r.plan_id as string,
           uploaderId: r.uploader_id as string,
           storagePath: r.storage_path as string,
-          signedUrl: signedMap.get(r.storage_path as string) ?? '',
+          signedUrl: signedMap.get(r.storage_path as string) ?? null,
           createdAt: r.created_at as string,
           uploader: {
             displayName: profile?.display_name ?? 'Unknown',

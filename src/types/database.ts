@@ -870,7 +870,7 @@ export type PlanPhotoWithUploader = {
   planId: string;
   uploaderId: string;
   storagePath: string;
-  signedUrl: string;       // 1-hour TTL signed URL generated at fetch time
+  signedUrl: string | null; // 1-hour TTL signed URL generated at fetch time; null when signed URL generation failed
   createdAt: string;
   uploader: {
     displayName: string;
