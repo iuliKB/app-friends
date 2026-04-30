@@ -106,7 +106,7 @@
 - [x] **Phase 18: Theme Foundation** - ThemeProvider context, DARK/LIGHT color split, useTheme() hook, app.config.ts fix, compat shim, ThemeSegmentedControl + Profile APPEARANCE section
 - [x] **Phase 19: Theme Migration** - Migrate all ~98 COLORS import files to useTheme(); Profile APPEARANCE toggle; remove compat shim (completed 2026-04-28)
 - [x] **Phase 20: Map Feature** - Migration 0020 lat/lng columns, react-native-maps + expo-location install, LocationPicker, plan map view, Explore map (completed 2026-04-29)
-- [ ] **Phase 21: Gallery Foundation** - plan_photos table + RLS + add_plan_photo RPC + plan-gallery Storage bucket, upload pipeline, usePlanPhotos hook
+- [x] **Phase 21: Gallery Foundation** - plan_photos table + RLS + add_plan_photo RPC + plan-gallery Storage bucket, upload pipeline, usePlanPhotos hook (completed 2026-04-30)
 - [ ] **Phase 22: Gallery UI** - PlanDashboardScreen ScrollView→FlatList refactor, photo grid, full-screen lightbox, camera capture, delete own, save to roll
 
 ## Phase Details
@@ -177,7 +177,7 @@ Plans:
 Plans:
 - [x] 21-01-PLAN.md — Test scaffolds + migration 0021 SQL + plan_photos database types
 - [x] 21-02-PLAN.md — Schema push (BLOCKING) + uploadPlanPhoto.ts upload library
-- [ ] 21-03-PLAN.md — usePlanPhotos hook (fetch + signed URLs + upload + delete mutations)
+- [x] 21-03-PLAN.md — usePlanPhotos hook (fetch + signed URLs + upload + delete mutations)
 
 ### Phase 22: Gallery UI
 **Goal**: Users can see all plan photos in a scrollable grid inside the plan dashboard, tap any photo to view it full-screen and swipe through others, see who uploaded each photo, delete their own photos, and save any photo to their device camera roll — and PlanDashboardScreen uses FlatList throughout
@@ -206,7 +206,7 @@ Plans:
 | 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
-| 21. Gallery Foundation | v1.6 | 2/3 | In Progress|  |
+| 21. Gallery Foundation | v1.6 | 3/3 | Complete   | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 0/? | Not started | - |
 
 ---

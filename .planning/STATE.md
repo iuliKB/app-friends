@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
-status: executing
-stopped_at: Completed 21-gallery-foundation 21-02-PLAN.md
-last_updated: "2026-04-30T00:04:20.037Z"
+status: verifying
+stopped_at: Completed 21-gallery-foundation 21-03-PLAN.md
+last_updated: "2026-04-30T00:09:00.609Z"
 last_activity: 2026-04-30
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 15
-  completed_plans: 14
-  percent: 93
+  completed_plans: 15
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 Milestone: v1.6 Places, Themes & Memories
 Phase: 21 (gallery-foundation) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-30
 
 Progress: [██████████] 100% (Phase 18 complete)
@@ -89,6 +89,9 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 21-01]: add_plan_photo RPC enforces 10-photo cap with P0001 ERRCODE in single plpgsql transaction — no concurrent upload bypass
 - [Phase 21-02]: getPublicUrl() never called in uploadPlanPhoto — private bucket returns storage path for signed URL generation downstream
 - [Phase 21-02]: Private bucket upload pattern: compress → fetch(uri).arrayBuffer() → upload → return path (not URL)
+- [Phase 21-gallery-foundation]: add_plan_photo added to database.ts Functions type — RPC existed in migration but was missing from TS types
+- [Phase 21-gallery-foundation]: createSignedUrls batch call (not per-photo loop) — single API call for all paths
+- [Phase 21-gallery-foundation]: deletePhoto continues to DB delete even if storage remove fails — storage errors do not prevent row cleanup
 
 ### Pending Todos
 
@@ -100,5 +103,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-30T00:04:20.033Z
-Stopped at: Completed 21-gallery-foundation 21-02-PLAN.md
+Last session: 2026-04-30T00:09:00.604Z
+Stopped at: Completed 21-gallery-foundation 21-03-PLAN.md
