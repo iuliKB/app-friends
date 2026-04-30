@@ -9,9 +9,11 @@ export type PlanPhotoGroup = {
   photos: PlanPhotoWithUploader[]; // sorted created_at DESC within group
 };
 
+export type PlanPhotoWithTitle = PlanPhotoWithUploader & { planTitle: string };
+
 export type UseAllPlanPhotosResult = {
   groups: PlanPhotoGroup[];
-  recentPhotos: PlanPhotoWithUploader[]; // flat, most recent 6 across all plans (for widget)
+  recentPhotos: PlanPhotoWithTitle[]; // flat, most recent 6 across all plans (for widget)
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -21,7 +23,7 @@ export type UseAllPlanPhotosResult = {
 export function useAllPlanPhotos(): UseAllPlanPhotosResult {
   const session = useAuthStore((s) => s.session);
   const [groups, setGroups] = useState<PlanPhotoGroup[]>([]);
-  const [recentPhotos, setRecentPhotos] = useState<PlanPhotoWithUploader[]>([]);
+  const [recentPhotos, setRecentPhotos] = useState<PlanPhotoWithTitle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -134,7 +136,11 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
         .sort((a, b) => (b.photos[0]?.createdAt ?? '').localeCompare(a.photos[0]?.createdAt ?? ''));
 
       // Flat recent 6 across all plans for the widget (assembled is already sorted DESC)
-      const recent = assembled.slice(0, 6);
+      // Enrich with planTitle so the home widget caption is populated (MJ-01)
+      const recent: PlanPhotoWithTitle[] = assembled.slice(0, 6).map((photo) => ({
+        ...photo,
+        planTitle: planTitleMap.get(photo.planId) ?? 'Unknown Plan',
+      }));
 
       setGroups(grouped);
       setRecentPhotos(recent);

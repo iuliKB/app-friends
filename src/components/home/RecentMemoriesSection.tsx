@@ -12,7 +12,7 @@ import { Image } from 'expo-image';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { useAllPlanPhotos } from '@/hooks/useAllPlanPhotos';
-import type { PlanPhotoWithUploader } from '@/types/database';
+import type { PlanPhotoWithTitle } from '@/hooks/useAllPlanPhotos';
 
 const THUMB_SIZE = 72;
 
@@ -103,8 +103,8 @@ export function RecentMemoriesSection() {
       <View style={styles.headerWrapper}>
         <SectionHeader title="Recent Memories" rightAction={seeAllAction} />
       </View>
-      <FlatList<PlanPhotoWithUploader & { planTitle?: string }>
-        data={recentPhotos as (PlanPhotoWithUploader & { planTitle?: string })[]}
+      <FlatList<PlanPhotoWithTitle>
+        data={recentPhotos}
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -117,7 +117,7 @@ export function RecentMemoriesSection() {
             style={styles.thumbContainer}
             onPress={() => router.push('/memories')}
             activeOpacity={0.85}
-            accessibilityLabel={`Photo from ${item.planTitle ?? ''}`}
+            accessibilityLabel={`Photo from ${item.planTitle}`}
           >
             <Image
               source={{ uri: item.signedUrl ?? undefined }}
@@ -126,7 +126,7 @@ export function RecentMemoriesSection() {
             />
             {/* D-02: Plan name caption below thumbnail */}
             <Text style={styles.caption} numberOfLines={1}>
-              {item.planTitle ?? ''}
+              {item.planTitle}
             </Text>
           </TouchableOpacity>
         )}
