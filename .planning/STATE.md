@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
-status: executing
-stopped_at: Completed 22-02-PLAN.md
-last_updated: "2026-04-30T08:30:18.872Z"
+status: verifying
+stopped_at: Completed 22-03-PLAN.md
+last_updated: "2026-04-30T08:36:47.541Z"
 last_activity: 2026-04-30
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 18
-  completed_plans: 17
-  percent: 94
+  completed_plans: 18
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 Milestone: v1.6 Places, Themes & Memories
 Phase: 22 (gallery-ui) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-30
 
 Progress: [██████████] 100% (Phase 18 complete)
@@ -96,6 +96,8 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 22-gallery-ui]: GalleryViewerModal imported with @ts-expect-error stub — file created in Plan 02; TypeScript error resolves automatically when Plan 02 creates the file
 - [Phase 22-gallery-ui]: StyleSheet.create inside useMemo([colors]) in GalleryViewerModal — colors.feedback.error used for delete icon; module-level would not react to theme changes
 - [Phase 22-gallery-ui]: getItemLayout required alongside initialScrollIndex — FlatList cannot jump to non-zero index without fixed item dimensions
+- [Phase 22-gallery-ui]: Add Photo button visibility: ownPhotoCount < 10 only (not gated by isMember) — plan must_haves separate button row from EmptyState CTA
+- [Phase 22-gallery-ui]: addPhotoRow/addPhotoText styles with interactive accent used for Add Photo button (not addCoverButton) per UI-SPEC §3.2
 
 ### Pending Todos
 
@@ -107,5 +109,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-30T08:30:18.869Z
-Stopped at: Completed 22-02-PLAN.md
+Last session: 2026-04-30T08:36:47.537Z
+Stopped at: Completed 22-03-PLAN.md
