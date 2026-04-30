@@ -31,7 +31,6 @@ import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { formatPlanTime } from '@/components/plans/PlanCard';
 import { LocationPicker } from '@/components/maps/LocationPicker';
 import { usePlanPhotos } from '@/hooks/usePlanPhotos';
-// @ts-expect-error Plan 02 creates this file
 import { GalleryViewerModal } from '@/components/plans/GalleryViewerModal';
 import { EmptyState } from '@/components/common/EmptyState';
 import { showActionSheet } from '@/lib/action-sheet';
