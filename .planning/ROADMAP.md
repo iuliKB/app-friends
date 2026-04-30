@@ -108,7 +108,7 @@
 - [x] **Phase 20: Map Feature** - Migration 0020 lat/lng columns, react-native-maps + expo-location install, LocationPicker, plan map view, Explore map (completed 2026-04-29)
 - [x] **Phase 21: Gallery Foundation** - plan_photos table + RLS + add_plan_photo RPC + plan-gallery Storage bucket, upload pipeline, usePlanPhotos hook (completed 2026-04-30)
 - [x] **Phase 22: Gallery UI** - PlanDashboardScreen ScrollView→FlatList refactor, photo grid, full-screen lightbox, camera capture, delete own, save to roll (completed 2026-04-30)
-- [ ] **Phase 23: Memories Gallery** - useAllPlanPhotos hook, RecentMemoriesSection home widget, /memories SectionList gallery screen
+- [x] **Phase 23: Memories Gallery** - useAllPlanPhotos hook, RecentMemoriesSection home widget, /memories SectionList gallery screen (completed 2026-04-30)
 
 ## Phase Details
 
@@ -206,7 +206,7 @@ Plans:
 Plans:
 - [x] 23-01-PLAN.md — useAllPlanPhotos hook (cross-plan aggregation, signed URLs, groups + recentPhotos)
 - [x] 23-02-PLAN.md — RecentMemoriesSection widget + HomeScreen wiring
-- [ ] 23-03-PLAN.md — MemoriesScreen /memories route (SectionList gallery, GalleryViewerModal, pull-to-refresh)
+- [x] 23-03-PLAN.md — MemoriesScreen /memories route (SectionList gallery, GalleryViewerModal, pull-to-refresh)
 
 ## Progress
 
@@ -223,7 +223,7 @@ Plans:
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 3/3 | Complete    | 2026-04-30 |
-| 23. Memories Gallery | v1.6 | 2/3 | In Progress|  |
+| 23. Memories Gallery | v1.6 | 3/3 | Complete   | 2026-04-30 |
 
 ---
 

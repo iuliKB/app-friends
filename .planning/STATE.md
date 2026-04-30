@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
-status: executing
-stopped_at: Completed 23-02-PLAN.md
-last_updated: "2026-04-30T10:11:53.668Z"
+status: verifying
+stopped_at: Completed 23-03-PLAN.md
+last_updated: "2026-04-30T10:14:42.205Z"
 last_activity: 2026-04-30
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 21
-  completed_plans: 20
-  percent: 95
+  completed_plans: 21
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 Milestone: v1.6 Places, Themes & Memories
 Phase: 23 (memories-gallery) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-30
 
 Progress: [██████████] 100% (Phase 18 complete)
@@ -100,6 +100,8 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 22-gallery-ui]: addPhotoRow/addPhotoText styles with interactive accent used for Add Photo button (not addCoverButton) per UI-SPEC §3.2
 - [Phase 23-memories-gallery]: recentPhotos derived as assembled.slice(0, 6) — assembled already sorted DESC from query, no re-sort needed
 - [Phase 23-memories-gallery]: StyleSheet.create inside useMemo([colors]) in RecentMemoriesSection — all themed styles reactive to dark/light switch
+- [Phase 23-memories-gallery]: chunkPhotos pre-chunks photos into rows of 3 before passing to SectionList — SectionList has no numColumns prop
+- [Phase 23-memories-gallery]: activePlanId state captures planId at viewer-open time to scope deletePhoto callback — prevents stale-closure issues
 
 ### Roadmap Evolution
 
@@ -115,5 +117,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-30T10:11:53.665Z
-Stopped at: Completed 23-02-PLAN.md
+Last session: 2026-04-30T10:14:42.201Z
+Stopped at: Completed 23-03-PLAN.md
