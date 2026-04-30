@@ -816,7 +816,7 @@ export type Database = {
           p_plan_id: string;
           p_storage_path: string;
         };
-        Returns: undefined;
+        Returns: string; // uuid of the inserted plan_photos row
       };
     };
     CompositeTypes: Record<string, never>;
