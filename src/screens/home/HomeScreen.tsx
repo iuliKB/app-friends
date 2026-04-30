@@ -23,6 +23,7 @@ import { usePlans } from '@/hooks/usePlans';
 import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 import { UpcomingEventsSection } from '@/components/home/UpcomingEventsSection';
+import { RecentMemoriesSection } from '@/components/home/RecentMemoriesSection';
 import { HomeWidgetRow } from '@/components/home/HomeWidgetRow';
 
 export function HomeScreen() {
@@ -201,6 +202,8 @@ export function HomeScreen() {
 
         {/* D-09: Upcoming events section — below Radar/Cards view */}
         <UpcomingEventsSection />
+
+        <RecentMemoriesSection />
 
         <HomeWidgetRow iouSummary={iouSummary} birthdays={birthdays} />
       </ScrollView>
