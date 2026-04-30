@@ -186,27 +186,31 @@ export default function MemoriesScreen() {
             <View style={styles.sectionDivider} />
           </View>
         )}
-        renderItem={({ item: row, section }) => (
-          <View style={styles.row}>
-            {row.map((photo) => {
-              const globalIdx = section.allPhotos.indexOf(photo);
-              return (
-                <TouchableOpacity
-                  key={photo.id}
-                  onPress={() => openViewer(section.allPhotos, globalIdx, section.planId)}
-                  activeOpacity={0.85}
-                  accessibilityLabel={`Photo from ${section.title}`}
-                >
-                  <Image
-                    source={{ uri: photo.signedUrl ?? undefined }}
-                    style={styles.cell}
-                    contentFit="cover"
-                  />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
+        renderItem={({ item: row, section }) => {
+          const rowIdx = section.data.indexOf(row);
+          const rowStart = rowIdx * 3; // chunkPhotos uses chunk size 3
+          return (
+            <View style={styles.row}>
+              {row.map((photo, cellIdx) => {
+                const globalIdx = rowStart + cellIdx;
+                return (
+                  <TouchableOpacity
+                    key={photo.id}
+                    onPress={() => openViewer(section.allPhotos, globalIdx, section.planId)}
+                    activeOpacity={0.85}
+                    accessibilityLabel={`Photo from ${section.title}`}
+                  >
+                    <Image
+                      source={{ uri: photo.signedUrl ?? undefined }}
+                      style={styles.cell}
+                      contentFit="cover"
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          );
+        }}
       />
 
       {/* GalleryViewerModal — same component as Phase 22, reused as-is */}
