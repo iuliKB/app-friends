@@ -32,6 +32,12 @@
 - [x] **GALL-07**: User can delete their own photos from the gallery (cannot delete others')
 - [x] **GALL-08**: User can save any gallery photo to their device camera roll
 
+### Memories
+
+- [ ] **MEMO-01**: Home screen shows a "Recent Memories" widget with the latest photos from all plans the user is part of
+- [ ] **MEMO-02**: Tapping "See all" opens a full-screen Memories gallery with photos grouped by plan (newest plan first, grid within each group)
+- [ ] **MEMO-03**: Each photo in the Memories gallery shows the plan name, uploader, and opens the full-screen viewer on tap
+
 ---
 
 ## Future Requirements
@@ -85,6 +91,9 @@
 | GALL-06 | Phase 22 | Complete |
 | GALL-07 | Phase 22 | Complete |
 | GALL-08 | Phase 22 | Complete |
+| MEMO-01 | Phase 23 | Pending |
+| MEMO-02 | Phase 23 | Pending |
+| MEMO-03 | Phase 23 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total

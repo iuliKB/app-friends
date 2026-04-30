@@ -213,6 +213,16 @@ Plans:
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 3/3 | Complete    | 2026-04-30 |
 
+### Phase 23: Memories Gallery
+
+**Goal:** Users can see all photos from all their plans in one place — a "Recent Memories" widget on the Home screen shows the latest photos, and tapping "See all" opens a full-screen gallery screen with photos grouped by plan (newest plan first)
+**Requirements**: MEMO-01, MEMO-02, MEMO-03
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 23 to break down)
+
 ---
 
 *Roadmap updated: 2026-04-30 — v1.6 Phase 22 Gallery UI planned (3 plans, 3 waves)*

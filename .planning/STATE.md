@@ -99,6 +99,10 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 22-gallery-ui]: Add Photo button visibility: ownPhotoCount < 10 only (not gated by isMember) — plan must_haves separate button row from EmptyState CTA
 - [Phase 22-gallery-ui]: addPhotoRow/addPhotoText styles with interactive accent used for Add Photo button (not addCoverButton) per UI-SPEC §3.2
 
+### Roadmap Evolution
+
+- Phase 23 added: Memories Gallery — home screen Recent Memories widget + full-screen gallery grouped by plan (MEMO-01, MEMO-02, MEMO-03)
+
 ### Pending Todos
 
 (none)
