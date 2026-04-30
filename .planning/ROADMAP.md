@@ -211,7 +211,7 @@ Plans:
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
-| 22. Gallery UI | v1.6 | 3/3 | Complete   | 2026-04-30 |
+| 22. Gallery UI | v1.6 | 3/3 | Complete    | 2026-04-30 |
 
 ---
 

@@ -4,7 +4,7 @@ milestone: v1.6
 milestone_name: Places, Themes & Memories
 status: verifying
 stopped_at: Completed 22-03-PLAN.md
-last_updated: "2026-04-30T08:36:47.541Z"
+last_updated: "2026-04-30T08:46:45.523Z"
 last_activity: 2026-04-30
 progress:
   total_phases: 5
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Milestone: v1.6 Places, Themes & Memories
-Phase: 22 (gallery-ui) — EXECUTING
-Plan: 3 of 3
+Phase: 22
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-04-30
 
