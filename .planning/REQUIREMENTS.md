@@ -23,9 +23,9 @@
 
 ### Gallery
 
-- [ ] **GALL-01**: Each plan participant can upload photos to the plan gallery from their photo library
-- [ ] **GALL-02**: Each plan participant can capture and upload a photo using the in-app camera
-- [ ] **GALL-03**: Each participant is limited to 10 photos per plan (enforced server-side)
+- [x] **GALL-01**: Each plan participant can upload photos to the plan gallery from their photo library
+- [x] **GALL-02**: Each plan participant can capture and upload a photo using the in-app camera
+- [x] **GALL-03**: Each participant is limited to 10 photos per plan (enforced server-side)
 - [ ] **GALL-04**: User can view all plan photos in a scrollable grid inside the plan detail screen
 - [ ] **GALL-05**: User can tap any photo to open it full-screen and swipe to browse others
 - [ ] **GALL-06**: Each photo shows the uploader's avatar or name
@@ -77,9 +77,9 @@
 | MAP-03 | Phase 20 | Complete |
 | MAP-04 | Phase 20 | Complete |
 | MAP-05 | Phase 20 | Complete |
-| GALL-01 | Phase 21 | Pending |
-| GALL-02 | Phase 21 | Pending |
-| GALL-03 | Phase 21 | Pending |
+| GALL-01 | Phase 21 | Complete |
+| GALL-02 | Phase 21 | Complete |
+| GALL-03 | Phase 21 | Complete |
 | GALL-04 | Phase 22 | Pending |
 | GALL-05 | Phase 22 | Pending |
 | GALL-06 | Phase 22 | Pending |

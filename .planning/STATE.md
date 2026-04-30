@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Places, Themes & Memories
 status: executing
-stopped_at: Phase 21 context gathered
-last_updated: "2026-04-29T23:32:00.322Z"
+stopped_at: Completed 21-gallery-foundation 21-01-PLAN.md
+last_updated: "2026-04-30T00:00:09.660Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_plans: 15
+  completed_plans: 13
+  percent: 87
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 20 — map-feature
+**Current focus:** Phase 21 — gallery-foundation
 
 ## Current Position
 
 Milestone: v1.6 Places, Themes & Memories
-Phase: 21
-Plan: Not started
+Phase: 21 (gallery-foundation) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-29
 
@@ -85,6 +85,8 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [Phase 20-04]: FONT_WEIGHT.medium absent from token set — FONT_WEIGHT.semibold used for directionsText
 - [Phase 20-04]: usePlanDetail exported type interface now includes latitude/longitude in updatePlanDetails signature
 - [Phase 20-map-feature]: EmptyState requires icon/heading/body props — used ionicons map-outline with proper heading and body (plan spec had simplified message= prop which does not exist)
+- [Phase 21-01]: parseGalleryPathSegments uses ?? '' fallback for noUncheckedIndexedAccess compliance
+- [Phase 21-01]: add_plan_photo RPC enforces 10-photo cap with P0001 ERRCODE in single plpgsql transaction — no concurrent upload bypass
 
 ### Pending Todos
 
@@ -96,5 +98,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-29T23:32:00.316Z
-Stopped at: Phase 21 context gathered
+Last session: 2026-04-30T00:00:09.655Z
+Stopped at: Completed 21-gallery-foundation 21-01-PLAN.md
