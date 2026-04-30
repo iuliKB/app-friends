@@ -216,7 +216,10 @@ export default function MemoriesScreen() {
         initialIndex={viewerIndex}
         currentUserId={session?.user?.id ?? ''}
         onClose={() => setViewerVisible(false)}
-        deletePhoto={(photoId) => deletePhoto(photoId, activePlanId)}
+        deletePhoto={(photoId) => {
+          const photo = viewerPhotos.find((p) => p.id === photoId);
+          return deletePhoto(photoId, photo?.planId ?? activePlanId);
+        }}
       />
     </>
   );
