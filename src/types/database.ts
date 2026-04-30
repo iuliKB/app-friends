@@ -810,6 +810,14 @@ export type Database = {
           unsettled_count: number;
         }[];
       };
+      // Phase 21 v1.6 (migration 0021) — atomic 10-photo cap check + insert; SECURITY DEFINER
+      add_plan_photo: {
+        Args: {
+          p_plan_id: string;
+          p_storage_path: string;
+        };
+        Returns: undefined;
+      };
     };
     CompositeTypes: Record<string, never>;
   };
