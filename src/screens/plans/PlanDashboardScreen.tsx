@@ -320,8 +320,8 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       paddingVertical: SPACING.sm,
     },
     addPhotoText: {
-      fontSize: FONT_SIZE.sm,
-      color: colors.text.secondary,
+      fontSize: FONT_SIZE.md,
+      color: colors.interactive.accent,
     },
     photoGrid: {
       flexDirection: 'row' as const,
@@ -804,16 +804,16 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>{'Photos'}</Text>
             </View>
-            {isMember && ownPhotoCount < 10 && (
+            {ownPhotoCount < 10 && (
               <TouchableOpacity
-                style={styles.addCoverButton}
+                style={styles.addPhotoRow}
                 onPress={handleAddPhoto}
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel="Add photo"
               >
-                <Ionicons name="camera-outline" size={20} color={colors.text.secondary} />
-                <Text style={styles.addCoverButtonText}>Add Photo</Text>
+                <Ionicons name="camera-outline" size={20} color={colors.interactive.accent} />
+                <Text style={styles.addPhotoText}>{'Add Photo'}</Text>
               </TouchableOpacity>
             )}
             {photos.length === 0 && (
