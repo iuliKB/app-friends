@@ -205,7 +205,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 23-01-PLAN.md — useAllPlanPhotos hook (cross-plan aggregation, signed URLs, groups + recentPhotos)
-- [ ] 23-02-PLAN.md — RecentMemoriesSection widget + HomeScreen wiring
+- [x] 23-02-PLAN.md — RecentMemoriesSection widget + HomeScreen wiring
 - [ ] 23-03-PLAN.md — MemoriesScreen /memories route (SectionList gallery, GalleryViewerModal, pull-to-refresh)
 
 ## Progress
@@ -223,7 +223,7 @@ Plans:
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 3/3 | Complete    | 2026-04-30 |
-| 23. Memories Gallery | v1.6 | 1/3 | In Progress|  |
+| 23. Memories Gallery | v1.6 | 2/3 | In Progress|  |
 
 ---
 
