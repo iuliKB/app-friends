@@ -78,28 +78,43 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
 
       // Step 3 — fetch plan titles (separate query — avoids PostgREST join issues, per usePlanPhotos comment pattern)
       const uniquePlanIds = [...new Set(photoRows.map((r) => r.plan_id as string))];
-      const { data: planRows } = await supabase
+      const { data: planRows, error: planTitleError } = await supabase
         .from('plans')
         .select('id, title')
         .in('id', uniquePlanIds);
+      if (planTitleError) {
+        setError(planTitleError.message);
+        setIsLoading(false);
+        return;
+      }
       const planTitleMap = new Map(
         (planRows ?? []).map((p) => [p.id as string, p.title as string])
       );
 
       // Step 4 — fetch uploader profiles (copy from usePlanPhotos.ts lines 50–58)
       const uploaderIds = [...new Set(photoRows.map((r) => r.uploader_id as string))];
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, display_name, avatar_url')
         .in('id', uploaderIds);
+      if (profileError) {
+        setError(profileError.message);
+        setIsLoading(false);
+        return;
+      }
       const profileMap = new Map((profiles ?? []).map((p) => [p.id as string, p]));
 
       // Step 5 — batch signed URLs (copy verbatim from usePlanPhotos.ts lines 62–70)
       // Anti-pattern: DO NOT loop createSignedUrl per photo — use createSignedUrls batch
       const paths = photoRows.map((r) => r.storage_path as string);
-      const { data: signedData } = await supabase.storage
+      const { data: signedData, error: signedUrlError } = await supabase.storage
         .from('plan-gallery')
         .createSignedUrls(paths, 3600);
+      if (signedUrlError) {
+        setError(signedUrlError.message);
+        setIsLoading(false);
+        return;
+      }
       const signedMap = new Map((signedData ?? []).map((s) => [s.path, s.signedUrl]));
 
       // Step 6 — assemble PlanPhotoWithUploader[] (copy from usePlanPhotos.ts lines 73–87)
