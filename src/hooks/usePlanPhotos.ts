@@ -112,7 +112,10 @@ export function usePlanPhotos(planId: string): {
 
       if (rpcError) {
         // Clean up orphaned storage object on RPC failure
-        await supabase.storage.from('plan-gallery').remove([storagePath]);
+        const { error: cleanupError } = await supabase.storage.from('plan-gallery').remove([storagePath]);
+        if (cleanupError) {
+          console.error('[usePlanPhotos] Orphan cleanup failed for path:', storagePath, cleanupError.message);
+        }
         if (rpcError.code === 'P0001') return { error: 'photo_cap_exceeded' }; // D-10
         return { error: 'upload_failed' };
       }
