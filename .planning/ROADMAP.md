@@ -190,7 +190,11 @@ Plans:
   4. A user can delete their own photos (a delete button is visible only on their own photos); the photo disappears from the grid immediately and is removed from storage; no user can delete another participant's photo
   5. Tapping "Save to Camera Roll" on any photo in the full-screen viewer saves a copy to the device's camera roll; a confirmation or haptic confirms success
   6. PlanDashboardScreen uses a single outer FlatList with ListHeaderComponent for plan content — no ScrollView wrapping a FlatList
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 22-01-PLAN.md — Wave 0 test stubs + PlanDashboardScreen ScrollView→FlatList refactor
+- [ ] 22-02-PLAN.md — GalleryViewerModal component (swipe pager, pinch-to-zoom, attribution overlay, save + delete)
+- [ ] 22-03-PLAN.md — Photos section integration (grid, Add Photo button, upload flow, empty state, Playwright assertions)
 **UI hint**: yes
 
 ## Progress
@@ -207,8 +211,8 @@ Plans:
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
-| 22. Gallery UI | v1.6 | 0/? | Not started | - |
+| 22. Gallery UI | v1.6 | 0/3 | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-04-28 — v1.6 Phase 18 complete (3/3 plans); Phase 19 Theme Migration is next*
+*Roadmap updated: 2026-04-30 — v1.6 Phase 22 Gallery UI planned (3 plans, 3 waves)*
