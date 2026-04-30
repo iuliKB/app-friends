@@ -27,10 +27,10 @@
 - [x] **GALL-02**: Each plan participant can capture and upload a photo using the in-app camera
 - [x] **GALL-03**: Each participant is limited to 10 photos per plan (enforced server-side)
 - [x] **GALL-04**: User can view all plan photos in a scrollable grid inside the plan detail screen
-- [ ] **GALL-05**: User can tap any photo to open it full-screen and swipe to browse others
-- [ ] **GALL-06**: Each photo shows the uploader's avatar or name
-- [ ] **GALL-07**: User can delete their own photos from the gallery (cannot delete others')
-- [ ] **GALL-08**: User can save any gallery photo to their device camera roll
+- [x] **GALL-05**: User can tap any photo to open it full-screen and swipe to browse others
+- [x] **GALL-06**: Each photo shows the uploader's avatar or name
+- [x] **GALL-07**: User can delete their own photos from the gallery (cannot delete others')
+- [x] **GALL-08**: User can save any gallery photo to their device camera roll
 
 ---
 
@@ -81,10 +81,10 @@
 | GALL-02 | Phase 21 | Complete |
 | GALL-03 | Phase 21 | Complete |
 | GALL-04 | Phase 22 | Complete |
-| GALL-05 | Phase 22 | Pending |
-| GALL-06 | Phase 22 | Pending |
-| GALL-07 | Phase 22 | Pending |
-| GALL-08 | Phase 22 | Pending |
+| GALL-05 | Phase 22 | Complete |
+| GALL-06 | Phase 22 | Complete |
+| GALL-07 | Phase 22 | Complete |
+| GALL-08 | Phase 22 | Complete |
 
 **Coverage:**
 - v1 requirements: 18 total

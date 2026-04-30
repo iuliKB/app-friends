@@ -193,7 +193,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 22-01-PLAN.md — Wave 0 test stubs + PlanDashboardScreen ScrollView→FlatList refactor
-- [ ] 22-02-PLAN.md — GalleryViewerModal component (swipe pager, pinch-to-zoom, attribution overlay, save + delete)
+- [x] 22-02-PLAN.md — GalleryViewerModal component (swipe pager, pinch-to-zoom, attribution overlay, save + delete)
 - [ ] 22-03-PLAN.md — Photos section integration (grid, Add Photo button, upload flow, empty state, Playwright assertions)
 **UI hint**: yes
 
@@ -211,7 +211,7 @@ Plans:
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
-| 22. Gallery UI | v1.6 | 1/3 | In Progress|  |
+| 22. Gallery UI | v1.6 | 2/3 | In Progress|  |
 
 ---
 
