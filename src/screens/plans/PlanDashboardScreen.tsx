@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Dimensions,
+  FlatList,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -29,6 +30,14 @@ import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { formatPlanTime } from '@/components/plans/PlanCard';
 import { LocationPicker } from '@/components/maps/LocationPicker';
+import { usePlanPhotos } from '@/hooks/usePlanPhotos';
+// @ts-expect-error Plan 02 creates this file
+import { GalleryViewerModal } from '@/components/plans/GalleryViewerModal';
+import { EmptyState } from '@/components/common/EmptyState';
+import { showActionSheet } from '@/lib/action-sheet';
+
+const { width: screenWidth } = Dimensions.get('window');
+const CELL_SIZE = (screenWidth - SPACING.lg * 2 - SPACING.xs * 2) / 3;
 
 interface PlanDashboardScreenProps {
   planId: string;
@@ -55,6 +64,10 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const [saving, setSaving] = useState(false);
   const [respondingInvite, setRespondingInvite] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerInitialIndex, setViewerInitialIndex] = useState(0);
+
+  const { photos, uploadPhoto, deletePhoto } = usePlanPhotos(planId);
 
   const styles = useMemo(() => StyleSheet.create({
     root: {
@@ -296,6 +309,27 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       fontWeight: FONT_WEIGHT.semibold,
       color: colors.text.secondary,
     },
+    photosSection: {
+      paddingHorizontal: SPACING.lg,
+      paddingTop: SPACING.xl,
+      paddingBottom: SPACING.xl,
+    },
+    addPhotoRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: SPACING.xs,
+      paddingVertical: SPACING.sm,
+    },
+    addPhotoText: {
+      fontSize: FONT_SIZE.sm,
+      color: colors.text.secondary,
+    },
+    photoGrid: {
+      flexDirection: 'row' as const,
+      flexWrap: 'wrap' as const,
+      gap: SPACING.xs,
+      marginTop: SPACING.md,
+    },
   }), [colors]);
 
   // Sync navigation header
@@ -426,6 +460,46 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
     plan.members.find((m) => m.user_id === session?.user?.id)?.rsvp ?? 'invited';
   const isInvited = currentUserRsvp === 'invited';
   const isCreator = session?.user?.id === plan.created_by;
+  const isMember = currentUserRsvp !== 'invited'; // D-17: invited-only users cannot add photos
+  const currentUserId = session?.user?.id ?? '';
+  const ownPhotoCount = photos.filter((p) => p.uploaderId === currentUserId).length;
+
+  async function pickFromLibrary() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    const asset = result.assets?.[0];
+    if (result.canceled || !asset) return;
+    const { error } = await uploadPhoto(asset.uri);
+    if (error === 'photo_cap_exceeded') {
+      Alert.alert('Limit Reached', 'You can upload up to 10 photos per plan.');
+    } else if (error === 'upload_failed') {
+      Alert.alert('Error', 'Could not upload photo. Try again.');
+    }
+  }
+
+  async function pickFromCamera() {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    const asset = result.assets?.[0];
+    if (result.canceled || !asset) return;
+    const { error } = await uploadPhoto(asset.uri);
+    if (error === 'photo_cap_exceeded') {
+      Alert.alert('Limit Reached', 'You can upload up to 10 photos per plan.');
+    } else if (error === 'upload_failed') {
+      Alert.alert('Error', 'Could not upload photo. Try again.');
+    }
+  }
+
+  function handleAddPhoto() {
+    showActionSheet('Add Photo', [
+      { label: 'Photo Library', onPress: pickFromLibrary },
+      { label: 'Camera', onPress: pickFromCamera },
+    ]);
+  }
 
   async function handleAcceptInvite() {
     setRespondingInvite(true);
@@ -450,11 +524,16 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   }
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-    >
+    <>
+      <FlatList
+        style={styles.root}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        data={[{ key: 'photos' }]}
+        renderItem={() => null}
+        keyExtractor={(item) => item.key}
+        ListHeaderComponent={
+          <>
       {/* Invitation Banner */}
       {isInvited && (
         <View style={styles.inviteBanner}>
@@ -719,6 +798,69 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
           onPress={() => router.push(`/chat/room?plan_id=${planId}` as never)}
         />
       </View>
-    </ScrollView>
+          </>
+        }
+        ListFooterComponent={
+          <View style={styles.photosSection}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>{'Photos'}</Text>
+            </View>
+            {isMember && ownPhotoCount < 10 && (
+              <TouchableOpacity
+                style={styles.addCoverButton}
+                onPress={handleAddPhoto}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Add photo"
+              >
+                <Ionicons name="camera-outline" size={20} color={colors.text.secondary} />
+                <Text style={styles.addCoverButtonText}>Add Photo</Text>
+              </TouchableOpacity>
+            )}
+            {photos.length === 0 && (
+              <EmptyState
+                icon="images-outline"
+                iconType="ionicons"
+                heading="No photos yet"
+                body="Add the first photo to this plan"
+                ctaLabel={isMember ? 'Add Photo' : undefined}
+                onCta={isMember ? handleAddPhoto : undefined}
+              />
+            )}
+            {photos.length > 0 && (
+              <View style={styles.photoGrid}>
+                {photos.map((photo, idx) => (
+                  <TouchableOpacity
+                    key={photo.id}
+                    onPress={() => {
+                      setViewerInitialIndex(idx);
+                      setViewerVisible(true);
+                    }}
+                    activeOpacity={0.85}
+                    accessibilityLabel={`Photo by ${photo.uploader.displayName}`}
+                    style={{ width: CELL_SIZE, height: CELL_SIZE }}
+                  >
+                    <Image
+                      source={{ uri: photo.signedUrl ?? undefined }}
+                      style={{ width: CELL_SIZE, height: CELL_SIZE }}
+                      contentFit="cover"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        }
+      />
+      {/* GalleryViewerModal — rendered outside FlatList to avoid nesting issues */}
+      <GalleryViewerModal
+        visible={viewerVisible}
+        photos={photos}
+        initialIndex={viewerInitialIndex}
+        currentUserId={currentUserId}
+        onClose={() => setViewerVisible(false)}
+        deletePhoto={deletePhoto}
+      />
+    </>
   );
 }
