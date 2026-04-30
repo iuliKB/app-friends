@@ -98,7 +98,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - [x] User can attach a location to a plan (map pin) — Validated in Phase 20: map-feature
 - [x] User can view a plan's location on a map — Validated in Phase 20: map-feature
 - [x] User can browse nearby friend plans on a map in Explore tab — Validated in Phase 20: map-feature
-- [ ] Each plan participant can upload up to 10 photos to a shared plan gallery
+- [x] Each plan participant can upload up to 10 photos to a shared plan gallery — Validated in Phase 21: gallery-foundation (backend; UI in Phase 22)
 - [ ] All plan members can view the plan photo gallery
 
 ### Out of Scope
@@ -124,7 +124,7 @@ Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase 
 
 Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak, IOUs, Birthdays). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config, wish list, birthday).
 Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
-Supabase migrations: 0001–0017 (v1.4 added 0015 IOU tables/RPCs + general_notes rename, 0016 birthday columns + get_upcoming_birthdays RPC, 0017 wish_list_items + wish_list_claims + group_channels + group_channel_members).
+Supabase migrations: 0001–0021 (v1.4 added 0015 IOU tables/RPCs + general_notes rename, 0016 birthday columns + get_upcoming_birthdays RPC, 0017 wish_list_items + wish_list_claims + group_channels + group_channel_members; v1.6 Phase 21 added 0021 plan_photos table + private plan-gallery bucket + add_plan_photo SECURITY DEFINER RPC with 10-photo cap).
 IOU write path: Squad '+' → create screen (currency input, friend selection, even/custom split) → `create_expense` RPC → detail screen (hero card, participant rows, creator-only settle with haptic).
 Birthday write path: Profile edit → native DateTimePicker (month/day/year) → birthday list screen → tap → Friend Birthday Page → birthday group chat with collapsible wish list panel + gift claiming/voting.
 Edge Functions: `notify-plan-invite`, `notify-friend-free` (rate-limited fan-out).
@@ -199,6 +199,9 @@ Known technical considerations:
 | Math.random UUID template instead of crypto.randomUUID() (v1.5) | Hermes JS engine does not expose crypto.randomUUID(); Math.random template is a reliable polyfill | ✓ Good |
 | contentType forced to image/jpeg in uploadChatMedia (v1.5) | Prevents executable files disguised as images from being uploaded | ✓ Good |
 | poll_votes Realtime via existing postgres_changes channel (v1.5) | No new subscription per poll card — stays within free-tier Realtime connection budget | ✓ Good |
+| plan-gallery bucket is private with signed URLs (1h TTL) (v1.6 Phase 21) | Gallery photos must be plan-member-only; signed URLs expire naturally so normal sessions never encounter expired links | ✓ Good |
+| `{plan_id}/{user_id}/{photo_id}.jpg` storage path (v1.6 Phase 21) | User ID in path position [2] enables a path-only Storage DELETE policy with no join to plan_photos, avoiding RLS recursion | ✓ Good |
+| add_plan_photo as SECURITY DEFINER RPC (v1.6 Phase 21) | Atomic membership check + cap enforcement + insert in one plpgsql block prevents race-window cap bypass from concurrent uploads | ✓ Good |
 
 ---
-*Last updated: 2026-04-30 after Phase 20 (map-feature) complete*
+*Last updated: 2026-04-30 after Phase 21 (gallery-foundation) complete*
