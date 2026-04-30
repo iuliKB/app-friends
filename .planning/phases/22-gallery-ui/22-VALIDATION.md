@@ -1,9 +1,9 @@
 ---
 phase: 22
 slug: gallery-ui
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-30
 ---
 
@@ -55,8 +55,8 @@ created: 2026-04-30
 
 ## Wave 0 Requirements
 
-- [ ] `tests/unit/gallery.photoCap.test.ts` — unit tests for "hide Add button at ≥ 10 own photos" logic and `isMember` derivation
-- [ ] `tests/visual/plan-gallery.spec.ts` — Playwright visual tests for GALL-04, GALL-05, GALL-06, GALL-07; includes FlatList refactor regression check
+- [x] `tests/unit/gallery.photoCap.test.ts` — unit tests for "hide Add button at ≥ 10 own photos" logic and `isMember` derivation
+- [x] `tests/visual/plan-gallery.spec.ts` — Playwright visual tests for GALL-04, GALL-05, GALL-06, GALL-07; includes FlatList refactor regression check
 
 *Existing infrastructure (Playwright + npx tsx) covers the phase — only new test files needed.*
 
@@ -74,11 +74,11 @@ created: 2026-04-30
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** complete
