@@ -99,7 +99,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - [x] User can view a plan's location on a map — Validated in Phase 20: map-feature
 - [x] User can browse nearby friend plans on a map in Explore tab — Validated in Phase 20: map-feature
 - [x] Each plan participant can upload up to 10 photos to a shared plan gallery — Validated in Phase 21: gallery-foundation (backend; UI in Phase 22)
-- [ ] All plan members can view the plan photo gallery
+- [x] All plan members can view the plan photo gallery — Validated in Phase 22: gallery-ui
 
 ### Out of Scope
 
@@ -202,6 +202,8 @@ Known technical considerations:
 | plan-gallery bucket is private with signed URLs (1h TTL) (v1.6 Phase 21) | Gallery photos must be plan-member-only; signed URLs expire naturally so normal sessions never encounter expired links | ✓ Good |
 | `{plan_id}/{user_id}/{photo_id}.jpg` storage path (v1.6 Phase 21) | User ID in path position [2] enables a path-only Storage DELETE policy with no join to plan_photos, avoiding RLS recursion | ✓ Good |
 | add_plan_photo as SECURITY DEFINER RPC (v1.6 Phase 21) | Atomic membership check + cap enforcement + insert in one plpgsql block prevents race-window cap bypass from concurrent uploads | ✓ Good |
+| FlatList sentinel data `[{ key:'photos' }]` in PlanDashboardScreen (v1.6 Phase 22) | Non-empty data array required for ListFooterComponent to render reliably on all RN versions — empty array suppresses footer | ✓ Good |
+| GalleryViewerModal `useMemo([colors])` for StyleSheet (v1.6 Phase 22) | Theme-reactive styles recompute on dark/light switch; all existing image-viewer components use same pattern | ✓ Good |
 
 ---
-*Last updated: 2026-04-30 after Phase 21 (gallery-foundation) complete*
+*Last updated: 2026-04-30 after Phase 22 (gallery-ui) complete*
