@@ -9,7 +9,7 @@
 - ✅ **v1.3.5 Homescreen Redesign** — Phases 1-4 (shipped 2026-04-11)
 - ✅ **v1.4 Squad Dashboard & Social Tools** — Phases 5-11 (shipped 2026-04-17)
 - ✅ **v1.5 Chat & Profile** — Phases 12-17 (shipped 2026-04-22)
-- 🔄 **v1.6 Places, Themes & Memories** — Phases 18-22 (in progress)
+- 🔄 **v1.6 Places, Themes & Memories** — Phases 18-23 (in progress)
 
 ## Archived Milestones
 
@@ -97,9 +97,9 @@
 
 ---
 
-## v1.6 Places, Themes & Memories (Phases 18-22)
+## v1.6 Places, Themes & Memories (Phases 18-23)
 
-**Milestone goal:** Light/dark theme toggle, map for plan locations + nearby discovery in Explore, and a shared per-plan photo gallery (10 photos per participant).
+**Milestone goal:** Light/dark theme toggle, map for plan locations + nearby discovery in Explore, a shared per-plan photo gallery (10 photos per participant), and a cross-plan Memories Gallery with home widget.
 
 ### Phases
 
@@ -108,6 +108,7 @@
 - [x] **Phase 20: Map Feature** - Migration 0020 lat/lng columns, react-native-maps + expo-location install, LocationPicker, plan map view, Explore map (completed 2026-04-29)
 - [x] **Phase 21: Gallery Foundation** - plan_photos table + RLS + add_plan_photo RPC + plan-gallery Storage bucket, upload pipeline, usePlanPhotos hook (completed 2026-04-30)
 - [x] **Phase 22: Gallery UI** - PlanDashboardScreen ScrollView→FlatList refactor, photo grid, full-screen lightbox, camera capture, delete own, save to roll (completed 2026-04-30)
+- [ ] **Phase 23: Memories Gallery** - useAllPlanPhotos hook, RecentMemoriesSection home widget, /memories SectionList gallery screen
 
 ## Phase Details
 
@@ -197,6 +198,16 @@ Plans:
 - [x] 22-03-PLAN.md — Photos section integration (grid, Add Photo button, upload flow, empty state, Playwright assertions)
 **UI hint**: yes
 
+### Phase 23: Memories Gallery
+**Goal**: Users can see all photos from all their plans in one place — a "Recent Memories" widget on the Home screen shows the latest photos, and tapping "See all" opens a full-screen gallery screen with photos grouped by plan (newest plan first)
+**Depends on**: Phase 22
+**Requirements**: MEMO-01, MEMO-02, MEMO-03
+**Plans**: 3 plans
+Plans:
+- [ ] 23-01-PLAN.md — useAllPlanPhotos hook (cross-plan aggregation, signed URLs, groups + recentPhotos)
+- [ ] 23-02-PLAN.md — RecentMemoriesSection widget + HomeScreen wiring
+- [ ] 23-03-PLAN.md — MemoriesScreen /memories route (SectionList gallery, GalleryViewerModal, pull-to-refresh)
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -212,17 +223,8 @@ Plans:
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 3/3 | Complete    | 2026-04-30 |
-
-### Phase 23: Memories Gallery
-
-**Goal:** Users can see all photos from all their plans in one place — a "Recent Memories" widget on the Home screen shows the latest photos, and tapping "See all" opens a full-screen gallery screen with photos grouped by plan (newest plan first)
-**Requirements**: MEMO-01, MEMO-02, MEMO-03
-**Depends on:** Phase 22
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd-plan-phase 23 to break down)
+| 23. Memories Gallery | v1.6 | 0/3 | In progress | — |
 
 ---
 
-*Roadmap updated: 2026-04-30 — v1.6 Phase 22 Gallery UI planned (3 plans, 3 waves)*
+*Roadmap updated: 2026-04-30 — v1.6 Phase 23 Memories Gallery planned (3 plans, 2 waves)*
