@@ -176,7 +176,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 21-01-PLAN.md — Test scaffolds + migration 0021 SQL + plan_photos database types
-- [ ] 21-02-PLAN.md — Schema push (BLOCKING) + uploadPlanPhoto.ts upload library
+- [x] 21-02-PLAN.md — Schema push (BLOCKING) + uploadPlanPhoto.ts upload library
 - [ ] 21-03-PLAN.md — usePlanPhotos hook (fetch + signed URLs + upload + delete mutations)
 
 ### Phase 22: Gallery UI
@@ -206,7 +206,7 @@ Plans:
 | 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
 | 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
 | 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
-| 21. Gallery Foundation | v1.6 | 1/3 | In Progress|  |
+| 21. Gallery Foundation | v1.6 | 2/3 | In Progress|  |
 | 22. Gallery UI | v1.6 | 0/? | Not started | - |
 
 ---
