@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 23-memories-gallery
 source: [23-01-SUMMARY.md, 23-02-SUMMARY.md, 23-03-SUMMARY.md]
 started: 2026-05-04T00:00:00Z
-updated: 2026-05-04T00:08:00Z
+updated: 2026-05-04T00:09:00Z
 ---
 
 ## Current Test
@@ -66,7 +66,14 @@ blocked: 0
   reason: "User reported: navigates to a different memories screen, not the one from the Squad tab"
   severity: major
   test: 3
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "Two separate implementations of the same gallery exist: src/app/memories.tsx (standalone route) and src/components/squad/MemoriesTabContent.tsx (embedded in Squad tab). The widget correctly navigates to memories.tsx per plan design, but MemoriesTabContent was built in an earlier phase for the Squad tab — creating two near-identical UX surfaces for the same content. Users encounter memories.tsx from the Home widget and MemoriesTabContent from the Squad tab, and they look/feel like different screens."
+  artifacts:
+    - path: "src/app/memories.tsx"
+      issue: "Standalone /memories route — correct navigation target for widget"
+    - path: "src/components/squad/MemoriesTabContent.tsx"
+      issue: "Duplicate gallery implementation embedded in Squad tab — near-identical to memories.tsx"
+    - path: "src/components/home/RecentMemoriesSection.tsx"
+      issue: "Widget uses router.push('/memories') — navigates to standalone route, not Squad tab"
+  missing:
+    - "Consolidate: replace MemoriesTabContent with a link/button to /memories, OR make Squad tab navigate to /memories directly instead of embedding a copy"
   debug_session: ""
