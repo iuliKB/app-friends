@@ -10,7 +10,16 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ## Current Milestone: v1.7 Polish & Launch Ready
 
-**Goal:** Take every shipped screen from functional to great — UI/UX polish, interaction refinements, empty states, edge cases, and feature improvements across the full app in preparation for launch.
+**Goal:** Take every shipped feature from functional to great — comprehensive UI/UX polish, interaction refinements, and feature improvements across the entire app, plus final app icon and splash screen branding.
+
+**Target features:**
+- Screen-by-screen UI polish (every screen, consistent visual quality)
+- UX & interaction polish (animations, haptics, loading/empty/error states)
+- Status & home screen refinements (radar, card views, status composer)
+- Plans & Explore improvements (creation flow, dashboard, map, RSVP)
+- Chat & messaging polish (bubbles, reactions, media, polls)
+- Social features polish (IOU, birthday, friend profiles, Squad dashboard)
+- App icon & splash screen (final branded assets)
 
 ## Requirements
 

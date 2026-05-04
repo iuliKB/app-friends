@@ -1,53 +1,44 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.6
-milestone_name: Places, Themes & Memories
-status: executing
-stopped_at: Completed 23-03-PLAN.md
-last_updated: "2026-05-04T17:31:01.510Z"
+milestone: v1.7
+milestone_name: Polish & Launch Ready
+status: planning
+stopped_at: Defining requirements
+last_updated: "2026-05-04T00:00:00.000Z"
 last_activity: 2026-05-04
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 22
-  completed_plans: 22
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-28)
+See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 23 — memories-gallery
+**Current focus:** Defining requirements for v1.7 Polish & Launch Ready
 
 ## Current Position
 
-Milestone: v1.6 Places, Themes & Memories
-Phase: 23 (memories-gallery) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 23
-Last activity: 2026-05-04
-
-Progress: [██████████] 100% (Phase 18 complete)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-04 — Milestone v1.7 started
 
 ## Phase Structure
 
-| Phase | Name | Requirements | Status |
-|-------|------|--------------|--------|
-| 18 | Theme Foundation | THEME-01, 02, 03, 05 | COMPLETE |
-| 19 | Theme Migration | THEME-04 | Not started |
-| 20 | Map Feature | MAP-01, 02, 03, 04, 05 | Not started |
-| 21 | Gallery Foundation | GALL-01, 02, 03 | Not started |
-| 22 | Gallery UI | GALL-04, 05, 06, 07, 08 | Not started |
+(to be defined by roadmapper)
 
 ## Performance Metrics
 
-Plans executed this milestone: 3
-Phases completed: 1
-Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
+Plans executed this milestone: 0
+Phases completed: 0
+Requirements covered: 0
 
 ## Accumulated Context
 
@@ -59,53 +50,14 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 - [v1.5]: expo-image-manipulator compression is mandatory before upload (not optional) — raw iPhone photos exhaust 1GB storage in days
 - [v1.5]: contentType forced to image/jpeg in upload — client cannot upload executable disguised as image
 - [v1.5]: crypto.randomUUID() unavailable in Hermes — use Math.random UUID template for all optimistic IDs
-- [v1.6 pre]: useTheme() context pattern chosen over per-screen COLORS import — StyleSheet.create must be inside component body wrapped in useMemo([colors]) for themed styles
-- [v1.6 pre]: react-native-maps iOS must use Apple Maps (PROVIDER_DEFAULT) — Google Maps iOS config plugin broken in SDK 55; no API key needed for dev
-- [v1.6 pre]: plan-gallery Storage bucket is PRIVATE (signed URLs) — plan covers are public, gallery photos are not
-- [v1.6 pre]: add_plan_photo SECURITY DEFINER RPC enforces 10-photo cap server-side — client-side check is UI only
-- [Phase 18-theme-foundation]: colors typed as typeof DARK | typeof LIGHT union — required to allow palette switching without TypeScript error
-- [Phase 18-theme-foundation]: ThemeContext internal (not exported) — ThemeProvider and useTheme are the public API surface
-- [Phase 18-02]: ThemeProvider is inside GestureHandlerRootView (not outside) — GestureHandlerRootView remains outermost element
-- [Phase 18-02]: Splash early-return excluded from ThemeProvider — renders with static COLORS before context is relevant
-- [Phase 18-03]: ThemeSegmentedControl active colors (#B9FF3B / #0E0F11) hardcoded per D-07 — same values in both palettes; no migration needed in Phase 19
-- [Phase 18-03]: StyleSheet.create at module scope in ThemeSegmentedControl — acceptable (D-09 static COLORS compat shim); D-05 useMemo applies only to components consuming useTheme().colors for dynamic styles
-- [Phase 19-theme-migration]: Module-level COLORS constant arrays (MOOD_ROWS, STATUS_DOT_COLOR, DOT_COLOR, SEGMENTS) moved inside component body in useMemo([colors]) for theme reactivity
-- [Phase 19-theme-migration]: LoadingIndicator nullable-default pattern: prop signature uses color?: string (no default), body resolves resolvedColor = color ?? colors.text.secondary
-- [Phase 19]: QuotedBlock in MessageBubble uses module-level quotedBlockStyles static StyleSheet; colors passed as prop
-- [Phase 19]: RSVPButtons RSVP_OPTIONS moved into useMemo([colors]) to make activeColor reactive to theme changes
-- [Phase 19-theme-migration]: Use module-level RootLayoutStack component for splash useTheme isolation
-- [Phase 19]: Light mode accent corrected from neon #B9FF3B to readable #16A34A — neon illegible on white backgrounds
-- [Phase 19]: Card elevation system (shadow + border) added for light mode depth — contrast between #FAFAFA and #FFFFFF insufficient without it
-- [Phase 20]: androidGoogleMapsApiKey uses empty string fallback; Google Maps API key deferred by user — not blocking
-- [Phase 20]: No iosGoogleMapsApiKey in app.config.ts — iOS uses Apple Maps (PROVIDER_DEFAULT) to avoid SDK 55 EAS build conflict
-- [Phase 20]: location: string | null in CreatePlanInput — location always comes with coords (D-07)
-- [Phase 20-map-feature]: LocationPicker uses initialRegion (not controlled region prop) to prevent infinite MapView update loop
-- [Phase 20-map-feature]: Permission re-checked in handleConfirm before reverseGeocodeAsync per T-20-10 (prevents Android indefinite hang)
-- [Phase 20-04]: cardElevation spread as object (not array) per theme type definition
-- [Phase 20-04]: FONT_WEIGHT.medium absent from token set — FONT_WEIGHT.semibold used for directionsText
-- [Phase 20-04]: usePlanDetail exported type interface now includes latitude/longitude in updatePlanDetails signature
-- [Phase 20-map-feature]: EmptyState requires icon/heading/body props — used ionicons map-outline with proper heading and body (plan spec had simplified message= prop which does not exist)
-- [Phase 21-01]: parseGalleryPathSegments uses ?? '' fallback for noUncheckedIndexedAccess compliance
-- [Phase 21-01]: add_plan_photo RPC enforces 10-photo cap with P0001 ERRCODE in single plpgsql transaction — no concurrent upload bypass
-- [Phase 21-02]: getPublicUrl() never called in uploadPlanPhoto — private bucket returns storage path for signed URL generation downstream
-- [Phase 21-02]: Private bucket upload pattern: compress → fetch(uri).arrayBuffer() → upload → return path (not URL)
-- [Phase 21-gallery-foundation]: add_plan_photo added to database.ts Functions type — RPC existed in migration but was missing from TS types
-- [Phase 21-gallery-foundation]: createSignedUrls batch call (not per-photo loop) — single API call for all paths
-- [Phase 21-gallery-foundation]: deletePhoto continues to DB delete even if storage remove fails — storage errors do not prevent row cleanup
-- [Phase 22-gallery-ui]: FlatList outer layout with data={[{ key:'photos' }]} sentinel — non-empty data required for ListFooterComponent to render on all RN versions
-- [Phase 22-gallery-ui]: GalleryViewerModal imported with @ts-expect-error stub — file created in Plan 02; TypeScript error resolves automatically when Plan 02 creates the file
-- [Phase 22-gallery-ui]: StyleSheet.create inside useMemo([colors]) in GalleryViewerModal — colors.feedback.error used for delete icon; module-level would not react to theme changes
-- [Phase 22-gallery-ui]: getItemLayout required alongside initialScrollIndex — FlatList cannot jump to non-zero index without fixed item dimensions
-- [Phase 22-gallery-ui]: Add Photo button visibility: ownPhotoCount < 10 only (not gated by isMember) — plan must_haves separate button row from EmptyState CTA
-- [Phase 22-gallery-ui]: addPhotoRow/addPhotoText styles with interactive accent used for Add Photo button (not addCoverButton) per UI-SPEC §3.2
-- [Phase 23-memories-gallery]: recentPhotos derived as assembled.slice(0, 6) — assembled already sorted DESC from query, no re-sort needed
-- [Phase 23-memories-gallery]: StyleSheet.create inside useMemo([colors]) in RecentMemoriesSection — all themed styles reactive to dark/light switch
-- [Phase 23-memories-gallery]: chunkPhotos pre-chunks photos into rows of 3 before passing to SectionList — SectionList has no numColumns prop
-- [Phase 23-memories-gallery]: activePlanId state captures planId at viewer-open time to scope deletePhoto callback — prevents stale-closure issues
+- [v1.6]: useTheme() context pattern chosen over per-screen COLORS import — StyleSheet.create must be inside component body wrapped in useMemo([colors]) for themed styles
+- [v1.6]: react-native-maps iOS must use Apple Maps (PROVIDER_DEFAULT) — Google Maps iOS config plugin broken in SDK 55; no API key needed for dev
+- [v1.6]: plan-gallery Storage bucket is PRIVATE (signed URLs) — plan covers are public, gallery photos are not
+- [v1.6]: add_plan_photo SECURITY DEFINER RPC enforces 10-photo cap server-side — client-side check is UI only
 
 ### Roadmap Evolution
 
-- Phase 23 added: Memories Gallery — home screen Recent Memories widget + full-screen gallery grouped by plan (MEMO-01, MEMO-02, MEMO-03)
+(none yet)
 
 ### Pending Todos
 
@@ -117,5 +69,5 @@ Requirements covered: 4/18 (THEME-01, THEME-02, THEME-03, THEME-05)
 
 ## Session Continuity
 
-Last session: 2026-04-30T10:14:42.201Z
-Stopped at: Completed 23-03-PLAN.md
+Last session: 2026-05-04
+Stopped at: Milestone v1.7 started — defining requirements
