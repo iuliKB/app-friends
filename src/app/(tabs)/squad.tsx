@@ -31,7 +31,22 @@ import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const TABS = ['Squad', 'Activity'] as const;
+const TABS = ['Squad', 'Memories', 'Activity'] as const;
+
+function MemoriesRedirect({ onNavigate }: { onNavigate: () => void }) {
+  const { colors } = useTheme();
+  // Navigate on tap — using a tap target rather than useEffect avoids a
+  // navigation call during the pager swipe animation, which can cause a flash.
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.surface.base, justifyContent: 'center', alignItems: 'center' }}>
+      <TouchableOpacity onPress={onNavigate} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Open Memories">
+        <Text style={{ fontSize: FONT_SIZE.lg, fontFamily: FONT_FAMILY.body.regular, color: colors.text.secondary }}>
+          Open Memories
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export default function SquadScreen() {
   const { colors } = useTheme();
@@ -60,7 +75,6 @@ export default function SquadScreen() {
     new Animated.Value(0), // StreakCard
     new Animated.Value(0), // IOUCard
     new Animated.Value(0), // BirthdayCard
-    new Animated.Value(0), // Coming Soon card
   ]).current;
   const hasAnimated = useRef(false);
 
@@ -86,24 +100,30 @@ export default function SquadScreen() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Underline indicator: translateX driven by scroll position on native thread
+  // Each tab is SCREEN_WIDTH/3 wide; indicator slides to tab index × that width
   const indicatorTranslateX = scrollX.interpolate({
-    inputRange: [0, SCREEN_WIDTH],
-    outputRange: [0, SCREEN_WIDTH / 2],
+    inputRange: [0, SCREEN_WIDTH, SCREEN_WIDTH * 2],
+    outputRange: [0, SCREEN_WIDTH / 3, (SCREEN_WIDTH / 3) * 2],
     extrapolate: 'clamp',
   });
 
   // Tab label opacity: active tab is full opacity, inactive is dimmed
-  // These use the same scrollX Animated.Value — no extra state needed for the visual
   const tab0Opacity = scrollX.interpolate({
-    inputRange: [0, SCREEN_WIDTH],
-    outputRange: [1, 0.45],
+    inputRange: [0, SCREEN_WIDTH, SCREEN_WIDTH * 2],
+    outputRange: [1, 0.45, 0.45],
     extrapolate: 'clamp',
   });
   const tab1Opacity = scrollX.interpolate({
-    inputRange: [0, SCREEN_WIDTH],
-    outputRange: [0.45, 1],
+    inputRange: [0, SCREEN_WIDTH, SCREEN_WIDTH * 2],
+    outputRange: [0.45, 1, 0.45],
     extrapolate: 'clamp',
   });
+  const tab2Opacity = scrollX.interpolate({
+    inputRange: [0, SCREEN_WIDTH, SCREEN_WIDTH * 2],
+    outputRange: [0.45, 0.45, 1],
+    extrapolate: 'clamp',
+  });
+  const tabOpacities = [tab0Opacity, tab1Opacity, tab2Opacity];
 
   function goToTab(index: number) {
     pagerRef.current?.scrollTo({ x: index * SCREEN_WIDTH, animated: true });
@@ -207,7 +227,7 @@ export default function SquadScreen() {
       position: 'absolute',
       bottom: 0,
       left: 0,
-      width: '50%',        // exactly half — one tab's width
+      width: '33.33%',     // exactly one third — one tab's width
       height: 2,
       backgroundColor: colors.interactive.accent,
       borderRadius: RADII.xs,
@@ -265,28 +285,6 @@ export default function SquadScreen() {
       gap: SPACING.md,
     },
 
-    // Coming Soon card
-    comingSoonCard: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      padding: SPACING.xl,
-      alignItems: 'center',
-      gap: SPACING.sm,
-      borderWidth: 1,
-      borderStyle: 'dashed',
-      borderColor: colors.border,
-    },
-    comingSoonTitle: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.secondary,
-    },
-    comingSoonBody: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-    },
   }), [colors]);
 
   return (
@@ -319,7 +317,7 @@ export default function SquadScreen() {
             <Animated.Text
               style={[
                 styles.tabLabel,
-                { opacity: index === 0 ? tab0Opacity : tab1Opacity },
+                { opacity: tabOpacities[index] },
               ]}
             >
               {label}
@@ -397,7 +395,12 @@ export default function SquadScreen() {
           />
         </View>
 
-        {/* ── Page 1: Activity tab ── */}
+        {/* ── Page 1: Memories tab ── */}
+        <View style={styles.page}>
+          <MemoriesRedirect onNavigate={() => router.push('/memories' as never)} />
+        </View>
+
+        {/* ── Page 2: Activity tab ── */}
         <View style={styles.page}>
           <ScrollView
             contentContainerStyle={[styles.activityContent, { paddingBottom: insets.bottom + SPACING.xxl }]}
@@ -418,14 +421,6 @@ export default function SquadScreen() {
             </AnimatedCard>
             <AnimatedCard anim={cardAnims[2]!}>
               <BirthdayCard birthdays={birthdays} />
-            </AnimatedCard>
-            {/* Coming Soon placeholder — future features slot */}
-            <AnimatedCard anim={cardAnims[3]!}>
-              <View style={styles.comingSoonCard}>
-                <Ionicons name="lock-closed-outline" size={28} color={colors.border} />
-                <Text style={styles.comingSoonTitle}>More coming soon</Text>
-                <Text style={styles.comingSoonBody}>New features will appear here</Text>
-              </View>
             </AnimatedCard>
           </ScrollView>
         </View>
