@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: resolved
 phase: 23-memories-gallery
 source: [23-01-SUMMARY.md, 23-02-SUMMARY.md, 23-03-SUMMARY.md]
 started: 2026-05-04T00:00:00Z
-updated: 2026-05-04T00:09:00Z
+updated: 2026-05-04T00:15:00Z
 ---
 
 ## Current Test
@@ -62,18 +62,15 @@ blocked: 0
 ## Gaps
 
 - truth: "Tapping the Recent Memories widget (thumbnail or See all) navigates to the /memories cross-plan gallery screen"
-  status: failed
+  status: resolved
   reason: "User reported: navigates to a different memories screen, not the one from the Squad tab"
   severity: major
   test: 3
-  root_cause: "Two separate implementations of the same gallery exist: src/app/memories.tsx (standalone route) and src/components/squad/MemoriesTabContent.tsx (embedded in Squad tab). The widget correctly navigates to memories.tsx per plan design, but MemoriesTabContent was built in an earlier phase for the Squad tab — creating two near-identical UX surfaces for the same content. Users encounter memories.tsx from the Home widget and MemoriesTabContent from the Squad tab, and they look/feel like different screens."
+  root_cause: "Two separate implementations of the same gallery existed: src/app/memories.tsx (standalone route) and src/components/squad/MemoriesTabContent.tsx (embedded in Squad tab). Fixed in plan 23-04: MemoriesTabContent deleted, Squad tab Memories page now uses router.push('/memories')."
   artifacts:
-    - path: "src/app/memories.tsx"
-      issue: "Standalone /memories route — correct navigation target for widget"
+    - path: "src/app/(tabs)/squad.tsx"
+      issue: "Memories tab now uses MemoriesRedirect component with router.push('/memories')"
     - path: "src/components/squad/MemoriesTabContent.tsx"
-      issue: "Duplicate gallery implementation embedded in Squad tab — near-identical to memories.tsx"
-    - path: "src/components/home/RecentMemoriesSection.tsx"
-      issue: "Widget uses router.push('/memories') — navigates to standalone route, not Squad tab"
-  missing:
-    - "Consolidate: replace MemoriesTabContent with a link/button to /memories, OR make Squad tab navigate to /memories directly instead of embedding a copy"
+      issue: "Deleted — no longer exists"
+  missing: []
   debug_session: ""
