@@ -1,5 +1,4 @@
-import { Stack, useFocusEffect } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -11,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -37,7 +37,7 @@ type MemorySection = {
   data: PlanPhotoWithUploader[][];
 };
 
-export default function MemoriesScreen() {
+export function MemoriesTabContent() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const session = useAuthStore((s) => s.session);
@@ -48,8 +48,6 @@ export default function MemoriesScreen() {
   const [viewerIndex, setViewerIndex] = useState(0);
   const [activePlanId, setActivePlanId] = useState('');
 
-  // useFocusEffect — re-fetch signed URLs on screen focus
-  // Import MUST be from 'expo-router', not '@react-navigation/native'
   useFocusEffect(
     useCallback(() => {
       refetch();
@@ -120,48 +118,29 @@ export default function MemoriesScreen() {
     [colors]
   );
 
-  const stackScreenOptions = useMemo(
-    () => ({
-      title: 'Memories',
-      headerStyle: { backgroundColor: colors.surface.base },
-      headerTintColor: colors.text.primary,
-      headerShadowVisible: false,
-    }),
-    [colors]
-  );
-
   if (isLoading && groups.length === 0) {
     return (
-      <>
-        <Stack.Screen options={stackScreenOptions} />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.interactive.accent} />
-        </View>
-      </>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.interactive.accent} />
+      </View>
     );
   }
 
   if (!isLoading && groups.length === 0) {
     return (
-      <>
-        <Stack.Screen options={stackScreenOptions} />
-        <View style={styles.container}>
-          <EmptyState
-            icon="images-outline"
-            iconType="ionicons"
-            heading="No memories yet"
-            body="Photos from your plans will appear here"
-          />
-        </View>
-      </>
+      <View style={styles.container}>
+        <EmptyState
+          icon="images-outline"
+          iconType="ionicons"
+          heading="No memories yet"
+          body="Photos from your plans will appear here"
+        />
+      </View>
     );
   }
 
   return (
     <>
-      {/* Re-enables native Stack header with back arrow — same pattern as friends/[id].tsx */}
-      <Stack.Screen options={stackScreenOptions} />
-
       <SectionList<PlanPhotoWithUploader[], MemorySection>
         sections={sections}
         keyExtractor={(row, i) => `${(row[0] as PlanPhotoWithUploader | undefined)?.id ?? i}`}
@@ -188,7 +167,7 @@ export default function MemoriesScreen() {
         )}
         renderItem={({ item: row, section }) => {
           const rowIdx = section.data.indexOf(row);
-          const rowStart = rowIdx * 3; // chunkPhotos uses chunk size 3
+          const rowStart = rowIdx * 3;
           return (
             <View style={styles.row}>
               {row.map((photo, cellIdx) => {
@@ -213,7 +192,6 @@ export default function MemoriesScreen() {
         }}
       />
 
-      {/* GalleryViewerModal — same component as Phase 22, reused as-is */}
       <GalleryViewerModal
         visible={viewerVisible}
         photos={viewerPhotos}

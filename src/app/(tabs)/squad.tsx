@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII } from '@/theme';
@@ -23,6 +23,7 @@ import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
 import { StreakCard } from '@/components/squad/StreakCard';
 import { IOUCard } from '@/components/squad/IOUCard';
 import { BirthdayCard } from '@/components/squad/BirthdayCard';
+import { MemoriesTabContent } from '@/components/squad/MemoriesTabContent';
 import { useFriends } from '@/hooks/useFriends';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useStreakData } from '@/hooks/useStreakData';
@@ -33,48 +34,27 @@ import type { FriendWithStatus } from '@/hooks/useFriends';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const TABS = ['Squad', 'Memories', 'Activity'] as const;
 
-function MemoriesRedirect({ onNavigate }: { onNavigate: () => void }) {
-  const { colors } = useTheme();
-  // Navigate on tap — using a tap target rather than useEffect avoids a
-  // navigation call during the pager swipe animation, which can cause a flash.
-  return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: colors.surface.base,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <TouchableOpacity
-        onPress={onNavigate}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel="Open Memories"
-      >
-        <Text
-          style={{
-            fontSize: FONT_SIZE.lg,
-            fontFamily: FONT_FAMILY.body.regular,
-            color: colors.text.secondary,
-          }}
-        >
-          Open Memories
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 export default function SquadScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { tab } = useLocalSearchParams<{ tab?: string }>();
 
   // Tab state
   const scrollX = useRef(new Animated.Value(0)).current;
   const pagerRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState(0);
+
+  // Scroll to Memories page when navigated here from the Home widget
+  useEffect(() => {
+    if (tab === 'memories') {
+      const t = setTimeout(() => {
+        pagerRef.current?.scrollTo({ x: SCREEN_WIDTH, animated: false });
+        setActiveTab(1);
+      }, 50);
+      return () => clearTimeout(t);
+    }
+  }, [tab]);
 
   // Data hooks
   const { count: pendingCount } = usePendingRequestsCount();
@@ -415,7 +395,7 @@ export default function SquadScreen() {
 
         {/* ── Page 1: Memories tab ── */}
         <View style={styles.page}>
-          <MemoriesRedirect onNavigate={() => router.push('/memories' as never)} />
+          <MemoriesTabContent />
         </View>
 
         {/* ── Page 2: Activity tab ── */}

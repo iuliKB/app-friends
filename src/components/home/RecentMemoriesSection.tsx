@@ -77,7 +77,7 @@ export function RecentMemoriesSection() {
   // D-11: "See all" navigates to /memories
   const seeAllAction = (
     <TouchableOpacity
-      onPress={() => router.push('/memories')}
+      onPress={() => router.push('/(tabs)/squad?tab=memories' as never)}
       hitSlop={8}
       accessibilityLabel="See all memories"
     >
@@ -115,7 +115,7 @@ export function RecentMemoriesSection() {
           // D-12: Tapping thumbnail navigates to /memories (not inline viewer)
           <TouchableOpacity
             style={styles.thumbContainer}
-            onPress={() => router.push('/memories')}
+            onPress={() => router.push('/(tabs)/squad?tab=memories' as never)}
             activeOpacity={0.85}
             accessibilityLabel={`Photo from ${item.planTitle}`}
           >
