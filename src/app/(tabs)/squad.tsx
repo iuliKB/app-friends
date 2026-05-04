@@ -38,9 +38,27 @@ function MemoriesRedirect({ onNavigate }: { onNavigate: () => void }) {
   // Navigate on tap — using a tap target rather than useEffect avoids a
   // navigation call during the pager swipe animation, which can cause a flash.
   return (
-    <View style={{ flex: 1, backgroundColor: colors.surface.base, justifyContent: 'center', alignItems: 'center' }}>
-      <TouchableOpacity onPress={onNavigate} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Open Memories">
-        <Text style={{ fontSize: FONT_SIZE.lg, fontFamily: FONT_FAMILY.body.regular, color: colors.text.secondary }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.surface.base,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <TouchableOpacity
+        onPress={onNavigate}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Open Memories"
+      >
+        <Text
+          style={{
+            fontSize: FONT_SIZE.lg,
+            fontFamily: FONT_FAMILY.body.regular,
+            color: colors.text.secondary,
+          }}
+        >
           Open Memories
         </Text>
       </TouchableOpacity>
@@ -189,7 +207,9 @@ export default function SquadScreen() {
       <Animated.View
         style={{
           opacity: anim,
-          transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
+          transform: [
+            { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) },
+          ],
         }}
       >
         {children}
@@ -197,95 +217,98 @@ export default function SquadScreen() {
     );
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    headerContainer: {
-      paddingHorizontal: SPACING.lg,
-    },
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        headerContainer: {
+          paddingHorizontal: SPACING.lg,
+        },
 
-    // Tab header
-    tabHeader: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-      position: 'relative',
-    },
-    tabButton: {
-      flex: 1,
-      alignItems: 'center',
-      paddingVertical: SPACING.md,
-    },
-    tabLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    tabIndicator: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      width: '33.33%',     // exactly one third — one tab's width
-      height: 2,
-      backgroundColor: colors.interactive.accent,
-      borderRadius: RADII.xs,
-    },
+        // Tab header
+        tabHeader: {
+          flexDirection: 'row',
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          position: 'relative',
+        },
+        tabButton: {
+          flex: 1,
+          alignItems: 'center',
+          paddingVertical: SPACING.md,
+        },
+        tabLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        tabIndicator: {
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '33.33%', // exactly one third — one tab's width
+          height: 2,
+          backgroundColor: colors.interactive.accent,
+          borderRadius: RADII.xs,
+        },
 
-    // Pager
-    pager: {
-      flex: 1,
-    },
-    page: {
-      width: SCREEN_WIDTH,
-      flex: 1,
-    },
+        // Pager
+        pager: {
+          flex: 1,
+        },
+        page: {
+          width: SCREEN_WIDTH,
+          flex: 1,
+        },
 
-    // Squad tab
-    listContent: {
-      flexGrow: 1,
-    },
-    separator: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginLeft: SPACING.lg + 36 + SPACING.md,
-    },
-    requestsRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.lg,
-      marginBottom: SPACING.sm,
-      gap: SPACING.md,
-    },
-    requestsLabel: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    emptyState: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingTop: SPACING.xxl * 2,
-      gap: SPACING.md,
-    },
-    emptyText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
+        // Squad tab
+        listContent: {
+          flexGrow: 1,
+        },
+        separator: {
+          height: 1,
+          backgroundColor: colors.border,
+          marginLeft: SPACING.lg + 36 + SPACING.md,
+        },
+        requestsRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.lg,
+          marginBottom: SPACING.sm,
+          gap: SPACING.md,
+        },
+        requestsLabel: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        emptyState: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingTop: SPACING.xxl * 2,
+          gap: SPACING.md,
+        },
+        emptyText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
 
-    // Activity tab
-    activityContent: {
-      padding: SPACING.lg,
-      gap: SPACING.md,
-    },
-
-  }), [colors]);
+        // Activity tab
+        activityContent: {
+          padding: SPACING.lg,
+          gap: SPACING.md,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + SPACING.sm }]}>
@@ -314,22 +337,14 @@ export default function SquadScreen() {
             accessibilityRole="tab"
             accessibilityState={{ selected: activeTab === index }}
           >
-            <Animated.Text
-              style={[
-                styles.tabLabel,
-                { opacity: tabOpacities[index] },
-              ]}
-            >
+            <Animated.Text style={[styles.tabLabel, { opacity: tabOpacities[index] }]}>
               {label}
             </Animated.Text>
           </Pressable>
         ))}
         {/* Animated orange underline — slides on native thread */}
         <Animated.View
-          style={[
-            styles.tabIndicator,
-            { transform: [{ translateX: indicatorTranslateX }] },
-          ]}
+          style={[styles.tabIndicator, { transform: [{ translateX: indicatorTranslateX }] }]}
         />
       </View>
 
@@ -340,10 +355,9 @@ export default function SquadScreen() {
         pagingEnabled
         scrollEventThrottle={16}
         showsHorizontalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: true }
-        )}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+          useNativeDriver: true,
+        })}
         onMomentumScrollEnd={(e) => {
           const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
           setActiveTab(page);
@@ -372,7 +386,11 @@ export default function SquadScreen() {
                   onPress={() => router.push('/friends/requests')}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="person-add-outline" size={FONT_SIZE.xl} color={colors.text.secondary} />
+                  <Ionicons
+                    name="person-add-outline"
+                    size={FONT_SIZE.xl}
+                    color={colors.text.secondary}
+                  />
                   <Text style={styles.requestsLabel}>Friend Requests ({pendingCount})</Text>
                   <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
                 </TouchableOpacity>
@@ -403,7 +421,10 @@ export default function SquadScreen() {
         {/* ── Page 2: Activity tab ── */}
         <View style={styles.page}>
           <ScrollView
-            contentContainerStyle={[styles.activityContent, { paddingBottom: insets.bottom + SPACING.xxl }]}
+            contentContainerStyle={[
+              styles.activityContent,
+              { paddingBottom: insets.bottom + SPACING.xxl },
+            ]}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
