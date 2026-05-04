@@ -1,397 +1,341 @@
-# Domain Pitfalls — v1.5 Chat & Profile
+# Pitfalls Research
 
-**Domain:** React Native + Expo Managed + Supabase — chat media, reactions, threading, polls, profile rework
-**Researched:** 2026-04-20
-**Confidence:** HIGH for stack-specific issues (drawn from codebase history); MEDIUM for Supabase Realtime quota math
-
----
-
-## 1. Image Upload in Chat
-
-### CRITICAL — Pitfall 1A: Skipping Compression Before Upload
-
-**What goes wrong:** User picks a 12 MP photo from their library (typically 4–8 MB). It uploads raw to Supabase Storage, immediately eating into the 1 GB free-tier quota. With 10 users each sending 5 photos a day, you exhaust the quota in under a week.
-
-**Why it happens:** expo-image-picker returns a local URI and developers reach for the ArrayBuffer pattern (which already exists in this codebase for plan covers) without adding a compression step first.
-
-**Consequences:** Storage quota exhausted; Storage egress costs spike (Supabase charges for downloads too); slow uploads on mobile connections cause timeouts.
-
-**Prevention:**
-1. Run `expo-image-manipulator` before the ArrayBuffer conversion:
-   - Resize to max 1280px on the long edge
-   - Compress to JPEG quality 0.75
-   - Target < 300 KB per chat image
-2. The existing fetch().arrayBuffer() pattern in the plan cover upload is the correct final step — compression just goes before it.
-3. Enforce a 5 MB hard limit on the picker side (`quality: 0.7` in `launchImageLibraryAsync`), then compress further after.
-
-**Warning signs:** Plan cover uploads already work but feel slow → the same code path without compression will feel worse for chat.
-
-**Phase to address:** Media sharing phase (whichever phase adds image messages). Do not defer compression to a later pass — once images are in Storage at full resolution, you cannot reclaim the quota.
+**Domain:** Large-scale UI/UX polish pass on an existing React Native + Expo managed workflow app (Campfire v1.7)
+**Researched:** 2026-05-04
+**Confidence:** HIGH (animation threading, FlatList memoization, useMemo/StyleSheet pattern, scope creep), MEDIUM (Expo splash/icon limits in EAS, visual regression without tooling)
 
 ---
 
-### CRITICAL — Pitfall 1B: FlatList Memory Pressure from Inline Images
+## Critical Pitfalls
 
-**What goes wrong:** The chat FlatList renders message bubbles. Adding `<Image>` or `<expo-image>` components inline causes memory pressure that accumulates as the user scrolls, leading to OOM crashes on low-end Android devices and visible jank on all devices. A known issue (expo/expo#24824, expo/expo#37561) documents massive framedrops from `expo-image` inside FlatList.
+### Pitfall 1: Adding `useNativeDriver: false` to New Animations That Animate Layout Properties
 
-**Why it happens:** Every rendered cell holds decoded bitmap memory. FlatList with `inverted` already has higher overhead (inverted prop uses CSS transform on Android which costs extra compositing). Adding large bitmaps to each row multiplies that cost.
+**What goes wrong:**
+During a polish pass, developers add new entrance, exit, or highlight animations. If the animated property is `backgroundColor`, `height`, `width`, or any other layout property, `useNativeDriver: true` will throw a runtime error: "Style property 'height' is not supported by native animated module." The reflex fix is to use `useNativeDriver: false` everywhere to avoid the error — but that moves all animations onto the JS thread, where they drop frames whenever JS is busy (network calls, state updates, scroll events).
 
-**Consequences:** 30-40 FPS drop on Android in dev; crashes in production; keyboard stutter when the image row is on screen.
+This codebase already has a mixed pattern: `useNativeDriver: true` for transforms/opacity (RadarBubble pulse, swipe card), and `useNativeDriver: false` for height/backgroundColor (ReEngagementBanner, OfflineBanner, MessageBubble highlight, PollCard). Adding polish animations without distinguishing which thread they belong to degrades the existing smooth animations.
 
-**Prevention:**
-- Use `expo-image` (not RN's `Image`) with `cachePolicy="memory-disk"` — it pools decoded bitmaps.
-- Fix display size via `contentFit="cover"` at a capped size (e.g., 240×180). Never render at pick resolution.
-- Set `removeClippedSubviews={true}` and `windowSize={5}` on the FlatList (currently neither is set in `ChatRoomScreen`).
-- For mixed text+image cells, use `React.memo` on `MessageBubble` and ensure stable `keyExtractor`.
-- Do NOT use `FlashList` as a drop-in — the inverted FlatList pattern in this codebase uses index-based grouping logic (`isFirstInGroup`) that assumes a stable `messages` array; FlashList's recycling breaks that assumption without significant rework.
+**Why it happens:**
+The distinction "which CSS properties can run natively" is not obvious. The rule is: `transform` and `opacity` can run on the UI thread; everything else (`backgroundColor`, `height`, `width`, `borderRadius`, `padding`, `margin`, `top`, `left`) cannot.
 
-**Warning signs:** FlatList `windowSize` is not set in `ChatRoomScreen.tsx` → add it before adding image cells.
+**How to avoid:**
+- Before writing any new animation, determine what property is being animated.
+- `transform` + `opacity`: always `useNativeDriver: true`.
+- `backgroundColor`, `height`, `width`, or any layout prop: `useNativeDriver: false`, with a comment explaining why (`// height animation — layout prop, cannot use native driver`).
+- The existing codebase already follows this convention (see RadarBubble.tsx line 165, ReEngagementBanner.tsx line 72). Match it.
+- If you need a smooth color-transition animation that must stay on the native thread, use `transform: [{ scale }]` + opacity as a proxy for "highlight" effects rather than animating backgroundColor directly.
 
-**Phase to address:** Media sharing phase, before any image cells are rendered.
+**Warning signs:**
+- Runtime error: "Style property 'X' is not supported by native animated module."
+- New animation jank during rapid user interaction (scroll, swipe) because it landed on the JS thread without intention.
+- `useNativeDriver` not specified at all (React Native will warn but animate anyway on the JS thread by default).
 
----
-
-### MODERATE — Pitfall 1C: KeyboardAvoidingView Height Breaks When Image Preview Is Shown
-
-**What goes wrong:** A common pattern for image-send UX is to show a preview strip above the SendBar after picking. This adds height to the input area. `KeyboardAvoidingView` with `behavior="padding"` calculates offset once at mount; adding a preview view changes layout height without recalculating the keyboard offset, causing the preview to be obscured by the keyboard on iOS.
-
-**Why it happens:** `keyboardVerticalOffset={headerHeight}` (already in `ChatRoomScreen`) accounts for the native header but not for the preview strip's dynamic height. On Android `behavior="height"` is already used which avoids this, but iOS `behavior="padding"` is sensitive to layout changes below the KAV.
-
-**Consequences:** Preview strip hidden under keyboard; user cannot see the image they selected.
-
-**Prevention:**
-- Track preview-strip height with `onLayout` and add it to `keyboardVerticalOffset`.
-- Or restructure: put the preview strip inside the SendBar component so KAV sees a single input region.
-- Do not attempt `react-native-keyboard-controller` — it requires a custom native module, which is incompatible with Expo Go managed workflow.
-
-**Warning signs:** You will see this immediately on iOS Simulator when the preview appears — the keyboard covers part of it.
-
-**Phase to address:** Media sharing phase, when preview strip is first implemented.
+**Phase to address:**
+Every phase that adds animations. Establish a code-review checklist item: "Does this animation use the correct driver for its property type?"
 
 ---
 
-### MINOR — Pitfall 1D: Supabase Storage Public vs Signed URLs for Chat Images
+### Pitfall 2: Mixing a `useNativeDriver: true` Value with a `useNativeDriver: false` Animation
 
-**What goes wrong:** Making the chat-images bucket public means anyone with a URL can view the image forever. Using signed URLs (expiry 1h) breaks if the message is scrolled into view after the URL expires (common for old messages).
+**What goes wrong:**
+An `Animated.Value` is bound to both a native-driver animation (e.g., a spring on `opacity`) and a JS-thread animation (e.g., a timing on `height`) on the same value. React Native throws: "Animated node [X] has already been attached to a native node." The app crashes or the animation silently misbehaves.
 
-**Why it happens:** Developers reach for `getPublicUrl()` (simpler) or short-lived signed URLs without thinking through the access model.
+This codebase has FriendSwipeCard.tsx which has a comment noting this exact constraint ("useNativeDriver conflict between static opacity and animated transforms"). Adding more animations to the swipe card or similar multi-animated components risks this error.
 
-**Consequences:** Either security hole (public bucket, friends-only app) or broken images in chat history.
+**Why it happens:**
+Polish passes often extend existing animated components — adding a new effect to a component that already has animations. A developer adds a new `Animated.timing` on an existing `Animated.Value` without checking which driver owns it.
 
-**Prevention:**
-- Create the bucket as **private**.
-- Store only the storage path in the messages table (not the full URL).
-- Generate signed URLs on-the-fly when rendering, with a long TTL (e.g., 1 week). At 3–15 users per group, the RLS already limits who can request a signed URL — the RLS policy on the bucket restricts `storage.objects` to users in the same plan/DM channel.
-- Cache the signed URL in component state or a ref keyed by storage path.
+**How to avoid:**
+- Each `Animated.Value` ref must use exactly one driver type throughout its lifetime. Add a comment at the `useRef(new Animated.Value(...))` call declaring the driver: `// native driver — only transform/opacity animations`.
+- If you need both layout and transform animations on the same component, use two separate `Animated.Value` refs with separate drivers.
+- When extending an animated component, grep for all `useNativeDriver` references in that file before adding a new animation.
 
-**Phase to address:** Media sharing phase, during schema design for image_url storage.
+**Warning signs:**
+- Error: "Animated node [N] has already been attached to a native node."
+- Adding an animation to an existing animated component without reading all existing driver declarations first.
+- A single `Animated.Value` used in both a transform and a layout property interpolation.
 
----
-
-## 2. Message Reactions
-
-### CRITICAL — Pitfall 2A: No Database Unique Constraint → Ghost Duplicates
-
-**What goes wrong:** A user taps a reaction. The optimistic update fires. The INSERT is in-flight. User taps again (impatient or double-tap). Two INSERTs reach Supabase. Both succeed. The user now has two identical reactions and the UI shows count=2 for their own tap.
-
-**Why it happens:** Without a `UNIQUE(message_id, user_id, emoji)` constraint, the database accepts all duplicates. Client-side "is request pending?" flags can fail if the user switches tabs and returns.
-
-**Consequences:** Reaction counts inflate permanently; removing one row doesn't clean the ghost; Realtime broadcasts the duplicate INSERT and all subscribers see a count flicker.
-
-**Prevention:**
-- Add `UNIQUE(message_id, user_id, emoji)` to the `message_reactions` table in the migration.
-- Use an upsert (`INSERT ... ON CONFLICT DO NOTHING`) from the client — not a plain INSERT — so idempotency is guaranteed regardless of double-taps.
-- Toggle logic: if user already has that reaction, DELETE it; otherwise UPSERT. Never INSERT without conflict handling.
-
-**Warning signs:** If you see the same reaction appear twice for one user during testing → constraint is missing.
-
-**Phase to address:** Reactions schema migration (first reactions phase).
+**Phase to address:**
+Any phase adding animations to existing animated components (swipe cards, bubbles, banners). Especially high risk in "home screen polish" and "chat polish" phases.
 
 ---
 
-### CRITICAL — Pitfall 2B: Realtime Message Budget Multiplier from Reactions Table
+### Pitfall 3: `useMemo(() => StyleSheet.create({...}), [colors])` — Stale Styles from Incorrect Dependency Array
 
-**What goes wrong:** Each Supabase Postgres Change event is counted once **per subscriber**. The free tier gives 2 million messages/month. The messages table already subscribes all users in a chat room. Adding a `message_reactions` table subscription means: for every reaction INSERT/DELETE, Supabase sends an event to every subscriber in the room. For a group of 10 people in 3 active chats: 10 subscribers × N reactions per day × 3 chats = the budget evaporates fast.
+**What goes wrong:**
+The codebase uses the pattern `const styles = useMemo(() => StyleSheet.create({...}), [colors])` in ~20+ files (squad.tsx, profile.tsx, wish-list.tsx, edit.tsx, expenses/index.tsx). During a polish pass, new style properties that reference tokens other than `colors` get added — for example, `SPACING.lg`, `FONT_SIZE.md`, `BORDER_RADIUS.sm`. If those variables are not in the `useMemo` dependency array, the styles are stale after the initial render.
 
-**Why it happens:** The per-subscriber multiplier is documented but easy to underestimate. Quote from Supabase docs: "if a database change occurs and 5 clients listen to that event, it counts as 5 messages."
+In practice: `SPACING` and `FONT_SIZE` are imported as `as const` module-level values that never change at runtime, so they do not need to be in the dependency array. But `colors` does change (theme toggle). The trap is forgetting `colors` when adding to the dependency array — e.g., changing the array from `[colors]` to `[colors, someOtherProp]` and accidentally dropping `colors`, causing styles to freeze at the color state when the component first mounted.
 
-**Consequences:** Realtime quota exhausted → live chat stops working for all users until next billing period.
+**Why it happens:**
+During a polish pass, developers add new style properties to existing `useMemo` blocks and adjust the dependency array without carefully checking what was already there. ESLint `react-hooks/exhaustive-deps` will flag missing deps — but only if the rule is enabled and the variable is used inside the closure. If a dev suppresses the warning or has the rule off, the stale styles are silent.
 
-**Prevention:**
-- Do NOT add a separate Realtime subscription to `message_reactions`. Instead, embed reactions in the messages row.
-- Two options:
-  1. **JSONB column**: Add `reactions jsonb DEFAULT '{}'` to `messages` (structure: `{"👍": ["user_id_a", "user_id_b"]}`). Each reaction change triggers one messages-table UPDATE, already subscribed. Subscribers get the full reactions payload in the existing channel.
-  2. **Separate table + Broadcast**: Use a separate `message_reactions` table for clean schema, but push reaction changes via Supabase Realtime **Broadcast** (not Postgres Changes). Broadcast is billed differently and cheaper for high-frequency small events.
-- For a group of 3–15 people, the JSONB approach is simpler and fits within the free tier easily.
+**How to avoid:**
+- The dependency array for `useMemo(() => StyleSheet.create({...}))` should contain exactly one item: `[colors]`. All spacing/typography tokens are `as const` constants — they are invariant at runtime and do not need to be listed.
+- Never widen the dependency array to include non-color values unless those values actually change at runtime (e.g., a prop that changes frequently). Adding `[colors, layout.width]` causes style recomputation on every orientation change — usually unnecessary.
+- Ensure `react-hooks/exhaustive-deps` is enabled in ESLint (it is in this project). Do not suppress it on `useMemo` style blocks.
 
-**Warning signs:** Adding a Supabase `.on('postgres_changes', ..., { table: 'message_reactions' })` subscription in the same channel — check how many concurrent subscribers you have.
+**Warning signs:**
+- Style stays frozen after theme toggle (element has wrong theme color).
+- `react-hooks/exhaustive-deps` warning on a style `useMemo` that is being suppressed with `eslint-disable`.
+- Style `useMemo` dependency array contains `[]` (empty) — will never update after mount.
 
-**Phase to address:** Reactions schema design, before any subscription code is written.
-
----
-
-### MODERATE — Pitfall 2C: Optimistic Reaction Update Race with Realtime INSERT Event
-
-**What goes wrong:** The existing optimistic-send pattern in `useChatRoom` deduplicates by matching `pending === true && sender_id === incoming.sender_id && body === incoming.body`. Reactions have no `body` field and no `pending` flag equivalent. Without a dedup guard, the Realtime INSERT event causes a double-render: the optimistic count update plus the server confirmation both apply.
-
-**Why it happens:** The current dedup logic is text-message-specific. Reaction state management will need its own pattern.
-
-**Prevention:**
-- Maintain a `Set<string>` of in-flight reaction keys (`"${messageId}:${emoji}"`) in a ref.
-- On optimistic update: add key to set; on server confirm (via Realtime or RPC return): remove from set.
-- When Realtime event arrives: if key is in the in-flight set, skip state update (it's already reflected).
-- If using the JSONB approach above, the Realtime event carries the full updated `reactions` JSONB — just replace the whole reactions map for that message in state, no dedup needed.
-
-**Phase to address:** Reactions implementation phase.
+**Phase to address:**
+Every phase. Any new screen or component with dynamic styles must use `[colors]` as its dependency array. Review all new `useMemo` style blocks before merging.
 
 ---
 
-## 3. Reply Threading on Inverted FlatList
+### Pitfall 4: New Styled Components That Import `COLORS` Directly Instead of `useTheme()`
 
-### CRITICAL — Pitfall 3A: scrollToIndex Fails for Messages Not Yet Rendered
+**What goes wrong:**
+The v1.6 theme migration successfully converted all 98+ files from static `COLORS` imports to `useTheme()`. During v1.7 polish, new components and screens are written. If a new component imports `COLORS` directly (or worse, uses hardcoded hex values), it will always display the dark theme regardless of the user's selection.
 
-**What goes wrong:** User taps "scroll to original message" on a reply. The app calls `flatListRef.current.scrollToIndex({ index: targetIndex })`. If `targetIndex` is beyond `initialNumToRender` (default: 10), the FlatList hasn't rendered that cell yet, and React Native throws: "scrollToIndex should be used in conjunction with getItemLayout or onScrollToIndexFailed."
+This is invisible in dark mode (the default and common test path). The breakage surfaces when a user switches to light mode and sees a component with dark background hardcoded in — for example, a new tooltip, modal, badge, or empty state added during polish.
 
-**Why it happens:** inverted FlatList only renders `initialNumToRender` items at mount. Older messages (higher index in the array) are outside the initial render window.
+**Why it happens:**
+When writing new components quickly during a polish pass, developers reach for the familiar pattern from pre-v1.6 code they may be referencing. The ESLint rule `campfire/no-hardcoded-styles` catches raw hex values but does not catch `import { COLORS } from '@/theme'` (importing the static object is syntactically valid and passes lint).
 
-**Consequences:** Scroll fails silently or throws; user sees no response to their tap.
+**How to avoid:**
+- Treat `COLORS` import (outside `src/theme/`) as a banned pattern — the ESLint rule should already warn, but add a team convention: every new component starts with `const { colors } = useTheme()`.
+- Polish sprint setup: before starting each phase, run `grep -r "import.*COLORS" src/ --include="*.tsx" --include="*.ts"` and verify the count is zero (or matches only `src/theme/` files). Any new COLORS import is a regression.
+- When reviewing PRs for polish phases, first-pass check is a `grep` for `COLORS` in diff output.
 
-**Prevention:**
-- Always provide `onScrollToIndexFailed` that progressively scrolls toward the target:
-  ```ts
-  onScrollToIndexFailed={({ index }) => {
-    flatListRef.current?.scrollToOffset({ offset: index * ESTIMATED_ROW_HEIGHT, animated: false });
-    setTimeout(() => flatListRef.current?.scrollToIndex({ index, animated: true }), 100);
-  }}
-  ```
-- Use `maintainVisibleContentPosition={{ minIndexForVisible: 0 }}` to prevent scroll position jumping when older messages load above.
-- Keep the "scroll to original" feature scoped to messages currently in the 50-message window fetched from DB. If the original is not loaded, show the quoted context inline (the reply bubble) without scroll-to capability. This is what iMessage does.
+**Warning signs:**
+- `import { COLORS }` appearing in a new file's diff.
+- A new component looks correct in dark mode but has wrong colors in light mode.
+- New `StyleSheet.create({...})` blocks without a wrapping `useMemo` referencing `colors`.
 
-**Warning signs:** `getItemLayout` is not currently provided in `ChatRoomScreen` → any `scrollToIndex` call will fail without `onScrollToIndexFailed`.
-
-**Phase to address:** Threading/replies phase.
+**Phase to address:**
+Every phase. Highest risk in "social features polish" and "chat polish" phases that add new sub-components (badges, pills, modals, empty states).
 
 ---
 
-### MODERATE — Pitfall 3B: `reply_to_id` Foreign Key + Cascade Behavior
+### Pitfall 5: FlatList Performance Regression from Complex Item Components Without `React.memo`
 
-**What goes wrong:** Adding `reply_to_id uuid REFERENCES messages(id) ON DELETE CASCADE` to the messages table means deleting a parent message deletes all replies to it. For a future moderation/delete flow this is destructive. `ON DELETE SET NULL` is safer but requires the schema to express "reply to a now-deleted message" gracefully in the UI.
+**What goes wrong:**
+Polish passes typically make list item components more visually rich — adding avatars, animated badges, multi-line text, progress indicators, or reaction counts. Each visual addition increases per-item render cost. Without `React.memo` on list item components, every parent state change (incoming realtime message, status update, pull-to-refresh completion) causes every visible item to re-render, even if the item's data did not change.
 
-**Why it happens:** Developers default to CASCADE because it's clean, without thinking through the user-visible consequence.
+In the ChatRoomScreen FlatList (which has the most frequent state updates — new messages arrive in real time), a MessageBubble with reactions, reply previews, media, and highlight animation is expensive. If `renderItem` is defined inline (not extracted and memoized with `useCallback`), every new message causes all visible bubbles to re-render.
 
-**Prevention:**
-- Use `ON DELETE SET NULL` for `reply_to_id`.
-- In the UI, render a "Original message was deleted" placeholder in the quoted context when `reply_to_id IS NOT NULL` but the referenced row is missing from state.
+**Why it happens:**
+Adding visual complexity to a list item does not break the app — it just makes it slower. The slowdown is proportional to list size and state update frequency, so it is not noticed in small test datasets (5–10 items) but becomes a problem in real chats with 50–200 messages.
 
-**Phase to address:** Threading schema migration.
+**How to avoid:**
+- Wrap all FlatList item components in `React.memo`. This is already done for some components; audit the list during polish.
+- Extract `renderItem` to a `useCallback` (or define it outside the component if it has no closure deps). Never define `renderItem` as an inline arrow function inside JSX.
+- For ChatRoomScreen specifically: the message list is inverted and high-frequency. Ensure `MessageBubble` is wrapped in `React.memo` with a proper `areEqual` comparison if props include complex objects.
+- Add `keyExtractor` as a stable `useCallback` — never inline.
 
----
+**Warning signs:**
+- `renderItem` defined as `renderItem={({ item }) => <ItemComponent {...item} />}` inline in JSX.
+- FlatList item component not wrapped in `React.memo`.
+- Scroll jank appears only after adding a new visual element to the item (not present before the polish change).
+- React DevTools shows all visible items re-rendering on a single new message arrival.
 
-### MODERATE — Pitfall 3C: Nested Content Inflates FlatList Cell Height, Disrupting `getItemLayout`
-
-**What goes wrong:** `getItemLayout` (if ever added for scroll performance) assumes a fixed or estimated row height. Reply bubbles include a quoted context block above the message body, making them taller than plain messages. Using a single constant for `getItemLayout` causes scroll position drift.
-
-**Why it happens:** Chat FlatLists often omit `getItemLayout` entirely (this codebase does), which is acceptable for text-only chats. Adding variable-height reply cells makes the missing estimate hurt scroll-to-index reliability.
-
-**Prevention:**
-- Continue omitting `getItemLayout` — accept the scroll-to-index limitation noted in Pitfall 3A.
-- OR measure actual cell heights via `onLayout` and cache them in a `useRef<Map<string, number>>` keyed by message ID. Pass the cache into `getItemLayout`. Only worthwhile if scroll-to-quoted-message is a hard requirement.
-- Simpler: display the quoted context as a compact 2-line preview (truncated), bounding height variance.
-
-**Phase to address:** Threading implementation phase.
+**Phase to address:**
+Chat polish phase (highest risk — real-time updates + complex bubbles). Also: friend list, birthday list, IOU list phases. Any phase that enriches FlatList items.
 
 ---
 
-## 4. Polls in Supabase
+### Pitfall 6: Expo Splash Screen and App Icon Cannot Be Verified in Expo Go
 
-### CRITICAL — Pitfall 4A: Vote Deduplication Requires Both DB Constraint and RLS
+**What goes wrong:**
+From Expo SDK 52 onward, Expo Go shows the app icon during loading instead of the splash screen. The actual splash screen experience — including animated splash via `SplashScreen.setOptions()`, background color, and resize mode — is only visible in a production or preview EAS build. Configuring the splash and icon in `app.config.ts` and testing in Expo Go gives a false pass: the developer sees the Expo Go splash (or app icon), not the configured splash.
 
-**What goes wrong:** Without a `UNIQUE(poll_id, user_id)` constraint (for single-choice polls) or `UNIQUE(poll_option_id, user_id)` (for option-level), a user can vote multiple times by rapid-tapping or via a crafted request. RLS alone does not prevent duplicates — RLS controls visibility and write access, not uniqueness.
+Additionally, EAS generates all icon sizes from the provided 1024x1024 source. If the provided asset has a border or white background added by the designer, iOS rounded-rect corners will expose it, producing a box-in-circle appearance.
 
-**Why it happens:** Developers add RLS and assume it covers vote uniqueness. It does not. The DB constraint is the only guarantee.
+**Why it happens:**
+Expo Go is the fast feedback loop. Splash screen and icon changes require a rebuild (EAS build or `expo prebuild`), which is slow. Developers test in Expo Go to avoid waiting, see "it worked," and skip the EAS verification step.
 
-**Consequences:** Inflated vote counts; skewed poll results; users confused by their own vote registering multiple times.
+**How to avoid:**
+- App icon and splash screen work requires an EAS preview build to verify. Budget time for this — do not put it at the end of the milestone without planning the build cycle.
+- Icon asset requirements: 1024x1024 PNG, transparent background (no white/solid fill), no rounded corners in the source (the OS applies its own masking). For Android adaptive icon, provide separate foreground (with padding) and background layers.
+- Splash screen testing: use `expo build:preview` or `eas build --profile preview` and install on a device or simulator. Do not accept Expo Go as verification for splash/icon.
+- Specify both `icon` (shared) and `android.adaptiveIcon.foregroundImage` + `android.adaptiveIcon.backgroundColor` in app.config.ts for correct Android adaptive behavior.
 
-**Prevention:**
-- Add `UNIQUE(poll_id, user_id)` if single-choice per poll.
-- Add `UNIQUE(poll_option_id, user_id)` if multi-select per option.
-- Use `INSERT ... ON CONFLICT (poll_option_id, user_id) DO NOTHING` or `DO UPDATE` (toggle).
-- RLS policy: `FOR INSERT WITH CHECK (user_id = auth.uid())` — ensures you can only vote as yourself.
+**Warning signs:**
+- Checking splash screen "works" only in Expo Go.
+- Icon looks correct in Expo Go but has a white box on iOS rounded corners in a real build.
+- `SplashScreen.setOptions({ fade: true })` not observable in Expo Go.
 
-**Phase to address:** Polls schema migration.
-
----
-
-### CRITICAL — Pitfall 4B: Real-Time Vote Counts via Postgres Changes — Subscriber Multiplier Again
-
-**What goes wrong:** Same as Pitfall 2B for reactions. Subscribing to a `poll_votes` table via Postgres Changes fires an event per subscriber per vote. In a group of 10 chatting in 2 rooms simultaneously, each vote INSERT generates 20 Realtime messages.
-
-**Prevention:**
-- Use an RPC function `get_poll_results(poll_id)` that returns a count per option — call it on mount and after the user votes.
-- For live updates: subscribe to the `messages` table (already subscribed) and embed a `vote_count` JSONB field on the poll message row that is updated via a trigger on `poll_votes`. This means one Realtime event on the `messages` table (already counted) instead of a new subscription.
-- Alternatively: use a Realtime Broadcast channel for poll vote events (cheaper than Postgres Changes).
-- Avoid the simplest pattern (subscribe to `poll_votes` table) — it will consume disproportionate Realtime budget.
-
-**Phase to address:** Polls schema design, before any subscription code.
+**Phase to address:**
+App icon and splash screen phase. Should be verified with an EAS preview build as the phase's completion criterion, not Expo Go observation.
 
 ---
 
-### MODERATE — Pitfall 4C: RLS Visibility for Vote Results Before Poll Closes
+### Pitfall 7: Scope Creep — Polish Touching Too Many Files Simultaneously
 
-**What goes wrong:** If you store individual votes with `user_id`, RLS for SELECT allows each user to read all votes (since they're in the same chat). This lets users see who voted for what before the poll closes, biasing results.
+**What goes wrong:**
+A "polish pass" invitation encourages developers to fix everything at once. In a 25,000 LOC codebase with 170 TypeScript files, if each file is touched for "minor improvements" (tightening spacing, adjusting colors, tweaking animations), the resulting PR becomes a 150-file diff. Code review is impossible, merge conflicts are guaranteed on any parallel work, and bugs introduced during polish are untraceable to specific changes.
 
-**Why it happens:** Correct access control (friends can see the chat) conflicts with poll anonymity.
+The specific risk for this codebase: v1.7 targets every screen. Without strict phase boundaries, a developer working on "status & home screen refinements" might simultaneously fix something they notice in PlanDashboard, which touches the same components being refined in the "plans & explore" phase — resulting in conflicts and double-work.
 
-**Consequences:** Users see "Alice voted for Option B" → they change their vote to match the popular choice → poll results are influenced.
+**Why it happens:**
+Polish work is opportunistic. While fixing one thing, the developer notices five others. The work feels small per item but accumulates. Without feature-flag or branch isolation per phase, everything lands in one commit/PR.
 
-**Prevention:** Two options:
-1. **Anonymous polls (simpler for v1.5):** Don't store individual votes at all. Store only aggregate counts per option (increment a `vote_count` integer column via an RPC, not a row per vote). No individual vote rows = no visibility problem. Deduplicate via a `voter_ids uuid[]` array on the option row and check with `@>` operator before incrementing.
-2. **Attributed votes (for future):** Store votes with `user_id` but create a view that only exposes counts (no user_id). Grant SELECT only on the view, not the underlying table.
+**How to avoid:**
+- Each phase touches a bounded set of screens/components. Define the scope explicitly in REQUIREMENTS.md as a file list or tab-by-tab boundary.
+- Use the rule: if you notice a polish issue outside your current phase's scope, add it to a tracked list (a POLISH-BACKLOG note or issue) rather than fixing it in-place.
+- Commit structure: each phase should have multiple small, screen-scoped commits ("polish: home screen radar spacing and pulse animation") rather than one massive "UI polish" commit.
+- Every phase PR should be reviewable in under 20 minutes. If a PR is larger than ~30 files, it is out of scope.
 
-For v1.5 with 3–15 person groups, anonymous aggregate counts are sufficient and simpler.
+**Warning signs:**
+- A single commit or PR touching files across all tabs (home, squad, explore, chats, profile, common components) simultaneously.
+- Commit message "misc polish" or "cleanup across screens."
+- Merge conflicts on `src/theme/` or shared components between parallel polish phases.
 
-**Phase to address:** Polls schema design.
-
----
-
-### MINOR — Pitfall 4D: Poll Embedded in messages Table vs Separate Tables
-
-**What goes wrong:** Storing poll data (options, votes) in separate tables (polls, poll_options, poll_votes) requires joining when rendering a message list. The messages table is already fetched with `.select('*')`, and adding joins to the 50-message fetch increases query complexity. Alternatively, embedding poll data in a `metadata jsonb` column on the messages table means the whole column updates on every vote, causing the Realtime event to carry a large payload.
-
-**Prevention:**
-- Use separate tables for polls and poll_options (clean schema, easy to query by poll_id).
-- Store only a reference (`poll_id uuid`) in the messages row.
-- On chat load, identify message rows where `message_type = 'poll'`, then batch-fetch poll data: `supabase.from('polls').select('*, poll_options(*)').in('id', pollIds)`.
-- On vote: update the option's aggregate count, then broadcast via the existing messages channel (or trigger an UPDATE on the messages row to push a Realtime event).
-
-**Phase to address:** Polls schema migration.
+**Phase to address:**
+All phases. The REQUIREMENTS.md should include an explicit "scope boundary" list per phase. The roadmap structure itself is the primary mitigation.
 
 ---
 
-## 5. Profile Page Rework and Friend Profile Route
+### Pitfall 8: Testing Polish Changes Without a Reproducible Verification Path
 
-### CRITICAL — Pitfall 5A: Multiple Entry Points to Friend Profile Create Route Ambiguity
+**What goes wrong:**
+Polish changes are inherently visual and subjective. Without a reproducible test path, regressions are invisible until a real user encounters them. The specific risk: a spacing change in a shared component (e.g., `ScreenHeader`, `SectionHeader`, `SectionList`) breaks the layout on screens the developer did not explicitly check during the polish session.
 
-**What goes wrong:** The current `friends/[id].tsx` serves as the friend profile screen. v1.5 plans to make friend profiles richer (birthday, wish list, status). The new profile will need to be reachable from: Squad → Friends list, Home → HomeFriendCard, Home → Radar bubbles, Chat → tapping a sender avatar. Each of these entry points lives in a different Expo Router stack group (`(tabs)/squad`, `(tabs)/index`, `(tabs)/chat`). If you push `router.push('/friends/[id]')` from inside the Chat tab stack, Expo Router presents the screen in the Chat stack's native header context — not the Squad stack. The back button goes back to chat, not to the friends list.
+This codebase has a Playwright + Expo Web visual regression suite (validated in v1.1). However, Playwright runs against the web renderer — React Native StyleSheet properties are approximated, not pixel-identical to iOS/Android. Animations, haptics, and platform-native elements (DateTimePicker, bottom sheets, Modal) are invisible in Playwright.
 
-**Why it happens:** Expo Router's file-based routing presents route groups as independent stacks. A shared screen (`friends/[id]`) outside all tab stacks is accessible from any tab but behaves differently depending on which stack initiated the push.
+**Why it happens:**
+There are no automated visual tests for native mobile. Manual testing is slow and coverage is bounded by developer patience. Polish bugs (a 2px padding regression, a color that is slightly off in dark mode) are low-severity individually but compound into a "feels rough" experience.
 
-**Consequences:** Inconsistent back navigation — tapping back from the friend profile goes to different places depending on how you arrived; header title style may differ between stacks.
+**How to avoid:**
+- Use the Playwright suite for regression detection on non-animated, non-modal UI (screen layouts, colors, text). Run it before and after each phase.
+- For animated and modal elements: define a manual verification checklist per phase (included in HUMAN-UAT.md for each phase). Specifically: test on both light and dark theme, and verify on both iOS simulator and Android simulator.
+- For shared components (`ScreenHeader`, `SectionHeader`, `FAB`, `PrimaryButton`): when a shared component changes, manually check all ~15 screens that use it, not just the one being polished.
+- "Looks done" criterion for polish: change reviewed on device (not only in code), both themes checked, at minimum one platform (iOS simulator or Android emulator).
 
-**Prevention:**
-- Keep `friends/[id].tsx` at the root level (outside `(tabs)`) — which it already is. This is correct.
-- This means any tab can push to `/friends/{id}` and get a modal-style presentation (stack push on top of tab navigator).
-- Verify that `Stack.Screen options={{ presentation: 'card' }}` is set in `friends/_layout.tsx` rather than inheriting from the tab layout.
-- Do not duplicate the screen as `(tabs)/chat/friend/[id].tsx` — that creates two separate screens with different back destinations.
-- The existing pattern of `router.push('/friends/[id]')` from `HomeFriendCard` already works; audit that every new entry point uses the same absolute path.
+**Warning signs:**
+- Shared component changed without listing all consumers in the review.
+- Polish phase accepted with "it looks good in the simulator" without specifying which theme and platform.
+- Playwright suite skipped ("it's just visual changes").
 
-**Warning signs:** If you see the friend profile presented with a bottom tab bar visible — it means you pushed within a tab stack instead of the root stack.
-
-**Phase to address:** Profile rework phase, at the start when auditing navigation entry points.
-
----
-
-### MODERATE — Pitfall 5B: Status State Shared Between Home and Friend Profile Reads Stale Data
-
-**What goes wrong:** The home screen fetches statuses via `effective_status` view, which computes freshness (ALIVE/FADING/DEAD). The friend profile screen (`friends/[id].tsx`) fetches directly from `statuses` table — not the view. The user's status shown on the home card and on their profile page can diverge: home shows "FADING" (correctly expired) while the profile shows "Free" (raw status without expiry computation).
-
-**Why it happens:** The profile screen queries `statuses` directly (line 39 of `friends/[id].tsx`). The `effective_status` view was added in v1.3 as the source of truth but the friend profile does not use it.
-
-**Consequences:** User profile shows a status that the home screen correctly marks as expired. Confusing for users.
-
-**Prevention:**
-- Change the friend profile status query from `from('statuses')` to `from('effective_status')`.
-- The `effective_status` view already has `security_invoker=true` so RLS applies correctly.
-- Also display the `expires_at` window and freshness label (ALIVE/FADING/DEAD) on the profile, consistent with the home card treatment.
-
-**Phase to address:** Profile rework phase.
+**Phase to address:**
+All phases. The UAT format (HUMAN-UAT.md) should include explicit "both themes, both platforms" checkboxes for each phase.
 
 ---
 
-### MODERATE — Pitfall 5C: Removing Status Section from Profile Tab Breaks Mental Model During Transition
+## Technical Debt Patterns
 
-**What goes wrong:** v1.5 removes status display from the Profile tab (home is source of truth). If this removal happens mid-development (another phase active), users of the dev build lose access to status editing for a period. More subtly: the status pill in the header (added in v1.3.5) is only on the Home tab. If the Profile tab status section is removed without the header pill being clearly discoverable, new users can't find where to set their status.
-
-**Consequences:** Not a technical bug, but a UX regression during development.
-
-**Prevention:**
-- Remove the Profile status section and complete the Profile rework in a single phase — do not split the removal into one phase and the profile redesign into another.
-- Verify the header status pill is visible from Home before the Profile section removal ships.
-
-**Phase to address:** Profile rework phase — do removal and redesign atomically.
-
----
-
-### MINOR — Pitfall 5D: noUncheckedIndexedAccess on Profile Display Name Parsing
-
-**What goes wrong:** The existing code in `friends/[id].tsx` (line 107) does:
-```ts
-const firstName = profile.display_name.split(' ')[0];
-```
-Under `noUncheckedIndexedAccess: true`, `split()[0]` is typed as `string | undefined`. TypeScript strict mode will flag this. The codebase already has suppressions for similar patterns (assets?.[0]) — the fix pattern is consistent:
-```ts
-const firstName = profile.display_name.split(' ')[0] ?? profile.display_name;
-```
-
-**Warning signs:** TypeScript error TS2532: "Object is possibly undefined" on split()[0] or similar.
-
-**Phase to address:** Profile rework phase, when the friend profile screen is extended. This specific line is in current code — fix it before the rework touches this file.
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| Add `useNativeDriver: false` to avoid runtime error without checking property type | No crash | All animations on JS thread; scroll jank when JS is busy | Never — always use the correct driver for the property type |
+| Skip `React.memo` on new FlatList item components during polish | Less boilerplate | Re-renders all visible items on every parent state change; jank in high-frequency lists | Never for FlatList items in realtime screens (chat, home) |
+| Define `renderItem` as inline arrow function inside JSX | Shorter code | New function reference on every parent render; defeats `React.memo` on item component | Never — extract to `useCallback` or module-level function |
+| Import `COLORS` directly in a new polish component | Slightly faster to write | Component ignores theme toggle; dark values in light mode | Never — every component uses `useTheme()` |
+| Verify splash screen and icon only in Expo Go | Immediate feedback | EAS build may have different appearance (icon border, splash timing) | Never — requires EAS preview build verification |
+| Touch all screens at once in a single polish PR | Faster flow | 150-file diff; untraceable regressions; guaranteed merge conflicts | Never — scope per phase, commit per screen |
+| Empty `useMemo` dependency array `[]` for style block | Style computed once | Styles frozen at first render; theme toggle has no effect | Never if `colors` is referenced; acceptable only for genuinely static, non-color styles |
 
 ---
 
-## Phase Assignment Summary
+## Integration Gotchas
 
-| Pitfall | ID | Severity | Phase |
-|---------|----|----------|-------|
-| No compression before Supabase upload | 1A | CRITICAL | Media sharing phase |
-| FlatList memory from inline images | 1B | CRITICAL | Media sharing phase |
-| KAV breaks with image preview strip | 1C | MODERATE | Media sharing phase |
-| Public vs signed URL for chat images | 1D | MINOR | Media sharing phase (schema design) |
-| No unique constraint on reactions | 2A | CRITICAL | Reactions schema migration |
-| Realtime budget multiplier for reactions | 2B | CRITICAL | Reactions schema design |
-| Optimistic reaction dedup with Realtime | 2C | MODERATE | Reactions implementation |
-| scrollToIndex fails beyond render window | 3A | CRITICAL | Threading phase |
-| reply_to_id cascade deletes replies | 3B | MODERATE | Threading schema migration |
-| Variable height disrupts scroll estimate | 3C | MODERATE | Threading implementation |
-| Vote dedup requires DB constraint + RLS | 4A | CRITICAL | Polls schema migration |
-| Realtime budget multiplier for votes | 4B | CRITICAL | Polls schema design |
-| Vote visibility biases results | 4C | MODERATE | Polls schema design |
-| Poll tables vs messages join complexity | 4D | MINOR | Polls schema migration |
-| Multiple entry points route ambiguity | 5A | CRITICAL | Profile rework phase |
-| Friend profile reads stale status | 5B | MODERATE | Profile rework phase |
-| Status removal UX regression during dev | 5C | MODERATE | Profile rework phase |
-| noUncheckedIndexedAccess on split()[0] | 5D | MINOR | Profile rework phase |
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| `Animated.Value` + multiple animation calls | Mixing `useNativeDriver: true` and `useNativeDriver: false` on the same value | One value, one driver type. Use separate values for different property categories. |
+| `useTheme()` + new component during polish | Import `COLORS` static object as a shortcut | Always `const { colors } = useTheme()` — no exceptions |
+| `useMemo` + `StyleSheet.create` | Empty or wrong dependency array | Dependency array must include `colors` (and only runtime-varying values) |
+| FlatList + complex item | Inline `renderItem` and no `React.memo` on item component | Extract `renderItem` to `useCallback`; wrap item component in `React.memo` |
+| Expo splash/icon + Expo Go testing | Accept Expo Go observation as verification | Requires EAS preview build; Expo Go shows app icon, not configured splash |
+| OfflineBanner / ReEngagementBanner + height animation | Adding `useNativeDriver: true` because it "seems faster" | Height is a layout property — must use `useNativeDriver: false` (matches existing pattern) |
 
 ---
 
-## Cross-Cutting: Supabase Realtime Free-Tier Budget
+## Performance Traps
 
-The single highest-risk area for this milestone as a whole is **Supabase Realtime budget consumption**. The current system already subscribes to the `messages` table per chat room. Adding subscriptions for reactions AND polls AND possibly a friend-profile presence would multiply the message count drastically.
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| All new animations set `useNativeDriver: false` | Scroll jank during animations on low-end Android | Audit property type first; use native driver for transform/opacity | Immediately visible on mid-range Android under load |
+| FlatList item without `React.memo` on high-frequency list | Every new chat message re-renders all visible bubbles | Wrap item in `React.memo`; `useCallback` on `renderItem` | ~50+ items in list with real-time updates |
+| Shared component style change without checking all consumers | Layout breaks on unvisited screens | List all consumers of changed component; spot-check each | Immediately — but only discovered during QA |
+| New animation on an already-animated component with wrong driver | Runtime crash or silent misbehavior | Read all existing `useNativeDriver` declarations before adding new animation | First render of the affected component |
+| `useMemo` style dep array doesn't include `colors` | Styles frozen at initial theme; theme toggle has no visible effect | Always include `colors` in dep array | Every theme toggle after app launch |
 
-**Budget math (conservative):**
-- 10 active users, 3 chat rooms each, 1 subscription per table per room
-- Messages table: 10 × 3 = 30 concurrent subscriptions
-- If reactions use their own Postgres Changes table: 30 more
-- If polls use their own Postgres Changes table: 30 more
-- Total: 90 concurrent subscriptions
-- A group of 10 exchanging 20 reactions/day = 200 DB events × 30 subscribers = 6,000 Realtime messages/day → 180K/month for reactions alone
+---
 
-Free tier: 2M/month. With chat messages + reactions + polls all using Postgres Changes, you could hit the limit with only a moderate amount of app activity.
+## Security Mistakes
 
-**Strategic prevention:** For all new real-time features in v1.5, default to one of:
-1. **Embed state in the messages row** and rely on the already-subscribed `messages` channel
-2. **Supabase Realtime Broadcast** (not Postgres Changes) for high-frequency events — it has a separate and more generous quota
+*Not a primary concern for a UI polish pass. The existing security posture (RLS, SECURITY DEFINER RPCs, private storage bucket, signed URLs) remains unchanged by polish work. The main risk is accidentally introducing a new `COLORS` static import that bypasses theme logic — not a security issue, but a correctness one covered above.*
+
+---
+
+## UX Pitfalls
+
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| Animation added without haptic feedback on key actions (FAB tap, swipe-to-action, confirm) | Action feels unresponsive on physical device even if animation is present | Add `Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)` alongside new animations for destructive/confirmatory actions |
+| Loading skeleton not updated when item layout changes during polish | Skeleton dimensions mismatch content; layout shift on load completion | Update skeleton dimensions to match polished item component dimensions |
+| Empty states missed during polish (only happy path tested) | Screens look unstyled when user has no data | Every polish phase must include empty state verification in UAT |
+| Error state text not updated when screen copy is polished | Error text uses old/inconsistent voice | Polish includes error and empty state copy review, not just success states |
+| New modal/bottom sheet not following theme | Modal appears in wrong theme (dark when app is light) | Verify `Modal`, `BottomSheet` content uses `useTheme()` — modals render in a separate tree and can miss context |
+| Polish changes only tested on developer's device size | Layout breaks on smaller screens (iPhone SE) or larger screens (tablets) | Test on at least two simulator screen sizes per phase |
+| Haptics added to every interaction (over-haptic) | Feels buzzy and annoying; users turn off system haptics | Use haptics selectively: destructive actions, confirmations, swipe thresholds — not every tap |
+
+---
+
+## "Looks Done But Isn't" Checklist
+
+- [ ] **Animation threading:** Every new animation declares `useNativeDriver` with a comment explaining why (true for transform/opacity, false for layout props).
+- [ ] **Driver consistency:** No `Animated.Value` is used with both `useNativeDriver: true` and `useNativeDriver: false` in the same component.
+- [ ] **Theme correctness:** No new component imports `COLORS` directly — `grep -r "import.*COLORS" src/ --include="*.tsx"` returns zero results outside `src/theme/`.
+- [ ] **useMemo styles:** Every new `useMemo(() => StyleSheet.create({...}))` has `[colors]` in its dependency array.
+- [ ] **FlatList items:** Every FlatList item component added or modified during polish is wrapped in `React.memo`; `renderItem` is defined outside JSX or wrapped in `useCallback`.
+- [ ] **Both themes tested:** Each polished screen verified in light mode AND dark mode before phase sign-off.
+- [ ] **Both platforms tested:** Each polished screen verified on iOS simulator AND Android emulator.
+- [ ] **Shared component ripple:** When a shared component (`ScreenHeader`, `SectionHeader`, `FAB`, `PrimaryButton`, etc.) is modified, all screens using it are spot-checked.
+- [ ] **App icon/splash:** Splash screen and app icon verified in an EAS preview build — not Expo Go.
+- [ ] **Empty states:** Every polished screen includes verified empty state appearance (both themes).
+- [ ] **Modal/bottom sheet theme:** Any new Modal or bottom sheet uses `useTheme()` internally (modals render outside the normal view hierarchy).
+- [ ] **Phase scope:** PR diff touches only files within the declared phase scope; out-of-scope findings logged in backlog, not fixed inline.
+
+---
+
+## Recovery Strategies
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Animation crashes from mixed-driver Animated.Value | LOW | Identify the conflicting animation pair; create a second `Animated.Value` with the correct driver; remove the conflicting animation from the shared value |
+| Theme breakage from new COLORS import | LOW-MEDIUM | `grep` for all new COLORS imports in the diff; replace with `useTheme()` + `colors` destructure; verify both themes |
+| `useMemo` dep array missing `colors` causing frozen styles | LOW | Add `colors` to dependency array; verify styles update on theme toggle |
+| FlatList jank from un-memoized item components | MEDIUM | Wrap item in `React.memo`; extract `renderItem` to `useCallback`; profile before/after with React DevTools |
+| Scope creep producing 150-file PR | HIGH — review burden | Split PR by tab/feature area; revert cross-scope changes to a separate backlog issue; re-review phase by phase |
+| Splash/icon looks wrong in EAS build | LOW-MEDIUM | Fix asset (transparent background, correct dimensions); re-submit EAS preview build; does not require app store submission |
+| Shared component change breaks unvisited screens | MEDIUM | List all consumers with `grep`; spot-check each; fix layout regressions; add to UAT checklist |
+
+---
+
+## Pitfall-to-Phase Mapping
+
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| Wrong `useNativeDriver` for property type | Every animation phase | Code review: every new `Animated.timing/spring` has driver comment matching property type |
+| Mixed-driver conflict on existing Animated.Value | Home screen polish, chat polish (highest animated complexity) | No runtime "already attached to native node" error; all animations play smoothly |
+| `useMemo` dep array missing `colors` | Every new screen/component phase | `react-hooks/exhaustive-deps` passes with no suppressions on style `useMemo` blocks |
+| New component importing `COLORS` directly | Every phase | `grep -r "import.*COLORS" src/ --include="*.tsx"` returns zero outside `src/theme/` |
+| FlatList item re-render regression | Chat polish, friend list polish, plans list polish | React DevTools Profiler: item does not re-render when unrelated parent state changes |
+| Splash/icon not verified in EAS build | App icon + splash phase | EAS preview build installed on device/simulator; splash and icon match design spec |
+| Scope creep / uncontrolled diff size | All phases | Each phase PR is ≤30 files; commit messages are screen-scoped |
+| Visual regression on shared component change | Any phase touching shared components | Playwright suite passes; all consumer screens spot-checked in both themes |
+| Modal/bottom sheet missing theme | Any phase adding new modals | New modal verified in light + dark mode; uses `useTheme()` internally |
 
 ---
 
 ## Sources
 
-- Supabase Realtime Pricing (per-subscriber multiplier): https://supabase.com/docs/guides/realtime/pricing
-- Supabase Realtime Limits: https://supabase.com/docs/guides/realtime/limits
-- Supabase Storage File Limits (free tier 50 MB per file): https://supabase.com/docs/guides/storage/uploads/file-limits
-- expo-image inside FlatList framedrops (issue #24824, #37561): https://github.com/expo/expo/issues/24824
-- React Native scrollToIndex beyond render limit: https://ikevin127.medium.com/react-native-auto-scrolling-to-inverted-flatlist-items-beyond-the-initial-render-limit-bff8f085444b
-- KAV hides input Android 15 / SDK 35: https://github.com/facebook/react-native/issues/49759
-- expo-image-manipulator compression: https://docs.expo.dev/versions/latest/sdk/imagemanipulator/
-- Uploaded files 0 bytes iOS (ArrayBuffer fix): https://github.com/orgs/supabase/discussions/2336
-- FlatList inverted performance drop: https://github.com/facebook/react-native/issues/35983
+- [Using Native Driver for Animated — React Native docs](https://reactnative.dev/blog/2017/02/14/using-native-driver-for-animated) — Property support limitations, driver compatibility rules
+- [Animations — React Native docs](https://reactnative.dev/docs/animations) — `useNativeDriver` limitations, layout property restrictions
+- [Optimizing FlatList Configuration — React Native docs](https://reactnative.dev/docs/optimizing-flatlist-configuration) — `React.memo`, `renderItem` extraction, `maxToRenderPerBatch`
+- [FlatList Optimization: Avoid Re-Rendering When Adding or Removing Items — Brains & Beards 2025](https://brainsandbeards.com/blog/2025-dont-rerender-new-flatlist-items/) — `React.memo` prevents re-renders on list mutations
+- [Splash screen and app icon — Expo Documentation](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/) — Asset requirements, EAS vs Expo Go differences
+- [Expo SDK 52 Changelog](https://expo.dev/changelog/2024-11-12-sdk-52) — "Expo Go shows app icon instead of splash screen" change
+- [Icon Shows in Place of Splash Screen with Expo Go — expo/expo#33215](https://github.com/expo/expo/issues/33215) — Confirmed behavior from SDK 52+
+- [Reactive styles in React Native — Supercharge's Digital Product Guide](https://medium.com/supercharges-mobile-product-guide/reactive-styles-in-react-native-79a41fbdc404) — `useMemo` + `StyleSheet.create` pattern, dependency array correctness
+- [React Native Dark Mode Implementation Guide 2025 — RN Example](https://reactnativeexample.com/react-native-dark-mode-implementation-guide-2025/) — Context with `useMemo`, theme-aware StyleSheet patterns
+- [How to Avoid Scope Creep During Refactoring — Andrei Gridnev](https://andreigridnev.com/blog/2019-01-20-four-tips-to-avoid-scope-creep-during-refactoring/) — Bounded scope, backlog-first approach for noticed issues
+- Campfire codebase — existing `useNativeDriver` pattern in RadarBubble.tsx (line 165), ReEngagementBanner.tsx (line 72), FriendSwipeCard.tsx (line 234), MessageBubble.tsx (lines 407-408), OfflineBanner.tsx (line 30)
+- Campfire codebase — existing `useMemo(() => StyleSheet.create({...}), [colors])` pattern in squad.tsx (line 200), profile.tsx (line 290), wish-list.tsx (line 36), edit.tsx (line 109)
+
+---
+*Pitfalls research for: Campfire v1.7 — large-scale UI/UX polish pass on React Native + Expo managed workflow*
+*Researched: 2026-05-04*

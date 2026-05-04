@@ -1,634 +1,510 @@
-# Architecture Patterns — v1.5 Chat & Profile Integration
+# Architecture Research
 
-**Domain:** Chat feature enrichment + Profile rework on existing Campfire architecture
-**Researched:** 2026-04-20
-**Confidence:** HIGH (based on direct codebase inspection)
+**Domain:** Polish milestone integration — React Native + Expo managed workflow (~25K LOC)
+**Researched:** 2026-05-04
+**Confidence:** HIGH (all findings are from direct codebase inspection)
+
+## Standard Architecture
+
+### System Overview
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                      Expo Router (app/)                          │
+│  _layout.tsx (ThemeProvider, GestureHandlerRootView,             │
+│               SplashScreen, font loading, notification routing)  │
+├──────────┬──────────┬──────────┬──────────┬─────────────────────┤
+│  (tabs)/ │  plans/  │  friends/│  squad/  │  profile/           │
+│ Home     │ [id].tsx │ [id].tsx │expenses/ │  edit.tsx           │
+│ Squad    │          │ add.tsx  │birthday/ │  wish-list.tsx      │
+│ Explore  │          │ requests │          │                     │
+│ Chats    │          │          │          │                     │
+│ Profile  │          │          │          │                     │
+├──────────┴──────────┴──────────┴──────────┴─────────────────────┤
+│                  Screen Layer (src/screens/)                      │
+│  HomeScreen  ChatListScreen  ChatRoomScreen  PlanDashboardScreen │
+│  PlansListScreen  PlanCreateModal  FriendsList  FriendRequests   │
+├─────────────────────────────────────────────────────────────────┤
+│               Feature Component Layer (src/components/)          │
+│  home/   chat/   plans/   squad/   status/   iou/   maps/       │
+├─────────────────────────────────────────────────────────────────┤
+│               Shared Component Library (src/components/common/)  │
+│  ScreenHeader  SectionHeader  EmptyState  LoadingIndicator       │
+│  FAB  PrimaryButton  FormField  AvatarCircle  ErrorDisplay       │
+│  OfflineBanner  BirthdayPicker  CustomTabBar  ThemeSegmentedControl│
+├─────────────────────────────────────────────────────────────────┤
+│                   Hook Layer (src/hooks/)                         │
+│  useHomeScreen  useChatList  useChatRoom  usePlans               │
+│  useFriends  useStatus  useIOUSummary  useUpcomingBirthdays       │
+├─────────────────────────────────────────────────────────────────┤
+│          Zustand Stores (src/stores/)   Theme (src/theme/)       │
+│  useAuthStore  useChatStore  useHomeStore  usePlansStore          │
+│  useStatusStore  |  ThemeContext / ThemeProvider / useTheme()     │
+├─────────────────────────────────────────────────────────────────┤
+│                     Supabase Client (src/lib/)                   │
+│  Postgres · Auth · Realtime · Storage · Edge Functions            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component Responsibilities
+
+| Component Tier | Responsibility | Polish Impact |
+|---------------|----------------|---------------|
+| `app/` routes | Navigation wiring, modal presentation, route params | Minimal — mostly config |
+| `screens/` | Data orchestration, hook composition, FlatList host | Skeleton loaders live here |
+| `components/[feature]/` | Feature-specific UI, local Animated logic | Animation improvements live here |
+| `components/common/` | Shared primitives — ScreenHeader, EmptyState, FAB etc | High-value enhancement targets |
+| `hooks/` | Data fetching + realtime subscriptions | Add loading/error return shapes |
+| `stores/` | Ephemeral UI state (Zustand) | Touch only for new UI state |
+| `theme/` | Design tokens + ThemeContext | Add animation timing tokens |
 
 ---
 
-## Current Architecture Baseline (Verified)
+## How Polish Changes Integrate with the Existing Architecture
 
-### messages table (as of migration 0017)
+### 1. The `useTheme()` + `useMemo([colors])` StyleSheet Pattern
 
-```
-messages
-  id               uuid PK
-  plan_id          uuid FK → plans (nullable)
-  dm_channel_id    uuid FK → dm_channels (nullable)
-  group_channel_id uuid FK → group_channels (nullable)  -- added 0017
-  sender_id        uuid FK → auth.users
-  body             text NOT NULL
-  created_at       timestamptz
-  CONSTRAINT: exactly one of the three channel FKs is non-null (integer sum = 1)
-```
-
-The `body NOT NULL` constraint is the critical gate. Every new column must be nullable or have a default; the constraint must not be tightened.
-
-### Realtime subscription pattern
-
-`useChatRoom` opens one `supabase.channel(channelName)` with a `postgres_changes` filter on `messages` for the specific channel column/value. The subscription listens for `INSERT` only. Any new column data (image_url, reply_to_message_id) that arrives via INSERT will flow through automatically — no subscription change needed for those columns.
-
-Reactions are a separate table (not on `messages`), so they need their own Realtime subscription.
-
-### FlatList contract
-
-`ChatRoomScreen` renders an **inverted** FlatList. Index 0 = newest message at the bottom. `renderItem` receives `{ item, index }` — index arithmetic is already documented in the screen (`index + 1` is the visually older/above message). Any reply preview or reaction row must be rendered **inside** `renderItem` (i.e., within `MessageBubble` or a wrapper around it), not in a separate `FlatList`. ScrollView-inside-FlatList is never acceptable per project constraints.
-
----
-
-## Feature 1: Message Reactions
-
-### Schema decision: separate `message_reactions` table (not JSONB)
-
-Rationale:
-- JSONB reactions column on `messages` cannot be efficiently subscribed via Supabase Realtime (Realtime fires on row change but diff is the full JSONB blob, not individual reactions). A separate table lets each reaction INSERT/DELETE fire its own Realtime event.
-- JSONB makes per-user uniqueness enforcement (one reaction type per user per message) complex and requires a trigger. A table with a composite PK handles it natively.
-- Easier RLS: reactions inherit the same channel membership check as messages.
-
-```sql
--- Migration 0018
-CREATE TABLE public.message_reactions (
-  message_id  uuid NOT NULL REFERENCES public.messages(id) ON DELETE CASCADE,
-  user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  emoji       text NOT NULL,                          -- single emoji character
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (message_id, user_id, emoji)            -- one emoji type per user per message
-);
-ALTER TABLE public.message_reactions ENABLE ROW LEVEL SECURITY;
-```
-
-### RLS design
-
-```sql
--- SELECT: same channel member as the parent message
--- Use a SECURITY DEFINER helper to avoid correlated subquery on the RLS policy
-CREATE OR REPLACE FUNCTION public.is_message_channel_member(p_message_id uuid)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.messages m
-    WHERE m.id = p_message_id
-    AND (
-      (m.plan_id IS NOT NULL AND EXISTS (
-        SELECT 1 FROM public.plan_members WHERE plan_id = m.plan_id AND user_id = (SELECT auth.uid())
-      ))
-      OR (m.dm_channel_id IS NOT NULL AND EXISTS (
-        SELECT 1 FROM public.dm_channels WHERE id = m.dm_channel_id
-          AND (user_a = (SELECT auth.uid()) OR user_b = (SELECT auth.uid()))
-      ))
-      OR (m.group_channel_id IS NOT NULL AND public.is_group_channel_member(m.group_channel_id))
-    )
-  );
-$$;
-GRANT EXECUTE ON FUNCTION public.is_message_channel_member(uuid) TO authenticated;
-
-CREATE POLICY "reactions_select_channel_member"
-  ON public.message_reactions FOR SELECT TO authenticated
-  USING (public.is_message_channel_member(message_id));
-
--- INSERT: sender must be own user AND must be channel member
-CREATE POLICY "reactions_insert_own"
-  ON public.message_reactions FOR INSERT TO authenticated
-  WITH CHECK (
-    user_id = (SELECT auth.uid())
-    AND public.is_message_channel_member(message_id)
-  );
-
--- DELETE: own reactions only
-CREATE POLICY "reactions_delete_own"
-  ON public.message_reactions FOR DELETE TO authenticated
-  USING (user_id = (SELECT auth.uid()));
-```
-
-### Realtime subscription
-
-Add a second `.on('postgres_changes', { table: 'message_reactions', ... })` inside `useChatRoom`. The filter must target the channel indirectly — Supabase Realtime column filters only work on the subscribed table's own columns. Since `message_reactions` does not have a channel_id, filter on the client side:
-
+**The pattern (everywhere in the codebase):**
 ```typescript
-// In useChatRoom, second subscription on same channel object:
-.on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions' }, (payload) => {
-  // Filter client-side: only process reactions for messages in current messages[] array
-  const reactionPayload = payload.new as { message_id: string; user_id: string; emoji: string };
-  setMessages(prev => prev.map(m =>
-    m.id === reactionPayload.message_id
-      ? { ...m, reactions: updatedReactions(m.reactions, payload) }
-      : m
-  ));
-})
+const { colors } = useTheme();
+const styles = useMemo(() => StyleSheet.create({
+  card: { backgroundColor: colors.surface.card },
+}), [colors]);
 ```
 
-`REPLICA IDENTITY FULL` must be set on `message_reactions` for DELETE events to carry the old row data.
+**Integration rule for new components:** Every new component that uses colors from the theme MUST follow this pattern. `colors` is the only dynamic dependency — `SPACING`, `FONT_SIZE`, `RADII`, `SHADOWS` are static `as const` objects and do NOT belong inside `useMemo`.
 
-### Data flow
+**Animation integration:** `Animated.Value` and `useSharedValue` refs are created outside `useMemo`. The animated style is either a separate `useAnimatedStyle` (Reanimated) or an inline `transform` on `Animated.View`. Never put animation refs inside `useMemo`.
 
-1. Initial fetch: join `message_reactions` into the messages query using `.select('*, message_reactions(*)')` (Supabase PostgREST nested select).
-2. Realtime: INSERT/DELETE events patch `messages` state in-place.
-3. `MessageWithProfile` type gains `reactions: { emoji: string; user_id: string }[]`.
+**Correct pattern for a new animated + themed component:**
+```typescript
+function AnimatedCard() {
+  const { colors } = useTheme();
+  const scale = useRef(new Animated.Value(1)).current;  // outside useMemo
 
-### New component: `ReactionBar`
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      padding: SPACING.lg,
+    },
+  }), [colors]);  // only colors as dep
 
-Rendered below the bubble in `MessageBubble`. Shows grouped emoji counts (e.g., "👍 3"). Long-press on bubble opens `ReactionPicker` (a horizontal row of 6 preset emoji in a small popover, not a bottom sheet — bottom sheet is overkill for tapbacks).
-
-```
-MessageBubble
-  bubble content (existing)
-  ReactionBar          <- new, renders grouped reactions
-ReactionPicker         <- new, absolute positioned popover shown on long-press
-```
-
-### Free-tier impact
-
-`message_reactions` rows are tiny (~60 bytes each). For 50 active users each reacting to 20 messages/day = 1000 rows/day = ~365K rows/year ~22MB. Well within 500MB. Realtime events: reactions add ~2x message events in the worst case — stay within 2M/month.
-
----
-
-## Feature 2: Media Sharing
-
-### Schema decision: `image_url` nullable column on `messages`
-
-Rationale:
-- A separate media table adds a JOIN for every message fetch and a second RLS surface. The messages table already supports nullable channel FKs — a nullable `image_url` column follows the same pattern.
-- The existing `body NOT NULL` constraint is the only concern. A message can have text, image, or both. For image-only messages, `body` should be set to `''` (empty string) rather than NULL, which satisfies NOT NULL without semantic change.
-- Supabase Storage public URL is stored, not the raw file path, keeping the client simple.
-
-```sql
--- Part of migration 0018
-ALTER TABLE public.messages
-  ADD COLUMN image_url text;                          -- nullable; NULL = text-only message
-```
-
-No constraint change needed — `body` stays NOT NULL; image-only messages send `body = ''`.
-
-### Storage bucket
-
-Name it `chat-media` (separate from `plan-covers` and `avatars` for access control clarity).
-
-```sql
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('chat-media', 'chat-media', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Path convention: chat-media/{channel_type}/{channel_id}/{sender_id}/{uuid}.jpg
--- Upload policy: authenticated, path must start with sender's user_id segment
-CREATE POLICY "chat_media_upload"
-  ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK (
-    bucket_id = 'chat-media'
-    AND (storage.foldername(name))[3] = (SELECT auth.uid())::text
+  return (
+    <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
+      {/* ... */}
+    </Animated.View>
   );
-
-CREATE POLICY "chat_media_update"
-  ON storage.objects FOR UPDATE TO authenticated
-  USING (bucket_id = 'chat-media' AND (storage.foldername(name))[3] = (SELECT auth.uid())::text);
-
-CREATE POLICY "chat_media_read_public"
-  ON storage.objects FOR SELECT TO public
-  USING (bucket_id = 'chat-media');
-```
-
-The `foldername` array is 1-indexed: index [1]=channel_type, [2]=channel_id, [3]=sender_id.
-
-### Upload pattern
-
-Follow the established `fetch().arrayBuffer()` pattern from plan covers (decision recorded in PROJECT.md). Do NOT use FormData + file:// URI.
-
-```typescript
-// In sendMessage extended to accept optional imageUri
-const response = await fetch(imageUri);
-const arrayBuffer = await response.arrayBuffer();
-const { data: uploadData } = await supabase.storage
-  .from('chat-media')
-  .upload(path, arrayBuffer, { contentType: 'image/jpeg', upsert: false });
-const publicUrl = supabase.storage.from('chat-media').getPublicUrl(uploadData.path).data.publicUrl;
-// Then insert message with image_url = publicUrl
-```
-
-### Sending flow in SendBar
-
-Add a camera/photo icon to `SendBar`. `AttachmentAction` union gains `'photo'`. `ChatRoomScreen.handleAttachmentAction` calls `ImagePicker.launchImageLibraryAsync` (already available via `expo-image-picker` used for plan covers and avatars) then passes the URI to an extended `sendMessage(body, imageUri?)`.
-
-### Type updates
-
-```typescript
-// types/chat.ts
-export interface Message {
-  // ... existing fields
-  image_url: string | null;        // new
 }
 ```
 
-### New component: `ChatImage`
-
-Rendered inside `MessageBubble` when `message.image_url` is non-null. Uses `expo-image` (already in the project via plan covers) for caching. Tapping opens a full-screen modal (simple `Modal` with the image and a close button). No third-party lightbox — stay no-UI-library.
-
-### Free-tier impact
-
-Storage: 1GB limit. A 500KB compressed image per message x 500 messages/month = 250MB/month. Add client-side resize to max 1280px before upload using `expo-image-manipulator` (bundled in Expo managed workflow).
-
----
-
-## Feature 3: Reply Threading
-
-### Schema decision: `reply_to_message_id` FK + denormalized `reply_preview` on `messages`
-
-Rationale:
-- Query-on-demand (joining replied-to message at fetch time) means N+1 fetches if the last 50 messages include 50 replies, or requires a self-join that bloats every message row. Denormalizing a short preview string avoids this entirely.
-- The preview is cosmetic (truncated sender + body, ~80 chars). If the original is deleted, the preview becomes a tombstone — that is acceptable.
-- No full threading tree (no `parent_id` recursion). This is linear reply context (iMessage/Telegram pattern), not a Reddit-style thread.
-
-```sql
--- Part of migration 0018
-ALTER TABLE public.messages
-  ADD COLUMN reply_to_message_id uuid REFERENCES public.messages(id) ON DELETE SET NULL,
-  ADD COLUMN reply_preview        text;               -- "Name: message text..." truncated at 80 chars
-```
-
-`ON DELETE SET NULL` preserves the reply bubble shell even when the parent is deleted, showing "Original message deleted."
-
-### Setting reply_preview
-
-Done client-side when the user selects "reply" — grab `senderName + ': ' + body.slice(0, 72)` from local state and pass it to `sendMessage`. No trigger needed.
-
-### Rendering in FlatList
-
-The reply preview is a quoted block above the bubble content, rendered inside `MessageBubble`:
-
-```
-MessageBubble (wrapper TouchableOpacity)
-  ReplyPreviewBar    <- new; renders when message.reply_preview is non-null
-    vertical accent line + truncated preview text
-  bubble content (existing text / ChatImage)
-  ReactionBar
-```
-
-`ReplyPreviewBar` scrolls to the referenced message when tapped: find the index of `reply_to_message_id` in the `messages` array and call `flatListRef.current?.scrollToIndex()`. Expose the `FlatList` ref from `ChatRoomScreen` and pass a `onReplyTap(messageId)` callback down through `MessageBubble`.
-
-### Interaction pattern
-
-Long-press on a bubble reveals a context menu (not a bottom sheet). The menu has: Reply, React, (for own messages) Delete. Keep this as an `Animated.View` absolutely positioned near the bubble — avoids any ScrollView-inside-FlatList issues.
-
-### Type updates
-
+**Reanimated pattern (for JS-thread to native-thread migration):**
 ```typescript
-export interface Message {
-  // ... existing fields
-  image_url: string | null;
-  reply_to_message_id: string | null;
-  reply_preview: string | null;
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+
+function AnimatedCard() {
+  const { colors } = useTheme();
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const styles = useMemo(() => StyleSheet.create({
+    card: { backgroundColor: colors.surface.card, borderRadius: RADII.lg },
+  }), [colors]);
+
+  return <Animated.View style={[styles.card, animatedStyle]} />;
 }
 ```
 
-### Extended sendMessage signature
+---
 
+### 2. Skeleton Loaders Without Breaking FlatList Patterns
+
+**Existing loading pattern (ChatListScreen is canonical):**
 ```typescript
-sendMessage: (body: string, options?: {
-  imageUri?: string;
-  replyToId?: string;
-  replyPreview?: string;
-}) => Promise<{ error: Error | null }>
+if (loading && chatList.length === 0) {
+  return <LoadingIndicator />;
+}
+```
+
+The `LoadingIndicator` (`ActivityIndicator` centered in `flex:1 View`) replaces the whole screen. This is functional but abrupt. Skeletons must replace this pattern, not the FlatList itself.
+
+**Integration point:** The screen-level guard (`if (loading && items.length === 0)`) is the single place to swap in a skeleton. The FlatList below that guard is untouched.
+
+**Skeleton pattern for FlatList screens:**
+```typescript
+// Replace the full-screen loading guard:
+if (loading && items.length === 0) {
+  return <ChatListSkeleton />;  // renders N skeleton rows, NOT a FlatList
+}
+```
+
+`ChatListSkeleton` is a plain `View` with N skeleton row components — not a FlatList, not a ScrollView. It only renders while `loading === true && items.length === 0`. Once data arrives the real FlatList renders. This keeps FlatList untouched.
+
+**Skeleton animation — use `Animated.loop` on a shared interpolation:**
+```typescript
+// src/components/common/SkeletonPulse.tsx
+export function SkeletonPulse({ width, height, borderRadius }: Props) {
+  const { colors } = useTheme();
+  const opacity = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.8, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.3, duration: 700, useNativeDriver: true }),
+      ])
+    ).start();
+    return () => opacity.stopAnimation();
+  }, [opacity]);
+
+  const styles = useMemo(() => StyleSheet.create({
+    base: { backgroundColor: colors.surface.card, width, height, borderRadius },
+  }), [colors, width, height, borderRadius]);
+
+  return <Animated.View style={[styles.base, { opacity }]} />;
+}
+```
+
+**Where to add skeletons:**
+- `ChatListScreen` — guard at line 58; replace with `<ChatListSkeleton />`
+- `HomeScreen` — no loading guard currently (uses inline conditional rendering); add one before the `ScrollView` renders the friend sections
+- `PlansListScreen` — existing `loading && plans.length === 0` guard
+- `FriendsList` — existing guard
+
+**Do NOT add skeletons to:**
+- Components that already show meaningful cached data instantly (Zustand-backed)
+- Modals and sheets (they animate in, so the delay is invisible)
+
+---
+
+### 3. Parallel vs Sequential Screen Polish — Merge Conflict Strategy
+
+**The key insight:** Each screen composes a unique set of feature components from `src/components/[feature]/`. The `src/components/common/` library is the only shared layer. Parallel work on different screens is safe as long as phases do not simultaneously modify the same common component.
+
+**Safe to parallelise (no common file overlap):**
+| Phase | Primary Files Touched |
+|-------|-----------------------|
+| Home screen polish | `HomeScreen.tsx`, `components/home/*`, `RadarBubble.tsx` |
+| Chat polish | `ChatRoomScreen.tsx`, `ChatListScreen.tsx`, `components/chat/*` |
+| Plans polish | `PlanDashboardScreen.tsx`, `PlansListScreen.tsx`, `components/plans/*` |
+| Squad/IOU/Birthday | `app/(tabs)/squad.tsx`, `components/squad/*`, `components/iou/*` |
+| Profile + Auth | `app/profile/*`, `screens/auth/*` |
+
+**Common components are sequential bottlenecks:** If two phases both enhance `EmptyState.tsx` or `LoadingIndicator.tsx`, they will conflict. The build order must be:
+
+1. Enhance `SkeletonPulse` (new file — no conflict)
+2. Enhance `EmptyState` (one phase, one PR)
+3. Enhance `LoadingIndicator` (replace with skeleton variant — one phase)
+4. Then per-screen phases in any order
+
+**Shared animation tokens:** If adding animation duration constants to `src/theme/index.ts`, do it in one dedicated commit before feature phases start. Prevents diff conflicts on the barrel export.
+
+---
+
+### 4. App Icon and Splash Screen in Expo Managed Workflow
+
+**Current state (from `app.config.ts`):**
+- `icon`: `./assets/images/icon.png` — shared iOS/web icon
+- `android.adaptiveIcon.foregroundImage`: `./assets/images/android-icon-foreground.png`
+- `android.adaptiveIcon.backgroundColor`: `'#ff6b35'`
+- `splash.backgroundColor`: `'#ff6b35'` — no `image` key set (no static splash image currently)
+- `userInterfaceStyle: 'automatic'` (respects system light/dark)
+- The in-code splash (`_layout.tsx` lines 333–343) shows a `LinearGradient` with a fire emoji and "Campfire" text while fonts load
+
+**What needs updating:**
+
+For the static splash (OS-level, shown before JS loads):
+- Add `splash.image` key pointing to `./assets/images/splash-icon.png` (file exists)
+- Set `splash.resizeMode` to `'contain'` or `'cover'`
+- iOS: optionally add `splash.dark.backgroundColor` for dark mode splash
+
+For the app icon (iOS):
+- `icon.png` must be 1024x1024, no transparency, no rounded corners (App Store crops it)
+- No alpha channel — iOS rejects transparent icons
+- File already exists at `./assets/images/icon.png` — just replace content with final branded art
+
+For Android adaptive icon:
+- `foregroundImage` should be 108dp safe zone within a 192dp canvas
+- `backgroundColor` is already set to `#ff6b35`
+- `android-icon-monochrome.png` exists — verify it uses the themed monochrome path
+
+**In-code splash (`_layout.tsx`):**
+- Currently renders a fire emoji (raw Unicode) — UX audit flags this as needing an SVG/Ionicons icon
+- Splash disappears after `ready && fontsLoaded` — this is the correct gate
+- The `LinearGradient` uses `DARK.splash.gradientStart/End` which are hardcoded to the dark palette — correct, this runs before ThemeProvider mounts
+
+**No native rebuild required** for icon/splash changes in Expo managed workflow — these are config-driven. EAS Build picks them up automatically. Expo Go will show new assets after a manifest reload with `--clear`.
+
+---
+
+### 5. `src/components/common/` — Enhance vs Leave Alone
+
+**The 13 current components:**
+
+| Component | Verdict | Rationale |
+|-----------|---------|-----------|
+| `ScreenHeader.tsx` | Leave alone | Consistent across all screens; any change ripples everywhere |
+| `SectionHeader.tsx` | Leave alone | Simple, token-compliant, no polish gap |
+| `FAB.tsx` | Leave alone | Already has spring animation, correct pattern |
+| `PrimaryButton.tsx` | Minor enhance | Add loading state prop (`isLoading?: boolean`) for async CTA buttons |
+| `FormField.tsx` | Leave alone | Functional; no visual polish gap identified |
+| `AvatarCircle.tsx` | Leave alone | Simple, correct |
+| `ErrorDisplay.tsx` | Leave alone | Functional; appears infrequently |
+| `LoadingIndicator.tsx` | Enhance | Replace full-screen `ActivityIndicator` with skeleton-aware wrapper OR keep as-is and add separate `SkeletonPulse` |
+| `EmptyState.tsx` | Enhance | Add `actionable` variant with bigger icon and richer layout for cold-start onboarding states |
+| `OfflineBanner.tsx` | Leave alone | Works correctly, no UX gap |
+| `BirthdayPicker.tsx` | Leave alone | Native DateTimePicker pattern, correct |
+| `CustomTabBar.tsx` | Leave alone | Tab navigation; changing this touches all 5 tabs simultaneously |
+| `ThemeSegmentedControl.tsx` | Leave alone | Single-purpose, Profile-only |
+
+**New common components to add (no existing component conflicts):**
+
+| New Component | Purpose | Used By |
+|---------------|---------|---------|
+| `SkeletonPulse.tsx` | Animated shimmer primitive | All skeleton screens |
+| `StatusBadge.tsx` | Status dot + icon (WCAG accessibility) | RadarBubble, CompactFriendRow, FriendProfile |
+| `CountdownPill.tsx` | "In 3h 45m" timer display | PlanCard, PlanDashboard |
+
+---
+
+## Recommended Project Structure for Polish Additions
+
+```
+src/
+├── components/
+│   ├── common/
+│   │   ├── SkeletonPulse.tsx       # NEW — shimmer primitive
+│   │   ├── StatusBadge.tsx         # NEW — accessible status indicator
+│   │   ├── CountdownPill.tsx       # NEW — plan countdown display
+│   │   ├── EmptyState.tsx          # ENHANCE — richer actionable variant
+│   │   └── PrimaryButton.tsx       # ENHANCE — loading state prop
+│   ├── home/
+│   │   ├── HomeScreenSkeleton.tsx  # NEW — skeleton for HomeScreen loading state
+│   │   └── ...existing files...
+│   └── chat/
+│       ├── ChatListSkeleton.tsx    # NEW — skeleton for chat list loading
+│       └── ...existing files...
+├── theme/
+│   └── index.ts                    # ENHANCE — add ANIMATION timing constants
+└── assets/images/
+    ├── icon.png                    # REPLACE — final branded 1024x1024
+    ├── android-icon-foreground.png # REPLACE — final branded adaptive icon
+    └── splash-icon.png             # UPDATE — ensure correct size/format
 ```
 
 ---
 
-## Feature 4: Polls
+## Architectural Patterns
 
-### Schema decision: separate `polls` + `poll_options` + `poll_votes` tables linked to channel
+### Pattern 1: Screen-Level Loading Guard Swap
 
-Rationale:
-- Embedding polls as JSONB in messages makes vote updates require updating the message row, which triggers Realtime for all subscribers on every vote. Separate tables keep vote updates isolated.
-- Separate tables allow Realtime subscriptions on `poll_votes` filtered by `poll_id`, giving live vote count updates without re-fetching the entire message list.
-- The poll is surfaced in the chat via a special message row (`message_type = 'poll'`) that contains the `poll_id`. The FlatList renders a `PollCard` component instead of a text bubble.
+**What:** The pattern `if (loading && items.length === 0) { return <LoadingIndicator />; }` exists in every data-fetching screen. This is the single integration point for skeleton loaders.
 
-```sql
--- Part of migration 0018
-CREATE TYPE public.message_type AS ENUM ('text', 'poll');
+**When to use:** Always — skeleton components replace only this guard. The FlatList below is untouched.
 
-ALTER TABLE public.messages
-  ADD COLUMN message_type public.message_type NOT NULL DEFAULT 'text',
-  ADD COLUMN poll_id      uuid;               -- FK added after polls table created
+**Trade-offs:** Simple, zero risk of breaking FlatList. Downside: skeletons only show on first load, not on subsequent pull-to-refreshes (which is correct — existing data stays visible during refresh).
 
-CREATE TABLE public.polls (
-  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  channel_id   uuid NOT NULL,                -- denormalized channel reference for easy RLS
-  channel_type text NOT NULL
-    CHECK (channel_type IN ('plan', 'dm', 'group')),
-  question     text NOT NULL,
-  created_by   uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  closes_at    timestamptz,                  -- NULL = open indefinitely
-  created_at   timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.polls ENABLE ROW LEVEL SECURITY;
+### Pattern 2: Animated.Value Outside useMemo, Static Tokens Inside
 
-CREATE TABLE public.poll_options (
-  id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  poll_id  uuid NOT NULL REFERENCES public.polls(id) ON DELETE CASCADE,
-  text     text NOT NULL,
-  position smallint NOT NULL                 -- display order
-);
-ALTER TABLE public.poll_options ENABLE ROW LEVEL SECURITY;
+**What:** Animation refs (`useRef(new Animated.Value())`, `useSharedValue()`) live in component body. Static tokens (`SPACING`, `RADII`, `FONT_SIZE`) go inside `StyleSheet.create`. Dynamic tokens (`colors`) are the only `useMemo` dependency.
 
-CREATE TABLE public.poll_votes (
-  poll_id    uuid NOT NULL REFERENCES public.polls(id) ON DELETE CASCADE,
-  option_id  uuid NOT NULL REFERENCES public.poll_options(id) ON DELETE CASCADE,
-  user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (poll_id, user_id)             -- one vote per user per poll
-);
-ALTER TABLE public.poll_votes ENABLE ROW LEVEL SECURITY;
+**When to use:** Every component. Violating this pattern causes either stale styles (colors not updating on theme switch) or unnecessary StyleSheet recreations on every render.
 
--- Add FK from messages to polls (after polls table exists)
-ALTER TABLE public.messages
-  ADD CONSTRAINT messages_poll_fk FOREIGN KEY (poll_id)
-    REFERENCES public.polls(id) ON DELETE SET NULL;
-```
+**Trade-offs:** Slightly verbose. Worth it — ESLint `no-hardcoded-styles` enforces that raw values never sneak into the static token positions.
 
-Note: `message_type DEFAULT 'text'` means no migration concern for existing rows.
+### Pattern 3: Reanimated for Native-Thread Animations, Animated API for Simple Cases
 
-### RLS design for polls
+**What:** The codebase currently uses `Animated` (JS thread) for most animations, with `react-native-reanimated` v4.2.1 and `react-native-gesture-handler` already installed. `FriendSwipeCard` is the only component currently using Reanimated.
 
-```sql
--- Reusable helper: is_channel_member(channel_id, channel_type)
-CREATE OR REPLACE FUNCTION public.is_channel_member(p_channel_id uuid, p_channel_type text)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
-AS $$
-  SELECT CASE p_channel_type
-    WHEN 'plan' THEN EXISTS (
-      SELECT 1 FROM public.plan_members WHERE plan_id = p_channel_id AND user_id = (SELECT auth.uid())
-    )
-    WHEN 'dm' THEN EXISTS (
-      SELECT 1 FROM public.dm_channels WHERE id = p_channel_id
-        AND (user_a = (SELECT auth.uid()) OR user_b = (SELECT auth.uid()))
-    )
-    WHEN 'group' THEN public.is_group_channel_member(p_channel_id)
-    ELSE false
-  END;
-$$;
+**When to migrate:** Migrate to Reanimated when: (a) animation runs during a JS-heavy operation (chat list scroll, realtime updates), (b) it is gesture-driven, or (c) it is on Android where JS-thread animations jank more severely.
 
-CREATE POLICY "polls_select_member"
-  ON public.polls FOR SELECT TO authenticated
-  USING (public.is_channel_member(channel_id, channel_type));
+**Leave as Animated API:** Simple one-shot entry animations, pulse loops, opacity fades with no gesture component.
 
-CREATE POLICY "polls_insert_member"
-  ON public.polls FOR INSERT TO authenticated
-  WITH CHECK (
-    created_by = (SELECT auth.uid())
-    AND public.is_channel_member(channel_id, channel_type)
-  );
+### Pattern 4: Feature Skeletons Are Screen-Scoped, Not Component-Scoped
 
--- poll_options: readable by channel member; only creator inserts
-CREATE POLICY "poll_options_select_member"
-  ON public.poll_options FOR SELECT TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM public.polls p WHERE p.id = poll_options.poll_id
-      AND public.is_channel_member(p.channel_id, p.channel_type)
-  ));
+**What:** Build `HomeScreenSkeleton` and `ChatListSkeleton` as dedicated components in their feature folder, composing `SkeletonPulse` primitives arranged to match the real screen layout.
 
-CREATE POLICY "poll_options_insert_creator"
-  ON public.poll_options FOR INSERT TO authenticated
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM public.polls p WHERE p.id = poll_options.poll_id
-      AND p.created_by = (SELECT auth.uid())
-  ));
+**When to use:** Any screen that has a `loading && items.length === 0` guard. The skeleton component handles the layout; the primitive handles the shimmer.
 
--- poll_votes: channel members can see all votes; own vote only for insert/delete
-CREATE POLICY "poll_votes_select_member"
-  ON public.poll_votes FOR SELECT TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM public.polls p WHERE p.id = poll_votes.poll_id
-      AND public.is_channel_member(p.channel_id, p.channel_type)
-  ));
-
-CREATE POLICY "poll_votes_insert_own"
-  ON public.poll_votes FOR INSERT TO authenticated
-  WITH CHECK (user_id = (SELECT auth.uid()));
-
-CREATE POLICY "poll_votes_delete_own"
-  ON public.poll_votes FOR DELETE TO authenticated
-  USING (user_id = (SELECT auth.uid()));
-```
-
-### Poll creation flow
-
-`SendBar` already has 'poll' in `ACTIONS`. `ChatRoomScreen.handleAttachmentAction('poll')` currently shows "Coming Soon" — replace with a navigation push to `/chat/poll-create?channel_type=...&channel_id=...`. The create screen collects question + 2–4 options, calls the `create_poll` RPC, and navigates back.
-
-```sql
-CREATE OR REPLACE FUNCTION public.create_poll(
-  p_channel_id   uuid,
-  p_channel_type text,
-  p_question     text,
-  p_options      text[],
-  p_closes_at    timestamptz DEFAULT NULL
-) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
-DECLARE
-  v_poll_id  uuid;
-  v_opt      text;
-  v_pos      smallint := 1;
-BEGIN
-  INSERT INTO public.polls (channel_id, channel_type, question, created_by, closes_at)
-  VALUES (p_channel_id, p_channel_type, p_question, auth.uid(), p_closes_at)
-  RETURNING id INTO v_poll_id;
-
-  FOREACH v_opt IN ARRAY p_options LOOP
-    INSERT INTO public.poll_options (poll_id, text, position) VALUES (v_poll_id, v_opt, v_pos);
-    v_pos := v_pos + 1;
-  END LOOP;
-
-  INSERT INTO public.messages (
-    plan_id, dm_channel_id, group_channel_id,
-    sender_id, body, message_type, poll_id
-  ) VALUES (
-    CASE WHEN p_channel_type = 'plan'  THEN p_channel_id ELSE NULL END,
-    CASE WHEN p_channel_type = 'dm'    THEN p_channel_id ELSE NULL END,
-    CASE WHEN p_channel_type = 'group' THEN p_channel_id ELSE NULL END,
-    auth.uid(), '', 'poll', v_poll_id
-  );
-
-  RETURN v_poll_id;
-END;
-$$;
-GRANT EXECUTE ON FUNCTION public.create_poll(uuid, text, text, text[], timestamptz) TO authenticated;
-```
-
-### Rendering in FlatList
-
-`MessageBubble` renders a `PollCard` when `message.message_type === 'poll'`. `PollCard` fetches poll data from a `usePoll(pollId)` hook (initial fetch + `poll_votes` Realtime subscription). This avoids nesting FlatLists — `PollCard` renders options as a simple `View` containing `TouchableOpacity` rows (max 4 options, no virtualization needed).
+**Trade-offs:** Slightly more files. Far better visual fidelity than a single generic "skeleton list" abstraction. Consistent with how `EmptyState` variants work in this codebase — each screen owns its loading state appearance.
 
 ---
 
-## Feature 5: Profile Rework
+## Data Flow
 
-### What to remove from ProfileScreen
-
-The `YOUR STATUS` section contains `<MoodPicker />`. Per v1.5 goal, the status pill in the header is now the single source of truth (shipped in v1.3.5). Remove `YOUR STATUS` section header and `<MoodPicker />` from `profile.tsx`. The `MoodPicker` component itself stays — it is used by the status pill bottom sheet.
-
-### What to add to ProfileScreen
-
-Replace the removed status section with a consolidated `NOTIFICATIONS` section that surfaces the three existing toggles (plan invites, friend availability, morning prompt) under one header. This is a layout reorganization, not a data change.
-
-Separate avatar/photo editing from the main edit screen. The pencil overlay currently navigates to `/profile/edit` which handles everything. For v1.5, the avatar tap opens a small action sheet (two options: Camera, Photo Library) without a full navigation push, using the existing `ImagePicker` flow already present in `EditProfileScreen`.
-
-### Friend profile page: new modal route
-
-Decision: **new modal route** at `/friends/[id]` (stack push from Squad → Friends tab, from HomeFriendCard, from birthday pages). A bottom sheet height would need ~80% screen to fit rich content (avatar, status, birthday, wish list, DM button), which is indistinguishable from a modal with worse gesture behavior.
+### Animation State Flow
 
 ```
-src/app/friends/[id].tsx          <- new file
-src/screens/friends/
-  FriendProfileScreen.tsx         <- new screen component
+useRef(new Animated.Value(initial))
+    |
+Animated.spring() / Animated.timing() called by event handler
+    |
+Animated.View reads value via transform / opacity
+    ^
+NO setState, NO store update — animation is self-contained
 ```
 
-### FriendProfileScreen content
+### Theme + StyleSheet Reactivity Flow
 
 ```
-AvatarCircle (large, 80px)
-display_name + @username
-EffectiveStatus badge (mood + context + liveness indicator)
-Birthday row (if set): "April 20" with cake icon
-"Send DM" button -> get_or_create_dm_channel + navigate to chat room
-WishListSection (read-only; reuses useFriendWishList hook already present)
+ThemeProvider (app/_layout.tsx)
+    | (useContext)
+useTheme() in every component
+    |
+colors object (referentially stable until theme changes)
+    |
+useMemo([colors]) recomputes StyleSheet only on theme switch
+    |
+Component re-renders with new styles
 ```
 
-No schema changes needed. All data is available via existing RLS policies:
-- `profiles`: `profiles_select_authenticated` allows any authenticated user to read
-- `effective_status` view: already used by HomeFriendCard
-- `wish_list_items`: `wish_list_items_select_friends` allows friends to read
-- `get_or_create_dm_channel`: existing RPC
+### Skeleton Loading Flow
 
-### Navigation entry points
-
-1. Squad -> Friends tab: tap any `FriendRow` -> push `/friends/[id]`
-2. Home Radar/Card view: long-press or secondary action on `HomeFriendCard`
-3. Birthday group chat: tap participant name in `GroupParticipantsSheet`
+```
+Hook returns { loading: true, items: [] }
+    |
+Screen renders SkeletonComponent (N pulse rows)
+    | (data arrives)
+Hook returns { loading: false, items: [...] }
+    |
+Screen renders FlatList with real data
+    | (pull-to-refresh)
+Hook returns { loading: false, refreshing: true, items: [...] }
+    |
+FlatList RefreshControl spinner (skeleton NOT shown — data stays visible)
+```
 
 ---
 
-## Component Inventory
+## Anti-Patterns
 
-### Modified components
+### Anti-Pattern 1: colors Inside a Static StyleSheet.create at Module Scope
 
-| Component | Change |
-|-----------|--------|
-| `MessageBubble` | Add `ReplyPreviewBar`, `ReactionBar`, `PollCard` conditionals; add long-press `BubbleContextMenu` |
-| `SendBar` | Add photo picker action; wire 'poll' action to navigation |
-| `useChatRoom` | Extend `Message` type; extend `sendMessage` signature; add reactions Realtime subscription; join reactions in initial fetch |
-| `types/chat.ts` | Add `image_url`, `reply_to_message_id`, `reply_preview`, `message_type`, `poll_id`, `reactions` to `Message` |
-| `ChatRoomScreen` | Expose FlatList ref; add `onReplyTap` scroll handler; add poll creation navigation |
-| `ProfileScreen` | Remove `MoodPicker` section; consolidate notification toggles under `NOTIFICATIONS` |
+**What people do:** `const styles = StyleSheet.create({ card: { backgroundColor: colors.surface.card } })` at module scope outside the component.
 
-### New components
+**Why it's wrong:** `colors` from `useTheme()` is a React hook — it cannot be called at module scope. This compiles but captures the initial value and never updates when the theme switches.
 
-| Component | Purpose |
-|-----------|---------|
-| `ReactionBar` | Grouped emoji count display below bubble |
-| `ReactionPicker` | Popover with 6 preset emoji on long-press |
-| `ReplyPreviewBar` | Quoted context block inside bubble |
-| `BubbleContextMenu` | Absolutely positioned long-press menu: Reply, React, (own) Delete |
-| `ChatImage` | Inline image with full-screen tap-to-expand modal |
-| `PollCard` | Renders inside MessageBubble for poll messages; uses `usePoll` |
-| `PollCreateScreen` | `/chat/poll-create` — question + options form |
-| `FriendProfileScreen` | `/friends/[id]` — rich friend profile modal |
+**Do this instead:** `const styles = useMemo(() => StyleSheet.create({ card: { backgroundColor: colors.surface.card } }), [colors])` inside the component body.
 
-### New hooks
+### Anti-Pattern 2: FlatList Inside ScrollView for Skeleton Screens
 
-| Hook | Purpose |
-|------|---------|
-| `usePoll(pollId)` | Fetch poll + options + votes; Realtime subscription on `poll_votes` |
+**What people do:** Add a `ScrollView` wrapper around a skeleton + FlatList to avoid warnings when both are rendered.
 
----
+**Why it's wrong:** `FlatList` relies on its parent having a bounded height for virtualisation. `ScrollView` gives it unbounded height, disabling virtualisation and loading all items into memory. PROJECT.md has "FlatList for all lists: No ScrollView + map" as a hard constraint.
 
-## Migration Strategy (single migration 0018)
+**Do this instead:** Render the skeleton as a plain `View` (not inside a ScrollView) for the `loading && items.length === 0` branch. The FlatList renders in its own branch, never nested in a ScrollView.
 
-All schema changes ship in one migration. Order within the migration matters:
+### Anti-Pattern 3: Modifying app.config.ts Splash + Icon Paths Without Clearing Cache
 
-1. Add `is_message_channel_member(message_id)` SECURITY DEFINER helper
-2. Add `is_channel_member(channel_id, channel_type)` SECURITY DEFINER helper
-3. `ALTER TABLE messages ADD COLUMN image_url text`
-4. `ALTER TABLE messages ADD COLUMN reply_to_message_id uuid REFERENCES messages(id) ON DELETE SET NULL`
-5. `ALTER TABLE messages ADD COLUMN reply_preview text`
-6. `CREATE TYPE message_type AS ENUM('text', 'poll')`
-7. `ALTER TABLE messages ADD COLUMN message_type message_type NOT NULL DEFAULT 'text'`
-8. `ALTER TABLE messages ADD COLUMN poll_id uuid` (FK added after polls table)
-9. `CREATE TABLE polls` + RLS
-10. `CREATE TABLE poll_options` + RLS
-11. `CREATE TABLE poll_votes` + RLS
-12. `ALTER TABLE messages ADD CONSTRAINT messages_poll_fk FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE SET NULL`
-13. `CREATE TABLE message_reactions` + RLS
-14. `ALTER TABLE message_reactions REPLICA IDENTITY FULL`
-15. `CREATE FUNCTION create_poll(...)` RPC + GRANT
-16. Storage: insert `chat-media` bucket + policies
+**What people do:** Update `icon.png` file content in-place without changing the path, assume Expo Go picks it up after refresh.
+
+**Why it's wrong:** Expo Go caches assets by path. An in-place image replace may not invalidate the cache.
+
+**Do this instead:** Replace the file content, then run `npx expo start --clear` to bust the bundle cache. For EAS Build, assets are always fetched fresh.
+
+### Anti-Pattern 4: New Animation Constants as Raw Numbers
+
+**What people do:** `Animated.timing(val, { duration: 250 })` with raw ms values scattered across files.
+
+**Why it's wrong:** Makes it impossible to globally tune animation timing. Also violates the spirit of the design token system.
+
+**Do this instead:** Add `ANIMATION` constants to `src/theme/index.ts`:
+```typescript
+export const ANIMATION = {
+  fast: 150,
+  normal: 250,
+  slow: 400,
+  spring: { speed: 50, bounciness: 8 },
+} as const;
+```
+Use in all animation calls. This is a one-time addition to the theme barrel before feature phases start.
 
 ---
 
-## Build Order with Dependency Graph
+## Build Order for the Polish Milestone
+
+The correct sequencing is dictated by dependency: shared primitives before consumers.
 
 ```
-Phase 1: Schema + Types (no UI, zero visual risk)
-  - Migration 0018 (all columns + tables + helpers + RPC)
-  - Update types/chat.ts (Message, MessageWithProfile)
-  - Update useChatRoom initial fetch to join reactions + new columns
-  - Extend sendMessage signature
-  Safe to deploy independently. Additive only — existing messages unaffected.
+Phase 0 — Theme + primitive additions (single PR, no screen work)
+  Add ANIMATION constants to src/theme/index.ts
+  Create src/components/common/SkeletonPulse.tsx
+  Enhance EmptyState.tsx (add actionable variant)
+  Enhance PrimaryButton.tsx (add isLoading prop)
 
-Phase 2: Reply Threading
-  Depends on: Phase 1 (reply_to_message_id, reply_preview in types)
-  Delivers: ReplyPreviewBar, BubbleContextMenu (reply action), extended sendMessage
-  Why first among UI features: purely additive inside MessageBubble; no new subscriptions
+Phase 1 — App icon + splash (asset work, minimal code changes)
+  Replace assets/images/icon.png (1024x1024, no alpha)
+  Replace assets/images/android-icon-foreground.png
+  Update app.config.ts splash.image, splash.resizeMode
+  Update _layout.tsx splash: swap fire emoji for Ionicons flame
 
-Phase 3: Reactions
-  Depends on: Phase 1 (message_reactions table), Phase 2 (BubbleContextMenu exists)
-  Delivers: ReactionBar, ReactionPicker, reactions Realtime subscription in useChatRoom
-  Why after threading: BubbleContextMenu already built; React is another menu action
+Phase 2 — Home screen polish (isolated — touches only home/ components)
+  HomeScreenSkeleton.tsx (uses SkeletonPulse)
+  RadarBubble pulse animation on FADING status
+  HomeScreen.tsx: replace LoadingIndicator with HomeScreenSkeleton
+  Migrate HomeScreen crossfade to Reanimated (lines 51-80)
 
-Phase 4: Media
-  Depends on: Phase 1 (image_url column)
-  Delivers: ChatImage, photo action in SendBar, upload path in sendMessage
-  Why after reactions: independent; comes after UI patterns solidify
+Phase 3 — Chat polish (isolated — touches only chat/ components)
+  ChatListSkeleton.tsx (uses SkeletonPulse)
+  ChatListScreen: replace LoadingIndicator with ChatListSkeleton
+  MessageBubble: optimistic send state (clock icon + reduced opacity)
+  ChatListRow: sender prefix + smart timestamp
+  Migrate ChatRoomScreen animations to Reanimated
 
-Phase 5: Polls
-  Depends on: Phase 1 (polls tables, message_type enum, poll_id column), Phase 2-4 (patterns)
-  Delivers: PollCreateScreen, PollCard, usePoll, create_poll RPC wired to SendBar
-  Why last among chat features: new screen + new hook + RPC; most complex
+Phase 4 — Plans + Explore polish (isolated — touches only plans/ + maps/)
+  RSVP buttons: selected state with icon + spring animation
+  PlanCard: CountdownPill integration
+  Plan invitation modal: spring entry animation
 
-Phase 6: Profile Rework
-  Depends on: nothing (independent of all chat phases)
-  Delivers: ProfileScreen layout cleanup, FriendProfileScreen route
-  Can run in parallel with Phase 2-5 in a separate branch; serialized here for focus
+Phase 5 — Squad + IOU + Birthday polish (isolated — touches squad/ + iou/)
+  Squad tab stagger animation on every useFocusEffect
+  CompactFriendRow: add trailing icon for action menu
+
+Phase 6 — Auth + Onboarding (isolated — touches screens/auth/)
+  Forgot password flow
+  ToS/Privacy Policy links
+  Account deletion flow
+  Cold-start empty state: invite flow on zero-friends Home
 ```
 
-**Ordering rationale:** Schema first prevents migration reruns mid-feature. Threading before reactions because `BubbleContextMenu` is needed by both — build it once, extend it. Media is independent but benefits from long-press pattern being settled. Polls last because `PollCreateScreen` is a full new navigation screen and `create_poll` is the most complex piece. Profile rework is orthogonal.
+**Conflict-safe because:** Phases 2–6 touch entirely separate component directories. Phase 0 is the only PR that touches `src/theme/` and `src/components/common/` — it must merge before any feature phase starts. After that, phases 2–6 can be built as independent sequential PRs with zero file overlap.
 
 ---
 
-## Free-Tier Impact Summary
+## Integration Points
 
-| Addition | Storage | DB rows/month | Realtime events/month |
-|----------|---------|--------------|----------------------|
-| message_reactions | ~22MB/year at heavy use | ~1K | ~2K |
-| chat-media bucket | up to 250MB if unthrottled — enforce client resize | 0 extra | 0 |
-| reply columns | 0 (part of messages rows) | 0 | 0 extra |
-| polls tables | negligible | ~250 (polls + options + votes) | ~400 (votes Realtime) |
-| FriendProfileScreen | 0 | 0 | 0 |
+### External Services
 
-All within free tier (500MB DB, 1GB Storage, 2M Realtime/month) at 3–15 person group scale. Storage is the only meaningful risk if users share many large images — enforce client-side resize to max 1280px before upload.
+| Service | Integration Pattern | Polish Notes |
+|---------|---------------------|--------------|
+| Supabase Storage | Signed URL fetch, 1h TTL | No change needed for polish |
+| Supabase Realtime | postgres_changes subscription | No change needed for polish |
+| expo-haptics | `Haptics.impactAsync()` | Add to RSVP selection, skeleton-to-content transition |
+| expo-image | Already used in GalleryViewerModal | Use for lazy-loaded images with blurhash placeholder |
 
----
+### Internal Boundaries
 
-## Critical Constraints Checklist
-
-- No FlatList inside ScrollView: `PollCard` uses `View` + map for max 4 options; `ReactionBar` uses `View` + map for emoji groups
-- No UI libraries: all new components use `StyleSheet` only
-- No Redux/React Query: `usePoll` uses direct Supabase query + Realtime; state in local useState
-- RLS on every new table: `message_reactions`, `polls`, `poll_options`, `poll_votes` all have RLS enabled + policies
-- SECURITY DEFINER helpers prevent RLS recursion for cross-table membership checks
-- UUIDs everywhere: all new tables use `gen_random_uuid()` PKs
-- `body NOT NULL` respected: image-only messages send `body = ''`; poll messages send `body = ''`
-- `fetch().arrayBuffer()` pattern for all Storage uploads (not FormData)
-- Expo managed workflow: `expo-image-picker` and `expo-image-manipulator` are available without custom native modules
+| Boundary | Communication | Polish Notes |
+|----------|---------------|--------------|
+| ThemeContext to all components | `useTheme()` hook | Adding ANIMATION to theme barrel does not break existing consumers |
+| `components/common/` to all screens | Direct import | SkeletonPulse is additive; EmptyState changes are backward-compatible with an added optional prop |
+| Animated API and Reanimated | Both coexist in same codebase | Migration is file-by-file; no global refactor needed |
+| `_layout.tsx` font loading | `SplashScreen.preventAutoHideAsync()` + `useFonts()` | Splash icon change is asset-only; gate logic unchanged |
 
 ---
 
 ## Sources
 
-- Direct codebase inspection: `src/hooks/useChatRoom.ts`, `src/types/chat.ts`, `src/components/chat/MessageBubble.tsx`, `src/components/chat/SendBar.tsx`, `src/screens/chat/ChatRoomScreen.tsx`, `src/app/(tabs)/profile.tsx`
-- Direct codebase inspection: `supabase/migrations/0001_init.sql`, `0014_plan_covers_bucket.sql`, `0017_birthday_social_v1_4.sql`
-- Project context: `.planning/PROJECT.md` (v1.5 goals, constraints, key decisions, free-tier budget)
+- Direct inspection of `/Users/iulian/Develop/campfire/src/` (HIGH confidence — codebase as of 2026-05-04)
+- `app.config.ts` for Expo splash/icon config (HIGH confidence)
+- `src/app/_layout.tsx` for SplashScreen gate pattern (HIGH confidence)
+- `UX-AUDIT.md` for polish item inventory (HIGH confidence)
+- React Native Reanimated v4 coexistence with Animated API: standard practice, both libraries in `package.json` (HIGH confidence)
+- Expo managed workflow icon/splash: asset-only changes, no native rebuild required (HIGH confidence)
+
+---
+*Architecture research for: Campfire v1.7 Polish & Launch Ready milestone*
+*Researched: 2026-05-04*

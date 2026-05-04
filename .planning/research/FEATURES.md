@@ -1,281 +1,357 @@
-# Feature Landscape
+# Feature Landscape: Polish Patterns for v1.7 Launch Ready
 
-**Domain:** Close-friend social coordination app — chat enrichment (reactions, media, threading, polls) + profile rework (Campfire v1.5)
-**Researched:** 2026-04-20
-**Overall confidence:** HIGH for reactions/threading/profile patterns (iMessage, WhatsApp, Discord patterns are stable and well-documented); MEDIUM for polls (fewer reference implementations in small-group intimate apps); MEDIUM for Supabase Storage image pipeline complexity in Expo managed workflow.
+**Domain:** Consumer mobile social coordination app — pre-launch polish pass
+**Researched:** 2026-05-04
+**Confidence:** HIGH for empty states, haptics, animation patterns (well-established React Native patterns, existing code audited); HIGH for skeleton loading (Reanimated 4 compatibility verified); MEDIUM for onboarding (Campfire's friend-invite model makes standard onboarding wisdom partially inapplicable); HIGH for app icon/splash (Expo docs confirmed).
 
 ---
 
-## Feature A: Message Reactions (Emoji Tapback)
+## Context: What's Already Built vs. What Needs Polish
+
+Campfire has working implementations of:
+- `EmptyState` component (icon + heading + body + optional CTA button) — functional but static, no animation
+- `LoadingIndicator` (plain `ActivityIndicator` wrapper) — functional but not polished
+- `OfflineBanner` (animated height toggle, Animated API) — already handles offline detection
+- `FAB` (spring press feedback via `Animated.spring`) — good pattern to extend
+- Haptics via `expo-haptics` on segmented controls, swipe cards, gallery, IOU settle — partial coverage, not systematic
+- `react-native-reanimated: 4.2.1` and `react-native-gesture-handler: ~2.30.0` already installed
+- `expo-haptics: ~55.0.14` already installed
+- `expo-linear-gradient: ~55.0.13` already installed
+- App icon: `./assets/images/icon.png` — current icon is a placeholder (Expo logo family)
+- Splash: background color `#ff6b35` only — no splash icon configured
+
+This is a polish milestone. The task is elevating what's functional to what's great, not building new capabilities.
+
+---
+
+## 1. Empty States
 
 ### Table Stakes
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Long-press to trigger reaction picker | Universal gesture across iMessage, WhatsApp, Messenger, Discord. Users will long-press and expect a picker to appear. | LOW | The gesture itself is the entry point — no alternative is acceptable. |
-| React with a single emoji, reaction appears on the bubble | Core behavior: emoji badge attached to the message with count. Without this, reactions feel broken. | MEDIUM | Badge shows emoji + count (e.g. "❤️ 3"). Multiple distinct emoji per message must stack. |
-| Tap own reaction to toggle it off (unreact) | Users expect a reaction to be a toggle, not a permanent action. | LOW | Same tap target on the badge removes your reaction. Server-side: delete the row. |
-| Show who reacted on long-press of the badge | "Who laughed at this?" is a table-stakes question in a 3–15 person group. | LOW | Bottom sheet or tooltip listing names. For 3–15 people, a simple name list (not avatars) is sufficient. |
-| Reactions persist across app restarts | Reactions are data, not ephemeral state. Must be stored in Supabase and fetched with messages. | MEDIUM | Requires a `message_reactions` table with (message_id, user_id, emoji). RLS must scope to message participants. |
+| Every list screen has a contextual empty state | A blank screen or a spinner that never resolves feels broken. Users immediately assume the app crashed or their data was lost. | LOW | The `EmptyState` component exists. Audit every `FlatList` screen to confirm it fires — Friends list, Plans list, Chats list, IOU list, Birthdays list, Memories, Goals. |
+| Empty state copy is specific, not generic | "No items found" is a dead end. "No plans yet — create your first one" tells the user what to do. Generic copy makes the app feel unfinished. | LOW | Each screen needs a unique icon + headline + body + CTA. The CTA should route directly to the creation flow. |
+| Empty state for first-time user (zero-data state) vs. post-action state | A new user who has no friends sees a different empty state than a user who has friends but no plans for this week. Mixing them produces confusing copy. | LOW | Two distinct copy variants per screen where both states are possible. First-time: "Invite a friend to get started." Post-action: "You're all caught up." |
+| Search/filter empty state | When a user searches and gets no results, the empty state must acknowledge the search term, not show the generic zero-data state. | LOW | Conditioned on whether a search/filter is active. Copy: "No results for '[query]'" with a "Clear search" action. |
+| Empty state CTA is actionable | The button in the empty state must navigate to the correct creation flow. A CTA that does nothing or routes incorrectly is worse than no CTA. | LOW | Verify each empty state CTA actually fires the correct navigation. |
 
 ### Differentiators
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Curated 6–8 emoji set (no open picker) | Intimate groups benefit from a fast, low-friction reaction experience. Open full-emoji pickers (5000+ options) add decision overhead with no meaningful gain when you already know the person. Speed and familiarity beat expressiveness at this scale. | LOW | Recommended set: ❤️ 😂 😮 😢 👍 🔥 + 2 optional (e.g. 🎉 😤). Hard-coded — no configuration needed. |
-| Reaction summary bar visible without interaction | If reactions exist on a message, display the emoji badges inline below the bubble without requiring a tap. Mirrors iMessage / WhatsApp behavior. | LOW | Empty state: no bar rendered. One reaction: single badge. Multiple: stacked badges up to 3, then "+N". |
-| Haptic feedback on react | Micro-interaction that makes reactions feel intentional and fun in a close-friend context. | LOW | `Haptics.impactAsync(ImpactFeedbackStyle.Light)` on reaction select. |
+| Subtle fade-in animation on empty state mount | The empty state appearing with a 200ms fade rather than popping in instantly feels intentional and polished. It avoids the jarring blank-then-content flash. | LOW | `Animated.timing` opacity from 0→1 on mount. Add to the existing `EmptyState` component as a built-in behavior. No new dependency. |
+| Contextual illustration or large emoji per screen | An emoji at 64px (larger than the current 48px) or a custom icon per screen gives each empty state visual personality. The current EmptyState supports both emoji and Ionicons — the issue is whether the right icon is chosen per screen. | LOW | Audit and update icon choices per screen. Campfire's warm brand tone works well with expressive emoji (e.g., "🔥" for no plans, "🎂" for no upcoming birthdays). |
+| Empty state for the home screen when user has no friends | The most critical empty state in the app. A new user with no friends sees the home screen's radar/card view with nothing in it. This is the first impression. | MEDIUM | Special-case the home screen: if `friends.length === 0`, show a prominent "Find your people" empty state with a button to Squad → add friend. This is the activation moment. |
 
-### Anti-Features / Explicit Defers
+### Anti-Features
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Open full emoji picker (all 5000+) | In a 3–15 person group, reaction speed matters more than maximum expressiveness. Full emoji picker is slower, harder to build, and introduces fat-finger risk on small targets. iMessage only expanded to open emoji in iOS 18 — start with curated. | Curated 6–8 set. Can expand later. |
-| Animated reaction bursts / confetti | Engineering effort disproportionate to use frequency. Adds JS animation complexity. | Static badge with count is sufficient. |
-| Reaction notifications ("Alex reacted to your message") | At 3–15 people, reactions happen fast. Push notifications for reactions would be noise. Chat badge is sufficient. | Do not send push notifications for reactions in v1.5. |
-| Custom emoji / sticker packs | Adds asset management complexity. Not expected in v1.5 for an intimate app. | Defer to V2+. |
-
-**Complexity note:** MEDIUM overall. Requires new DB table, RLS policy, Realtime subscription update, and UI component (picker sheet + badge row). The curated-set decision removes the hardest part (full emoji keyboard integration). The main challenge is correctly layering the reaction picker above the message bubble without z-index clipping, and updating the message list efficiently on reaction change (avoid full re-render of all messages).
+| Animated Lottie illustrations for empty states | Lottie files are 50–200 KB each. For 8+ distinct empty states, the bundle impact is significant. The animation value is low relative to the cost. | Static emoji or Ionicons at 48–64px. Fade-in animation is sufficient motion. |
+| Different visual design per screen | Inconsistent empty states (different layouts, different button styles) make the app look unfinished. | Use the shared `EmptyState` component for all screens. Vary only the icon, copy, and CTA. |
+| Loading spinner as a permanent empty state | Showing a spinner indefinitely when a list is empty (e.g., "loading...") makes users wait forever for content that doesn't exist. | Distinguish loading (data fetch in progress) from empty (fetch complete, zero rows). |
 
 ---
 
-## Feature B: Media Sharing in Chat (Images)
+## 2. Skeleton / Shimmer Loading
 
 ### Table Stakes
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Pick image from photo library | Universal entry point. Users expect to share photos from their camera roll. Campfire already uses `expo-image-picker` for plan covers — reuse the pattern. | LOW | `expo-image-picker` in Expo managed workflow. No new native module needed. |
-| Capture image with in-app camera | "Take a photo right now" is expected for spontaneous friend-group moments. | LOW | `expo-image-picker` with `launchCameraAsync`. Already available in managed workflow. |
-| Image renders inline in chat bubble | Users expect to see the photo in the conversation, not a link or file name. | MEDIUM | Inline `<Image>` in the message bubble. Requires storing the Supabase Storage URL in the message body or a dedicated `media_url` column. |
-| Upload progress indication | Image uploads can be slow on mobile. Users need feedback that something is happening. | LOW | Spinner or progress bar in the send bar while upload is in progress. Disable send button during upload. |
-| Full-screen image on tap | Users expect to pinch-to-zoom and view images full-screen. | LOW | Modal with `expo-image` or React Native `<Image>` in a `<Modal>`. No third-party library needed. |
+| Replace full-screen `ActivityIndicator` with skeleton rows on initial list load | A full-screen spinner that blocks all content is the lowest-quality loading pattern. Modern apps (Instagram, Twitter/X, LinkedIn) show content structure while data loads. Users perceive skeleton-loaded screens as ~20% faster. | MEDIUM | Build a `SkeletonRow` component using `Animated.loop` + opacity pulse (0.3→1→0.3, 800ms). Use the built-in `Animated` API — do not add a skeleton library (Moti skeleton has an open bug with New Architecture/Reanimated 4; third-party libs add fragility). |
+| Skeleton layout matches real content structure | If the skeleton shows a rectangle where a 3-column grid will appear, the layout shift on load completion is jarring. The skeleton must mirror the real item height, padding, and rough shape. | MEDIUM | Create `SkeletonFriendCard`, `SkeletonPlanCard`, `SkeletonMessageBubble`, `SkeletonChatRow` as reusable components. Use `colors.surface.elevated` for the base and `colors.border` for the shimmer. |
+| Transition from skeleton to real content without layout jump | If skeleton rows are a different height than real rows, content will jump when data arrives. This is worse than no skeleton at all. | LOW | Match skeleton row dimensions to real row dimensions. Use fixed heights that match the populated state. |
+| Skeleton for the home screen's radar/card section | The home screen is the highest-traffic screen. Showing a spinner there while friends load hurts first impressions. | MEDIUM | Radar skeleton: ~3 blurred circles at approximate radar positions. Card stack skeleton: single card-shaped rectangle. |
 
 ### Differentiators
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Client-side compression before upload | Reduces upload time 5–10x, stays within Supabase free tier 1 GB storage budget for 3–15 person groups, and avoids slow sends on cellular. A 4.7 MB photo → ~420 KB compressed. | MEDIUM | Use `expo-image-manipulator` (Expo managed-compatible, no custom native module) to resize to 1920px max-width at 80% JPEG quality before upload. This already exists in Expo SDK — no extra dependency. |
-| Organized storage bucket with path structure | `chat-media/{channelId}/{userId}/{timestamp}.jpg` — keeps media scoped, debuggable, and easily deletable by user. | LOW | Supabase Storage bucket: `chat-media`. Private bucket with RLS policy matching chat participant membership. |
+| Animated shimmer gradient (sweep left→right) vs. pulse | A left-to-right shimmer gradient is the iOS/Android native skeleton pattern (used by Facebook, LinkedIn). Pulse (opacity fade) is simpler but less premium-feeling. | MEDIUM | Use `expo-linear-gradient` (already installed) + `Animated.timing` to sweep a gradient overlay. This is the callstack.com recommended pattern for performant cross-platform shimmers. Since `expo-linear-gradient` is already a dep, no new package needed. |
+| Shared animation value across multiple skeleton rows | If each skeleton row runs its own animation, they animate out of sync. A single `Animated.Value` shared via React Context (or passed as prop) keeps all rows in phase — this is the professional-grade pattern. | LOW | Wrap list screens in a `SkeletonProvider` that vends a single shared animation value. All `SkeletonRow` children read from it. |
 
-### Anti-Features / Explicit Defers
+### Anti-Features
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Video sharing | Video files (even short ones) easily exceed 50 MB Supabase free-tier per-file limit. Storage budget (1 GB total) would be consumed rapidly by a 15-person group sharing clips. | Images only in v1.5. Defer video to V2 or paid tier. |
-| Multiple image selection / gallery send | Adds complexity (queue management, multiple upload progress states). Single image per send is sufficient for v1.5. | One image per send. |
-| Image deletion / unsend | Requires storage cleanup and message mutation. Adds significant complexity. | Defer. Messages are immutable in v1.5. |
-| GIF support from a GIF library (Giphy etc.) | External API dependency, content moderation concerns, and bandwidth cost on free tier. | Defer to V2. |
-| Message editing | Orthogonal to media feature. Not in v1.5 scope. | Defer. |
-
-**Complexity note:** MEDIUM. The upload path is the hardest part: `expo-image-picker` → `expo-image-manipulator` (resize/compress) → `fetch().arrayBuffer()` → Supabase Storage upload (the arrayBuffer pattern is already proven in Campfire for plan covers — reuse it). The DB change is small: add `media_url TEXT` and `media_type TEXT` columns to the messages table. The chat bubble needs a conditional branch to render image vs. text. Inline rendering with a loading placeholder is the UX risk — test on slow connections.
-
-**Supabase free tier fit:** 1 GB storage total. At ~420 KB per compressed image, that's ~2,400 images before hitting the limit. For a 3–15 person group using the app daily, this is fine for v1.5 scale. No storage management needed yet.
+| Moti skeleton library | Has an open unresolved bug with New Architecture (this project uses Reanimated 4 which requires New Architecture). Will render as a static block. | Built-in `Animated` API + `expo-linear-gradient` shimmer. |
+| react-native-skeleton-placeholder | Depends on `react-native-linear-gradient` (not `expo-linear-gradient`). Expo managed workflow incompatibility — will break managed builds. | Custom `SkeletonRow` component using existing `expo-linear-gradient`. |
+| Skeleton on every single screen | Skeleton loading makes sense for high-frequency screens with multiple rows of data (home, chat list, plans list). For a screen that loads in <300ms or has only 1–2 items, a skeleton is overhead that slows perceived performance instead of improving it. | ActivityIndicator remains appropriate for: form submission feedback, image uploads, single-item detail screens. |
+| Indefinite skeleton (never clears) | If the data fetch errors and the skeleton stays visible, users are trapped in limbo. | Always transition to either real content OR an error state OR an empty state after fetch settles. Maximum skeleton display time: ~10 seconds, then surface an error. |
 
 ---
 
-## Feature C: Reply Threading (Reply to Specific Message)
+## 3. Micro-Interactions and Animation
 
 ### Table Stakes
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Swipe-right or long-press → "Reply" action | Gesture or action that enters reply mode. iMessage uses swipe-right; WhatsApp uses swipe-right; Telegram uses swipe-right. Swipe-right is the dominant mobile pattern. | MEDIUM | Expo/React Native: `PanResponder` or `react-native-gesture-handler` swipe gesture on the message row. Long-press → contextual menu is an acceptable alternative if swipe conflicts with FlatList scroll. |
-| Reply composer shows quoted preview | When composing a reply, user sees a "replying to [name]: [truncated message]" preview above the text input. Must show who they're replying to, not just the message content. | LOW | Stateful "replyingTo" object in the chat room. Small UI bar above the SendBar. Cancel button clears it. |
-| Reply message links to the original | The sent reply displays a quoted bubble snippet (author name + truncated content) above the reply text. Tapping the quote scrolls to the original message. | MEDIUM | Requires storing `reply_to_message_id` on the message. Fetching the original message content for display requires either: (a) denormalizing the snippet into the message row, or (b) fetching by ID on render. Option (a) is simpler and avoids extra queries. |
-| Visual distinction from regular messages | Replies must look different: indented quote block, colored left border, or shaded background. Without this, the threading is invisible. | LOW | Styled quote component in MessageBubble. Left border accent color is the standard pattern. |
-
-### Pattern Decision: Inline Reply vs. Separate Thread View
-
-**Recommendation: Inline reply only. Do not build a separate thread view for v1.5.**
-
-Rationale:
-- For 3–15 people, message volume is low enough that inline quoted context is sufficient. The main chat stream does not get so busy that threads need to be separated.
-- WhatsApp only introduced a full thread view (in beta) in 2025 — after years of inline replies working fine for small groups. Campfire's groups are smaller than the WhatsApp groups where threading noise became a problem.
-- Separate thread view requires: a new navigation stack level, a separate Realtime subscription, complex scroll-to-parent behavior across two screens. This is high engineering cost for low real-world gain at 3–15 people.
-- iMessage (the dominant reference for close-friend messaging in iOS) still uses inline tapback + inline reply for most interactions. Full thread views (Slack-style) are a workplace/high-volume pattern, not a close-friends pattern.
+| Press feedback (scale down) on all interactive elements | Without visual press feedback, taps feel unresponsive. iOS provides this via `UIButton` highlight; Android via Material ripple. In React Native StyleSheet–only (no UI library), this must be built explicitly. | LOW | Scale from 1.0→0.96 on `onPressIn`, back to 1.0 on `onPressOut`, via `Animated.spring`. FAB already does this correctly. Extend to all tappable cards (plan cards, friend cards, IOU rows, birthday rows, chat rows). |
+| `activeOpacity` on `TouchableOpacity` ≤ 0.7 | The default `activeOpacity` of 0.2 is too aggressive — items nearly disappear on press. 0.7 is the right balance. | LOW | Global audit: every `TouchableOpacity` in the codebase should have `activeOpacity={0.7}` or `activeOpacity={0.8}`. |
+| List item entrance animation when FlatList first loads | Content appearing with a slight fade + translate-up (staggered by index) feels curated rather than dumped on screen. Used by Gmail, Instagram, Airbnb. | MEDIUM | `Animated.spring` on mount with `useEffect`. Stagger delay: `index * 40ms`. Keep entrance under 400ms total. Cap stagger at first 8 items — don't stagger the full list. |
+| Status change confirmation animation | When a user changes their Free/Busy/Maybe status, the UI should respond visually beyond just updating text. A brief scale pulse on the status pill confirms the change registered. | LOW | Add a `useRef(new Animated.Value(1))` scale pulse to `OwnStatusPill` that fires on status value change. 150ms spring, scale 1.0→1.15→1.0. |
+| Reaction add/remove animation on chat messages | Tapping a reaction should show a brief scale bounce. Already partially in place — verify consistency. | LOW | Confirm `Animated.spring` on reaction press in `ReactionsSheet` and `MessageBubble`. |
 
 ### Differentiators
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Scroll-to-original on quote tap | Makes the threading feel connected rather than just decorative. Users tap the quoted preview to jump to context. | MEDIUM | `FlatList.scrollToIndex()` with the original message's index. Requires knowing the index — maintain a message ID → index map or search the messages array. |
+| Screen-level shared element transition for plan detail | When a user taps a plan card and the plan detail opens, a shared element animation (the card expanding into the detail screen) creates a spatial relationship. | HIGH | Requires `react-native-reanimated` Shared Element API or React Navigation's `SharedElement`. High complexity, potential navigation issues with Expo Router. **Defer to v2 unless trivial to wire up.** |
+| Bottom sheet snap animation (for status picker) | The `StatusPickerSheet` already opens as a modal. Ensuring it uses a spring-based snap animation (not a linear slide) makes it feel iOS-native. | LOW | Verify the existing bottom sheet uses `Animated.spring` for the snap motion. If using a plain `Modal`, consider wrapping in a `useRef` spring animation on `visible` prop change. |
+| Card swipe velocity-based animation (FriendSwipeCard) | Already built with gesture handler. Verify that the swipe-to-dismiss uses velocity-based spring exit (the card "flies off" at realistic velocity) rather than a fixed linear exit. | LOW | Audit `FriendSwipeCard.tsx` — confirm it passes gesture velocity into the spring `velocity` parameter for natural motion. |
+| Pull-to-refresh custom indicator | The platform default PTR indicator works but using a custom brand-color spinner (Campfire's `#ff6b35`) on the `refreshControl` `tintColor` and `colors` props ties the interaction to the brand. | LOW | One-line change on every `FlatList` that has `onRefresh`: set `tintColor={colors.interactive.accent}` on `<RefreshControl>`. |
 
-### Anti-Features / Explicit Defers
+### Anti-Features
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Separate thread view / "Open thread" navigation | High complexity, wrong UX pattern for intimate groups. Slack threading solves a different problem (high-volume workplace). | Inline reply only. |
-| Nested replies (reply to a reply) | Creates visual hierarchy that quickly becomes unreadable in a small chat window. iMessage doesn't do this. | Flat: every reply references the original, not another reply. |
-| Reply count indicators / "N replies" thread summary | Redundant when the entire thread is visible inline. This is a Slack pattern for threads that live off-screen. | Not needed for inline approach. |
-| Read receipts on replies | Out of scope for v1.5. | Defer to V2. |
-
-**Complexity note:** MEDIUM. DB change: add `reply_to_message_id UUID REFERENCES messages(id)` + denormalize `reply_to_snippet TEXT` and `reply_to_sender_name TEXT` for display without extra queries. UI: stateful reply mode in the chat room, a quote display component in MessageBubble, and optional scroll-to-index. The gesture (swipe vs. long-press menu) needs careful testing — swipe-right on a FlatList row can conflict with iOS back-swipe gesture; long-press contextual menu is safer and more reliable cross-platform.
+| Animations on every UI element | Over-animating creates visual fatigue and slows the user down. The Principle of Least Astonishment: motion should serve communication, not decorate every tap. | Animate state changes and user-initiated actions. Leave static display elements (text, labels, icons) unanimated. |
+| Long animation durations (>400ms) for UI transitions | Interactions >400ms feel sluggish. Apple's HIG recommends 200–300ms for most UI animations. A user tapping a button should see response in under 200ms. | Cap all interactive feedback animations at 200ms. Screen transitions can be 300–350ms. |
+| `useNativeDriver: false` for transform/opacity animations | Without native driver, animations run on the JS thread and will stutter during heavy JS work (data fetching, rendering). | All `transform` and `opacity` animations must use `useNativeDriver: true`. Only `height`, `width`, `padding`, `margin` require `useNativeDriver: false`. The `OfflineBanner` correctly uses `false` for height. |
+| Reanimated worklets for simple opacity pulses | Reanimated 4 is powerful but adds cognitive overhead and compilation complexity. For simple press feedback and fade-in, the built-in `Animated` API is sufficient and already used throughout the codebase. | Use Reanimated only for gesture-driven animations (the swipe card, bottom sheet velocity) where JS-thread animation would stutter. |
 
 ---
 
-## Feature D: Polls in Chat
+## 4. Onboarding / First-Run Experience
 
 ### Table Stakes
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Create poll via attachment menu | Entry point already exists (the attachment menu with Poll, Split Expenses, To-Do items). Users expect polls to be reachable the same way they create other structured content. | LOW | Tap Poll in attachment menu → open poll creation sheet. |
-| Poll question + 2–4 options | The core data: one question, multiple options to vote on. 3-5 options avoid decision fatigue; 2 is the minimum. | LOW | Text input for question + dynamic "Add option" rows up to 4 maximum. |
-| Vote by tapping an option | Users expect to tap an option and see it selected. Immediate visual feedback. | LOW | Highlight the selected option. Store vote server-side. |
-| See live vote counts | In a small group, "3 out of 5 voted for Saturday" is the whole point. Must show counts in real time. | MEDIUM | Realtime subscription updates counts as friends vote. Show count next to each option. Highlight winning option. |
-| Poll renders as a distinct message type in chat | Poll must be visually distinct from a text message — not just text that says "Poll: ...". Must look like a poll (card with options). | MEDIUM | New message_type="poll" branch in MessageBubble. Renders a PollCard component. |
-| One vote per person | Standard constraint. Users expect they cannot vote multiple times. | LOW | UNIQUE constraint on (poll_id, user_id) in the votes table, or RPC-level enforcement. |
-
-### Binary vs. Multi-Option Decision
-
-**Recommendation: Multi-option (2–4 options) with single-choice voting only.**
-
-Rationale:
-- Binary yes/no is too limiting for the primary use case: "When should we meet?" or "What restaurant?" both benefit from 3–4 options.
-- More than 4 options introduces poll fatigue and is unnecessary for a 3–15 person group making concrete plans.
-- Multiple-choice voting (select multiple options) adds significant complexity (results are harder to read, "winner" is ambiguous) with limited benefit for quick group decisions. Defer to V2.
-- The attachment menu entry point naturally frames polls as structured decisions, not open surveys — 2–4 options matches this framing.
+| App is useful immediately after sign-up | A social coordination app that requires inviting friends before showing any value is a cold-start trap. New users who see an empty home screen with no friends immediately churn. | MEDIUM | Show a "Getting started" state on the home screen for users with 0 friends. Include: (1) a prominent "Invite a friend" CTA, (2) brief copy explaining what Campfire does ("See who's free, make plans instantly"). The home screen is the onboarding surface. |
+| Permission requests at the moment they're needed | Asking for notifications, location, and camera access all on launch is a permission request wall that causes ~50% of users to deny everything. | LOW | Trigger notification permission when user first sets their status or creates a plan. Trigger location permission when user taps Explore map for the first time. Never ask at launch. |
+| Profile completion prompt (name + avatar) | An app where all friends show as "@username" with no avatar feels impersonal. Social apps need faces. | LOW | After sign-up, route through a profile completion screen: display name + avatar. Make it skippable but prominent. This exists in some form from v1.0 — verify the flow is polished. |
+| Morning prompt opt-in during first status set | The morning prompt notification is one of Campfire's core engagement mechanics. New users who never encounter it miss the loop entirely. | LOW | On first status set, after the status is confirmed, show a contextual prompt: "Want a morning nudge to share your status?" → configure morning prompt time. Not a modal on launch — triggered by the first meaningful action. |
 
 ### Differentiators
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Who voted for what (visible in small group) | In a close friend group, "Did Sam vote for Saturday?" is a normal question. Showing voter names next to options (or on tap) is appropriate and expected given the intimate context — unlike public polls where anonymity matters. | LOW | Display list of voter first names next to each option. No anonymity needed in a 3–15 friend group. |
-| Poll closes automatically or creator can close | Prevents zombie polls that never resolve. Closed polls show final result without "Vote" UI. | LOW | Optional: creator taps "Close poll" button. Auto-close is optional for v1.5. |
+| Seed the home screen with helpful copy for zero-friend state | Instead of a blank home screen, show explanatory content: "Your friends will appear here once you connect. Share your link to invite them." with a large share button. | LOW | Conditional render in `HomeScreen.tsx` when `friends.length === 0`. No new component needed — reuse `EmptyState` with a share-link CTA. |
+| Deep-link from "Add Friend" QR code / share link that pre-populates friend request | The best social app onboarding is when someone invites you. The invitee should land in the app with the friend request pre-populated, not in a blank home screen. | MEDIUM | Campfire already has QR code / username-based friend adds. Verify the deep link scheme (`campfire://`) properly handles incoming invites and routes to the friend request flow, not just the home tab. |
+| Skip onboarding carousel entirely | A 5-screen feature tour before users can see the app is the single most skipped UI in mobile apps. Duolingo's research showed "use product first, sign up second" was their highest-impact retention change. For an app already requiring sign-up (auth required), the equivalent is: get users to the home screen immediately. | LOW | Explicitly recommend against a feature carousel. If any screens have been added since v1.0 that show "here's how Campfire works" — remove them. |
 
-### Anti-Features / Explicit Defers
+### Anti-Features
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Anonymous voting | In a 3–15 person friend group, anonymity is not expected and adds complexity. Groups at this scale operate on trust. | Show names. |
-| Multiple-choice voting (select N options) | Results become ambiguous ("4 people voted for Saturday and 3 for Sunday but 2 voted for both"). Hard to declare a winner. | Single choice only. |
-| Poll scheduling / expiry time | Adds complexity. Manual close by creator is sufficient. | Manual close only. |
-| Open-ended text responses | That's a survey, not a poll. Different UX pattern. | Structured options only. |
-| Poll editing after votes cast | Vote integrity issue. | Polls are immutable once created. Show an "Add new poll" option instead. |
-
-**Complexity note:** MEDIUM. Requires new tables: `polls` (question, message_id, created_by, closed_at) and `poll_votes` (poll_id, user_id, option_index). RPC or RLS for vote enforcement. A new `PollCard` component for in-chat rendering. Realtime subscription for vote count updates is the trickiest part — decide whether to use message-level Realtime (already subscribed) or a separate subscription on `poll_votes`. Given Supabase's 200-connection limit on free tier, piggybacking on the existing chat channel subscription is preferable.
+| Onboarding carousel (swipeable "feature tour" screens) | Users skip them. Always. Studies consistently show carousel completion rates under 20%. They delay the user from doing the thing they came to do. | Jump directly to the home screen. Let the empty state do the teaching. |
+| All permissions requested at launch | iOS and Android both show a native permission dialog. Three in a row on first launch causes "deny everything" behavior. Notification permission denial is permanent until users manually re-enable in Settings. | Contextual permission requests, triggered at the natural moment of first use. |
+| Mandatory profile photo | Blocking app use behind a required avatar upload is friction with no immediate payoff for the user. 30% of users will abandon. | Make avatar optional. Default to initials avatar (already exists in `AvatarCircle`). |
+| Social graph import (contacts / Facebook) | Campfire is for a specific known friend group of 3–15 people, not a public social network. Contact import implies "grow your network" — wrong product model. It also requires significant platform permissions. | Manual add-by-username or QR scan is the right model for an intimate group app. |
 
 ---
 
-## Feature E: Profile Rework
-
-### Table Stakes (the cleanup that makes the rest coherent)
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Remove status display from Profile screen | Home screen is the authoritative status surface (v1.3 decision). Showing status again in Profile creates confusion: "Which one is current?" Users expect one source of truth. | LOW | Remove the status row from ProfileScreen. No DB change needed. |
-| Notifications section grouped and labeled | Profile currently has notification toggles scattered. Users expect a labeled "Notifications" section as a coherent group, not individual items mixed with account info. | LOW | UI reorganization: wrap toggles in a `<SectionHeader title="Notifications" />`. No state change. |
-| Edit details separate from photo edit | Tapping the avatar should not also navigate to a form for display name, username, etc. Editing a photo and editing account details are distinct intentions. Mixing them makes the edit flow confusing. | LOW | Separate entry points: avatar tap → photo picker; "Edit Profile" button → text field form. Already built, may need routing separation only. |
-| Cleaner layout overall | Users expect the profile to be scannable in seconds: who am I, what are my settings. | LOW | Section grouping: ACCOUNT (email, member since), NOTIFICATIONS, PREFERENCES (morning prompt, etc.), DANGER ZONE (sign out). |
-
----
-
-## Feature F: Friend Profile Page
+## 5. App Icon and Splash Screen
 
 ### Table Stakes
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Avatar (large, full-quality) | The first thing users expect when tapping a friend — a large version of their avatar, not the small bubble they see elsewhere. | LOW | Reuse `expo-image` for loading + fallback initials avatar. |
-| Display name + username | Identity confirmation: "Is this the right Sam?" Display name + @username distinguishes friends with the same first name. | LOW | Static display from friends table / profiles join. |
-| Current status (mood + context + freshness) | In a "friendship OS," seeing a friend's current status is the primary value. Users tapping a friend's card expect to see if they're Free/Busy/Maybe and what they're up to — the same data the home screen shows. | LOW | Use `effective_status` view (already exists, already scoped by RLS to friends). |
-| Birthday (month + day) | Campfire has birthday data. Showing it on the friend profile page makes it discoverable outside of the birthday dashboard. Users expect: "When's her birthday?" answered on the profile. | LOW | Display `birthday_month` / `birthday_day` in human-readable format ("April 15"). Do not show year unless you make a conscious call — years can feel intrusive. |
-| Wish list | Campfire v1.4 introduced wish lists. A friend's profile page is the natural place to browse their wish list outside of birthday group chat. This extends the wish list's utility beyond its current narrow context. | MEDIUM | Reuse the wish list fetch logic from `useFriendWishList` hook (already exists). Render as a scrollable list section. |
+| Custom branded app icon (not the Expo placeholder) | The current icon (`./assets/images/icon.png`) appears to be in the Expo logo family based on the android assets present. A placeholder icon is an immediate signal to App Store reviewers and users that the app is unpolished. App Store review may reject placeholder icons. | LOW | Design a 1024×1024 icon. For Campfire: campfire/fire motif, warm orange (#ff6b35) brand color. Simple silhouette — a single flame or stylized campfire that reads at 40px. |
+| Android adaptive icon with correct layers | The `app.config.ts` has `foregroundImage` and `backgroundColor` configured. The foreground image must be sized correctly for adaptive icon safe zone (66% of total canvas = foreground should be centered in a 108dp with safe zone at 72dp). | LOW | Verify `android-icon-foreground.png` is correctly composed for adaptive icon requirements. The icon content should be within the inner 72dp safe zone. |
+| Splash screen with branded icon, not just background color | Current `app.config.ts` has `splash.backgroundColor: '#ff6b35'` but no `splash.image` or `splash.icon` configured. An orange screen with nothing on it for 2–3 seconds is unpolished. | LOW | Add `splash.image` pointing to a 1024×1024 PNG of the icon on a transparent background. The Expo config plugin handles sizing. Use `splash.resizeMode: 'contain'` to center it. |
+| Splash background color matches first screen background | If the splash is orange but the home screen is white (light mode) or dark (dark mode), the transition is jarring. | LOW | Set `splash.backgroundColor` to match the app's primary surface color, not the brand orange. Consider `#1a1a2e` (dark) with a conditional light/dark splash image (iOS supports this via `userInterfaceStyle: 'automatic'`). Alternatively: use white `#ffffff` for light, let the system handle dark. |
+| App icon tested at small sizes (40px iPhone grid, 29px settings) | An icon that looks good at 1024px can become an unreadable smear at 40px if it has too much detail. | LOW | Test the icon at 40px, 60px, 76px, and 83.5px (all iOS sizes). Apple's HIG requires legibility at all sizes. |
 
 ### Differentiators
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Quick DM entry point on friend profile | Tap a friend's profile → immediately start a DM with one tap. Reduces friction from "find friend → navigate to Chats → find DM" to "find friend → DM button." | LOW | "Message [Name]" button navigates to the existing DM chat room. `dmChannelId` can be derived from the `least()/greatest()` pattern already in place. |
-| Mutual plans display | "What plans do we have together?" — shows upcoming plans where both the viewer and the friend are participants. Reinforces the coordination identity of the app. | MEDIUM | Query `plan_invitations` joined to `plans` filtered by friend_id. Limit to upcoming (not past) plans. |
+| Icon uses Campfire brand color as primary (#ff6b35) | Brand color consistency across icon → splash → app UI → notifications creates a coherent visual identity. Users recognize the orange instantly. | LOW | Already partially done (notification icon color is `#ff6b35`). Extend to the icon and splash. |
+| Dark/light splash variant (iOS 26 Liquid Glass consideration) | On iOS 26, icons are treated as layered glass. Designing the icon with a transparent background (icon on clear) rather than a solid background enables the OS to apply its own effects while the brand silhouette remains recognizable. | LOW | Use a transparent background on the icon PNG. Let `adaptiveIcon.backgroundColor` supply the background layer for Android. For iOS, the rounded corner + Liquid Glass effects are applied by the OS — no need to bake them in. |
 
-### Anti-Features / Explicit Defers
+### Anti-Features
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Edit another friend's profile | Only the user can edit their own profile. Friend profiles are read-only. | Read-only view. |
-| Social stats (mutual friends count, "member since") | This is a friend group of 3–15 people. You already know your friends. Stats add a social-network feel that conflicts with the intimate tone. | Omit. |
-| "Follow" or "Unfollow" actions | Campfire uses a bilateral friendship model, not follow. | Unfriend action is the only destructive option — and even that should be subtle or deferred to settings. |
-| Public profile shareable link | Campfire is friends-only. Profile URLs outside the app are not a use case. | Not applicable. |
-| Feed of friend's activity (posts, check-ins) | Campfire is not a social feed app. This is a coordination tool, not Instagram. | Out of scope. |
-
-**Complexity note:** LOW–MEDIUM. No new tables needed. The page is an assembly of existing data sources: `profiles` join + `effective_status` view + `birthday` columns + `wish_list_items`. The `useFriendWishList` hook already exists. The main work is building the screen layout and hooking up navigation from friend cards (HomeFriendCard, FriendsList, etc.).
+| Text in the app icon | Both iOS and Android guidelines prohibit or strongly discourage text in icons. At 40px, "Campfire" is illegible. The icon must work as a pure visual symbol. | Wordmark lives in the App Store listing, not the icon. |
+| App name in the icon | Same as above — the OS displays the app name below the icon. Putting it in the icon doubles the label and looks amateur. | Visual symbol only. |
+| Detailed/complex icon illustration | Icons with multiple elements, gradients on gradients, and fine linework become visual noise at 40–60px. The most successful social app icons (WhatsApp, Telegram, Messenger) use one bold shape at maximum 2–3 colors. | Single silhouette, brand orange, transparent or white background. |
+| Animated splash screen beyond a simple fade | Custom animated splashes require `expo-splash-screen` with manual hide timing + a matching first-screen animation. High complexity, marginal value. App Store testers specifically look for apps that take too long to show first content. | Static splash with fast hide. Call `SplashScreen.hideAsync()` as soon as the auth check and initial data load resolves. |
+| Long splash duration | The splash must hide as soon as the app is ready. A 3+ second branded animation feels like the app is slow, not premium. | Splash should hide within 1.5 seconds on a normal device. Target <1 second. |
 
 ---
 
-## Cross-Cutting Concerns
+## 6. Error States and Offline Handling
 
-### Feature Dependencies
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Every data-fetching screen has an error state | A screen that silently shows nothing when the network fails looks broken. Users need to know: "something went wrong" vs "there's nothing here." | LOW | The `ErrorDisplay` component exists. Audit every screen that uses `useEffect` + Supabase query to confirm `error` state is handled, not just `loading` and `data`. |
+| Error state includes a retry button | Without a retry mechanism, users must close and reopen the app to recover. A "Try again" button in the error state is the minimum viable recovery flow. | LOW | `ErrorDisplay` should accept an `onRetry` callback. Pass the re-fetch function as the retry action. |
+| Offline banner is visible but not obtrusive | The `OfflineBanner` component already exists and uses animated height. Verify it appears correctly on all screens (it should sit below the `ScreenHeader` and above the list content). | LOW | Integration audit: confirm `OfflineBanner` is mounted in the root layout so it appears on all screens without duplication. |
+| Offline state does not block viewing cached data | If the user has viewed their friends' statuses, those should still be visible (even if stale) when offline. Showing an empty screen just because the network is down is poor UX. | MEDIUM | For most screens, Zustand store state persists in-memory during the session. The issue arises on fresh app launch offline. Since Campfire does not use local persistence (no SQLite/MMKV), this is limited: the offline banner explains the situation, and the screens show empty states with "No connection" messaging rather than full error states. **Note for PITFALLS.md:** offline-first persistence is a v2 concern, but the UX should gracefully degrade. |
+| Network errors distinguished from empty data | A `[]` response from Supabase (empty list) must not be treated the same as a `{ error }` response. The empty state and error state must be distinct. | LOW | Audit hooks: confirm `error !== null` → error state, `data.length === 0` → empty state, `data.length > 0` → content. |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| "Reconnected" toast when coming back online | When the offline banner disappears (connection restored), showing a brief "You're back online" toast with an auto-trigger data refresh reassures the user that their data is now current. | LOW | In `OfflineBanner`, add a callback when `isConnected` transitions false→true. Trigger a brief toast via a shared notification utility. Auto-dismiss after 2 seconds. |
+| Optimistic updates for status changes (already partially exists) | The existing "server confirmation before local update" pattern is safe but creates a perceived lag on status change. An optimistic update (update local state immediately, roll back on error) makes the status toggle feel instant. | MEDIUM | Risk: if the server update fails, the user sees their status revert. For the status composer, this is acceptable (same as iMessage send failure). The existing pattern in `useExpenseCreate` already uses optimistic patterns. |
+| Retry with exponential backoff for failed Supabase queries | A single retry on error is good. Automatic retry with backoff (1s, 2s, 4s) is better for transient network hiccups. | MEDIUM | Campfire does not use React Query (project constraint). Implement a simple `useRetry` hook that wraps the fetch function. Cap at 3 retries. Not required for v1.7 unless fetch failures are frequent — flag as a polish improvement. |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Full-screen error modal on every API failure | Modal errors for transient failures block the entire app for what might be a 500ms network blip. | Inline error states per-screen. Modal only for unrecoverable auth errors (session expired). |
+| "Something went wrong" without context | Opaque error messages teach users nothing and create support tickets. Campfire is not at scale — contextual errors ("Couldn't load your friends — check your connection") are fine at this stage. | Contextual error copy per screen. Include the screen context in the error message. |
+| Blocking writes when offline | If a user writes a plan or a chat message while offline, silently discarding it is unacceptable. | For now: disable write actions (grey out buttons) when `isConnected === false` rather than silently discarding. A toast: "Can't create plans offline" is better than silent failure. This is already the effective behavior since all writes go to Supabase directly. |
+
+---
+
+## 7. Haptic Feedback
+
+### Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Haptic on status change (mood/context selection) | Already implemented in `MoodPicker.tsx` (`Light` for context chip, `Medium` for mood row). Verify this also fires when the status is committed via the bottom sheet picker. | LOW | Confirm `StatusPickerSheet` fires haptic on status commit, not just on individual chip selection. |
+| Haptic on plan RSVP (going / not going) | Confirming a plan RSVP is a definitive action. `Medium` impact confirms it registered. | LOW | Audit `PlanRSVPButton` or wherever RSVP state changes. Add `Haptics.impactAsync(ImpactFeedbackStyle.Medium)` on RSVP commit. |
+| Haptic on send message | Chat message send is the most frequent social action. A `Light` impact on send makes the interaction feel immediate and confirmed. | LOW | Add `Haptics.impactAsync(ImpactFeedbackStyle.Light)` in `SendBar.tsx` `handleSend` after the optimistic message insert. |
+| Haptic on reaction add | Adding a reaction is a discrete selection action. `selectionAsync()` (the selection haptic, lightest) is appropriate. | LOW | Audit `ReactionsSheet.tsx` reaction tap handler. Add `Haptics.selectionAsync()`. |
+| Haptic on friend request accept/reject | These are meaningful social gestures. `Medium` for accept (positive action), `Light` for decline. | LOW | Audit `FriendRequestRow` or similar component. Add haptic on both actions. |
+| Success haptic on IOU settle | Already implemented with `Medium` impact. Verify. | LOW | Already in `useExpenseDetail.ts`. Confirm it works end-to-end. |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| `notificationAsync(Success)` for high-value completions | `Haptics.notificationAsync(NotificationFeedbackType.Success)` produces a triple-tap pattern (distinctly "done!") that iOS uses for Apple Pay confirmation. Use this for: plan created successfully, expense settled, friend request accepted. | LOW | Upgrade from `impactAsync(Medium)` to `notificationAsync(Success)` for 3 specific "task complete" moments. This is the highest-quality haptic pattern available. |
+| `notificationAsync(Warning)` for destructive confirmations | Before a destructive action (delete a plan, remove a friend), a `Warning` haptic pattern (`notificationAsync(NotificationFeedbackType.Warning)`) creates a "pause and reconsider" sensation. | LOW | Add to any confirmation dialog before irreversible actions. |
+| `selectionAsync()` for all segmented control and tab changes | Already on `SegmentedControl` and `ThemeSegmentedControl`. Extend to the Squad top tabs (Friends / Goals) and any picker-style selections (date pickers, split mode controls). | LOW | The `SplitModeControl.tsx` already has it. Verify the Squad tab underline switcher has it. |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Haptic on every tap | Over-hapticating (every list row tap, every navigation, every keyboard key) creates sensory fatigue. iOS system apps use haptics sparingly — only for state changes, confirmations, and meaningful selections. | Haptics only for: (a) state changes (status set, RSVP, reaction), (b) high-value completions (plan created, expense settled), (c) selections in picker/segmented controls. Never on: navigation taps, list row opens, info displays. |
+| Heavy (`Heavy` impact) for routine actions | `Heavy` impact is for system-level events (scroll lock, end of list bounce). Using it for routine social actions makes everything feel like a system alert. | `Light` for selection/navigation feedback. `Medium` for confirmations. `Heavy` reserved for errors or truly significant moments. `notificationAsync` for completions and warnings. |
+| Haptic feedback without `try/catch` | `expo-haptics` silently fails on devices without haptic engines (iPad, some Android). But mixing synchronous haptic calls with `await` in an event handler can cause unhandled rejections if the promise rejects. | Wrap all haptic calls in `.catch(() => {})` (already done in some places — ensure all call sites follow this pattern). |
+
+---
+
+## Feature Dependencies
 
 ```
-Message Reactions
-  └── requires: messages table (exists), new message_reactions table, Realtime update
+Empty States
+  └── requires: EmptyState component (exists, needs animation enhancement)
+  └── requires: per-screen copy audit (new work)
+  └── enhances: First-run experience (zero-friend state is the onboarding surface)
 
-Media Sharing
-  └── requires: messages table media_url column, chat-media Storage bucket
-  └── uses: expo-image-picker (exists for plan covers), expo-image-manipulator (new), arrayBuffer upload pattern (proven)
+Skeleton Loading
+  └── requires: expo-linear-gradient (already installed)
+  └── requires: Animated API (built-in React Native)
+  └── requires: per-screen skeleton components matching real row shapes
+  └── conflicts: Moti skeleton (New Architecture incompatible — do not use)
 
-Reply Threading
-  └── requires: messages table reply_to_message_id + denormalized snippet columns
-  └── uses: existing message render pipeline (MessageBubble extension)
+Micro-Interactions
+  └── requires: react-native-reanimated (installed, v4.2.1)
+  └── requires: Animated API (built-in)
+  └── no new dependencies
 
-Polls
-  └── requires: new polls + poll_votes tables
-  └── entry point: existing attachment menu (built in v1.4)
-  └── uses: existing chat Realtime subscription (piggyback, don't add new channel)
+Haptic Feedback
+  └── requires: expo-haptics (installed, ~55.0.14)
+  └── enhances: Micro-interactions (haptic + visual animation together = polished)
+  └── no new dependencies
 
-Friend Profile Page
-  └── requires: no new tables
-  └── uses: effective_status view (exists), useFriendWishList hook (exists), profiles table (exists)
+App Icon & Splash
+  └── requires: 1024x1024 PNG assets (must be designed/sourced)
+  └── requires: app.config.ts update (splash.image, potentially splash.backgroundColor)
+  └── requires: EAS build to test (Expo Go cannot fully replicate splash from SDK 52+)
+  └── independent of all other polish features
 
-Profile Rework
-  └── requires: no DB changes
-  └── UI reorganization only
+Onboarding / First-Run
+  └── requires: home screen empty state (see Empty States)
+  └── requires: deep-link routing works (campfire:// scheme in app.config.ts exists)
+  └── enhances: Skeleton loading (empty vs loading is clearer with both states handled)
+  └── no new dependencies
+
+Error States / Offline
+  └── requires: OfflineBanner (exists)
+  └── requires: ErrorDisplay (exists)
+  └── requires: per-screen error state audit (new work)
+  └── enhances: Loading states (error must replace skeleton when fetch fails)
 ```
 
-### Supabase Free Tier Budget Implications
+---
 
-| Feature | DB Impact | Storage Impact | Realtime Impact |
-|---------|-----------|----------------|-----------------|
-| Reactions | ~1 row per reaction. Low. | None. | Low — piggybacking on chat subscription. |
-| Media | Low (URL column only). | HIGH — 420 KB per image. Monitor 1 GB budget. | None for storage. |
-| Threading | ~2 extra columns per message. Negligible. | None. | None (existing subscription). |
-| Polls | New tables: polls + poll_votes. Low row count. | None. | Low — piggyback on chat subscription. |
-| Friend Profile | No new data. | None. | None (point-in-time fetch). |
+## MVP for v1.7 (Launch Polish)
 
-### MVP Recommendation for v1.5
+### Ship with v1.7
 
-Build in this order based on dependency graph and user value:
+- [ ] Custom app icon (1024×1024 brand asset) — first thing App Store reviewers and users see
+- [ ] Splash screen with icon (not just background color) — eliminates 2-second orange void
+- [ ] Empty state audit: every list screen has unique icon + copy + CTA — table stakes
+- [ ] Error state audit: every data-fetching screen handles `error !== null` with retry — table stakes
+- [ ] Skeleton loading on home screen (friends section), plans list, and chat list — highest-traffic screens
+- [ ] Press feedback (scale 1.0→0.96) on all tappable cards and rows — most visible polish delta
+- [ ] Haptic audit: status change, RSVP, message send, reaction add, friend request — complete the pattern
+- [ ] `notificationAsync(Success)` for plan creation and expense settle — upgrade 2 highest-value moments
+- [ ] First-run home screen state for zero-friend users — activation / retention critical
+- [ ] Pull-to-refresh `tintColor` set to brand orange on all lists — 1-line brand polish
 
-1. **Profile Rework + Friend Profile Page** — Zero DB migrations, high UX payoff, establishes clean foundation. Ship first.
-2. **Message Reactions** — Single highest-requested chat feature. Requires one new table. Validate the Realtime update pattern before tackling heavier features.
-3. **Reply Threading** — Extends the message model. Inline only. Validates the message-column-extension approach before polls.
-4. **Media Sharing** — The image upload pipeline is the most technically novel piece (building on proven arrayBuffer pattern). Independent of reactions/threading.
-5. **Polls** — Most complex (two new tables, new message type, Realtime vote sync). Build last when the chat render pipeline is already extended by reactions + threading.
+### Add After Initial v1.7 Ship (v1.7.x)
 
-### Explicit Defers (not in v1.5)
+- [ ] Shimmer gradient sweep (upgrade from pulse to gradient) — higher polish, `expo-linear-gradient` ready
+- [ ] "Back online" toast notification — nice touch once offline handling is confirmed stable
+- [ ] Morning prompt opt-in contextual prompt on first status set — engagement loop
+- [ ] List item entrance animations (staggered fade+slide) — visual delight, not critical path
 
-| Deferred Feature | Reason |
-|-----------------|--------|
-| Video sharing | Supabase 1 GB free storage budget, 50 MB per-file limit. V2. |
-| Read receipts | Out of scope (listed in PROJECT.md constraints). |
-| Full emoji picker for reactions | Decision overhead > expressiveness gain for 3–15 people. Start curated. |
-| Separate thread view (Slack-style) | Wrong pattern for 3–15 person intimate groups. |
-| Multiple-choice poll voting | Ambiguous results, added complexity. |
-| Anonymous polls | Unnecessary in close-friend context. |
-| Push notifications for reactions | Would be noise at this group size. |
-| Image deletion / message unsend | Immutable messages in v1.5. |
-| Mutual plans on friend profile | Defer if timeline is tight — nice-to-have, not table stakes. |
+### Defer to v2
+
+- [ ] Shared element screen transitions — High complexity, Expo Router compatibility uncertain
+- [ ] Offline-first persistence (SQLite/MMKV) — architectural change, not a polish pass
+- [ ] Optimistic updates for all write operations — risk of rollback UX complexity
+
+---
+
+## Feature Prioritization Matrix
+
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| App icon + splash | HIGH — first impression | LOW — asset design + config | P1 |
+| Empty state audit | HIGH — every screen | LOW — copy + EmptyState component | P1 |
+| Press feedback on cards | HIGH — most visible | LOW — Animated.spring pattern | P1 |
+| Error state audit | HIGH — crash prevention perception | LOW — ErrorDisplay + retry | P1 |
+| Haptic audit (complete coverage) | MEDIUM — feel | LOW — expo-haptics calls | P1 |
+| Skeleton on home/chat/plans | HIGH — perceived speed | MEDIUM — build SkeletonRow components | P1 |
+| Zero-friend home state | HIGH — activation/retention | LOW — conditional EmptyState | P1 |
+| notificationAsync(Success) upgrades | MEDIUM — delight | LOW — change 3 call sites | P2 |
+| Pull-to-refresh brand color | LOW — subtle | LOW — 1 prop change per list | P2 |
+| Shimmer gradient (vs pulse) | MEDIUM — premium feel | MEDIUM — linear gradient animation | P2 |
+| Entrance animations on lists | MEDIUM — delight | MEDIUM — staggered Animated.spring | P2 |
+| "Back online" toast | LOW — reassurance | LOW — OfflineBanner callback | P2 |
+| Contextual permission opt-in | MEDIUM — retention | LOW — timing adjustment | P2 |
+| Shared element transitions | LOW — wow factor | HIGH — Expo Router uncertainty | P3 |
+
+**Priority key:**
+- P1: Must have for launch — without these, the app feels unfinished
+- P2: Should have — meaningfully improves the experience, low risk
+- P3: Nice to have — defer unless effort is trivial
 
 ---
 
 ## Sources
 
-- iMessage tapback / iOS 18 emoji expansion: [MacRumors iOS 18 Tapback](https://www.macrumors.com/how-to/ios-use-new-tapback-reactions-messages/)
-- WhatsApp threading in 2025: [9to5Mac WhatsApp Threaded Replies](https://9to5mac.com/2025/07/08/whatsapp-is-working-on-threaded-replies-in-group-chats/)
-- React Native image compression: [GetStream Compress File Guide](https://getstream.io/chat/docs/sdk/react-native/guides/file-compression/)
-- Supabase Storage file size limits (50 MB per file, 1 GB free tier): [Supabase Storage Limits Docs](https://supabase.com/docs/guides/storage/uploads/file-limits)
-- Poll design best practices (binary vs multi-option, 3-5 options): [WhatsApp Polls Guide](https://chatfuel.com/blog/create-whatsapp-polls)
-- WhatsApp full thread view (Nov 2025): [BetaNews WhatsApp Threads](https://betanews.com/2025/09/15/whatsapp-threaded-messages-make-for-easier-reading/)
-- React Native media upload mastering guide: [DEV Community 2026 Guide](https://dev.to/fasthedeveloper/mastering-media-uploads-in-react-native-images-videos-smart-compression-2026-guide-5g2i)
+- Expo Haptics API documentation: [https://docs.expo.dev/versions/latest/sdk/haptics/](https://docs.expo.dev/versions/latest/sdk/haptics/)
+- Expo Splash Screen + App Icon guide: [https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/)
+- React Native Reanimated withSpring docs: [https://docs.swmansion.com/react-native-reanimated/docs/animations/withSpring/](https://docs.swmansion.com/react-native-reanimated/docs/animations/withSpring/)
+- Callstack shimmer performance guide (react-native-svg + Reanimated): [https://www.callstack.com/blog/performant-and-cross-platform-shimmers-in-react-native-apps](https://www.callstack.com/blog/performant-and-cross-platform-shimmers-in-react-native-apps)
+- Moti skeleton New Architecture incompatibility (open bug): [https://github.com/nandorojo/moti/issues/337](https://github.com/nandorojo/moti/issues/337)
+- Skeleton loading built-in Animated API pattern: [https://medium.com/@saiabhishek.k/every-skeleton-loader-library-is-secretly-just-this-animated-api-ed6ac82fa437](https://medium.com/@saiabhishek.k/every-skeleton-loader-library-is-secretly-just-this-animated-api-ed6ac82fa437)
+- App icon design best practices 2025: [https://asomobile.net/en/blog/app-icon-trends-and-best-practices-2025/](https://asomobile.net/en/blog/app-icon-trends-and-best-practices-2025/)
+- Mobile onboarding best practices: [https://nextnative.dev/blog/mobile-onboarding-best-practices](https://nextnative.dev/blog/mobile-onboarding-best-practices)
+- Empty state UX design rules: [https://www.eleken.co/blog-posts/empty-state-ux](https://www.eleken.co/blog-posts/empty-state-ux)
+- Android haptics UX design (official): [https://source.android.com/docs/core/interaction/haptics/haptics-ux-design](https://source.android.com/docs/core/interaction/haptics/haptics-ux-design)
+- 2025 haptics guide: [https://saropa.com/articles/2025-guide-to-haptics-enhancing-mobile-ux-with-tactile-feedback/](https://saropa.com/articles/2025-guide-to-haptics-enhancing-mobile-ux-with-tactile-feedback/)
+
+---
+*Feature research for: Campfire v1.7 — Polish & Launch Ready*
+*Researched: 2026-05-04*
