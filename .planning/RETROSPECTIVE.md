@@ -224,6 +224,43 @@
 
 ---
 
+## Milestone: v1.6 — Places, Themes & Memories
+
+**Shipped:** 2026-05-04
+**Phases:** 6 (phases 18–23) | **Plans:** 22 | **Commits:** ~134
+**Timeline:** 7 days (2026-04-28 → 2026-05-04)
+
+### What Was Built
+- Light/Dark/System theme toggle: ThemeProvider context, LIGHT palette (WCAG AA), useTheme() hook, AsyncStorage persistence, all ~100 screens migrated to useTheme() + useMemo([colors]), compat shim removed
+- Map feature: migration 0020 lat/lng columns, react-native-maps + expo-location, LocationPicker modal with reverse geocoding, plan dashboard map tile + directions deep link, Explore list/map toggle with 25km GPS filter
+- Plan photo gallery: migration 0021 + private plan-gallery bucket + add_plan_photo SECURITY DEFINER RPC (10-photo cap), uploadPlanPhoto utility, usePlanPhotos hook, 3-column grid, GalleryViewerModal (swipe pager, pinch-to-zoom, save + delete)
+- Memories Gallery: useAllPlanPhotos cross-plan aggregation hook, RecentMemoriesSection home widget, /memories SectionList grouped by plan, MemoriesRedirect unifying duplicate entry points
+
+### What Worked
+- Theme migration in 3 phases (foundation → shared components → routes/screens) made a 100-file change manageable and verifiable at each stage
+- Private bucket + signed URLs pattern established in v1.5 for chat media applied cleanly to plan gallery — zero new decisions needed
+- SECURITY DEFINER RPC for 10-photo cap: atomic check+insert in one plpgsql block prevents concurrent-upload race conditions
+- chunkPhotos pre-chunking into rows of 3 for SectionList grid — the correct workaround for SectionList's lack of numColumns; discovered once, documented
+
+### What Was Inefficient
+- THEME-01 checkbox was never ticked despite feature being built in Phase 18-03 — caught at milestone close (a repeat of the v1.5 CHAT-01/02/03 pattern)
+- Phase 23 had a gap closure plan (23-04) after UAT found a duplicate Memories screen — Squad tab stub wasn't updated when /memories route was created
+- Light mode accent color needed a correction mid-phase (neon #B9FF3B illegible on white — corrected to #16A34A)
+
+### Patterns Established
+- useTheme() + useMemo([colors]) inside component body — mandatory for all themed StyleSheets
+- SectionList grid via pre-chunked row arrays (no numColumns) — document this whenever building sectioned grids
+- activePlanId state captured at viewer-open time to scope delete callbacks — prevents stale-closure issues in modal viewers
+- MemoriesRedirect pattern: stub screens route to canonical route rather than re-implementing UI
+
+### Key Lessons
+1. Mark requirements complete during execution, not at milestone close — this was lesson #7 from v1.5 and was still missed
+2. When a new canonical screen is created, immediately update all existing entry points/stubs — deferred updates cause duplicate-screen gaps
+3. Light mode palette needs to be reviewed as a whole, not token-by-token — accent colors that work in dark can be illegible in light
+4. Apple Maps (PROVIDER_DEFAULT) is the safe iOS map provider for SDK 55 + EAS — Google Maps iOS config plugin broken
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -237,6 +274,7 @@
 | v1.3.5 | ~15 plans | 4 | 15 | 1 day | Homescreen redesign: radar, cards, status pill |
 | v1.4 | ~23 plans | 6 | 23 | 6 days | IOU + Birthday + Squad Dashboard |
 | v1.5 | 122 TS files +14.5K | 6 | 21 | 5 days | Full chat feature set + profile rework |
+| v1.6 | ~134 commits, ~25K LOC | 6 | 22 | 7 days | Theme system, map feature, photo gallery + memories |
 
 ### Top Lessons (Verified Across Milestones)
 

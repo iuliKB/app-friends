@@ -8,14 +8,9 @@ Campfire is a "friendship OS" — an all-in-one social coordination app for clos
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone: v1.6 Places, Themes & Memories
+## Current Milestone: v1.7 Polish & Launch Ready
 
-**Goal:** Give Campfire a sense of place (map for plans + explore nearby), user-selectable dark/light mode, and a shared photo gallery per plan to relive moments together.
-
-**Target features:**
-- Light/dark theme toggle — user can switch between dark mode (current) and light mode, preference persisted
-- Map on plans — attach a location to a plan and see it on a map; view friend plans near you in Explore tab
-- Plan photo gallery — each participant can contribute up to 10 photos per plan; photos saved in a shared gallery visible to all plan members
+**Goal:** Take every shipped screen from functional to great — UI/UX polish, interaction refinements, empty states, edge cases, and feature improvements across the full app in preparation for launch.
 
 ## Requirements
 
@@ -91,15 +86,15 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ Polls in chat (creation via attachment menu, single-vote with change, live counts) — v1.5
 - ✓ Profile rework: status removed, notifications consolidated, edit details decoupled from avatar — v1.5
 - ✓ Friend profile page (/friends/[id]) with avatar, freshness-aware status, birthday, wish list — v1.5
+- ✓ Light/Dark/System theme toggle persisted across restarts, all screens migrated to useTheme() — v1.6
+- ✓ Plan location picker (map pin + reverse geocoding), map tile on plan dashboard, directions deep link — v1.6
+- ✓ Explore tab map view with friend plan pins and 25km GPS filter — v1.6
+- ✓ Per-plan photo gallery (10 photos/participant, private bucket, signed URLs, full-screen viewer) — v1.6
+- ✓ Cross-plan Memories Gallery: home widget + /memories screen grouped by plan — v1.6
 
 ### Active
 
-- [ ] User can toggle between light and dark theme in Profile settings
-- [x] User can attach a location to a plan (map pin) — Validated in Phase 20: map-feature
-- [x] User can view a plan's location on a map — Validated in Phase 20: map-feature
-- [x] User can browse nearby friend plans on a map in Explore tab — Validated in Phase 20: map-feature
-- [x] Each plan participant can upload up to 10 photos to a shared plan gallery — Validated in Phase 21: gallery-foundation (backend; UI in Phase 22)
-- [x] All plan members can view the plan photo gallery — Validated in Phase 22: gallery-ui
+(none — all v1.6 requirements shipped; next milestone defines new active requirements)
 
 ### Out of Scope
 
@@ -119,12 +114,12 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ## Context
 
-Shipped v1.5 Chat & Profile with 6 phases across milestones v1.0–v1.5. Total ~34,000 LOC.
+Shipped v1.6 Places, Themes & Memories — 8 milestones complete (v1.0–v1.6). Total ~25,000 LOC TypeScript.
 Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage + Edge Functions), Zustand.
 
-Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak, IOUs, Birthdays). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config, wish list, birthday).
-Design system: `src/theme/` (6 token files), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity.
-Supabase migrations: 0001–0021 (v1.4 added 0015 IOU tables/RPCs + general_notes rename, 0016 birthday columns + get_upcoming_birthdays RPC, 0017 wish_list_items + wish_list_claims + group_channels + group_channel_members; v1.6 Phase 21 added 0021 plan_photos table + private plan-gallery bucket + add_plan_photo SECURITY DEFINER RPC with 10-photo cap).
+Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak, IOUs, Birthdays). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config, wish list, birthday, APPEARANCE theme picker).
+Design system: `src/theme/` (6 token files + ThemeProvider/useTheme context), `src/components/common/` (10+ shared components), ESLint `no-hardcoded-styles` at error severity. All components use useTheme() + useMemo([colors]) — zero static COLORS imports.
+Supabase migrations: 0001–0021 (0020 lat/lng on plans; 0021 plan_photos table + private plan-gallery bucket + add_plan_photo SECURITY DEFINER RPC with 10-photo cap).
 IOU write path: Squad '+' → create screen (currency input, friend selection, even/custom split) → `create_expense` RPC → detail screen (hero card, participant rows, creator-only settle with haptic).
 Birthday write path: Profile edit → native DateTimePicker (month/day/year) → birthday list screen → tap → Friend Birthday Page → birthday group chat with collapsible wish list panel + gift claiming/voting.
 Edge Functions: `notify-plan-invite`, `notify-friend-free` (rate-limited fan-out).
@@ -204,6 +199,8 @@ Known technical considerations:
 | add_plan_photo as SECURITY DEFINER RPC (v1.6 Phase 21) | Atomic membership check + cap enforcement + insert in one plpgsql block prevents race-window cap bypass from concurrent uploads | ✓ Good |
 | FlatList sentinel data `[{ key:'photos' }]` in PlanDashboardScreen (v1.6 Phase 22) | Non-empty data array required for ListFooterComponent to render reliably on all RN versions — empty array suppresses footer | ✓ Good |
 | GalleryViewerModal `useMemo([colors])` for StyleSheet (v1.6 Phase 22) | Theme-reactive styles recompute on dark/light switch; all existing image-viewer components use same pattern | ✓ Good |
+| chunkPhotos pre-chunks into rows of 3 before SectionList (v1.6 Phase 23) | SectionList has no numColumns prop — pre-chunking into row arrays is the only way to achieve a grid layout | ✓ Good |
+| MemoriesRedirect replaces Squad tab Memories stub (v1.6 Phase 23) | Eliminates duplicate gallery implementation; both Squad and Home entry points route to canonical /memories screen | ✓ Good |
 
 ---
-*Last updated: 2026-04-30 after Phase 22 (gallery-ui) complete*
+*Last updated: 2026-05-04 after v1.6 milestone complete*

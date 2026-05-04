@@ -1,5 +1,34 @@
 # Milestones
 
+## v1.6 Places, Themes & Memories (Shipped: 2026-05-04)
+
+**Phases completed:** 6 phases, 22 plans, 28 tasks
+
+**Key accomplishments:**
+
+- LIGHT color palette (WCAG AA, 10 semantic groups) + ThemeProvider/useTheme context with synchronous initial state, async AsyncStorage hydration, and validated input guard
+- ThemeProvider wraps the navigation tree in _layout.tsx (inside GestureHandlerRootView) and app.config.ts updated to userInterfaceStyle: 'automatic' so OS chrome tracks the active theme
+- Three-segment Light/Dark/System theme picker wired to ThemeContext, inserted as APPEARANCE section in Profile screen above NOTIFICATIONS, with haptic feedback, 44px touch targets, and full accessibility attributes
+- 30 shared components migrated from static COLORS import to useTheme() hook with useMemo([colors])-wrapped StyleSheets, establishing the themed component foundation for light/dark mode
+- 1. [Rule 1 - Bug] QuotedBlock in MessageBubble referenced undefined `styles`
+- All 30 app routes and screens migrated from static COLORS to useTheme(); compat shim removed and tsc-verified; light mode palette corrected and visually verified in Expo Go
+- 1. [Rule 1 - Bug] Fixed missing lat/lng in hook data mappers
+- Partial pre-completion by 20-01 executor:
+- 1. [Rule 1 - Bug] Fixed missing lat/lng in usePlanDetail exported type signature
+- 1. [Rule 1 - Bug] EmptyState props mismatch — used correct component interface
+- 1. [Rule 2 - Missing Null Safety] parseGalleryPathSegments uses ?? '' fallback
+- Migration 0021 applied to live Supabase (plan_photos table, plan-gallery private bucket, add_plan_photo RPC live); uploadPlanPhoto compress-then-arrayBuffer upload utility returns storage path for private-bucket signed URL flow.
+- usePlanPhotos hook wiring plan_photos DB rows + profiles join + createSignedUrls batch + uploadPlanPhoto integration, with typed photo_cap_exceeded / upload_failed error surface matching D-13 through D-16 spec.
+- Wave 0 test stubs created and PlanDashboardScreen refactored from ScrollView to FlatList with full Photos section stub wired in ListFooterComponent
+- Full-screen swipeable photo viewer with per-page pinch-to-zoom, uploader attribution bar, save to camera roll with haptic, and conditional delete
+- 3-column photo grid, Add Photo ActionSheet upload flow, EmptyState, and GalleryViewerModal wiring fully connected in PlanDashboardScreen; Playwright spec has structural passing test; VALIDATION.md marked complete
+- Cross-plan photo aggregation hook with 7-step Supabase pipeline, batch signed URLs, group-by-plan sorting, and recentPhotos widget slice
+- Home screen Recent Memories widget: horizontal FlatList of 6 most recent cross-plan photos with plan name captions, hidden when empty, navigating to /memories on tap
+- Full-screen gallery route at /memories — SectionList grouped by plan (newest first), 3-column thumbnail grid with tap-to-view via GalleryViewerModal and pull-to-refresh
+- Squad tab Memories page replaced with MemoriesRedirect component routing to /memories, eliminating duplicate gallery implementation and unifying both entry points to the canonical memories screen
+
+---
+
 ## v1.5 Chat & Profile (Shipped: 2026-04-22)
 
 **Phases completed:** 6 phases, 21 plans | 122 TS/TSX files changed, +14,548 / -847 lines
