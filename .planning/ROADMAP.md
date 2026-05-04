@@ -10,6 +10,7 @@
 - ✅ **v1.4 Squad Dashboard & Social Tools** — Phases 5-11 (shipped 2026-04-17)
 - ✅ **v1.5 Chat & Profile** — Phases 12-17 (shipped 2026-04-22)
 - ✅ **v1.6 Places, Themes & Memories** — Phases 18-23 (shipped 2026-05-04)
+- 🔄 **v1.7 Polish & Launch Ready** — Phases 24-28 (in progress)
 
 ## Archived Milestones
 
@@ -109,6 +110,81 @@
 
 </details>
 
+## Phases
+
+### v1.7 Polish & Launch Ready
+
+- [ ] **Phase 24: Polish Foundation** - SkeletonPulse shimmer, animation tokens, EmptyState CTA variant, PrimaryButton loading spinner — primitives that every subsequent polish phase depends on
+- [ ] **Phase 25: Auth, Onboarding & Errors** - Forgot-password flow, ToS/Privacy links on sign-up, error state audit across all data-fetching screens, first-run onboarding hint — all App Store-blocking items
+- [ ] **Phase 26: Home & Chat Polish** - Skeleton placeholders, press feedback, radar FADING pulse, zero-friends empty state, optimistic message send, haptics, long-press bubble animation
+- [ ] **Phase 27: Plans & Squad Polish** - Skeleton cards, RSVP spring animation, plan creation haptic, map empty state, friend-request + IOU + wish-list haptics, Squad Dashboard stagger animation
+- [ ] **Phase 28: Branding** - Final 1024×1024 app icon, branded splash screen with dark/light OS variants and fade transition — requires EAS build to verify on device
+
+## Phase Details
+
+### Phase 24: Polish Foundation
+**Goal**: Shared UI primitives exist that every other polish phase builds on
+**Depends on**: Nothing (foundation phase)
+**Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04
+**Success Criteria** (what must be TRUE):
+  1. Any screen that fetches remote data shows shimmer skeleton placeholders while loading, not blank white space
+  2. Animation durations and easing curves are imported from `src/theme/` tokens — no raw numbers in any component animation
+  3. Any EmptyState component can be rendered with an optional CTA button that navigates or triggers an action
+  4. Any PrimaryButton wired to an async operation disables itself and shows an inline spinner while the operation is in progress
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 25: Auth, Onboarding & Errors
+**Goal**: App Store-blocking auth and error experience items are complete
+**Depends on**: Phase 24
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04
+**Success Criteria** (what must be TRUE):
+  1. User can tap "Forgot password?" on the login screen, enter their email, and receive a reset link — without needing to contact support
+  2. Sign-up screen displays visible, tappable Terms of Service and Privacy Policy links before account creation
+  3. Every data-fetching screen shows an ErrorDisplay component with a retry action when the network or Supabase call fails — no silent blank screens
+  4. A first-run user (zero friends, no status set) sees a one-time dismissible hint guiding them to set their status and add a friend
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 26: Home & Chat Polish
+**Goal**: Home screen and chat feel fast, tactile, and polished end-to-end
+**Depends on**: Phase 24
+**Requirements**: HOME-01, HOME-02, HOME-03, HOME-04, CHAT-01, CHAT-02, CHAT-03, CHAT-04
+**Success Criteria** (what must be TRUE):
+  1. Opening the Home screen shows shimmer skeletons for friend cards while status data loads, not a blank list
+  2. A user with zero friends lands on an empty home screen with a card guiding them to add their first friend
+  3. Friends whose status heartbeat is FADING show a visible animated pulse ring around their radar bubble
+  4. All tappable home screen cards (status card, friend cards, widgets) compress slightly on press and spring back with 1.0→0.96 scale feedback
+  5. Opening the chat list shows skeleton rows while conversations load; sending a message triggers a light haptic and the message appears immediately in the thread with a "sending" indicator
+  6. Long-pressing a message bubble produces a subtle scale animation before the context menu opens; tapping a reaction triggers a selection haptic
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 27: Plans & Squad Polish
+**Goal**: Plans, Explore, and Squad screens feel responsive and rewarding to interact with
+**Depends on**: Phase 24
+**Requirements**: PLANS-01, PLANS-02, PLANS-03, PLANS-04, SQUAD-01, SQUAD-02, SQUAD-03, SQUAD-04
+**Success Criteria** (what must be TRUE):
+  1. Opening the Explore/Plans list shows skeleton plan cards while data loads
+  2. Tapping Yes/No/Maybe on a plan RSVP triggers a spring bounce animation and a haptic
+  3. Successfully creating a plan triggers a `notificationAsync(Success)` haptic confirming the action
+  4. The Explore map tab shows a friendly illustrated empty state when no friend plans are nearby, not a blank map
+  5. Accepting a friend request triggers a success haptic; rejecting triggers a medium impact haptic; settling an IOU triggers a success haptic
+  6. Squad Dashboard feature cards stagger-animate in on load with 80ms delay between cards; tapping a wish list claim item has spring scale press feedback
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 28: Branding
+**Goal**: App has final branded identity visible from the OS home screen through launch
+**Depends on**: Phase 24
+**Requirements**: BRAND-01, BRAND-02, BRAND-03
+**Success Criteria** (what must be TRUE):
+  1. App icon on the device home screen shows the final 1024×1024 Campfire branded icon — no Expo placeholder
+  2. Launching the app shows a branded splash screen with a smooth fade transition into the first screen
+  3. Splash screen uses the correct background treatment for both light and dark OS mode — no jarring contrast mismatch on launch
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -119,13 +195,18 @@
 | 15. Message Reactions | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 16. Media Sharing | v1.5 | 4/4 | Complete | 2026-04-21 |
 | 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
-| 18. Theme Foundation | v1.6 | 3/3 | Complete    | 2026-04-28 |
-| 19. Theme Migration | v1.6 | 3/3 | Complete   | 2026-04-29 |
-| 20. Map Feature | v1.6 | 6/6 | Complete    | 2026-04-29 |
-| 21. Gallery Foundation | v1.6 | 3/3 | Complete    | 2026-04-30 |
-| 22. Gallery UI | v1.6 | 3/3 | Complete    | 2026-04-30 |
-| 23. Memories Gallery | v1.6 | 4/4 | Complete   | 2026-05-04 |
+| 18. Theme Foundation | v1.6 | 3/3 | Complete | 2026-04-28 |
+| 19. Theme Migration | v1.6 | 3/3 | Complete | 2026-04-29 |
+| 20. Map Feature | v1.6 | 6/6 | Complete | 2026-04-29 |
+| 21. Gallery Foundation | v1.6 | 3/3 | Complete | 2026-04-30 |
+| 22. Gallery UI | v1.6 | 3/3 | Complete | 2026-04-30 |
+| 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
+| 24. Polish Foundation | v1.7 | 0/? | Not started | - |
+| 25. Auth, Onboarding & Errors | v1.7 | 0/? | Not started | - |
+| 26. Home & Chat Polish | v1.7 | 0/? | Not started | - |
+| 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
+| 28. Branding | v1.7 | 0/? | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-05-04 — v1.6 Places, Themes & Memories shipped*
+*Roadmap updated: 2026-05-04 — v1.7 Polish & Launch Ready phases defined*

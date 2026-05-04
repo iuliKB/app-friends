@@ -82,34 +82,34 @@
 
 | REQ-ID | Requirement | Phase |
 |--------|-------------|-------|
-| POLISH-01 | SkeletonPulse component | — |
-| POLISH-02 | ANIMATION theme tokens | — |
-| POLISH-03 | EmptyState CTA variant | — |
-| POLISH-04 | PrimaryButton loading state | — |
-| BRAND-01 | App icon | — |
-| BRAND-02 | Splash screen | — |
-| BRAND-03 | Dark/light splash variants | — |
-| HOME-01 | Home skeleton | — |
-| HOME-02 | Zero-friend empty state | — |
-| HOME-03 | Radar FADING pulse | — |
-| HOME-04 | Home card press feedback | — |
-| CHAT-01 | Chat list skeleton | — |
-| CHAT-02 | Chat haptics | — |
-| CHAT-03 | Optimistic send | — |
-| CHAT-04 | Message bubble press | — |
-| PLANS-01 | Plans list skeleton | — |
-| PLANS-02 | RSVP spring animation | — |
-| PLANS-03 | Plan creation haptic | — |
-| PLANS-04 | Map empty state | — |
-| SQUAD-01 | Friend request haptics | — |
-| SQUAD-02 | IOU settle haptic | — |
-| SQUAD-03 | Squad dashboard stagger | — |
-| SQUAD-04 | Wish list press feedback | — |
-| AUTH-01 | Forgot password | — |
-| AUTH-02 | ToS & Privacy links | — |
-| AUTH-03 | Error state audit | — |
-| AUTH-04 | First-run onboarding hint | — |
+| POLISH-01 | SkeletonPulse component | Phase 24 |
+| POLISH-02 | Animation theme tokens | Phase 24 |
+| POLISH-03 | EmptyState CTA variant | Phase 24 |
+| POLISH-04 | PrimaryButton loading state | Phase 24 |
+| BRAND-01 | App icon | Phase 28 |
+| BRAND-02 | Splash screen | Phase 28 |
+| BRAND-03 | Dark/light splash variants | Phase 28 |
+| HOME-01 | Home skeleton | Phase 26 |
+| HOME-02 | Zero-friend empty state | Phase 26 |
+| HOME-03 | Radar FADING pulse | Phase 26 |
+| HOME-04 | Home card press feedback | Phase 26 |
+| CHAT-01 | Chat list skeleton | Phase 26 |
+| CHAT-02 | Chat haptics | Phase 26 |
+| CHAT-03 | Optimistic send | Phase 26 |
+| CHAT-04 | Message bubble press | Phase 26 |
+| PLANS-01 | Plans list skeleton | Phase 27 |
+| PLANS-02 | RSVP spring animation | Phase 27 |
+| PLANS-03 | Plan creation haptic | Phase 27 |
+| PLANS-04 | Map empty state | Phase 27 |
+| SQUAD-01 | Friend request haptics | Phase 27 |
+| SQUAD-02 | IOU settle haptic | Phase 27 |
+| SQUAD-03 | Squad dashboard stagger | Phase 27 |
+| SQUAD-04 | Wish list press feedback | Phase 27 |
+| AUTH-01 | Forgot password | Phase 25 |
+| AUTH-02 | ToS & Privacy links | Phase 25 |
+| AUTH-03 | Error state audit | Phase 25 |
+| AUTH-04 | First-run onboarding hint | Phase 25 |
 
 ---
 
-*Last updated: 2026-05-05 — v1.7 requirements defined*
+*Last updated: 2026-05-04 — v1.7 traceability filled by roadmapper*

@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
-status: planning
-stopped_at: Defining requirements
+status: ready
+stopped_at: Phase 24 not started
 last_updated: "2026-05-04T00:00:00.000Z"
 last_activity: 2026-05-04
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,24 +21,34 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Defining requirements for v1.7 Polish & Launch Ready
+**Current focus:** v1.7 Polish & Launch Ready — Phase 24: Polish Foundation
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 24 — Polish Foundation
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-04 — Milestone v1.7 started
+Status: Not started
+Last activity: 2026-05-04 — Roadmap defined, ready to plan Phase 24
+
+```
+v1.7 Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/5 phases)
+```
 
 ## Phase Structure
 
-(to be defined by roadmapper)
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 24 | Polish Foundation | POLISH-01, POLISH-02, POLISH-03, POLISH-04 | Not started |
+| 25 | Auth, Onboarding & Errors | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Not started |
+| 26 | Home & Chat Polish | HOME-01–04, CHAT-01–04 | Not started |
+| 27 | Plans & Squad Polish | PLANS-01–04, SQUAD-01–04 | Not started |
+| 28 | Branding | BRAND-01, BRAND-02, BRAND-03 | Not started |
 
 ## Performance Metrics
 
 Plans executed this milestone: 0
 Phases completed: 0
-Requirements covered: 0
+Requirements covered: 0 / 27
 
 ## Accumulated Context
 
@@ -57,7 +67,8 @@ Requirements covered: 0
 
 ### Roadmap Evolution
 
-(none yet)
+- [v1.7]: Phase 24 (Polish Foundation) unblocks all other phases — SkeletonPulse, animation tokens, EmptyState CTA, PrimaryButton spinner must land first
+- [v1.7]: Phase 28 (Branding) placed last — requires EAS build to verify icon and splash on real device
 
 ### Pending Todos
 
@@ -65,9 +76,9 @@ Requirements covered: 0
 
 ### Blockers/Concerns
 
-(none active)
+- Phase 28 (Branding) splash screen dark/light variants and EAS build verification deferred until Apple Dev account acquired (same pattern as v1.3 hardware gate)
 
 ## Session Continuity
 
 Last session: 2026-05-04
-Stopped at: Milestone v1.7 started — defining requirements
+Stopped at: Roadmap defined — next action is `/gsd-plan-phase 24`
