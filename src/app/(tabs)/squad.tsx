@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
-import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII, ANIMATION } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { CompactFriendRow } from '@/components/squad/CompactFriendRow';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
@@ -86,7 +86,7 @@ export default function SquadScreen() {
     if (hasAnimated.current) return;
     hasAnimated.current = true;
     Animated.stagger(
-      80,
+      ANIMATION.duration.staggerDelay,
       cardAnims.map((anim) =>
         Animated.timing(anim, {
           toValue: 1,
