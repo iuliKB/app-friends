@@ -62,15 +62,9 @@ describe('WishListItem', () => {
     expect(onToggleClaim).toHaveBeenCalledTimes(1);
   });
 
-  it('fires spring animation on press-in (RED until plan 05 adds spring wrapper)', () => {
-    // This test verifies SQUAD-04 implementation: Animated.spring should be
-    // called when the Pressable receives a pressIn event.
-    // Currently RED because WishListItem.tsx does not yet use Animated.spring.
-    // Plan 05 will add the spring scale wrapper, making this assertion GREEN.
+  it('fires spring animation on press-in', () => {
     const { getByLabelText } = renderItem();
     fireEvent(getByLabelText('Claim'), 'pressIn');
-    // After plan 05: expect(springSpy).toHaveBeenCalled();
-    // For now, just verify the spy is set up correctly.
-    expect(springSpy).toBeDefined();
+    expect(springSpy).toHaveBeenCalled();
   });
 });

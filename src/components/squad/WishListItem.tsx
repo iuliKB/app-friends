@@ -2,9 +2,9 @@
 // Reusable row for a single wish list item: title + optional URL + optional notes + claim toggle.
 // readOnly=true: no claim button (used in own profile view — D-05)
 // readOnly=false (default): shows Claim / Unclaim / Claimed button based on claim state (D-08, D-09)
-import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
+import React, { useMemo, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING, ANIMATION } from '@/theme';
 
 interface WishListItemProps {
   title: string;
@@ -79,6 +79,8 @@ export function WishListItem({
     },
   }), [colors]);
 
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
   const claimLabel = isClaimedByMe ? 'Unclaim' : isClaimed ? 'Claimed' : 'Claim';
 
   return (
@@ -99,25 +101,40 @@ export function WishListItem({
         ) : null}
       </View>
       {!readOnly && onToggleClaim ? (
-        <Pressable
-          style={({ pressed }) => [
-            styles.claimButton,
-            isClaimedByMe && styles.claimButtonActive,
-            pressed && { opacity: 0.7 },
-          ]}
-          onPress={onToggleClaim}
-          accessibilityLabel={claimLabel}
-        >
-          <Text
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <Pressable
             style={[
-              styles.claimText,
-              isClaimedByMe && styles.claimTextActive,
-              isClaimed && !isClaimedByMe && styles.claimTextClaimed,
+              styles.claimButton,
+              isClaimedByMe && styles.claimButtonActive,
             ]}
+            onPressIn={() =>
+              Animated.spring(scaleAnim, {
+                toValue: 0.96,
+                ...ANIMATION.easing.spring,
+                useNativeDriver: true,
+              }).start()
+            }
+            onPressOut={() =>
+              Animated.spring(scaleAnim, {
+                toValue: 1.0,
+                ...ANIMATION.easing.spring,
+                useNativeDriver: true,
+              }).start()
+            }
+            onPress={onToggleClaim}
+            accessibilityLabel={claimLabel}
           >
-            {claimLabel}
-          </Text>
-        </Pressable>
+            <Text
+              style={[
+                styles.claimText,
+                isClaimedByMe && styles.claimTextActive,
+                isClaimed && !isClaimedByMe && styles.claimTextClaimed,
+              ]}
+            >
+              {claimLabel}
+            </Text>
+          </Pressable>
+        </Animated.View>
       ) : null}
     </View>
   );
