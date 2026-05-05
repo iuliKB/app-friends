@@ -45,8 +45,7 @@ export function ThemeSegmentedControl() {
         // Frosted glass track
         track: {
           flexDirection: 'row',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
-          backgroundColor: '#B9FF3B40', // D-07: neon accent — same token as activeSegment
+          backgroundColor: colors.border + '55',
           borderRadius: RADII.md,
           padding: TRACK_PADDING,
           marginHorizontal: SPACING.lg,
@@ -59,11 +58,11 @@ export function ThemeSegmentedControl() {
           bottom: TRACK_PADDING,
           left: TRACK_PADDING,
           borderRadius: RADII.sm,
-          backgroundColor: colors.surface.base,
-          // iOS drop shadow
-          shadowColor: colors.text.primary,
-          shadowOpacity: 0.12,
-          shadowRadius: 6,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: '#B9FF3B', // D-07: neon accent pill
+          shadowColor: colors.interactive.accent,
+          shadowOpacity: 0.45,
+          shadowRadius: 8,
           shadowOffset: { width: 0, height: 2 },
           elevation: 3,
         },
@@ -83,7 +82,8 @@ export function ThemeSegmentedControl() {
         },
         activeLabel: {
           fontFamily: FONT_FAMILY.body.semibold,
-          color: colors.text.primary,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          color: '#0E0F11', // D-07: dark text on neon green pill — hardcoded per spec
         },
       }),
     [colors]
@@ -111,7 +111,7 @@ export function ThemeSegmentedControl() {
             <Ionicons
               name={seg.icon as never}
               size={14}
-              color={isActive ? colors.text.primary : colors.text.secondary}
+              color={isActive ? '#0E0F11' : colors.text.secondary} // eslint-disable-line campfire/no-hardcoded-styles
             />
             <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
           </TouchableOpacity>
