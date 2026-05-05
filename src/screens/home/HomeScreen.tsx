@@ -10,8 +10,10 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
+import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
@@ -33,6 +35,11 @@ export function HomeScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { friends, loading, error, refreshing, handleRefresh, refetch } = useHomeScreen();
+  const router = useRouter();
+
+  function handleNavigateToSquad() {
+    router.push('/(tabs)/squad');
+  }
   usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
@@ -223,6 +230,18 @@ export function HomeScreen() {
             <CardStackView friends={friends} loading={loading} />
           </Animated.View>
         </View>
+
+        {/* HOME-02: Zero-friends empty state — inline card (D-07, D-10) */}
+        {!loading && friends.length === 0 && (
+          <EmptyState
+            icon="people-outline"
+            iconType="ionicons"
+            heading="No friends yet"
+            body="Add a friend to see where they're at and make plans."
+            ctaLabel="Add a friend"
+            onCta={handleNavigateToSquad}
+          />
+        )}
 
         {/* D-09: Upcoming events section — below Radar/Cards view */}
         <UpcomingEventsSection />
