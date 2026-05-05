@@ -100,10 +100,12 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 - ✓ Explore tab map view with friend plan pins and 25km GPS filter — v1.6
 - ✓ Per-plan photo gallery (10 photos/participant, private bucket, signed URLs, full-screen viewer) — v1.6
 - ✓ Cross-plan Memories Gallery: home widget + /memories screen grouped by plan — v1.6
+- ✓ App icon (branded Campfire icon replacing Expo placeholder, Android adaptiveIcon updated) — v1.7 Phase 28
+- ✓ Branded splash screen (expo-splash-screen plugin, light #ff6b35 / dark #0E0F11 backgrounds, 400ms fade via SplashScreen.setOptions) — v1.7 Phase 28
 
 ### Active
 
-(none — all v1.6 requirements shipped; next milestone defines new active requirements)
+(none — v1.7 Phase 28 complete; milestone Polish & Launch Ready shipped)
 
 ### Out of Scope
 
