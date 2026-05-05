@@ -110,28 +110,19 @@ export default function EditProfileScreen() {
         scroll: { flex: 1 },
         scrollContent: {
           paddingHorizontal: SPACING.lg,
-          paddingTop: SPACING.sm, // reduced — ScreenHeader already has paddingBottom: 16
+          paddingTop: SPACING.sm,
           paddingBottom: SPACING.xxl * 2,
         },
 
-        // ── Section label — clearly distinct from field labels ────
-        // FONT_SIZE.md + display.semibold vs field labels at FONT_SIZE.xs + body.medium
-        sectionLabel: {
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.display.semibold,
-          color: colors.text.primary,
-          marginTop: SPACING.lg, // 16px between sections — not 24px
-          marginBottom: SPACING.sm, // 8px breathing room below label
-          marginLeft: SPACING.xs,
-        },
-
-        // ── Grouped field card ─────────────────────────────────────
-        fieldCard: {
+        // ── Single unified card ───────────────────────────────────
+        card: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
           overflow: 'hidden',
+          marginTop: SPACING.lg,
         },
-        // Icon + tiny label at the top of each field row
+
+        // Field: tiny label above + input below
         fieldLabelRow: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -140,12 +131,12 @@ export default function EditProfileScreen() {
           gap: SPACING.xs,
         },
         fieldLabel: {
-          fontSize: FONT_SIZE.xs, // 12px — clearly smaller than sectionLabel
+          fontSize: FONT_SIZE.xs,
           fontFamily: FONT_FAMILY.body.medium,
           color: colors.text.secondary,
         },
         textInput: {
-          height: 40, // tighter input — label above already adds context
+          height: 40,
           paddingHorizontal: SPACING.md,
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
@@ -161,22 +152,22 @@ export default function EditProfileScreen() {
           paddingBottom: SPACING.sm,
         },
 
-        // ── Hairline between field rows inside card ───────────────
-        fieldDivider: {
+        // ── Divider between fields ────────────────────────────────
+        divider: {
           height: StyleSheet.hairlineWidth,
           backgroundColor: colors.border,
           marginLeft: SPACING.md,
         },
 
-        // ── Read-only username inside card ────────────────────────
+        // ── Read-only username field ──────────────────────────────
         readOnlyRow: {
           flexDirection: 'row',
           alignItems: 'center',
-          height: 44,
+          height: 40,
           paddingHorizontal: SPACING.md,
           gap: SPACING.sm,
           opacity: 0.6,
-          paddingBottom: SPACING.xs,
+          paddingBottom: SPACING.sm,
         },
         readOnlyText: {
           flex: 1,
@@ -185,15 +176,14 @@ export default function EditProfileScreen() {
           color: colors.text.secondary,
         },
 
-        // ── Birthday card ─────────────────────────────────────────
-        birthdayCard: {
-          backgroundColor: colors.surface.card,
-          borderRadius: RADII.lg,
-          padding: SPACING.md,
+        // ── Birthday field (inside same card) ─────────────────────
+        birthdayRow: {
+          paddingHorizontal: SPACING.md,
+          paddingBottom: SPACING.md,
         },
 
         // ── Save button ───────────────────────────────────────────
-        buttonWrapper: { marginTop: SPACING.lg }, // 16px — tighter than 24px
+        buttonWrapper: { marginTop: SPACING.lg },
         hintText: {
           fontSize: FONT_SIZE.xs,
           fontFamily: FONT_FAMILY.body.regular,
@@ -218,14 +208,12 @@ export default function EditProfileScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Screen title — 24px semibold via ScreenHeader */}
         <ScreenHeader title="Edit Profile" />
 
-        {/* ── Profile section ── */}
-        {/* 14px semibold — clearly larger than 12px field labels */}
-        <Text style={styles.sectionLabel}>Profile</Text>
-        <View style={styles.fieldCard}>
-          {/* Display name field */}
+        {/* ── Single card: Display name / Username / Birthday ── */}
+        <View style={styles.card}>
+
+          {/* Display name */}
           <View style={styles.fieldLabelRow}>
             <Ionicons name="person-outline" size={12} color={colors.text.secondary} />
             <Text style={styles.fieldLabel}>Display name</Text>
@@ -243,7 +231,7 @@ export default function EditProfileScreen() {
             {displayName.length}/{APP_CONFIG.displayNameMaxLength}
           </Text>
 
-          <View style={styles.fieldDivider} />
+          <View style={styles.divider} />
 
           {/* Username (read-only) */}
           <View style={styles.fieldLabelRow}>
@@ -254,22 +242,27 @@ export default function EditProfileScreen() {
             <Ionicons name="lock-closed-outline" size={14} color={colors.text.secondary} />
             <Text style={styles.readOnlyText}>@{username ?? ''}</Text>
           </View>
-        </View>
 
-        {/* ── Birthday section ── */}
-        <Text style={styles.sectionLabel}>Birthday</Text>
-        <View style={styles.birthdayCard}>
-          <BirthdayPicker
-            month={birthdayMonth}
-            day={birthdayDay}
-            year={birthdayYear}
-            onChange={(m, d, y) => {
-              setBirthdayMonth(m);
-              setBirthdayDay(d);
-              setBirthdayYear(y);
-            }}
-            disabled={saving}
-          />
+          <View style={styles.divider} />
+
+          {/* Birthday */}
+          <View style={styles.fieldLabelRow}>
+            <Ionicons name="calendar-outline" size={12} color={colors.text.secondary} />
+            <Text style={styles.fieldLabel}>Birthday</Text>
+          </View>
+          <View style={styles.birthdayRow}>
+            <BirthdayPicker
+              month={birthdayMonth}
+              day={birthdayDay}
+              year={birthdayYear}
+              onChange={(m, d, y) => {
+                setBirthdayMonth(m);
+                setBirthdayDay(d);
+                setBirthdayYear(y);
+              }}
+              disabled={saving}
+            />
+          </View>
         </View>
 
         {/* ── Save ── */}
