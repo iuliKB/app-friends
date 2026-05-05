@@ -116,7 +116,7 @@
 
 - [x] **Phase 24: Polish Foundation** - SkeletonPulse shimmer, animation tokens, EmptyState CTA variant, PrimaryButton loading spinner — primitives that every subsequent polish phase depends on (completed 2026-05-05)
 - [x] **Phase 25: Auth, Onboarding & Errors** - Forgot-password flow, ToS/Privacy links on sign-up, error state audit across all data-fetching screens, first-run onboarding hint — all App Store-blocking items (completed 2026-05-05)
-- [ ] **Phase 26: Home & Chat Polish** - Skeleton placeholders, press feedback, radar FADING pulse, zero-friends empty state, optimistic message send, haptics, long-press bubble animation
+- [x] **Phase 26: Home & Chat Polish** - Skeleton placeholders, press feedback, radar FADING pulse, zero-friends empty state, optimistic message send, haptics, long-press bubble animation (completed 2026-05-05)
 - [ ] **Phase 27: Plans & Squad Polish** - Skeleton cards, RSVP spring animation, plan creation haptic, map empty state, friend-request + IOU + wish-list haptics, Squad Dashboard stagger animation
 - [ ] **Phase 28: Branding** - Final 1024×1024 app icon, branded splash screen with dark/light OS variants and fade transition — requires EAS build to verify on device
 
@@ -173,7 +173,7 @@ Plans:
 - [x] 26-03-PLAN.md — HOME-02 zero-friends empty state card + HOME-04 scale spring press feedback (HomeFriendCard, HomeWidgetRow, OwnStatusCard, EventCard)
 - [x] 26-04-PLAN.md — CHAT-01 chat list skeleton rows + CHAT-02 send haptic in SendBar
 - [x] 26-05-PLAN.md — CHAT-03 optimistic send: Message.failed type + useChatRoom failure path + MessageBubble pending/failed UI + reaction haptic (CHAT-02) + ChatRoomScreen retry wiring
-- [ ] 26-06-PLAN.md — CHAT-04 message bubble long-press scale animation
+- [x] 26-06-PLAN.md — CHAT-04 message bubble long-press scale animation
 **UI hint**: yes
 
 ### Phase 27: Plans & Squad Polish
@@ -219,7 +219,7 @@ Plans:
 | 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
 | 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
 | 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
-| 26. Home & Chat Polish | v1.7 | 5/6 | In Progress|  |
+| 26. Home & Chat Polish | v1.7 | 6/6 | Complete   | 2026-05-05 |
 | 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
 | 28. Branding | v1.7 | 0/? | Not started | - |
 
