@@ -212,7 +212,6 @@ export default function EditProfileScreen() {
 
         {/* ── Single card: Display name / Username / Birthday ── */}
         <View style={styles.card}>
-
           {/* Display name */}
           <View style={styles.fieldLabelRow}>
             <Ionicons name="person-outline" size={12} color={colors.text.secondary} />
