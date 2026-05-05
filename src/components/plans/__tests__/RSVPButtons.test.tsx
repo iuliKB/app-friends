@@ -52,9 +52,7 @@ describe('RSVPButtons', () => {
   it('calls Haptics.selectionAsync when a button is pressed', async () => {
     const { getByText } = renderRSVP();
     fireEvent.press(getByText('Going'));
-    // Assertion becomes meaningful after plan 05 adds the haptic call.
-    // For now the mock is wired; selectionAsync may or may not have been called.
-    expect(Haptics.selectionAsync).toBeDefined();
+    expect(Haptics.selectionAsync).toHaveBeenCalledTimes(1);
   });
 
   it('does not call haptics when disabled={true}', () => {

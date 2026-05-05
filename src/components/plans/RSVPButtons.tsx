@@ -1,14 +1,17 @@
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import React, { useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 
 type RsvpValue = 'going' | 'maybe' | 'out';
 
 interface RSVPButtonsProps {
-  currentRsvp: 'invited' | 'going' | 'maybe' | 'out';
+  currentRsvp: 'invited' | 'going' | 'maybe' | 'out' | null;
   onRsvp: (rsvp: RsvpValue) => Promise<void>;
   disabled?: boolean;
 }
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButtonsProps) {
   const { colors } = useTheme();
@@ -50,6 +53,23 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
 
   const [savingRsvp, setSavingRsvp] = useState<RsvpValue | null>(null);
 
+  const scaleAnims = useRef({
+    going: new Animated.Value(1),
+    maybe: new Animated.Value(1),
+    out: new Animated.Value(1),
+  }).current;
+
+  function triggerBounce(value: RsvpValue) {
+    if (savingRsvp !== null || disabled) return;
+    const anim = scaleAnims[value];
+    void Haptics.selectionAsync().catch(() => {});
+    Animated.sequence([
+      Animated.spring(anim, { toValue: 0.92, ...ANIMATION.easing.spring, useNativeDriver: true }),
+      Animated.spring(anim, { toValue: 1.05, ...ANIMATION.easing.spring, useNativeDriver: true }),
+      Animated.spring(anim, { toValue: 1.0, ...ANIMATION.easing.spring, useNativeDriver: true }),
+    ]).start();
+  }
+
   async function handlePress(value: RsvpValue) {
     if (savingRsvp !== null || disabled) return;
     setSavingRsvp(value);
@@ -64,13 +84,17 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
         const isSaving = savingRsvp === value;
 
         return (
-          <TouchableOpacity
+          <AnimatedTouchable
             key={value}
             style={[
               styles.button,
               isActive ? { backgroundColor: activeColor } : styles.buttonInactive,
+              { transform: [{ scale: scaleAnims[value] }] },
             ]}
-            onPress={() => handlePress(value)}
+            onPress={() => {
+              triggerBounce(value);
+              void handlePress(value);
+            }}
             disabled={disabled || savingRsvp !== null}
             activeOpacity={0.8}
             accessibilityRole="button"
@@ -86,7 +110,7 @@ export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButto
                 {label}
               </Text>
             )}
-          </TouchableOpacity>
+          </AnimatedTouchable>
         );
       })}
     </View>
