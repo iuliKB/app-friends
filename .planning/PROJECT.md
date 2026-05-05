@@ -212,4 +212,4 @@ Known technical considerations:
 | MemoriesRedirect replaces Squad tab Memories stub (v1.6 Phase 23) | Eliminates duplicate gallery implementation; both Squad and Home entry points route to canonical /memories screen | ✓ Good |
 
 ---
-*Last updated: 2026-05-04 after v1.6 milestone complete*
+*Last updated: 2026-05-06 — Phase 27 complete (plans-squad-polish: loading skeletons, haptic feedback, spring animations)*
