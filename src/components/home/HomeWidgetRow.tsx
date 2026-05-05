@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING, ANIMATION } from '@/theme';
 import { formatCentsDisplay } from '@/utils/currencyFormat';
 import { formatDaysUntil } from '@/utils/birthdayFormatters';
 import type { IOUSummaryData } from '@/hooks/useIOUSummary';
@@ -37,9 +37,6 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
       borderWidth: 1,
       borderColor: colors.border,
     },
-    tilePressed: {
-      opacity: 0.75,
-    },
     tileTitle: {
       fontSize: FONT_SIZE.xs,
       fontFamily: FONT_FAMILY.body.semibold,
@@ -69,6 +66,28 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
 
   const router = useRouter();
 
+  const iouScaleAnim = useRef(new Animated.Value(1)).current;
+  const birthdayScaleAnim = useRef(new Animated.Value(1)).current;
+
+  function makeSpringHandlers(anim: Animated.Value) {
+    return {
+      onPressIn: () => Animated.spring(anim, {
+        toValue: 0.96,
+        useNativeDriver: true,
+        damping: ANIMATION.easing.spring.damping,
+        stiffness: ANIMATION.easing.spring.stiffness,
+        isInteraction: false,
+      }).start(),
+      onPressOut: () => Animated.spring(anim, {
+        toValue: 1.0,
+        useNativeDriver: true,
+        damping: ANIMATION.easing.spring.damping,
+        stiffness: ANIMATION.easing.spring.stiffness,
+        isInteraction: false,
+      }).start(),
+    };
+  }
+
   const hasIOU = iouSummary.unsettledCount > 0;
   const iouAmount = formatCentsDisplay(Math.abs(iouSummary.netCents));
   const iouMain = iouSummary.loading ? '—' : hasIOU ? iouAmount : 'All clear';
@@ -93,27 +112,33 @@ export function HomeWidgetRow({ iouSummary, birthdays }: HomeWidgetRowProps) {
   return (
     <View style={styles.row}>
       <Pressable
-        style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}
+        style={styles.tile}
+        {...makeSpringHandlers(iouScaleAnim)}
         onPress={() => router.push('/squad/expenses' as never)}
         accessibilityRole="button"
         accessibilityLabel={`IOUs: ${iouMain}, ${iouSub}`}
       >
-        <Text style={styles.tileTitle}>IOUs</Text>
-        <Text style={styles.icon}>💸</Text>
-        <Text style={styles.main} numberOfLines={1}>{iouMain}</Text>
-        {iouSub ? <Text style={styles.sub} numberOfLines={1}>{iouSub}</Text> : null}
+        <Animated.View style={{ transform: [{ scale: iouScaleAnim }] }}>
+          <Text style={styles.tileTitle}>IOUs</Text>
+          <Text style={styles.icon}>💸</Text>
+          <Text style={styles.main} numberOfLines={1}>{iouMain}</Text>
+          {iouSub ? <Text style={styles.sub} numberOfLines={1}>{iouSub}</Text> : null}
+        </Animated.View>
       </Pressable>
 
       <Pressable
-        style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}
+        style={styles.tile}
+        {...makeSpringHandlers(birthdayScaleAnim)}
         onPress={() => router.push('/squad/birthdays' as never)}
         accessibilityRole="button"
         accessibilityLabel={`Birthdays: ${birthdayMain}, ${birthdaySub}`}
       >
-        <Text style={styles.tileTitle}>Birthdays</Text>
-        <Text style={styles.icon}>🎂</Text>
-        <Text style={styles.main} numberOfLines={1}>{birthdayMain}</Text>
-        {birthdaySub ? <Text style={styles.sub} numberOfLines={1}>{birthdaySub}</Text> : null}
+        <Animated.View style={{ transform: [{ scale: birthdayScaleAnim }] }}>
+          <Text style={styles.tileTitle}>Birthdays</Text>
+          <Text style={styles.icon}>🎂</Text>
+          <Text style={styles.main} numberOfLines={1}>{birthdayMain}</Text>
+          {birthdaySub ? <Text style={styles.sub} numberOfLines={1}>{birthdaySub}</Text> : null}
+        </Animated.View>
       </Pressable>
     </View>
   );

@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useRef } from 'react';
+import { Alert, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
 import { formatWindowLabel } from '@/lib/windows';
@@ -34,9 +34,6 @@ export function HomeFriendCard({ friend }: HomeFriendCardProps) {
       paddingVertical: SPACING.lg,
       paddingHorizontal: SPACING.lg,
       margin: SPACING.xs,
-    },
-    pressed: {
-      opacity: 0.7,
     },
     fadingCard: {
       opacity: 0.6,
@@ -73,6 +70,27 @@ export function HomeFriendCard({ friend }: HomeFriendCardProps) {
   }), [colors]);
 
   const router = useRouter();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  function handlePressIn() {
+    Animated.spring(scaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      damping: ANIMATION.easing.spring.damping,
+      stiffness: ANIMATION.easing.spring.stiffness,
+      isInteraction: false,
+    }).start();
+  }
+
+  function handlePressOut() {
+    Animated.spring(scaleAnim, {
+      toValue: 1.0,
+      useNativeDriver: true,
+      damping: ANIMATION.easing.spring.damping,
+      stiffness: ANIMATION.easing.spring.stiffness,
+      isInteraction: false,
+    }).start();
+  }
 
   // HEART-04 / TTL-03: compute heartbeat per render so the screen-level 60s
   // interval (HomeScreen) forces re-evaluation without a refetch (OVR-06).
@@ -126,29 +144,29 @@ export function HomeFriendCard({ friend }: HomeFriendCardProps) {
     <Pressable
       onPress={handlePress}
       onLongPress={handleLongPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       delayLongPress={400}
-      style={({ pressed }) => [
-        styles.card,
-        heartbeatState === 'fading' && styles.fadingCard,
-        pressed && styles.pressed,
-      ]}
+      style={[styles.card, heartbeatState === 'fading' && styles.fadingCard]}
       accessibilityRole="button"
       accessibilityLabel={`${friend.display_name}, ${statusLabel}. Tap to message, long press for more.`}
     >
-      <View style={styles.avatarWrapper}>
-        <AvatarCircle size={56} imageUri={friend.avatar_url} displayName={friend.display_name} />
-        {friend.context_tag !== null && (
-          <View style={styles.emojiBadge}>
-            <Text style={styles.emojiText}>{friend.context_tag}</Text>
-          </View>
-        )}
-      </View>
-      <Text style={styles.displayName} numberOfLines={1}>
-        {friend.display_name}
-      </Text>
-      <Text style={styles.statusLabel} numberOfLines={1}>
-        {statusLabel}
-      </Text>
+      <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
+        <View style={styles.avatarWrapper}>
+          <AvatarCircle size={56} imageUri={friend.avatar_url} displayName={friend.display_name} />
+          {friend.context_tag !== null && (
+            <View style={styles.emojiBadge}>
+              <Text style={styles.emojiText}>{friend.context_tag}</Text>
+            </View>
+          )}
+        </View>
+        <Text style={styles.displayName} numberOfLines={1}>
+          {friend.display_name}
+        </Text>
+        <Text style={styles.statusLabel} numberOfLines={1}>
+          {statusLabel}
+        </Text>
+      </Animated.View>
     </Pressable>
   );
 }
