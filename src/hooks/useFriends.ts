@@ -34,13 +34,16 @@ export function useFriends() {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
   const [loadingPending, setLoadingPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function fetchFriends(): Promise<{ data: FriendWithStatus[] | null; error: Error | null }> {
     if (!session?.user) return { data: null, error: new Error('Not authenticated') };
     setLoadingFriends(true);
+    setError(null);
     try {
       const { data: friendRows, error: rpcError } = await supabase.rpc('get_friends');
       if (rpcError) {
+        setError(rpcError.message);
         setLoadingFriends(false);
         return { data: null, error: rpcError };
       }
@@ -104,6 +107,8 @@ export function useFriends() {
       setLoadingFriends(false);
       return { data: result, error: null };
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError(message);
       setLoadingFriends(false);
       return { data: null, error: err as Error };
     }
@@ -272,7 +277,9 @@ export function useFriends() {
     pendingRequests,
     loadingFriends,
     loadingPending,
+    error,                   // AUTH-03: top-level error state for fetchFriends failures
     fetchFriends,
+    refetch: fetchFriends,   // AUTH-03: standard shape alias
     fetchPendingRequests,
     sendRequest,
     acceptRequest,
