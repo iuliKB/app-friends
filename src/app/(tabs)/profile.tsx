@@ -23,7 +23,6 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { APP_CONFIG } from '@/constants/config';
-import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { ThemeSegmentedControl } from '@/components/common/ThemeSegmentedControl';
 import {
@@ -57,7 +56,6 @@ export default function ProfileScreen() {
   const [showMorningPrePrompt, setShowMorningPrePrompt] = useState(false);
   const [morningDeniedHint, setMorningDeniedHint] = useState(false);
 
-  // Refetch profile every time Profile tab comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
@@ -80,7 +78,6 @@ export default function ProfileScreen() {
         username: data.username,
         created_at: data.created_at,
       });
-      // Phase 3 FREE-07 — hydrate toggle from profiles.notify_friend_free
       setFriendFreeEnabled(data.notify_friend_free ?? true);
     }
   }
@@ -157,8 +154,6 @@ export default function ProfileScreen() {
   async function loadNotificationsEnabled() {
     const enabled = await getNotificationsEnabled();
     setNotificationsEnabledState(enabled);
-
-    // Phase 4 D-34 — hydrate morning prompt config from AsyncStorage with defaults.
     try {
       const mEnabled = (await AsyncStorage.getItem('campfire:morning_prompt_enabled')) ?? 'true';
       const mHourRaw = (await AsyncStorage.getItem('campfire:morning_prompt_hour')) ?? '9';
@@ -175,17 +170,12 @@ export default function ProfileScreen() {
 
   async function handleToggleNotifications(value: boolean) {
     if (!session?.user?.id) return;
-    // Optimistic UI flip — revert on permission failure (D-13)
     setNotificationsEnabledState(value);
-
     if (value) {
-      // Toggle ON: silent re-register, bypassing the eligibility gate AND pre-prompt gate (D-13).
-      // The Profile toggle is itself an explicit user action — no value-led modal needed.
       const result = await registerForPushNotifications(session.user.id, {
         skipEligibilityCheck: true,
       });
       if (result === 'permission_denied') {
-        // OS-level permission was revoked — revert switch and explain
         setNotificationsEnabledState(false);
         Alert.alert(
           'Notifications blocked',
@@ -193,14 +183,12 @@ export default function ProfileScreen() {
         );
       }
     } else {
-      // Toggle OFF: hard-delete server row + set local opt-out (D-12)
       await unregisterForPushNotifications(session.user.id);
     }
   }
 
   async function handleToggleFriendFree(value: boolean) {
     if (!session?.user?.id) return;
-    // Optimistic flip; revert on server error
     setFriendFreeEnabled(value);
     const { error } = await supabase
       .from('profiles')
@@ -216,13 +204,10 @@ export default function ProfileScreen() {
     setMorningEnabled(value);
     setMorningDeniedHint(false);
     await AsyncStorage.setItem('campfire:morning_prompt_enabled', value ? 'true' : 'false');
-
     if (!value) {
       await cancelMorningPrompt();
       return;
     }
-
-    // Toggling ON — check permission state first (D-30).
     const perms = await Notifications.getPermissionsAsync().catch(() => ({
       status: 'undetermined' as const,
     }));
@@ -234,7 +219,6 @@ export default function ProfileScreen() {
       setShowMorningPrePrompt(true);
       return;
     }
-    // perms.status === 'denied'
     setMorningEnabled(false);
     setMorningDeniedHint(true);
     await AsyncStorage.setItem('campfire:morning_prompt_enabled', 'false');
@@ -278,7 +262,6 @@ export default function ProfileScreen() {
   async function handleLogout() {
     setLoggingOut(true);
     await supabase.auth.signOut();
-    // Stack.Protected guard handles navigation automatically
     setLoggingOut(false);
   }
 
@@ -287,356 +270,445 @@ export default function ProfileScreen() {
     return `Member since ${date.toLocaleString('en-US', { month: 'short', year: 'numeric' })}`;
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    scrollView: {
-      flex: 1,
-    },
-    content: {
-      paddingBottom: SPACING.xxl,
-    },
-    headerWrapper: {
-      paddingHorizontal: SPACING.lg,
-    },
-    avatarHeader: {
-      alignItems: 'center',
-      paddingBottom: SPACING.xl,
-      paddingHorizontal: SPACING.lg,
-    },
-    avatarOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      borderRadius: 40,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(0,0,0,0.5)', // no exact token for avatar upload scrim
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    pencilOverlay: {
-      position: 'absolute',
-      bottom: 0,
-      right: 0,
-      width: SPACING.xl,
-      height: SPACING.xl,
-      borderRadius: RADII.full,
-      backgroundColor: colors.surface.card,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    displayName: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginTop: SPACING.md,
-      textAlign: 'center',
-    },
-    username: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-      textAlign: 'center',
-    },
-    sectionHeader: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xl,
-      marginBottom: SPACING.md,
-      paddingHorizontal: SPACING.lg,
-    },
-    loader: {
-      marginTop: SPACING.xl,
-    },
-    row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      minHeight: 52,
-      paddingHorizontal: SPACING.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    rowIcon: {
-      marginRight: SPACING.md,
-    },
-    rowLabel: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    rowRight: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-    },
-    logoutRow: {
-      height: 52,
-      paddingHorizontal: SPACING.lg,
-      justifyContent: 'center',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginTop: 48,
-    },
-    logoutText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-    },
-    versionText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.xxl,
-    },
-    rowDisabled: {
-      opacity: 0.4,
-    },
-    rowTrailingText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    morningHint: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.sm,
-      paddingBottom: SPACING.md,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        scrollContent: {
+          paddingBottom: SPACING.xxl * 2,
+        },
+
+        // ── Header ──────────────────────────────────────────────
+        header: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.md,
+          paddingBottom: SPACING.sm,
+        },
+        headerTitle: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        headerIcon: {
+          width: 36,
+          height: 36,
+          borderRadius: RADII.full,
+          backgroundColor: colors.surface.card,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+
+        // ── Hero ─────────────────────────────────────────────────
+        hero: {
+          alignItems: 'center',
+          paddingTop: SPACING.xl,
+          paddingBottom: SPACING.xl,
+          paddingHorizontal: SPACING.lg,
+        },
+        avatarRing: {
+          borderWidth: 3,
+          borderColor: colors.interactive.accent,
+          borderRadius: RADII.full,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          padding: 3, // no token for 3px ring gap — nearest is SPACING.xs (4) which is too large
+          shadowColor: colors.interactive.accent,
+          shadowOpacity: 0.35,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 0 },
+        },
+        avatarOverlay: {
+          position: 'absolute',
+          top: 3,
+          left: 3,
+          right: 3,
+          bottom: 3,
+          borderRadius: RADII.full,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        cameraButton: {
+          position: 'absolute',
+          bottom: 2,
+          right: 2,
+          width: 28,
+          height: 28,
+          borderRadius: RADII.full,
+          backgroundColor: colors.interactive.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderWidth: 2,
+          borderColor: colors.surface.base,
+        },
+        displayName: {
+          fontSize: FONT_SIZE.xxl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginTop: SPACING.md,
+          textAlign: 'center',
+        },
+        username: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+          textAlign: 'center',
+        },
+        editButton: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.md,
+          paddingVertical: SPACING.xs + 2,
+          marginTop: SPACING.md,
+        },
+        editButtonText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.primary,
+        },
+
+        // ── Sections ─────────────────────────────────────────────
+        sectionLabel: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.secondary,
+          letterSpacing: 0.6,
+          textTransform: 'uppercase',
+          paddingHorizontal: SPACING.lg,
+          marginTop: SPACING.xl,
+          marginBottom: SPACING.sm,
+        },
+
+        // ── Card ─────────────────────────────────────────────────
+        card: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          marginHorizontal: SPACING.lg,
+          overflow: 'hidden',
+        },
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          minHeight: 52,
+          paddingHorizontal: SPACING.md,
+        },
+        rowDivider: {
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: colors.border,
+          marginLeft: SPACING.md + 32 + SPACING.md,
+        },
+        iconContainer: {
+          width: 32,
+          height: 32,
+          borderRadius: RADII.sm,
+          backgroundColor: colors.interactive.accent + '20',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: SPACING.md,
+        },
+        iconContainerMuted: {
+          width: 32,
+          height: 32,
+          borderRadius: RADII.sm,
+          backgroundColor: colors.border + '60',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: SPACING.md,
+        },
+        rowLabel: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        rowLabelMuted: {
+          flex: 1,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        rowRight: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+        },
+        rowTrailingText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        rowDisabled: {
+          opacity: 0.4,
+        },
+
+        // ── Appearance ───────────────────────────────────────────
+        appearanceCard: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          marginHorizontal: SPACING.lg,
+          paddingHorizontal: SPACING.md,
+          paddingVertical: SPACING.md,
+        },
+
+        // ── Footer ───────────────────────────────────────────────
+        logoutButton: {
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.xxl,
+          height: 52,
+          borderRadius: RADII.lg,
+          borderWidth: 1,
+          borderColor: colors.interactive.destructive,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        logoutText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.interactive.destructive,
+        },
+        versionText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.xl,
+        },
+        morningHint: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.sm,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-    <ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={[styles.content, { paddingTop: SPACING.lg }]}
-    >
-      {/* Screen title */}
-      <View style={styles.headerWrapper}>
-        <ScreenHeader title="Profile" />
-      </View>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Header ── */}
+        <View style={styles.header}>
+          {/* Spacer so title stays centered */}
+          <View style={{ width: 36 }} />
+          <Text style={styles.headerTitle}>Profile</Text>
+          <TouchableOpacity
+            style={styles.headerIcon}
+            onPress={() => router.push('/qr-code' as never)}
+            accessibilityLabel="My QR Code"
+            accessibilityRole="button"
+          >
+            <Ionicons name="qr-code-outline" size={18} color={colors.text.primary} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Avatar header */}
-      <View style={styles.avatarHeader}>
-        <View style={{ position: 'relative' }}>
-          <AvatarCircle
-            size={80}
-            imageUri={avatarUrl ?? profile?.avatar_url}
-            displayName={profile?.display_name || 'U'}
+        {/* ── Hero ── */}
+        <View style={styles.hero}>
+          <TouchableOpacity
             onPress={avatarLoading ? undefined : handleChangeAvatar}
-          />
-          {avatarLoading && (
-            <View style={styles.avatarOverlay}>
-              <ActivityIndicator color={colors.text.primary} size="small" />
+            activeOpacity={0.85}
+            style={{ position: 'relative' }}
+            accessibilityLabel="Change profile photo"
+          >
+            <View style={styles.avatarRing}>
+              <AvatarCircle
+                size={110}
+                imageUri={avatarUrl ?? profile?.avatar_url}
+                displayName={profile?.display_name || 'U'}
+              />
             </View>
-          )}
-          <View style={styles.pencilOverlay}>
-            <Ionicons name="pencil-outline" size={SPACING.lg} color={colors.interactive.accent} />
+            {avatarLoading && (
+              <View style={styles.avatarOverlay}>
+                <ActivityIndicator color={colors.text.primary} size="small" />
+              </View>
+            )}
+            {/* Camera badge */}
+            <View style={styles.cameraButton}>
+              <Ionicons name="camera" size={13} color={colors.surface.base} />
+            </View>
+          </TouchableOpacity>
+
+          <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
+          <Text style={styles.username}>@{profile?.username ?? ''}</Text>
+
+          {/* Edit Profile pill */}
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push('/profile/edit' as never)}
+            activeOpacity={0.7}
+            accessibilityLabel="Edit profile"
+            accessibilityRole="button"
+          >
+            <Ionicons name="pencil-outline" size={13} color={colors.text.primary} />
+            <Text style={styles.editButtonText}>Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Quick Links ── */}
+        <Text style={styles.sectionLabel}>Quick Links</Text>
+        <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => router.push('/profile/wish-list' as never)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconContainer}>
+              <Ionicons name="gift-outline" size={16} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>My Wish List</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.border} />
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Account ── */}
+        <Text style={styles.sectionLabel}>Account</Text>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View style={styles.iconContainerMuted}>
+              <Ionicons name="mail-outline" size={16} color={colors.text.secondary} />
+            </View>
+            <Text style={styles.rowLabelMuted} numberOfLines={1} ellipsizeMode="tail">
+              {session?.user?.email ?? ''}
+            </Text>
+          </View>
+
+          <View style={styles.rowDivider} />
+
+          <View style={styles.row}>
+            <View style={styles.iconContainerMuted}>
+              <Ionicons name="calendar-outline" size={16} color={colors.text.secondary} />
+            </View>
+            <Text style={styles.rowLabelMuted}>
+              {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
+            </Text>
           </View>
         </View>
-        <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
-        <Text style={styles.username}>@{profile?.username ?? ''}</Text>
-      </View>
 
-      {/* Edit Profile row (D-04) */}
-      <TouchableOpacity
-        style={styles.row}
-        onPress={() => router.push('/profile/edit' as never)}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="person-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>Edit Profile</Text>
-        <View style={styles.rowRight}>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
+        {/* ── Appearance ── */}
+        <Text style={styles.sectionLabel}>Appearance</Text>
+        <View style={styles.appearanceCard}>
+          <ThemeSegmentedControl />
         </View>
-      </TouchableOpacity>
 
-      {/* My Wish List row (D-07) */}
-      <TouchableOpacity
-        style={styles.row}
-        onPress={() => router.push('/profile/wish-list' as never)}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="gift-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>My Wish List</Text>
-        <View style={styles.rowRight}>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
+        {/* ── Notifications ── */}
+        <Text style={styles.sectionLabel}>Notifications</Text>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="notifications-outline" size={16} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Plan invites</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={handleToggleNotifications}
+              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+              thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
+            />
+          </View>
+
+          <View style={styles.rowDivider} />
+
+          <View style={styles.row}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="people-outline" size={16} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Friend availability</Text>
+            <Switch
+              value={friendFreeEnabled}
+              onValueChange={handleToggleFriendFree}
+              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+              thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
+            />
+          </View>
+
+          <View style={styles.rowDivider} />
+
+          <View style={styles.row}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="sunny-outline" size={16} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Morning prompt</Text>
+            <Switch
+              value={morningEnabled}
+              onValueChange={handleToggleMorning}
+              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+              thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
+            />
+          </View>
+
+          <View style={styles.rowDivider} />
+
+          <TouchableOpacity
+            style={[styles.row, !morningEnabled && styles.rowDisabled]}
+            onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
+            disabled={!morningEnabled}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.iconContainer, !morningEnabled && styles.rowDisabled]}>
+              <Ionicons name="time-outline" size={16} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Prompt time</Text>
+            <Text style={styles.rowTrailingText}>
+              {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+              })}
+            </Text>
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
 
-      {/* QR Code */}
-      <TouchableOpacity
-        style={styles.row}
-        onPress={() => router.push('/qr-code' as never)}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="qr-code-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>My QR Code</Text>
-        <View style={styles.rowRight}>
-          <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
-        </View>
-      </TouchableOpacity>
-
-      {/* Account section */}
-      <Text style={styles.sectionHeader}>ACCOUNT</Text>
-
-      <View style={styles.row}>
-        <Ionicons
-          name="mail-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel} numberOfLines={1} ellipsizeMode="tail">
-          {session?.user?.email ?? ''}
-        </Text>
-      </View>
-
-      <View style={styles.row}>
-        <Ionicons
-          name="calendar-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>
-          {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
-        </Text>
-      </View>
-
-      {/* APPEARANCE section (D-06) */}
-      <Text style={styles.sectionHeader}>APPEARANCE</Text>
-      <View style={{ paddingVertical: SPACING.md }}>
-        <ThemeSegmentedControl />
-      </View>
-
-      {/* Notifications section (D-02) */}
-      <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
-
-      <View style={styles.row}>
-        <Ionicons
-          name="notifications-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>Plan invites</Text>
-        <Switch
-          value={notificationsEnabled}
-          onValueChange={handleToggleNotifications}
-          trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-          thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
-        />
-      </View>
-
-      <View style={styles.row}>
-        <Ionicons
-          name="people-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>Friend availability</Text>
-        <Switch
-          value={friendFreeEnabled}
-          onValueChange={handleToggleFriendFree}
-          trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-          thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
-        />
-      </View>
-
-      <View style={styles.row}>
-        <Ionicons
-          name="sunny-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>Morning prompt</Text>
-        <Switch
-          value={morningEnabled}
-          onValueChange={handleToggleMorning}
-          trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-          thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
-        />
-      </View>
-
-      <TouchableOpacity
-        style={[styles.row, !morningEnabled && styles.rowDisabled]}
-        onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
-        disabled={!morningEnabled}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="time-outline"
-          size={FONT_SIZE.xl}
-          color={colors.text.secondary}
-          style={styles.rowIcon}
-        />
-        <Text style={styles.rowLabel}>Time</Text>
-        <Text style={styles.rowTrailingText}>
-          {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
-            hour: 'numeric',
-            minute: '2-digit',
-          })}
-        </Text>
-      </TouchableOpacity>
-
-      {showTimePicker && (
-        <DateTimePicker
-          value={new Date(2000, 0, 1, morningHour, morningMinute)}
-          mode="time"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleMorningTimeChange}
-        />
-      )}
-
-      {morningDeniedHint && (
-        <Text style={styles.morningHint}>
-          Enable notifications in iOS Settings to receive morning prompts.
-        </Text>
-      )}
-
-      {/* Logout row per UI-SPEC: full width, 52px, destructive color */}
-      <TouchableOpacity style={styles.logoutRow} onPress={handleLogout} disabled={loggingOut}>
-        {loggingOut ? (
-          <ActivityIndicator color={colors.interactive.destructive} />
-        ) : (
-          <Text style={styles.logoutText}>Log out</Text>
+        {showTimePicker && (
+          <DateTimePicker
+            value={new Date(2000, 0, 1, morningHour, morningMinute)}
+            mode="time"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleMorningTimeChange}
+          />
         )}
-      </TouchableOpacity>
 
-      <Text style={styles.versionText}>Campfire v{Constants.expoConfig?.version ?? ''}</Text>
+        {morningDeniedHint && (
+          <Text style={styles.morningHint}>
+            Enable notifications in iOS Settings to receive morning prompts.
+          </Text>
+        )}
+
+        {/* ── Logout ── */}
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          disabled={loggingOut}
+          activeOpacity={0.7}
+        >
+          {loggingOut ? (
+            <ActivityIndicator color={colors.interactive.destructive} />
+          ) : (
+            <Text style={styles.logoutText}>Log out</Text>
+          )}
+        </TouchableOpacity>
+
+        <Text style={styles.versionText}>Campfire v{Constants.expoConfig?.version ?? ''}</Text>
+      </ScrollView>
 
       <PrePromptModal
         visible={showMorningPrePrompt}
         onAccept={handleMorningPrePromptAccept}
         onDecline={handleMorningPrePromptDecline}
       />
-    </ScrollView>
     </View>
   );
 }
