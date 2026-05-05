@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -111,26 +110,28 @@ export default function EditProfileScreen() {
         scroll: { flex: 1 },
         scrollContent: {
           paddingHorizontal: SPACING.lg,
-          paddingTop: SPACING.lg,
+          paddingTop: SPACING.sm,       // reduced — ScreenHeader already has paddingBottom: 16
           paddingBottom: SPACING.xxl * 2,
         },
 
-        // ── Section label ─────────────────────────────────────────
+        // ── Section label — clearly distinct from field labels ────
+        // FONT_SIZE.md + display.semibold vs field labels at FONT_SIZE.xs + body.medium
         sectionLabel: {
-          fontSize: FONT_SIZE.sm,
-          fontFamily: FONT_FAMILY.body.medium,
-          color: colors.text.secondary,
-          marginTop: SPACING.xl,
-          marginBottom: SPACING.sm,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginTop: SPACING.lg,        // 16px between sections — not 24px
+          marginBottom: SPACING.sm,     // 8px breathing room below label
           marginLeft: SPACING.xs,
         },
 
-        // ── Grouped field card ────────────────────────────────────
+        // ── Grouped field card ─────────────────────────────────────
         fieldCard: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
           overflow: 'hidden',
         },
+        // Icon + tiny label at the top of each field row
         fieldLabelRow: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -139,12 +140,12 @@ export default function EditProfileScreen() {
           gap: SPACING.xs,
         },
         fieldLabel: {
-          fontSize: FONT_SIZE.xs,
+          fontSize: FONT_SIZE.xs,       // 12px — clearly smaller than sectionLabel
           fontFamily: FONT_FAMILY.body.medium,
           color: colors.text.secondary,
         },
         textInput: {
-          height: 44,
+          height: 40,                   // tighter input — label above already adds context
           paddingHorizontal: SPACING.md,
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
@@ -160,21 +161,22 @@ export default function EditProfileScreen() {
           paddingBottom: SPACING.sm,
         },
 
-        // ── Divider between grouped fields ────────────────────────
+        // ── Hairline between field rows inside card ───────────────
         fieldDivider: {
           height: StyleSheet.hairlineWidth,
           backgroundColor: colors.border,
           marginLeft: SPACING.md,
         },
 
-        // ── Read-only username row (inside grouped card) ──────────
+        // ── Read-only username inside card ────────────────────────
         readOnlyRow: {
           flexDirection: 'row',
           alignItems: 'center',
-          height: 52,
+          height: 44,
           paddingHorizontal: SPACING.md,
           gap: SPACING.sm,
           opacity: 0.6,
+          paddingBottom: SPACING.xs,
         },
         readOnlyText: {
           flex: 1,
@@ -190,8 +192,8 @@ export default function EditProfileScreen() {
           padding: SPACING.md,
         },
 
-        // ── Bottom save button ────────────────────────────────────
-        buttonWrapper: { marginTop: SPACING.xl },
+        // ── Save button ───────────────────────────────────────────
+        buttonWrapper: { marginTop: SPACING.lg },   // 16px — tighter than 24px
         hintText: {
           fontSize: FONT_SIZE.xs,
           fontFamily: FONT_FAMILY.body.regular,
@@ -199,39 +201,11 @@ export default function EditProfileScreen() {
           textAlign: 'center',
           marginTop: SPACING.sm,
         },
-
-        // ── Header Save button ────────────────────────────────────
-        saveBtn: {
-          paddingHorizontal: SPACING.sm,
-          paddingVertical: SPACING.xs,
-        },
-        saveBtnText: {
-          fontSize: FONT_SIZE.lg,
-          fontFamily: FONT_FAMILY.body.semibold,
-          color: colors.interactive.accent,
-        },
-        saveBtnDisabled: {
-          color: colors.text.secondary,
-        },
       }),
     [colors]
   );
 
   if (loading) return <LoadingIndicator />;
-
-  const saveAction = (
-    <TouchableOpacity
-      style={styles.saveBtn}
-      onPress={handleSave}
-      disabled={!canSave}
-      accessibilityLabel="Save profile"
-      accessibilityRole="button"
-    >
-      <Text style={[styles.saveBtnText, !canSave && styles.saveBtnDisabled]}>
-        {saving ? 'Saving…' : 'Save'}
-      </Text>
-    </TouchableOpacity>
-  );
 
   return (
     <KeyboardAvoidingView
@@ -244,12 +218,14 @@ export default function EditProfileScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <ScreenHeader title="Edit Profile" rightAction={saveAction} />
+        {/* Screen title — 24px semibold via ScreenHeader */}
+        <ScreenHeader title="Edit Profile" />
 
-        {/* ── Profile — Display name + Username grouped in one card ── */}
+        {/* ── Profile section ── */}
+        {/* 14px semibold — clearly larger than 12px field labels */}
         <Text style={styles.sectionLabel}>Profile</Text>
         <View style={styles.fieldCard}>
-          {/* Display name */}
+          {/* Display name field */}
           <View style={styles.fieldLabelRow}>
             <Ionicons name="person-outline" size={12} color={colors.text.secondary} />
             <Text style={styles.fieldLabel}>Display name</Text>
@@ -267,7 +243,6 @@ export default function EditProfileScreen() {
             {displayName.length}/{APP_CONFIG.displayNameMaxLength}
           </Text>
 
-          {/* Divider */}
           <View style={styles.fieldDivider} />
 
           {/* Username (read-only) */}
@@ -281,7 +256,7 @@ export default function EditProfileScreen() {
           </View>
         </View>
 
-        {/* ── Birthday ── */}
+        {/* ── Birthday section ── */}
         <Text style={styles.sectionLabel}>Birthday</Text>
         <View style={styles.birthdayCard}>
           <BirthdayPicker
