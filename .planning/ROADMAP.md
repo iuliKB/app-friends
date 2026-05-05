@@ -190,7 +190,7 @@ Plans:
 **Plans**: 5 plans
 Plans:
 - [x] 27-01-PLAN.md — Wave 0 test scaffolds (RSVPButtons, WishListItem, animation token)
-- [ ] 27-02-PLAN.md — staggerDelay token + PlanCardSkeleton component
+- [x] 27-02-PLAN.md — staggerDelay token + PlanCardSkeleton component
 - [ ] 27-03-PLAN.md — Haptic wiring: SQUAD-01 friend requests, SQUAD-02 IOU settle, PLANS-03 plan creation
 - [ ] 27-04-PLAN.md — Skeleton in PlansListScreen (PLANS-01), map empty state (PLANS-04), squad.tsx token (SQUAD-03)
 - [ ] 27-05-PLAN.md — RSVP spring bounce (PLANS-02), WishListItem press feedback (SQUAD-04)
@@ -226,7 +226,7 @@ Plans:
 | 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
 | 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete    | 2026-05-05 |
-| 27. Plans & Squad Polish | v1.7 | 1/5 | In Progress|  |
+| 27. Plans & Squad Polish | v1.7 | 2/5 | In Progress|  |
 | 28. Branding | v1.7 | 0/? | Not started | - |
 
 ---

@@ -38,7 +38,7 @@
 
 ### PLANS — Plans & Explore
 
-- [ ] **PLANS-01**: Plans list (Explore tab) shows skeleton cards while plan data loads
+- [x] **PLANS-01**: Plans list (Explore tab) shows skeleton cards while plan data loads
 - [x] **PLANS-02**: RSVP buttons (Yes/No/Maybe) have a spring bounce animation and haptic feedback on press
 - [ ] **PLANS-03**: Successfully creating a plan triggers `notificationAsync(Success)` haptic feedback
 - [ ] **PLANS-04**: Explore map shows a friendly empty state when no friend plans are nearby
