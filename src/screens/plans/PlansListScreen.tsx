@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
+import { PlanCardSkeleton } from '@/components/plans/PlanCardSkeleton';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useInvitations, PlanInvitation } from '@/hooks/useInvitations';
 import { PlanCard } from '@/components/plans/PlanCard';
@@ -41,7 +42,7 @@ export function PlansListScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { plans, error, refreshing, handleRefresh, fetchPlans } = usePlans();
+  const { plans, loading, error, refreshing, handleRefresh, fetchPlans } = usePlans();
   const { invitations, count: inviteCount, accept, decline } = useInvitations();
   const [modalVisible, setModalVisible] = useState(false);
   // D-15: map is default when Explore tab opens; not persisted across sessions
@@ -370,6 +371,12 @@ export function PlansListScreen() {
       </View>
       {viewMode === 'map' ? (
         <ExploreMapView plans={plans} />
+      ) : loading && plans.length === 0 ? (
+        <View style={{ paddingHorizontal: SPACING.lg, gap: SPACING.md, paddingTop: SPACING.md }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <PlanCardSkeleton key={i} />
+          ))}
+        </View>
       ) : (
       <FlatList<PlanWithMembers>
         data={plans}
