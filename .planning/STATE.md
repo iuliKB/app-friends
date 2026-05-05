@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
 status: executing
-stopped_at: Completed 27-03-PLAN.md — haptic wiring for SQUAD-01, SQUAD-02, PLANS-03
-last_updated: "2026-05-05T20:39:48.226Z"
+stopped_at: Completed 27-04-PLAN.md — skeleton loading, map empty state, stagger token
+last_updated: "2026-05-05T20:42:59.769Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 18
-  completed_plans: 16
-  percent: 89
+  completed_plans: 17
+  percent: 94
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 27 (plans-squad-polish) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-05-05
 
@@ -86,6 +86,9 @@ Requirements covered: 0 / 27
 - [Phase 27]: staggerDelay: 80 added to ANIMATION.duration as authoritative source; PlanCardSkeleton uses View wrapper for partial-width SkeletonPulse
 - [Phase 27]: notificationAsync(Success) for friend accept (completion), impactAsync(Medium) for decline (neutral action) — semantically distinct haptic types
 - [Phase 27]: IOU settle haptic corrected from impactAsync(Medium) to notificationAsync(Success) — settle is a completion event
+- [Phase 27]: PlanCardSkeleton shown in list view only when loading && plans.length === 0 (My Plans gate, D-03/D-04)
+- [Phase 27]: ExploreMapView empty overlay uses absoluteFill + pointerEvents=none so map remains interactive
+- [Phase 27]: ANIMATION.duration.staggerDelay is now single source of truth for 80ms stagger — raw number removed from squad.tsx
 
 ### Roadmap Evolution
 
@@ -102,5 +105,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T20:39:48.223Z
-Stopped at: Completed 27-03-PLAN.md — haptic wiring for SQUAD-01, SQUAD-02, PLANS-03
+Last session: 2026-05-05T20:42:59.766Z
+Stopped at: Completed 27-04-PLAN.md — skeleton loading, map empty state, stagger token
