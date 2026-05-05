@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
@@ -22,6 +23,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function EditProfileScreen() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const session = useAuthStore((s) => s.session);
 
   const [displayName, setDisplayName] = useState('');
@@ -199,7 +201,7 @@ export default function EditProfileScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={[styles.flex, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView

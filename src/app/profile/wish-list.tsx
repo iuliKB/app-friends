@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
@@ -21,6 +22,7 @@ import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 export default function WishListScreen() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const {
     items: wishListItems,
     addItem,
@@ -284,7 +286,7 @@ export default function WishListScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={[styles.flex, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
