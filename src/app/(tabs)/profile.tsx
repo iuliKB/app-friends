@@ -281,7 +281,7 @@ export default function ProfileScreen() {
           paddingBottom: SPACING.xxl * 2,
         },
 
-        // ── Header ──────────────────────────────────────────────
+        // ── Header (profilescreen2 layout) ───────────────────────
         header: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -295,7 +295,7 @@ export default function ProfileScreen() {
           fontFamily: FONT_FAMILY.display.semibold,
           color: colors.text.primary,
         },
-        headerIcon: {
+        headerIconBtn: {
           width: 36,
           height: 36,
           borderRadius: RADII.full,
@@ -304,7 +304,7 @@ export default function ProfileScreen() {
           justifyContent: 'center',
         },
 
-        // ── Hero ─────────────────────────────────────────────────
+        // ── Hero (profilescreen2 centered layout) ────────────────
         hero: {
           alignItems: 'center',
           paddingTop: SPACING.xl,
@@ -316,7 +316,7 @@ export default function ProfileScreen() {
           borderColor: colors.interactive.accent,
           borderRadius: RADII.full,
           // eslint-disable-next-line campfire/no-hardcoded-styles
-          padding: 3, // no token for 3px ring gap — nearest is SPACING.xs (4) which is too large
+          padding: 3,
           shadowColor: colors.interactive.accent,
           shadowOpacity: 0.35,
           shadowRadius: 12,
@@ -378,54 +378,53 @@ export default function ProfileScreen() {
           color: colors.text.primary,
         },
 
-        // ── Sections ─────────────────────────────────────────────
+        // ── Section label (ex1 style: plain, not uppercase) ──────
         sectionLabel: {
-          fontSize: FONT_SIZE.xs,
+          fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.medium,
           color: colors.text.secondary,
-          letterSpacing: 0.6,
-          textTransform: 'uppercase',
           paddingHorizontal: SPACING.lg,
           marginTop: SPACING.xl,
           marginBottom: SPACING.sm,
         },
 
-        // ── Card ─────────────────────────────────────────────────
-        card: {
+        // ── Row card (ex1 style: each row = own floating card) ───
+        rowCard: {
+          flexDirection: 'row',
+          alignItems: 'center',
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
           marginHorizontal: SPACING.lg,
-          overflow: 'hidden',
-        },
-        row: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          minHeight: 52,
+          marginBottom: SPACING.sm,
           paddingHorizontal: SPACING.md,
+          paddingVertical: SPACING.md,
+          minHeight: 54,
         },
-        rowDivider: {
-          height: StyleSheet.hairlineWidth,
-          backgroundColor: colors.border,
-          marginLeft: SPACING.md + 32 + SPACING.md,
+        rowCardDisabled: {
+          opacity: 0.4,
         },
-        iconContainer: {
-          width: 32,
-          height: 32,
-          borderRadius: RADII.sm,
-          backgroundColor: colors.interactive.accent + '20',
+
+        // ── Circular icon (ex1 style) ────────────────────────────
+        iconCircle: {
+          width: 36,
+          height: 36,
+          borderRadius: RADII.full,
+          backgroundColor: colors.interactive.accent + '22',
           alignItems: 'center',
           justifyContent: 'center',
           marginRight: SPACING.md,
         },
-        iconContainerMuted: {
-          width: 32,
-          height: 32,
-          borderRadius: RADII.sm,
+        iconCircleMuted: {
+          width: 36,
+          height: 36,
+          borderRadius: RADII.full,
           backgroundColor: colors.border + '60',
           alignItems: 'center',
           justifyContent: 'center',
           marginRight: SPACING.md,
         },
+
+        // ── Row text ─────────────────────────────────────────────
         rowLabel: {
           flex: 1,
           fontSize: FONT_SIZE.lg,
@@ -438,21 +437,14 @@ export default function ProfileScreen() {
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
         },
-        rowRight: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: SPACING.sm,
-        },
         rowTrailingText: {
           fontSize: FONT_SIZE.md,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
-        },
-        rowDisabled: {
-          opacity: 0.4,
+          marginRight: SPACING.xs,
         },
 
-        // ── Appearance ───────────────────────────────────────────
+        // ── Appearance card ──────────────────────────────────────
         appearanceCard: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
@@ -489,7 +481,7 @@ export default function ProfileScreen() {
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
           paddingHorizontal: SPACING.lg,
-          paddingTop: SPACING.sm,
+          paddingTop: SPACING.xs,
         },
       }),
     [colors]
@@ -502,13 +494,12 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ── */}
+        {/* ── Header — profilescreen2 layout ── */}
         <View style={styles.header}>
-          {/* Spacer so title stays centered */}
           <View style={{ width: 36 }} />
           <Text style={styles.headerTitle}>Profile</Text>
           <TouchableOpacity
-            style={styles.headerIcon}
+            style={styles.headerIconBtn}
             onPress={() => router.push('/qr-code' as never)}
             accessibilityLabel="My QR Code"
             accessibilityRole="button"
@@ -517,7 +508,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Hero ── */}
+        {/* ── Hero — profilescreen2 centered layout ── */}
         <View style={styles.hero}>
           <TouchableOpacity
             onPress={avatarLoading ? undefined : handleChangeAvatar}
@@ -537,7 +528,6 @@ export default function ProfileScreen() {
                 <ActivityIndicator color={colors.text.primary} size="small" />
               </View>
             )}
-            {/* Camera badge */}
             <View style={styles.cameraButton}>
               <Ionicons name="camera" size={13} color={colors.surface.base} />
             </View>
@@ -546,7 +536,6 @@ export default function ProfileScreen() {
           <Text style={styles.displayName}>{profile?.display_name || ''}</Text>
           <Text style={styles.username}>@{profile?.username ?? ''}</Text>
 
-          {/* Edit Profile pill */}
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => router.push('/profile/edit' as never)}
@@ -559,118 +548,108 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Quick Links ── */}
-        <Text style={styles.sectionLabel}>Quick Links</Text>
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => router.push('/profile/wish-list' as never)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconContainer}>
-              <Ionicons name="gift-outline" size={16} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>My Wish List</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.border} />
-          </TouchableOpacity>
-        </View>
+        {/* ── Links — ex1 list style ── */}
+        <Text style={styles.sectionLabel}>Links</Text>
 
-        {/* ── Account ── */}
+        <TouchableOpacity
+          style={styles.rowCard}
+          onPress={() => router.push('/profile/wish-list' as never)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.iconCircle}>
+            <Ionicons name="gift-outline" size={18} color={colors.interactive.accent} />
+          </View>
+          <Text style={styles.rowLabel}>My Wish List</Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.border} />
+        </TouchableOpacity>
+
+        {/* ── Account — ex1 list style ── */}
         <Text style={styles.sectionLabel}>Account</Text>
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <View style={styles.iconContainerMuted}>
-              <Ionicons name="mail-outline" size={16} color={colors.text.secondary} />
-            </View>
-            <Text style={styles.rowLabelMuted} numberOfLines={1} ellipsizeMode="tail">
-              {session?.user?.email ?? ''}
-            </Text>
-          </View>
 
-          <View style={styles.rowDivider} />
-
-          <View style={styles.row}>
-            <View style={styles.iconContainerMuted}>
-              <Ionicons name="calendar-outline" size={16} color={colors.text.secondary} />
-            </View>
-            <Text style={styles.rowLabelMuted}>
-              {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
-            </Text>
+        <View style={styles.rowCard}>
+          <View style={styles.iconCircleMuted}>
+            <Ionicons name="mail-outline" size={18} color={colors.text.secondary} />
           </View>
+          <Text style={styles.rowLabelMuted} numberOfLines={1} ellipsizeMode="tail">
+            {session?.user?.email ?? ''}
+          </Text>
         </View>
 
-        {/* ── Appearance ── */}
+        <View style={styles.rowCard}>
+          <View style={styles.iconCircleMuted}>
+            <Ionicons name="calendar-outline" size={18} color={colors.text.secondary} />
+          </View>
+          <Text style={styles.rowLabelMuted}>
+            {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
+          </Text>
+        </View>
+
+        {/* ── Appearance — ex1 list style ── */}
         <Text style={styles.sectionLabel}>Appearance</Text>
         <View style={styles.appearanceCard}>
           <ThemeSegmentedControl />
         </View>
 
-        {/* ── Notifications ── */}
+        {/* ── Notifications — ex1 list style ── */}
         <Text style={styles.sectionLabel}>Notifications</Text>
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="notifications-outline" size={16} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Plan invites</Text>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={handleToggleNotifications}
-              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-              thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
-            />
+
+        <View style={styles.rowCard}>
+          <View style={styles.iconCircle}>
+            <Ionicons name="notifications-outline" size={18} color={colors.interactive.accent} />
           </View>
-
-          <View style={styles.rowDivider} />
-
-          <View style={styles.row}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="people-outline" size={16} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Friend availability</Text>
-            <Switch
-              value={friendFreeEnabled}
-              onValueChange={handleToggleFriendFree}
-              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-              thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
-            />
-          </View>
-
-          <View style={styles.rowDivider} />
-
-          <View style={styles.row}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="sunny-outline" size={16} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Morning prompt</Text>
-            <Switch
-              value={morningEnabled}
-              onValueChange={handleToggleMorning}
-              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-              thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
-            />
-          </View>
-
-          <View style={styles.rowDivider} />
-
-          <TouchableOpacity
-            style={[styles.row, !morningEnabled && styles.rowDisabled]}
-            onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
-            disabled={!morningEnabled}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.iconContainer, !morningEnabled && styles.rowDisabled]}>
-              <Ionicons name="time-outline" size={16} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Prompt time</Text>
-            <Text style={styles.rowTrailingText}>
-              {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: '2-digit',
-              })}
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.rowLabel}>Plan invites</Text>
+          <Switch
+            value={notificationsEnabled}
+            onValueChange={handleToggleNotifications}
+            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+            thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
+          />
         </View>
+
+        <View style={styles.rowCard}>
+          <View style={styles.iconCircle}>
+            <Ionicons name="people-outline" size={18} color={colors.interactive.accent} />
+          </View>
+          <Text style={styles.rowLabel}>Friend availability</Text>
+          <Switch
+            value={friendFreeEnabled}
+            onValueChange={handleToggleFriendFree}
+            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+            thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
+          />
+        </View>
+
+        <View style={styles.rowCard}>
+          <View style={styles.iconCircle}>
+            <Ionicons name="sunny-outline" size={18} color={colors.interactive.accent} />
+          </View>
+          <Text style={styles.rowLabel}>Morning prompt</Text>
+          <Switch
+            value={morningEnabled}
+            onValueChange={handleToggleMorning}
+            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+            thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.rowCard, !morningEnabled && styles.rowCardDisabled]}
+          onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
+          disabled={!morningEnabled}
+          activeOpacity={0.7}
+        >
+          <View style={styles.iconCircle}>
+            <Ionicons name="time-outline" size={18} color={colors.interactive.accent} />
+          </View>
+          <Text style={styles.rowLabel}>Prompt time</Text>
+          <Text style={styles.rowTrailingText}>
+            {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
+          </Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.border} />
+        </TouchableOpacity>
 
         {showTimePicker && (
           <DateTimePicker
