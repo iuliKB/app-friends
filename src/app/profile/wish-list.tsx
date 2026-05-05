@@ -268,11 +268,12 @@ export default function WishListScreen() {
         modalOverlay: {
           flex: 1,
           justifyContent: 'flex-end',
+          backgroundColor: 'transparent',
         },
         backdrop: {
           ...StyleSheet.absoluteFillObject,
-          backgroundColor: colors.text.primary,
-          opacity: 0.4,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(0,0,0,0.5)', // rgba avoids opacity compositing artifacts
         },
         sheet: {
           backgroundColor: colors.surface.card,
@@ -553,7 +554,10 @@ export default function WishListScreen() {
       >
         <View style={styles.modalOverlay}>
           <TouchableOpacity style={styles.backdrop} onPress={closeAddSheet} activeOpacity={1} />
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ backgroundColor: 'transparent' }}
+          >
             <View style={[styles.sheet, { paddingBottom: SPACING.lg + insets.bottom }]}>
               <View style={styles.sheetHandle} />
 
