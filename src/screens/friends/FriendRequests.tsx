@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useFriends } from '@/hooks/useFriends';
 import { RequestCard } from '@/components/friends/RequestCard';
@@ -39,6 +40,7 @@ export function FriendRequests() {
     if (error) {
       Alert.alert('Error', "Couldn't accept request. Try again.");
     } else {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       fetchPendingRequests();
       fetchFriends();
     }
@@ -55,6 +57,7 @@ export function FriendRequests() {
     if (error) {
       Alert.alert('Error', "Couldn't decline request. Try again.");
     } else {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
       fetchPendingRequests();
     }
   }
