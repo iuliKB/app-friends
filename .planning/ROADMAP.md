@@ -146,7 +146,13 @@ Plans:
   2. Sign-up screen displays visible, tappable Terms of Service and Privacy Policy links before account creation
   3. Every data-fetching screen shows an ErrorDisplay component with a retry action when the network or Supabase call fails — no silent blank screens
   4. A first-run user (zero friends, no status set) sees a one-time dismissible hint guiding them to set their status and add a friend
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 25-01-PLAN.md — AUTH-01 inline forgot-password toggle + AUTH-02 ToS/Privacy links in AuthScreen
+- [ ] 25-02-PLAN.md — AUTH-03 hook layer: add error + refetch to useHomeScreen, useFriends, useChatRoom
+- [ ] 25-03-PLAN.md — AUTH-03 screen batch 1: HomeScreen, FriendsList, FriendRequests, AddFriend, ChatListScreen, ChatRoomScreen
+- [ ] 25-04-PLAN.md — AUTH-03 screen batch 2: PlansListScreen, PlanDashboardScreen, squad.tsx, wish-list.tsx, birthday/[id].tsx, MemoriesTabContent
+- [ ] 25-05-PLAN.md — AUTH-04 OnboardingHintSheet component + HomeScreen first-run flag wiring
 **UI hint**: yes
 
 ### Phase 26: Home & Chat Polish
@@ -204,12 +210,12 @@ Plans:
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
-| 24. Polish Foundation | v1.7 | 2/2 | Complete    | 2026-05-05 |
-| 25. Auth, Onboarding & Errors | v1.7 | 0/? | Not started | - |
+| 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
+| 25. Auth, Onboarding & Errors | v1.7 | 0/5 | Not started | - |
 | 26. Home & Chat Polish | v1.7 | 0/? | Not started | - |
 | 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
 | 28. Branding | v1.7 | 0/? | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-05-05 — Phase 24 plans defined (2 plans, 2 waves)*
+*Roadmap updated: 2026-05-05 — Phase 25 plans defined (5 plans, 2 waves)*
