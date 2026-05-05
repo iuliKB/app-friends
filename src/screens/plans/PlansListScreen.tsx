@@ -64,6 +64,7 @@ export function PlansListScreen() {
       Alert.alert('Error', "Couldn't decline invitation. Try again.");
       return;
     }
+    await fetchPlans();  // keep plans list consistent with invitation state
     if (invitations.length <= 1) setModalVisible(false);
   }
 
