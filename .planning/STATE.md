@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
 status: executing
-stopped_at: Completed 26-03-PLAN.md
-last_updated: "2026-05-05T11:25:58.914Z"
+stopped_at: Completed 26-05-PLAN.md
+last_updated: "2026-05-05T11:29:39.644Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 26 (home-chat-polish) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-05-05
 
@@ -77,6 +77,8 @@ Requirements covered: 0 / 27
 - [Phase 26-home-chat-polish]: rn-mock-preload.js patches Module._resolveFilename for tsx RN component tests; .npmrc node-options makes it transparent
 - [Phase 26]: ChatSkeletonRow is file-local in ChatListScreen — skeleton is an implementation detail, not exported
 - [Phase 26]: void Haptics.impactAsync(Light) before onSend in SendBar.handleSend — fire-and-forget, never await in sync event handler
+- [Phase 26-home-chat-polish]: failed: true mutation on sendMessage error replaces prev.filter remove — user sees content and can retry
+- [Phase 26-home-chat-polish]: onRetry wrapped in void cast in ChatRoomScreen — retryMessage returns Promise but onRetry prop is void
 
 ### Roadmap Evolution
 
@@ -93,5 +95,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T11:25:58.910Z
-Stopped at: Completed 26-03-PLAN.md
+Last session: 2026-05-05T11:29:39.638Z
+Stopped at: Completed 26-05-PLAN.md
