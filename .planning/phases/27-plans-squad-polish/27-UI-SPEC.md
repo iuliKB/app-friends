@@ -48,6 +48,7 @@ are taken directly from `src/theme/spacing.ts`.
 
 Exceptions:
 - RSVP buttons: `height: 44px` (hardcoded touch target minimum — existing, kept as-is)
+- Exception: `SPACING.md = 12px` — pre-existing project token in `src/theme/spacing.ts`, established before Phase 24; not modifiable in this phase without a dedicated token-refactor phase. Used for internal card padding only.
 - Map empty state overlay: centered absolutely over map, no margin exception needed
 
 ---
