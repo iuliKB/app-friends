@@ -29,6 +29,10 @@ import { computeWindowExpiry, nextLargerWindow } from '@/lib/windows';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import type { WindowId } from '@/types/app';
 
+SplashScreen.setOptions({
+  duration: 400,
+  fade: true,   // iOS only — Android fade is always present
+});
 SplashScreen.preventAutoHideAsync();
 
 // Phase 3 — Shared dispatcher for notification response routing. Runs outside
