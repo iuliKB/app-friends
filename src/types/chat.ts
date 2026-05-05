@@ -21,6 +21,7 @@ export interface Message {
   poll_id: string | null;
   reactions?: MessageReaction[];          // Phase 15 placeholder — not returned by existing queries
   pending?: boolean;
+  failed?: boolean;    // Phase 26, CHAT-03: optimistic send failure state
   tempId?: string;
 }
 

@@ -17,6 +17,7 @@ interface UseChatRoomResult {
   loading: boolean;
   error: string | null;
   sendMessage: (body: string, replyToId?: string) => Promise<{ error: Error | null }>;
+  retryMessage: (tempId: string, body: string) => Promise<{ error: unknown }>;
   sendImage: (localUri: string, replyToId?: string) => Promise<{ error: Error | null }>;
   sendPoll: (question: string, options: string[]) => Promise<{ error: Error | null }>;
   deleteMessage: (messageId: string) => Promise<{ error: Error | null }>;
@@ -478,12 +479,22 @@ export function useChatRoom({
     });
 
     if (insertError) {
-      // Remove the optimistic entry on failure
-      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+      // D-19: mark failed instead of removing — user sees their content and can retry
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.tempId === tempId ? { ...m, pending: false, failed: true } : m
+        )
+      );
       return { error: insertError };
     }
 
     return { error: null };
+  }
+
+  async function retryMessage(tempId: string, body: string): Promise<{ error: unknown }> {
+    // Remove the failed entry, then re-send via normal sendMessage flow
+    setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+    return sendMessage(body);
   }
 
   async function sendImage(localUri: string, replyToId?: string): Promise<{ error: Error | null }> {
@@ -777,6 +788,7 @@ export function useChatRoom({
     error,
     refetch: fetchMessages,  // AUTH-03: expose for retry button in ChatRoomScreen
     sendMessage,
+    retryMessage,
     sendImage,
     sendPoll,
     deleteMessage,
