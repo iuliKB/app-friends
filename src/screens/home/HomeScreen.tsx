@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
@@ -16,6 +17,7 @@ import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { OwnStatusCard } from '@/components/status/OwnStatusCard';
 import { StatusPickerSheet } from '@/components/status/StatusPickerSheet';
+import { OnboardingHintSheet } from '@/components/onboarding/OnboardingHintSheet';
 import { RadarViewToggle } from '@/components/home/RadarViewToggle';
 import { RadarView } from '@/components/home/RadarView';
 import { CardStackView } from '@/components/home/CardStackView';
@@ -30,7 +32,7 @@ import { HomeWidgetRow } from '@/components/home/HomeWidgetRow';
 export function HomeScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const { friends, error, refreshing, handleRefresh, refetch } = useHomeScreen();
+  const { friends, loading, error, refreshing, handleRefresh, refetch } = useHomeScreen();
   usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
@@ -44,7 +46,26 @@ export function HomeScreen() {
     return () => clearInterval(id);
   }, []);
 
+  const ONBOARDING_FLAG_KEY = '@campfire/onboarding_hint_shown';
+  const [onboardingVisible, setOnboardingVisible] = useState(false);
   const [sheetVisible, setSheetVisible] = useState(false);
+
+  // AUTH-04: Show onboarding sheet once for first-run users with no friends
+  useEffect(() => {
+    if (loading) return; // wait for friends data to settle (Assumption A3 mitigation)
+    AsyncStorage.getItem(ONBOARDING_FLAG_KEY)
+      .then((value) => {
+        if (!value && friends.length === 0) {
+          setOnboardingVisible(true);
+        }
+      })
+      .catch(() => {}); // silent — worst case: sheet not shown
+  }, [loading, friends.length, ONBOARDING_FLAG_KEY]);
+
+  function handleOnboardingDismiss() {
+    AsyncStorage.setItem(ONBOARDING_FLAG_KEY, 'true').catch(() => {});
+    setOnboardingVisible(false);
+  }
 
   const [view, setView, prefLoading] = useViewPreference();
 
@@ -214,6 +235,11 @@ export function HomeScreen() {
       <StatusPickerSheet
         visible={sheetVisible}
         onClose={() => setSheetVisible(false)}
+      />
+
+      <OnboardingHintSheet
+        visible={onboardingVisible}
+        onDismiss={handleOnboardingDismiss}
       />
     </>
   );
