@@ -14,11 +14,8 @@ describe('ANIMATION tokens', () => {
     it('has verySlow = 1200', () => {
       expect(ANIMATION.duration.verySlow).toBe(1200);
     });
-    // RED: staggerDelay does not exist yet — plan 02 adds it. it.failing marks this as
-    // expected-to-fail so the suite exits 0 until the token is added.
-    // eslint-disable-next-line jest/no-disabled-tests
-    it.failing('has staggerDelay = 80', () => {
-      expect((ANIMATION.duration as Record<string, number>)['staggerDelay']).toBe(80);
+    it('has staggerDelay = 80', () => {
+      expect(ANIMATION.duration.staggerDelay).toBe(80);
     });
   });
   describe('easing', () => {

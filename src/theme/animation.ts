@@ -99,6 +99,7 @@ export const ANIMATION = {
     normal: 300,     // state transitions, reveals
     slow: 700,       // emphasis animations, status pulses
     verySlow: 1200,  // looping ambient animations (radar pulse, skeleton shimmer)
+    staggerDelay: 80, // entrance stagger interval for dashboard cards (SQUAD-03)
   },
   easing: {
     standard:   () => _inOut(_ease),  // balanced — state transitions
