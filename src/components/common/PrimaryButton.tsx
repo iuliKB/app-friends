@@ -41,7 +41,6 @@ export function PrimaryButton({
       disabled={loading || disabled}
       activeOpacity={0.8}
     >
-      // POLISH-04 verified (Phase 24): loading prop renders ActivityIndicator and disables button — requirement satisfied.
       {loading ? (
         <ActivityIndicator color={colors.surface.base} />
       ) : (
