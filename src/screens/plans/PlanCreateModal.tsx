@@ -30,7 +30,7 @@ import type { FriendWithStatus } from '@/hooks/useFriends';
 
 function getDefaultTitle(): string {
   const hour = new Date().getHours();
-  return hour < 18 ? 'Tonight' : 'Tomorrow';
+  return hour >= 18 ? 'Tonight' : 'Tomorrow';
 }
 
 function getNextRoundHour(): Date {
