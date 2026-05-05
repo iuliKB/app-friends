@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useTheme } from '@/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme, SPACING, RADII, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { haversineKm, DARK_MAP_STYLE } from '@/lib/maps';
 import type { PlanWithMembers } from '@/types/plans';
 
@@ -83,6 +84,28 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
       justifyContent: 'center',
       backgroundColor: colors.surface.base,
     },
+    emptyCard: {
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: SPACING.xl,
+      marginHorizontal: SPACING.xxl,
+      alignItems: 'center' as const,
+      gap: SPACING.md,
+    },
+    emptyHeading: {
+      fontSize: FONT_SIZE.xl,
+      fontFamily: FONT_FAMILY.display.semibold,
+      color: colors.text.primary,
+      textAlign: 'center' as const,
+    },
+    emptyBody: {
+      fontSize: FONT_SIZE.lg,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.text.secondary,
+      textAlign: 'center' as const,
+    },
   }), [colors]);
 
   if (isLoadingLocation) {
@@ -114,6 +137,20 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
           />
         ))}
       </MapView>
+      {visiblePlans.length === 0 && (
+        <View
+          style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}
+          pointerEvents="none"
+        >
+          <View style={styles.emptyCard}>
+            <Ionicons name="map-outline" size={32} color={colors.text.secondary} />
+            <Text style={styles.emptyHeading}>No plans nearby</Text>
+            <Text style={styles.emptyBody}>
+              None of your friends have plans within 25km.
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
