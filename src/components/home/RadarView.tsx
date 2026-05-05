@@ -8,6 +8,7 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { RadarBubble, BubbleSizeMap } from '@/components/home/RadarBubble';
 import { OverflowChip } from '@/components/home/OverflowChip';
+import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
@@ -15,7 +16,17 @@ import type { FriendWithStatus } from '@/hooks/useFriends';
 
 interface RadarViewProps {
   friends: FriendWithStatus[];
+  loading?: boolean;
 }
+
+// --- Skeleton blob layout (HOME-01) ---
+// Static positions for 3 circular SkeletonPulse placeholders shown when loading=true and friends=[].
+
+const SKELETON_BLOBS = [
+  { size: 80, left: '12%' as const, top: 30 },
+  { size: 64, left: '50%' as const, top: 75 },
+  { size: 48, left: '68%' as const, top: 18 },
+] as const;
 
 interface BubblePosition {
   left: number;
@@ -87,7 +98,7 @@ function computeScatterPositions(
 
 // --- RadarView ---
 
-export function RadarView({ friends }: RadarViewProps) {
+export function RadarView({ friends, loading }: RadarViewProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => StyleSheet.create({
     wrapper: {
@@ -160,7 +171,14 @@ export function RadarView({ friends }: RadarViewProps) {
         style={[styles.radarContainer, { height: RADAR_HEIGHT }]}
         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       >
-        {radarFriends.length === 0 && (
+        {loading && friends.length === 0 && SKELETON_BLOBS.map((blob, i) => (
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          <View key={i} style={{ position: 'absolute', left: blob.left as unknown as number, top: blob.top }}>
+            <SkeletonPulse width={blob.size} height={blob.size} />
+          </View>
+        ))}
+
+        {!loading && radarFriends.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyHeading}>No friends yet</Text>
             <Text style={styles.emptyBody}>Add friends to see them here.</Text>
