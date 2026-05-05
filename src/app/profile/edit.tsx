@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
+import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { APP_CONFIG } from '@/constants/config';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
@@ -189,6 +190,16 @@ export default function EditProfileScreen() {
           padding: SPACING.md,
         },
 
+        // ── Bottom save button ────────────────────────────────────
+        buttonWrapper: { marginTop: SPACING.xl },
+        hintText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.sm,
+        },
+
         // ── Header Save button ────────────────────────────────────
         saveBtn: {
           paddingHorizontal: SPACING.sm,
@@ -285,6 +296,17 @@ export default function EditProfileScreen() {
             disabled={saving}
           />
         </View>
+
+        {/* ── Save ── */}
+        <View style={styles.buttonWrapper}>
+          <PrimaryButton
+            title="Save Changes"
+            onPress={handleSave}
+            loading={saving}
+            disabled={!canSave}
+          />
+        </View>
+        {!isDirty && <Text style={styles.hintText}>Make a change to enable saving</Text>}
       </ScrollView>
     </KeyboardAvoidingView>
   );
