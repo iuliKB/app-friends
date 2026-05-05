@@ -45,7 +45,8 @@ export function ThemeSegmentedControl() {
         // Frosted glass track
         track: {
           flexDirection: 'row',
-          backgroundColor: colors.border + '55',
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: '#B9FF3B40', // D-07: neon accent — same token as activeSegment
           borderRadius: RADII.md,
           padding: TRACK_PADDING,
           marginHorizontal: SPACING.lg,
