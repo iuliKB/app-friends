@@ -124,7 +124,7 @@ export default function WishListScreen() {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
           flexDirection: 'row',
-          alignItems: 'flex-start',
+          alignItems: 'center',
           paddingHorizontal: SPACING.md,
           paddingVertical: SPACING.md,
           marginBottom: SPACING.sm,
@@ -138,7 +138,6 @@ export default function WishListScreen() {
           justifyContent: 'center',
           marginRight: SPACING.md,
           flexShrink: 0,
-          marginTop: 1,
         },
         itemContent: { flex: 1 },
         itemTitle: {
