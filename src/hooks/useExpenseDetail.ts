@@ -135,7 +135,7 @@ export function useExpenseDetail(expenseId: string): ExpenseDetailData {
 
   const settle = useCallback(
     async (participantUserId: string) => {
-      if (!userId || !detail) return;
+      if (!userId || !expenseId) return;
 
       // Set per-row settleLoading = true (immutable update)
       setDetail((prev) => {
@@ -174,7 +174,7 @@ export function useExpenseDetail(expenseId: string): ExpenseDetailData {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       await refetch();
     },
-    [userId, detail, expenseId, refetch]
+    [userId, expenseId, refetch]
   );
 
   const isCreator = userId !== null && userId === detail?.createdBy;
