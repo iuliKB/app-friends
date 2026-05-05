@@ -7,6 +7,7 @@ import { useFriends } from '@/hooks/useFriends';
 import { FriendCard } from '@/components/friends/FriendCard';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { FAB } from '@/components/common/FAB';
 import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_GAP } from '@/components/common/CustomTabBar';
 import { supabase } from '@/lib/supabase';
@@ -15,7 +16,7 @@ import type { FriendWithStatus } from '@/hooks/useFriends';
 export function FriendsList() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { friends, loadingFriends, fetchFriends, removeFriend } = useFriends();
+  const { friends, loadingFriends, fetchFriends, removeFriend, error, refetch } = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [loadingDM, setLoadingDM] = useState(false);
@@ -81,6 +82,18 @@ export function FriendsList() {
       flex: 1,
     },
   }), [colors]);
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load your friends."
+          onRetry={refetch}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

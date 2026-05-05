@@ -29,6 +29,7 @@ import { SendBar, type AttachmentAction, type ReplyContext } from '@/components/
 import { PinnedPlanBanner } from '@/components/chat/PinnedPlanBanner';
 import { BirthdayWishListPanel } from '@/components/chat/BirthdayWishListPanel';
 import { GroupParticipantsSheet } from '@/components/chat/GroupParticipantsSheet';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import type { MessageWithProfile } from '@/types/chat';
 
 interface ChatRoomScreenProps {
@@ -57,6 +58,8 @@ export function ChatRoomScreen({
   const {
     messages,
     loading: _loading,
+    error,
+    refetch,
     sendMessage,
     sendImage,
     sendPoll,
@@ -271,6 +274,18 @@ export function ChatRoomScreen({
       color: colors.text.primary,
     },
   }), [colors]);
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load messages."
+          onRetry={refetch}
+        />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView

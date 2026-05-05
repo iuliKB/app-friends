@@ -5,6 +5,7 @@ import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { SearchResultCard } from '@/components/friends/SearchResultCard';
 import { QRScanView } from '@/components/friends/QRScanView';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -18,7 +19,7 @@ type ScanState = 'scanning' | 'loading' | 'loaded' | 'error';
 export function AddFriend() {
   const { colors } = useTheme();
   const session = useAuthStore((s) => s.session);
-  const { searchUsers, sendRequest } = useFriends();
+  const { searchUsers, sendRequest, error, refetch } = useFriends();
   const [activeTab, setActiveTab] = useState<'search' | 'qr'>('search');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Profile[]>([]);
@@ -291,6 +292,18 @@ export function AddFriend() {
       color: colors.text.secondary,
     },
   }), [colors]);
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load results."
+          onRetry={refetch}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

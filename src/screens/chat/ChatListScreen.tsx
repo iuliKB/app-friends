@@ -7,6 +7,7 @@ import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import type { ChatListItem } from '@/types/chat';
 
@@ -14,7 +15,7 @@ export function ChatListScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { chatList, loading, refreshing, handleRefresh } = useChatList();
+  const { chatList, loading, error, refreshing, handleRefresh } = useChatList();
 
   function handleChatPress(item: ChatListItem) {
     if (item.type === 'plan') {
@@ -57,6 +58,18 @@ export function ChatListScreen() {
 
   if (loading && chatList.length === 0) {
     return <LoadingIndicator />;
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load your chats."
+          onRetry={handleRefresh}
+        />
+      </View>
+    );
   }
 
   return (

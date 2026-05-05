@@ -5,6 +5,7 @@ import { useTheme } from '@/theme';
 import { useFriends } from '@/hooks/useFriends';
 import { RequestCard } from '@/components/friends/RequestCard';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 
 export function FriendRequests() {
   const { colors } = useTheme();
@@ -15,6 +16,7 @@ export function FriendRequests() {
     acceptRequest,
     rejectRequest,
     fetchFriends,
+    error,
   } = useFriends();
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
 
@@ -70,6 +72,18 @@ export function FriendRequests() {
       flex: 1,
     },
   }), [colors]);
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load friend requests."
+          onRetry={fetchPendingRequests}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
