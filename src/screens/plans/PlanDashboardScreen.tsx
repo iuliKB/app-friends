@@ -33,6 +33,7 @@ import { LocationPicker } from '@/components/maps/LocationPicker';
 import { usePlanPhotos } from '@/hooks/usePlanPhotos';
 import { GalleryViewerModal } from '@/components/plans/GalleryViewerModal';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { showActionSheet } from '@/lib/action-sheet';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -445,10 +446,12 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
 
   if (error && !plan) {
     return (
-      <View style={styles.centered}>
-        <TouchableOpacity onPress={refetch}>
-          <Text style={styles.errorText}>{"Couldn't load this plan. Tap to retry."}</Text>
-        </TouchableOpacity>
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load this plan."
+          onRetry={refetch}
+        />
       </View>
     );
   }

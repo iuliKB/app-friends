@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useInvitations, PlanInvitation } from '@/hooks/useInvitations';
 import { PlanCard } from '@/components/plans/PlanCard';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -305,6 +306,18 @@ export function PlansListScreen() {
             <Text style={styles.declineBtnText}>{'Decline'}</Text>
           </TouchableOpacity>
         </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load plans."
+          onRetry={fetchPlans}
+        />
       </View>
     );
   }
