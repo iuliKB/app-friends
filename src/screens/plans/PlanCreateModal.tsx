@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -139,6 +140,9 @@ export function PlanCreateModal() {
       Alert.alert('Error', `Couldn't create plan. ${error?.message ?? 'Unknown error'}`);
       return;
     }
+
+    // D-07: success haptic fires before navigation away — plan is written to Supabase
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 
     // Upload cover image if selected (D-14)
     if (coverImageUri && planId) {
