@@ -6,7 +6,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 
@@ -90,6 +90,29 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
   );
   const hasActiveStatus = currentStatus !== null && heartbeatState !== 'dead';
 
+  // Scale spring press feedback (HOME-04)
+  const cardScaleAnim = useRef(new Animated.Value(1)).current;
+
+  function handlePressIn() {
+    Animated.spring(cardScaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      damping: ANIMATION.easing.spring.damping,
+      stiffness: ANIMATION.easing.spring.stiffness,
+      isInteraction: false,
+    }).start();
+  }
+
+  function handlePressOut() {
+    Animated.spring(cardScaleAnim, {
+      toValue: 1.0,
+      useNativeDriver: true,
+      damping: ANIMATION.easing.spring.damping,
+      stiffness: ANIMATION.easing.spring.stiffness,
+      isInteraction: false,
+    }).start();
+  }
+
   // 2. Pulse animation — always pulses when status is active
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -148,30 +171,34 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.85}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1.0}
       accessibilityRole="button"
       accessibilityLabel={hasActiveStatus ? 'Edit your status' : 'Set your status'}
       style={styles.card}
     >
-      <View style={styles.topRow}>
-        <Text style={styles.label}>{'YOUR STATUS'}</Text>
-        <Animated.View
-          style={[styles.dot, { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] }]}
-        />
-      </View>
-      <View style={styles.bottomRow}>
-        <View style={styles.textContainer}>
-          <Text style={[styles.title, !hasActiveStatus && styles.titleInactive]} numberOfLines={1}>
-            {titleText}
-          </Text>
-          {subtitleText !== null && (
-            <Text style={styles.subtitle} numberOfLines={1}>
-              {subtitleText}
-            </Text>
-          )}
+      <Animated.View style={{ transform: [{ scale: cardScaleAnim }] }}>
+        <View style={styles.topRow}>
+          <Text style={styles.label}>{'YOUR STATUS'}</Text>
+          <Animated.View
+            style={[styles.dot, { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] }]}
+          />
         </View>
-        <Ionicons name="pencil" size={18} color={colors.text.secondary} style={styles.editIcon} />
-      </View>
+        <View style={styles.bottomRow}>
+          <View style={styles.textContainer}>
+            <Text style={[styles.title, !hasActiveStatus && styles.titleInactive]} numberOfLines={1}>
+              {titleText}
+            </Text>
+            {subtitleText !== null && (
+              <Text style={styles.subtitle} numberOfLines={1}>
+                {subtitleText}
+              </Text>
+            )}
+          </View>
+          <Ionicons name="pencil" size={18} color={colors.text.secondary} style={styles.editIcon} />
+        </View>
+      </Animated.View>
     </TouchableOpacity>
   );
 }
