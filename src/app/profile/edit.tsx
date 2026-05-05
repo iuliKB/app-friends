@@ -8,13 +8,13 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
-import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { APP_CONFIG } from '@/constants/config';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
@@ -124,7 +124,7 @@ export default function EditProfileScreen() {
           marginLeft: SPACING.xs,
         },
 
-        // ── Field card ────────────────────────────────────────────
+        // ── Grouped field card ────────────────────────────────────
         fieldCard: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
@@ -159,14 +159,19 @@ export default function EditProfileScreen() {
           paddingBottom: SPACING.sm,
         },
 
-        // ── Read-only username ────────────────────────────────────
+        // ── Divider between grouped fields ────────────────────────
+        fieldDivider: {
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: colors.border,
+          marginLeft: SPACING.md,
+        },
+
+        // ── Read-only username row (inside grouped card) ──────────
         readOnlyRow: {
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: colors.surface.card,
-          borderRadius: RADII.lg,
-          paddingHorizontal: SPACING.md,
           height: 52,
+          paddingHorizontal: SPACING.md,
           gap: SPACING.sm,
           opacity: 0.6,
         },
@@ -184,20 +189,38 @@ export default function EditProfileScreen() {
           padding: SPACING.md,
         },
 
-        // ── Save button ───────────────────────────────────────────
-        buttonWrapper: { marginTop: SPACING.xl },
-        hintText: {
-          fontSize: FONT_SIZE.xs,
-          fontFamily: FONT_FAMILY.body.regular,
+        // ── Header Save button ────────────────────────────────────
+        saveBtn: {
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+        },
+        saveBtnText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.interactive.accent,
+        },
+        saveBtnDisabled: {
           color: colors.text.secondary,
-          textAlign: 'center',
-          marginTop: SPACING.sm,
         },
       }),
     [colors]
   );
 
   if (loading) return <LoadingIndicator />;
+
+  const saveAction = (
+    <TouchableOpacity
+      style={styles.saveBtn}
+      onPress={handleSave}
+      disabled={!canSave}
+      accessibilityLabel="Save profile"
+      accessibilityRole="button"
+    >
+      <Text style={[styles.saveBtnText, !canSave && styles.saveBtnDisabled]}>
+        {saving ? 'Saving…' : 'Save'}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
     <KeyboardAvoidingView
@@ -208,14 +231,14 @@ export default function EditProfileScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <ScreenHeader title="Edit Profile" />
+        <ScreenHeader title="Edit Profile" rightAction={saveAction} />
 
-        {/* ── Profile section ── */}
+        {/* ── Profile — Display name + Username grouped in one card ── */}
         <Text style={styles.sectionLabel}>Profile</Text>
-
-        {/* Display name */}
         <View style={styles.fieldCard}>
+          {/* Display name */}
           <View style={styles.fieldLabelRow}>
             <Ionicons name="person-outline" size={12} color={colors.text.secondary} />
             <Text style={styles.fieldLabel}>Display name</Text>
@@ -232,17 +255,22 @@ export default function EditProfileScreen() {
           <Text style={styles.charCount}>
             {displayName.length}/{APP_CONFIG.displayNameMaxLength}
           </Text>
+
+          {/* Divider */}
+          <View style={styles.fieldDivider} />
+
+          {/* Username (read-only) */}
+          <View style={styles.fieldLabelRow}>
+            <Ionicons name="at-outline" size={12} color={colors.text.secondary} />
+            <Text style={styles.fieldLabel}>Username</Text>
+          </View>
+          <View style={styles.readOnlyRow}>
+            <Ionicons name="lock-closed-outline" size={14} color={colors.text.secondary} />
+            <Text style={styles.readOnlyText}>@{username ?? ''}</Text>
+          </View>
         </View>
 
-        {/* Username (read-only) */}
-        <Text style={styles.sectionLabel}>Username</Text>
-        <View style={styles.readOnlyRow}>
-          <Ionicons name="lock-closed-outline" size={16} color={colors.text.secondary} />
-          <Text style={styles.readOnlyText}>@{username ?? ''}</Text>
-          <Ionicons name="information-circle-outline" size={16} color={colors.text.secondary} />
-        </View>
-
-        {/* ── Birthday section ── */}
+        {/* ── Birthday ── */}
         <Text style={styles.sectionLabel}>Birthday</Text>
         <View style={styles.birthdayCard}>
           <BirthdayPicker
@@ -257,17 +285,6 @@ export default function EditProfileScreen() {
             disabled={saving}
           />
         </View>
-
-        {/* ── Save ── */}
-        <View style={styles.buttonWrapper}>
-          <PrimaryButton
-            title="Save Changes"
-            onPress={handleSave}
-            loading={saving}
-            disabled={!canSave}
-          />
-        </View>
-        {!isDirty && <Text style={styles.hintText}>Make a change to enable saving</Text>}
       </ScrollView>
     </KeyboardAvoidingView>
   );
