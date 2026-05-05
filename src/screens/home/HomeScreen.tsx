@@ -11,6 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
 import { OwnStatusCard } from '@/components/status/OwnStatusCard';
@@ -29,7 +30,7 @@ import { HomeWidgetRow } from '@/components/home/HomeWidgetRow';
 export function HomeScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const { friends, error, refreshing, handleRefresh } = useHomeScreen();
+  const { friends, error, refreshing, handleRefresh, refetch } = useHomeScreen();
   usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
@@ -108,11 +109,6 @@ export function HomeScreen() {
       paddingHorizontal: SPACING.lg,
       paddingBottom: SPACING.lg,
     },
-    errorText: {
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.sm,
-    },
     toggleContainer: {
       marginTop: SPACING.xl,
     },
@@ -146,6 +142,18 @@ export function HomeScreen() {
 
   const rootStyle = [styles.root, { paddingTop: insets.top }];
 
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load your feed. Check your connection."
+          onRetry={refetch}
+        />
+      </View>
+    );
+  }
+
   const content = (
     <>
       <ScrollView
@@ -166,11 +174,6 @@ export function HomeScreen() {
         <View style={styles.statusCardContainer}>
           <OwnStatusCard onPress={() => setSheetVisible(true)} />
         </View>
-
-        {/* Error state */}
-        {error !== null && (
-          <Text style={styles.errorText}>{"Couldn't load friends. Pull down to try again."}</Text>
-        )}
 
         {/* Friends status section header */}
         <View style={styles.freeHeaderContainer}>
