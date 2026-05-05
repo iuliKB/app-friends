@@ -187,7 +187,13 @@ Plans:
   4. The Explore map tab shows a friendly illustrated empty state when no friend plans are nearby, not a blank map
   5. Accepting a friend request triggers a success haptic; rejecting triggers a medium impact haptic; settling an IOU triggers a success haptic
   6. Squad Dashboard feature cards stagger-animate in on load with 80ms delay between cards; tapping a wish list claim item has spring scale press feedback
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 27-01-PLAN.md — Wave 0 test scaffolds (RSVPButtons, WishListItem, animation token)
+- [ ] 27-02-PLAN.md — staggerDelay token + PlanCardSkeleton component
+- [ ] 27-03-PLAN.md — Haptic wiring: SQUAD-01 friend requests, SQUAD-02 IOU settle, PLANS-03 plan creation
+- [ ] 27-04-PLAN.md — Skeleton in PlansListScreen (PLANS-01), map empty state (PLANS-04), squad.tsx token (SQUAD-03)
+- [ ] 27-05-PLAN.md — RSVP spring bounce (PLANS-02), WishListItem press feedback (SQUAD-04)
 **UI hint**: yes
 
 ### Phase 28: Branding
@@ -220,9 +226,9 @@ Plans:
 | 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
 | 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete    | 2026-05-05 |
-| 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
+| 27. Plans & Squad Polish | v1.7 | 0/5 | Not started | - |
 | 28. Branding | v1.7 | 0/? | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-05-05 — Phase 26 plans defined (6 plans, 3 waves)*
+*Roadmap updated: 2026-05-05 — Phase 27 plans defined (5 plans, 4 waves)*
