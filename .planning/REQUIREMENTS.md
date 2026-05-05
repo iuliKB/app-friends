@@ -26,7 +26,7 @@
 
 - [x] **HOME-01**: Home screen shows SkeletonPulse placeholders while friend status data loads
 - [ ] **HOME-02**: New user with zero friends sees an actionable empty state guiding them to add a friend
-- [ ] **HOME-03**: Friends with FADING heartbeat status show a subtle animated pulse on their radar bubble
+- [x] **HOME-03**: Friends with FADING heartbeat status show a subtle animated pulse on their radar bubble
 - [ ] **HOME-04**: All tappable cards on the home screen have spring press feedback (scale 1.0→0.96)
 
 ### CHAT — Chat & Messaging

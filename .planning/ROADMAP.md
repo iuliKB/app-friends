@@ -169,7 +169,7 @@ Plans:
 **Plans**: 6 plans
 Plans:
 - [x] 26-01-PLAN.md — Wave 0 test scaffolds (fadingPulse + useChatRoom.send) + HOME-01 skeleton wiring (RadarView, CardStackView, HomeScreen)
-- [ ] 26-02-PLAN.md — HOME-03 FADING pulse ring: parameterize PulseRing with variant prop, export FADING_PULSE_COLOR
+- [x] 26-02-PLAN.md — HOME-03 FADING pulse ring: parameterize PulseRing with variant prop, export FADING_PULSE_COLOR
 - [ ] 26-03-PLAN.md — HOME-02 zero-friends empty state card + HOME-04 scale spring press feedback (HomeFriendCard, HomeWidgetRow, OwnStatusCard, EventCard)
 - [ ] 26-04-PLAN.md — CHAT-01 chat list skeleton rows + CHAT-02 send haptic in SendBar
 - [ ] 26-05-PLAN.md — CHAT-03 optimistic send: Message.failed type + useChatRoom failure path + MessageBubble pending/failed UI + reaction haptic (CHAT-02) + ChatRoomScreen retry wiring
@@ -219,7 +219,7 @@ Plans:
 | 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
 | 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
 | 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
-| 26. Home & Chat Polish | v1.7 | 1/6 | In Progress|  |
+| 26. Home & Chat Polish | v1.7 | 2/6 | In Progress|  |
 | 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
 | 28. Branding | v1.7 | 0/? | Not started | - |
 
