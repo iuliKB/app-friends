@@ -775,6 +775,7 @@ export function useChatRoom({
     messages,
     loading,
     error,
+    refetch: fetchMessages,  // AUTH-03: expose for retry button in ChatRoomScreen
     sendMessage,
     sendImage,
     sendPoll,
