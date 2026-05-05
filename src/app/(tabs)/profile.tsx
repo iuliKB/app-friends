@@ -304,7 +304,7 @@ export default function ProfileScreen() {
           justifyContent: 'center',
         },
 
-        // ── Hero (profilescreen2 centered) ────────────────────────
+        // ── Hero (new design — keep as-is) ───────────────────────
         hero: {
           alignItems: 'center',
           paddingTop: SPACING.xl,
@@ -378,122 +378,71 @@ export default function ProfileScreen() {
           color: colors.text.primary,
         },
 
-        // ── Section label (ex1: plain, medium, not uppercase) ────
-        sectionLabel: {
-          fontSize: FONT_SIZE.sm,
-          fontFamily: FONT_FAMILY.body.medium,
+        // ── Original list style below ─────────────────────────────
+        sectionHeader: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
-          paddingHorizontal: SPACING.lg,
           marginTop: SPACING.xl,
-          marginBottom: SPACING.sm,
+          marginBottom: SPACING.md,
+          paddingHorizontal: SPACING.lg,
         },
-
-        // ── Grouped section card (ex1: one card per section) ─────
-        sectionCard: {
-          backgroundColor: colors.surface.card,
-          borderRadius: RADII.lg,
-          marginHorizontal: SPACING.lg,
-          overflow: 'hidden',
-        },
-
-        // ── Row inside card ───────────────────────────────────────
         row: {
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: SPACING.md,
-          paddingVertical: SPACING.md,
-          minHeight: 54,
+          minHeight: 52,
+          paddingHorizontal: SPACING.lg,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
         },
-        rowDisabled: {
-          opacity: 0.4,
-        },
-
-        // ── Hairline between rows inside a section card ───────────
-        divider: {
-          height: StyleSheet.hairlineWidth,
-          backgroundColor: colors.border,
-          // indent to align with text, skipping the icon
-          marginLeft: SPACING.md + 36 + SPACING.md,
-        },
-
-        // ── Circular icon (ex1 style) ─────────────────────────────
-        iconCircle: {
-          width: 36,
-          height: 36,
-          borderRadius: RADII.full,
-          backgroundColor: colors.interactive.accent + '22',
-          alignItems: 'center',
-          justifyContent: 'center',
+        rowIcon: {
           marginRight: SPACING.md,
         },
-        iconCircleMuted: {
-          width: 36,
-          height: 36,
-          borderRadius: RADII.full,
-          backgroundColor: colors.border + '60',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginRight: SPACING.md,
-        },
-
-        // ── Row text ──────────────────────────────────────────────
         rowLabel: {
           flex: 1,
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
         },
-        rowLabelMuted: {
-          flex: 1,
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.secondary,
+        rowRight: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+        },
+        rowDisabled: {
+          opacity: 0.4,
         },
         rowTrailingText: {
           fontSize: FONT_SIZE.md,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
-          marginRight: SPACING.xs,
         },
-
-        // ── Appearance card ───────────────────────────────────────
-        appearanceCard: {
-          backgroundColor: colors.surface.card,
-          borderRadius: RADII.lg,
-          marginHorizontal: SPACING.lg,
-          paddingHorizontal: SPACING.md,
-          paddingVertical: SPACING.md,
-        },
-
-        // ── Footer ────────────────────────────────────────────────
-        logoutButton: {
-          marginHorizontal: SPACING.lg,
-          marginTop: SPACING.xxl,
+        logoutRow: {
           height: 52,
-          borderRadius: RADII.lg,
-          borderWidth: 1,
-          borderColor: colors.interactive.destructive,
-          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
           justifyContent: 'center',
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          marginTop: 48,
         },
         logoutText: {
           fontSize: FONT_SIZE.lg,
-          fontFamily: FONT_FAMILY.body.medium,
+          fontFamily: FONT_FAMILY.body.regular,
           color: colors.interactive.destructive,
         },
         versionText: {
-          fontSize: FONT_SIZE.xs,
+          fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
           textAlign: 'center',
-          marginTop: SPACING.xl,
+          marginTop: SPACING.xxl,
         },
         morningHint: {
           fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
           paddingHorizontal: SPACING.lg,
-          paddingTop: SPACING.xs,
+          paddingTop: SPACING.sm,
+          paddingBottom: SPACING.md,
         },
       }),
     [colors]
@@ -503,7 +452,7 @@ export default function ProfileScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: SPACING.lg }]}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Header ── */}
@@ -520,7 +469,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Hero — profilescreen2 centered layout ── */}
+        {/* ── Hero (new — kept as-is) ── */}
         <View style={styles.hero}>
           <TouchableOpacity
             onPress={avatarLoading ? undefined : handleChangeAvatar}
@@ -560,119 +509,128 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Links — ex1 grouped card ── */}
-        <Text style={styles.sectionLabel}>Links</Text>
-        <View style={styles.sectionCard}>
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => router.push('/profile/wish-list' as never)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconCircle}>
-              <Ionicons name="gift-outline" size={18} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>My Wish List</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.border} />
-          </TouchableOpacity>
+        {/* ── Links (original flat list style) ── */}
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => router.push('/profile/wish-list' as never)}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="gift-outline"
+            size={FONT_SIZE.xl}
+            color={colors.text.secondary}
+            style={styles.rowIcon}
+          />
+          <Text style={styles.rowLabel}>My Wish List</Text>
+          <View style={styles.rowRight}>
+            <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
+          </View>
+        </TouchableOpacity>
+
+        {/* ── Account ── */}
+        <Text style={styles.sectionHeader}>ACCOUNT</Text>
+
+        <View style={styles.row}>
+          <Ionicons
+            name="mail-outline"
+            size={FONT_SIZE.xl}
+            color={colors.text.secondary}
+            style={styles.rowIcon}
+          />
+          <Text style={styles.rowLabel} numberOfLines={1} ellipsizeMode="tail">
+            {session?.user?.email ?? ''}
+          </Text>
         </View>
 
-        {/* ── Account — ex1 grouped card ── */}
-        <Text style={styles.sectionLabel}>Account</Text>
-        <View style={styles.sectionCard}>
-          <View style={styles.row}>
-            <View style={styles.iconCircleMuted}>
-              <Ionicons name="mail-outline" size={18} color={colors.text.secondary} />
-            </View>
-            <Text style={styles.rowLabelMuted} numberOfLines={1} ellipsizeMode="tail">
-              {session?.user?.email ?? ''}
-            </Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.row}>
-            <View style={styles.iconCircleMuted}>
-              <Ionicons name="calendar-outline" size={18} color={colors.text.secondary} />
-            </View>
-            <Text style={styles.rowLabelMuted}>
-              {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
-            </Text>
-          </View>
+        <View style={styles.row}>
+          <Ionicons
+            name="calendar-outline"
+            size={FONT_SIZE.xl}
+            color={colors.text.secondary}
+            style={styles.rowIcon}
+          />
+          <Text style={styles.rowLabel}>
+            {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
+          </Text>
         </View>
 
-        {/* ── Appearance — ex1 grouped card ── */}
-        <Text style={styles.sectionLabel}>Appearance</Text>
-        <View style={styles.appearanceCard}>
+        {/* ── Appearance ── */}
+        <Text style={styles.sectionHeader}>APPEARANCE</Text>
+        <View style={{ paddingVertical: SPACING.md }}>
           <ThemeSegmentedControl />
         </View>
 
-        {/* ── Notifications — ex1 grouped card ── */}
-        <Text style={styles.sectionLabel}>Notifications</Text>
-        <View style={styles.sectionCard}>
-          <View style={styles.row}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="notifications-outline" size={18} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Plan invites</Text>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={handleToggleNotifications}
-              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-              thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
-            />
-          </View>
+        {/* ── Notifications ── */}
+        <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
 
-          <View style={styles.divider} />
-
-          <View style={styles.row}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="people-outline" size={18} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Friend availability</Text>
-            <Switch
-              value={friendFreeEnabled}
-              onValueChange={handleToggleFriendFree}
-              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-              thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
-            />
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.row}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="sunny-outline" size={18} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Morning prompt</Text>
-            <Switch
-              value={morningEnabled}
-              onValueChange={handleToggleMorning}
-              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-              thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
-            />
-          </View>
-
-          <View style={styles.divider} />
-
-          <TouchableOpacity
-            style={[styles.row, !morningEnabled && styles.rowDisabled]}
-            onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
-            disabled={!morningEnabled}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconCircle}>
-              <Ionicons name="time-outline" size={18} color={colors.interactive.accent} />
-            </View>
-            <Text style={styles.rowLabel}>Prompt time</Text>
-            <Text style={styles.rowTrailingText}>
-              {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: '2-digit',
-              })}
-            </Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.border} />
-          </TouchableOpacity>
+        <View style={styles.row}>
+          <Ionicons
+            name="notifications-outline"
+            size={FONT_SIZE.xl}
+            color={colors.text.secondary}
+            style={styles.rowIcon}
+          />
+          <Text style={styles.rowLabel}>Plan invites</Text>
+          <Switch
+            value={notificationsEnabled}
+            onValueChange={handleToggleNotifications}
+            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+            thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
+          />
         </View>
+
+        <View style={styles.row}>
+          <Ionicons
+            name="people-outline"
+            size={FONT_SIZE.xl}
+            color={colors.text.secondary}
+            style={styles.rowIcon}
+          />
+          <Text style={styles.rowLabel}>Friend availability</Text>
+          <Switch
+            value={friendFreeEnabled}
+            onValueChange={handleToggleFriendFree}
+            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+            thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
+          />
+        </View>
+
+        <View style={styles.row}>
+          <Ionicons
+            name="sunny-outline"
+            size={FONT_SIZE.xl}
+            color={colors.text.secondary}
+            style={styles.rowIcon}
+          />
+          <Text style={styles.rowLabel}>Morning prompt</Text>
+          <Switch
+            value={morningEnabled}
+            onValueChange={handleToggleMorning}
+            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+            thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.row, !morningEnabled && styles.rowDisabled]}
+          onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
+          disabled={!morningEnabled}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="time-outline"
+            size={FONT_SIZE.xl}
+            color={colors.text.secondary}
+            style={styles.rowIcon}
+          />
+          <Text style={styles.rowLabel}>Time</Text>
+          <Text style={styles.rowTrailingText}>
+            {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
+          </Text>
+        </TouchableOpacity>
 
         {showTimePicker && (
           <DateTimePicker
@@ -690,12 +648,7 @@ export default function ProfileScreen() {
         )}
 
         {/* ── Logout ── */}
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          disabled={loggingOut}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={styles.logoutRow} onPress={handleLogout} disabled={loggingOut}>
           {loggingOut ? (
             <ActivityIndicator color={colors.interactive.destructive} />
           ) : (
@@ -704,13 +657,13 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         <Text style={styles.versionText}>Campfire v{Constants.expoConfig?.version ?? ''}</Text>
-      </ScrollView>
 
-      <PrePromptModal
-        visible={showMorningPrePrompt}
-        onAccept={handleMorningPrePromptAccept}
-        onDecline={handleMorningPrePromptDecline}
-      />
+        <PrePromptModal
+          visible={showMorningPrePrompt}
+          onAccept={handleMorningPrePromptAccept}
+          onDecline={handleMorningPrePromptDecline}
+        />
+      </ScrollView>
     </View>
   );
 }
