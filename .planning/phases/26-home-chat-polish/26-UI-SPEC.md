@@ -45,6 +45,9 @@ Exceptions:
 - Touch targets for small radar bubbles: minimum effective tap area 44px enforced via `hitSlop` (already in RadarBubble.tsx — do not change)
 - Skeleton radar blob layout spacing mirrors existing RadarView positioning (not grid-based)
 
+### Project Override
+`SPACING.md` (12px) is a locked project token present throughout the codebase since project inception. It is a multiple of 4 (grid-aligned) and deviates from the standard set {4, 8, 16, 24, 32, 48, 64} as an approved project-level decision, not introduced by this phase. All usages are via the token — no raw 12px values appear.
+
 ---
 
 ## Typography
@@ -195,7 +198,7 @@ Source: decisions D-07, D-08, D-09, D-10
 - Alignment: center (icon + text + button stacked, `alignItems: 'center'`)
 - Icon: `Ionicons` "flame" or "people-outline", size 40, color `colors.text.secondary`
 - Heading: `FONT_SIZE.xl` (20px), `FONT_WEIGHT.semibold`, `BricolageGrotesque`, `colors.text.primary`
-- Body: `FONT_SIZE.md` (14px), `FONT_WEIGHT.regular`, PlusJakartaSans, `colors.text.secondary`
+- Body: `FONT_SIZE.sm` (13px), `FONT_WEIGHT.regular`, PlusJakartaSans, `colors.text.secondary`
 - CTA button: styled using the project's `PrimaryButton` component variant (or equivalent), accent background, full-width or auto-width
 
 **CTA behavior:** Switch to Squad tab (bottom nav index 1). Use `router.replace` or tab navigation switch — do not navigate to add-friend flow directly (D-09).
