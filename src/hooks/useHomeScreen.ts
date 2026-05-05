@@ -157,5 +157,6 @@ export function useHomeScreen() {
     refreshing,
     handleRefresh,
     fetchAllFriends,
+    refetch: fetchAllFriends,  // AUTH-03: standard shape alias
   };
 }
