@@ -37,18 +37,29 @@ const MOOD_LABEL: Record<string, string> = {
   busy: 'busy',
 };
 
+// --- FADING pulse ring color constant ---
+// eslint-disable-next-line campfire/no-hardcoded-styles
+export const FADING_PULSE_COLOR = '#F59E0B'; // amber-500 — caution signal for FADING heartbeat state
+
 // --- PulseRing sub-component ---
-// Only rendered for ALIVE friends (caller's responsibility).
+// Rendered for ALIVE and FADING friends (caller's responsibility to pick variant).
 // Uses useNativeDriver: true with transform scale to stay on the native thread.
 
 interface PulseRingProps {
   size: number;
   statusColor: string;
+  variant?: 'alive' | 'fading'; // default: 'alive'
 }
 
-function PulseRing({ size, statusColor }: PulseRingProps) {
+function PulseRing({ size, statusColor, variant = 'alive' }: PulseRingProps) {
   const scaleAnim = useRef(new Animated.Value(1.0)).current;
   const opacityAnim = useRef(new Animated.Value(0.7)).current;
+
+  // eslint-disable-next-line campfire/no-hardcoded-styles
+  const duration = variant === 'fading' ? 2000 : 1200;
+  // eslint-disable-next-line campfire/no-hardcoded-styles
+  const delay = variant === 'fading' ? 800 : 600;
+  const scaleTarget = variant === 'fading' ? 1.5 : 1.7;
 
   useEffect(() => {
     scaleAnim.setValue(1.0);
@@ -58,26 +69,26 @@ function PulseRing({ size, statusColor }: PulseRingProps) {
       Animated.sequence([
         Animated.parallel([
           Animated.timing(scaleAnim, {
-            toValue: 1.7,
-            duration: 1200,
+            toValue: scaleTarget,
+            duration,
             easing: Easing.out(Easing.ease),
             useNativeDriver: true,
             isInteraction: false, // D-04: never block JS thread / FlatList rendering
           }),
           Animated.timing(opacityAnim, {
             toValue: 0,
-            duration: 1200,
+            duration,
             useNativeDriver: true,
             isInteraction: false,
           }),
         ]),
-        Animated.delay(600),
+        Animated.delay(delay),
       ])
     );
 
     loop.start();
     return () => loop.stop();
-  }, [scaleAnim, opacityAnim]);
+  }, [scaleAnim, opacityAnim, duration, delay, scaleTarget]);
 
   return (
     <Animated.View
@@ -241,7 +252,10 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
         accessibilityLabel={accessibilityLabel}
       >
         <Animated.View style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}>
-          {isAlive && <PulseRing size={targetSize} statusColor={statusColor} />}
+          {isAlive && <PulseRing size={targetSize} statusColor={statusColor} variant="alive" />}
+          {heartbeatState === 'fading' && (
+            <PulseRing size={targetSize} statusColor={FADING_PULSE_COLOR} variant="fading" />
+          )}
           {showGradient && (
             <LinearGradient
               colors={gradientColors as [string, string]}
