@@ -31,8 +31,8 @@
 
 ### CHAT — Chat & Messaging
 
-- [ ] **CHAT-01**: Chat list screen shows skeleton rows while conversations load
-- [ ] **CHAT-02**: Sending a message triggers `impactAsync(Light)` haptic; tapping a reaction triggers `selectionAsync()`
+- [x] **CHAT-01**: Chat list screen shows skeleton rows while conversations load
+- [x] **CHAT-02**: Sending a message triggers `impactAsync(Light)` haptic; tapping a reaction triggers `selectionAsync()`
 - [ ] **CHAT-03**: Sent messages appear immediately in the conversation with a subtle "sending" indicator before server confirmation
 - [ ] **CHAT-04**: Long-pressing a message bubble shows a subtle scale press animation before the context menu appears
 
