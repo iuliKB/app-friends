@@ -22,7 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/images/android-icon-foreground.png',
+      foregroundImage: './assets/images/icon.png',
       backgroundColor: '#ff6b35',
     },
     package: 'com.campfire.app',
@@ -50,6 +50,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         locationWhenInUsePermission:
           'Campfire uses your location to center the map and show nearby plans.',
+      },
+    ],
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/images/icon.png',
+        resizeMode: 'contain',
+        backgroundColor: '#ff6b35',
+        dark: {
+          backgroundColor: '#0E0F11',
+        },
       },
     ],
   ],
