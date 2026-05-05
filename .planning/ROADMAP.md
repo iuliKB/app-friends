@@ -118,7 +118,7 @@
 - [x] **Phase 25: Auth, Onboarding & Errors** - Forgot-password flow, ToS/Privacy links on sign-up, error state audit across all data-fetching screens, first-run onboarding hint — all App Store-blocking items (completed 2026-05-05)
 - [x] **Phase 26: Home & Chat Polish** - Skeleton placeholders, press feedback, radar FADING pulse, zero-friends empty state, optimistic message send, haptics, long-press bubble animation (completed 2026-05-05)
 - [x] **Phase 27: Plans & Squad Polish** - Skeleton cards, RSVP spring animation, plan creation haptic, map empty state, friend-request + IOU + wish-list haptics, Squad Dashboard stagger animation (completed 2026-05-05)
-- [ ] **Phase 28: Branding** - Final 1024×1024 app icon, branded splash screen with dark/light OS variants and fade transition — requires EAS build to verify on device
+- [x] **Phase 28: Branding** - Final 1024×1024 app icon, branded splash screen with dark/light OS variants and fade transition — requires EAS build to verify on device (completed 2026-05-05)
 
 ## Phase Details
 
@@ -206,7 +206,7 @@ Plans:
   3. Splash screen uses the correct background treatment for both light and dark OS mode — no jarring contrast mismatch on launch
 **Plans**: 1 plan
 Plans:
-- [ ] 28-01-PLAN.md — BRAND-01/02/03: android adaptiveIcon + expo-splash-screen plugin (light/dark) + SplashScreen.setOptions fade
+- [x] 28-01-PLAN.md — BRAND-01/02/03: android adaptiveIcon + expo-splash-screen plugin (light/dark) + SplashScreen.setOptions fade
 **UI hint**: yes
 
 ## Progress
@@ -229,7 +229,7 @@ Plans:
 | 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete    | 2026-05-05 |
 | 27. Plans & Squad Polish | v1.7 | 5/5 | Complete    | 2026-05-05 |
-| 28. Branding | v1.7 | 0/1 | Not started | - |
+| 28. Branding | v1.7 | 1/1 | Complete   | 2026-05-05 |
 
 ---
 

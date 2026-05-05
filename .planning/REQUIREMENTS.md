@@ -18,9 +18,9 @@
 
 ### BRAND — App Icon & Splash
 
-- [ ] **BRAND-01**: App has a final 1024×1024 branded Campfire icon replacing the Expo placeholder
-- [ ] **BRAND-02**: Splash screen uses branded imagery with a fade transition configured via the expo-splash-screen plugin
-- [ ] **BRAND-03**: Splash screen adapts to dark/light OS mode (separate dark and light background treatments)
+- [x] **BRAND-01**: App has a final 1024×1024 branded Campfire icon replacing the Expo placeholder
+- [x] **BRAND-02**: Splash screen uses branded imagery with a fade transition configured via the expo-splash-screen plugin
+- [x] **BRAND-03**: Splash screen adapts to dark/light OS mode (separate dark and light background treatments)
 
 ### HOME — Home Screen
 

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
 status: verifying
-stopped_at: Phase 28 context gathered
-last_updated: "2026-05-05T22:38:34.915Z"
+stopped_at: Completed 28-01-PLAN.md (Phase 28 branding — all plans done)
+last_updated: "2026-05-05T23:03:24.335Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 18
-  completed_plans: 18
+  completed_phases: 5
+  total_plans: 19
+  completed_plans: 19
   percent: 100
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 27 — plans-squad-polish
+**Current focus:** Phase 28 — branding
 
 ## Current Position
 
-Phase: 28
-Plan: Not started
+Phase: 28 (branding) — EXECUTING
+Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-05-05
 
@@ -91,6 +91,8 @@ Requirements covered: 0 / 27
 - [Phase 27]: ANIMATION.duration.staggerDelay is now single source of truth for 80ms stagger — raw number removed from squad.tsx
 - [Phase 27]: Three separate Animated.Values in RSVPButtons — one per button; AnimatedTouchable at module scope; triggerBounce guard mirrors handlePress guard
 - [Phase 27]: Animated.View wrapper pattern for WishListItem Pressable — scale on wrapper, opacity: 0.7 press style removed
+- [Phase 28-branding]: fadeDuration not valid in expo-splash-screen SDK 55 plugin — use SplashScreen.setOptions({ duration: 400, fade: true }) at module scope instead
+- [Phase 28-branding]: Android adaptiveIcon reuses icon.png as foreground (D-03); #ff6b35 config backgroundColor provides background layer
 
 ### Roadmap Evolution
 
@@ -107,5 +109,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T22:38:34.907Z
-Stopped at: Phase 28 context gathered
+Last session: 2026-05-05T23:03:24.332Z
+Stopped at: Completed 28-01-PLAN.md (Phase 28 branding — all plans done)
