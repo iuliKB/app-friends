@@ -114,7 +114,7 @@
 
 ### v1.7 Polish & Launch Ready
 
-- [ ] **Phase 24: Polish Foundation** - SkeletonPulse shimmer, animation tokens, EmptyState CTA variant, PrimaryButton loading spinner — primitives that every subsequent polish phase depends on
+- [x] **Phase 24: Polish Foundation** - SkeletonPulse shimmer, animation tokens, EmptyState CTA variant, PrimaryButton loading spinner — primitives that every subsequent polish phase depends on (completed 2026-05-05)
 - [ ] **Phase 25: Auth, Onboarding & Errors** - Forgot-password flow, ToS/Privacy links on sign-up, error state audit across all data-fetching screens, first-run onboarding hint — all App Store-blocking items
 - [ ] **Phase 26: Home & Chat Polish** - Skeleton placeholders, press feedback, radar FADING pulse, zero-friends empty state, optimistic message send, haptics, long-press bubble animation
 - [ ] **Phase 27: Plans & Squad Polish** - Skeleton cards, RSVP spring animation, plan creation haptic, map empty state, friend-request + IOU + wish-list haptics, Squad Dashboard stagger animation
@@ -134,7 +134,7 @@
 **Plans**: 2 plans
 Plans:
 - [x] 24-01-PLAN.md — Animation tokens (src/theme/animation.ts) + barrel export + unit tests
-- [ ] 24-02-PLAN.md — SkeletonPulse component + POLISH-03/POLISH-04 verification
+- [x] 24-02-PLAN.md — SkeletonPulse component + POLISH-03/POLISH-04 verification
 **UI hint**: yes
 
 ### Phase 25: Auth, Onboarding & Errors
@@ -204,7 +204,7 @@ Plans:
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
-| 24. Polish Foundation | v1.7 | 1/2 | In Progress|  |
+| 24. Polish Foundation | v1.7 | 2/2 | Complete   | 2026-05-05 |
 | 25. Auth, Onboarding & Errors | v1.7 | 0/? | Not started | - |
 | 26. Home & Chat Polish | v1.7 | 0/? | Not started | - |
 | 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
