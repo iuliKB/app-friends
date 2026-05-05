@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
 status: executing
-stopped_at: Completed 25-03-PLAN.md
-last_updated: "2026-05-05T02:21:48.223Z"
+stopped_at: Completed 25-04-PLAN.md
+last_updated: "2026-05-05T02:24:54.549Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
-  percent: 71
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 25 (auth-onboarding-errors) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-05-05
 
@@ -67,6 +67,8 @@ Requirements covered: 0 / 27
 - [Phase 25]: Tab switcher and OAuth section hidden during reset flow — contextually irrelevant mid-flow, simplifies UX
 - [Phase 25]: Additive-only hook changes for AUTH-03: refetch aliases expose existing internal functions, no callers required modification
 - [Phase 25-auth-onboarding-errors]: FriendRequests onRetry wired to fetchPendingRequests (not refetch alias) — shows pendingRequests not friends list
+- [Phase 25]: PlansListScreen uses fetchPlans (not refetch alias) for onRetry — usePlans exposes fetchPlans directly
+- [Phase 25]: birthday/[id].tsx error guard uses friendsError/refetchFriends — matches existing aliased destructure from useFriendsOfFriend
 
 ### Roadmap Evolution
 
@@ -83,5 +85,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T02:21:48.219Z
-Stopped at: Completed 25-03-PLAN.md
+Last session: 2026-05-05T02:24:54.544Z
+Stopped at: Completed 25-04-PLAN.md
