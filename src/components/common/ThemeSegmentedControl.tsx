@@ -46,7 +46,7 @@ export function ThemeSegmentedControl() {
         track: {
           flexDirection: 'row',
           backgroundColor: colors.border + '55',
-          borderRadius: RADII.md,
+          borderRadius: RADII.full,
           padding: TRACK_PADDING,
           marginHorizontal: SPACING.lg,
           height: 46,
@@ -57,7 +57,7 @@ export function ThemeSegmentedControl() {
           top: TRACK_PADDING,
           bottom: TRACK_PADDING,
           left: TRACK_PADDING,
-          borderRadius: RADII.sm,
+          borderRadius: RADII.full,
           // eslint-disable-next-line campfire/no-hardcoded-styles
           backgroundColor: '#B9FF3B', // D-07: neon accent pill
           shadowColor: colors.interactive.accent,
