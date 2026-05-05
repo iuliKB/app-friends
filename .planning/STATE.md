@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
 status: executing
-stopped_at: Phase 26 UI-SPEC approved
-last_updated: "2026-05-05T10:28:39.577Z"
-last_activity: 2026-05-05 -- Phase 26 planning complete
+stopped_at: Completed 26-01-PLAN.md
+last_updated: "2026-05-05T10:53:03.307Z"
+last_activity: 2026-05-05
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 7
-  percent: 54
+  completed_plans: 8
+  percent: 62
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 25 — auth-onboarding-errors
+**Current focus:** Phase 26 — home-chat-polish
 
 ## Current Position
 
-Phase: 26
-Plan: Not started
+Phase: 26 (home-chat-polish) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-05-05 -- Phase 26 planning complete
+Last activity: 2026-05-05
 
 ```
 v1.7 Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/5 phases)
@@ -71,6 +71,8 @@ Requirements covered: 0 / 27
 - [Phase 25]: birthday/[id].tsx error guard uses friendsError/refetchFriends — matches existing aliased destructure from useFriendsOfFriend
 - [Phase 25-auth-onboarding-errors]: OnboardingHintSheet uses no PanResponder and no backdrop tap-to-dismiss — only Get Started button closes it (D-11)
 - [Phase 25-auth-onboarding-errors]: AsyncStorage onboarding flag check gated on loading === false to prevent race where friends array is empty during initial data load
+- [Phase 26]: Skeleton condition is loading && friends.length === 0 — pull-to-refresh keeps existing content visible
+- [Phase 26]: CardStackView skeleton gated on cardWidth > 0 to match onLayout measurement pattern before rendering
 
 ### Roadmap Evolution
 
@@ -87,5 +89,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T04:02:35.603Z
-Stopped at: Phase 26 UI-SPEC approved
+Last session: 2026-05-05T10:53:03.303Z
+Stopped at: Completed 26-01-PLAN.md
