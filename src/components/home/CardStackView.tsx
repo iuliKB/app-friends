@@ -12,6 +12,7 @@ import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { supabase } from '@/lib/supabase';
 import { FriendSwipeCard } from './FriendSwipeCard';
+import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 // --- Stack depth config (D-06 — UI-SPEC Component Inventory: StackDepthEffect) ---
@@ -29,11 +30,12 @@ const STACK_CONFIGS = [
 
 export interface CardStackViewProps {
   friends: FriendWithStatus[];
+  loading?: boolean;
 }
 
 // --- CardStackView ---
 
-export function CardStackView({ friends }: CardStackViewProps) {
+export function CardStackView({ friends, loading }: CardStackViewProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -83,6 +85,20 @@ export function CardStackView({ friends }: CardStackViewProps) {
   const [containerWidth, setContainerWidth] = useState(0);
   // eslint-disable-next-line campfire/no-hardcoded-styles
   const cardWidth = containerWidth > 0 ? containerWidth * 0.8 : 0;
+
+  // Skeleton: show 2 placeholder cards when loading and no friends yet (HOME-01, D-03)
+  if (loading && friends.length === 0 && cardWidth > 0) {
+    return (
+      <View style={styles.container} onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
+        <View style={[styles.stackContainer, { width: cardWidth }]}>
+          <SkeletonPulse width={cardWidth} height={80} />
+          <View style={{ marginTop: SPACING.sm }}>
+            <SkeletonPulse width={cardWidth} height={80} />
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   // Deck: ALIVE + FADING only — DEAD friends never appear (CARD-04, D-13).
   // Computed at render time; HeartbeatTick in HomeScreen triggers re-renders to keep fresh.

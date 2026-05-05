@@ -214,13 +214,13 @@ export function HomeScreen() {
         {/* Radar / Cards crossfade */}
         <View style={styles.viewSwitcher}>
           <Animated.View style={{ opacity: radarOpacity }} pointerEvents={view === 'radar' ? 'auto' : 'none'}>
-            <RadarView friends={friends} />
+            <RadarView friends={friends} loading={loading} />
           </Animated.View>
           <Animated.View
             style={[styles.absoluteFill, { opacity: cardsOpacity }]}
             pointerEvents={view === 'cards' ? 'auto' : 'none'}
           >
-            <CardStackView friends={friends} />
+            <CardStackView friends={friends} loading={loading} />
           </Animated.View>
         </View>
 
