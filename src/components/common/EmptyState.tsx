@@ -63,7 +63,6 @@ export function EmptyState({
       )}
       <Text style={styles.heading}>{heading}</Text>
       <Text style={styles.body}>{body}</Text>
-      // POLISH-03 verified (Phase 24): ctaLabel + onCta props render PrimaryButton CTA — requirement satisfied.
       {ctaLabel && onCta && (
         <View style={styles.ctaWrapper}>
           <PrimaryButton title={ctaLabel} onPress={onCta} />

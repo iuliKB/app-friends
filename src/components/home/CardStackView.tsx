@@ -83,6 +83,8 @@ export function CardStackView({ friends, loading }: CardStackViewProps) {
 
   // Container width from onLayout — never from Dimensions.get (matches RadarView pattern)
   const [containerWidth, setContainerWidth] = useState(0);
+  // Deck index — must be declared before any early returns (Rules of Hooks)
+  const [currentIndex, setCurrentIndex] = useState(0);
   // eslint-disable-next-line campfire/no-hardcoded-styles
   const cardWidth = containerWidth > 0 ? containerWidth * 0.8 : 0;
 
@@ -105,9 +107,6 @@ export function CardStackView({ friends, loading }: CardStackViewProps) {
   const deck = friends.filter(
     (f) => computeHeartbeatState(f.status_expires_at, f.last_active_at) !== 'dead'
   );
-
-  // Deck state
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Empty deck — show friendly message instead of blank screen
   if (deck.length === 0) {
