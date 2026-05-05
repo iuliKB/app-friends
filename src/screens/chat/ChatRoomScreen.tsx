@@ -61,6 +61,7 @@ export function ChatRoomScreen({
     error,
     refetch,
     sendMessage,
+    retryMessage,
     sendImage,
     sendPoll,
     deleteMessage,
@@ -340,6 +341,7 @@ export function ChatRoomScreen({
                   onImagePress={(url) => setViewerImageUrl(url)}
                   currentUserId={currentUserId}
                   lastPollVoteEvent={lastPollVoteEvent}
+                  onRetry={(tempId, body) => void retryMessage(tempId, body)}
                 />
               </View>
             );
