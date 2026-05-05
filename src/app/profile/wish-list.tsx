@@ -275,7 +275,7 @@ export default function WishListScreen() {
           opacity: 0.4,
         },
         sheet: {
-          backgroundColor: colors.surface.base,
+          backgroundColor: colors.surface.card,
           borderTopLeftRadius: RADII.xl,
           borderTopRightRadius: RADII.xl,
           paddingHorizontal: SPACING.lg,
@@ -288,22 +288,50 @@ export default function WishListScreen() {
           backgroundColor: colors.border,
           alignSelf: 'center',
           marginTop: SPACING.md,
-          marginBottom: SPACING.lg,
+          marginBottom: SPACING.sm,
+        },
+        // Header row: Cancel | Title | spacer
+        sheetHeader: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: SPACING.md,
+          marginBottom: SPACING.sm,
+        },
+        sheetCancelText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.accent,
+          minWidth: 60,
         },
         sheetTitle: {
-          fontSize: FONT_SIZE.xl,
+          fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.display.semibold,
           color: colors.text.primary,
-          marginBottom: SPACING.lg,
         },
+        sheetHeaderSpacer: { minWidth: 60 },
+        // Grouped input card — surface.base inputs inside surface.card sheet
         sheetCard: {
-          backgroundColor: colors.surface.card,
+          backgroundColor: colors.surface.base,
           borderRadius: RADII.lg,
           overflow: 'hidden',
           marginBottom: SPACING.md,
         },
+        // Icon + label row inside card (matches edit profile fieldLabelRow)
+        sheetFieldLabel: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.md,
+          paddingTop: SPACING.sm,
+          gap: SPACING.xs,
+        },
+        sheetFieldLabelText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.secondary,
+        },
         sheetInput: {
-          height: 50,
+          height: 44,
           paddingHorizontal: SPACING.md,
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
@@ -528,25 +556,42 @@ export default function WishListScreen() {
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <View style={[styles.sheet, { paddingBottom: SPACING.lg + insets.bottom }]}>
               <View style={styles.sheetHandle} />
-              <Text style={styles.sheetTitle}>Add item</Text>
 
+              {/* Header row: Cancel | title | spacer */}
+              <View style={styles.sheetHeader}>
+                <TouchableOpacity onPress={closeAddSheet} disabled={addingWishItem}>
+                  <Text style={styles.sheetCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.sheetTitle}>Add item</Text>
+                <View style={styles.sheetHeaderSpacer} />
+              </View>
+
+              {/* Grouped field card — icon + label + input per row */}
               <View style={styles.sheetCard}>
+                <View style={styles.sheetFieldLabel}>
+                  <Ionicons name="gift-outline" size={12} color={colors.text.secondary} />
+                  <Text style={styles.sheetFieldLabelText}>Item title</Text>
+                </View>
                 <TextInput
                   style={styles.sheetInput}
                   value={newItemTitle}
                   onChangeText={setNewItemTitle}
-                  placeholder="Item title (required)"
+                  placeholder="Required"
                   placeholderTextColor={colors.text.secondary}
                   maxLength={120}
                   editable={!addingWishItem}
                   autoFocus
                 />
                 <View style={styles.sheetDivider} />
+                <View style={styles.sheetFieldLabel}>
+                  <Ionicons name="link-outline" size={12} color={colors.text.secondary} />
+                  <Text style={styles.sheetFieldLabelText}>Link</Text>
+                </View>
                 <TextInput
                   style={styles.sheetInput}
                   value={newItemUrl}
                   onChangeText={setNewItemUrl}
-                  placeholder="Link (optional)"
+                  placeholder="Optional"
                   placeholderTextColor={colors.text.secondary}
                   maxLength={500}
                   editable={!addingWishItem}
@@ -554,11 +599,15 @@ export default function WishListScreen() {
                   autoCapitalize="none"
                 />
                 <View style={styles.sheetDivider} />
+                <View style={styles.sheetFieldLabel}>
+                  <Ionicons name="reader-outline" size={12} color={colors.text.secondary} />
+                  <Text style={styles.sheetFieldLabelText}>Notes</Text>
+                </View>
                 <TextInput
                   style={styles.sheetInput}
                   value={newItemNotes}
                   onChangeText={setNewItemNotes}
-                  placeholder="Notes (optional)"
+                  placeholder="Optional"
                   placeholderTextColor={colors.text.secondary}
                   maxLength={200}
                   editable={!addingWishItem}
