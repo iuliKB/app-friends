@@ -463,17 +463,19 @@ ANIMATION.easing.standard // () => _inOut(_ease)
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`useChatRoom` refetch strategy**
    - What we know: `useChatRoom` fetches message history internally via `fetchMessages()`. It sets `error` state. It does not expose a `refetch` in its return signature.
    - What's unclear: Whether extracting and exposing `fetchMessages` as `refetch` would interfere with the realtime subscription setup.
    - Recommendation: Expose `refetch` as an alias for the internal `fetchMessages()` function. The subscription is independent of the initial fetch.
+   - RESOLVED: Plan 25-03 (Task 1) exposes `fetchMessages` as `refetch` in `useChatRoom`'s return object. The realtime subscription setup is independent of the initial fetch and is not affected.
 
 2. **HomeScreen error display placement**
    - What we know: `HomeScreen` shows friends + IOU summary + birthdays + streak + photos — all from different hooks. Each can independently fail.
    - What's unclear: Should there be one top-level ErrorDisplay or per-section error handling?
    - Recommendation: Per D-07, the error from `useHomeScreen` (friends fetch) is the primary one. Show `ErrorDisplay mode='screen'` for `useHomeScreen` errors only. Widget hooks (`useIOUSummary`, `useUpcomingBirthdays`) already have silent-error behaviour per their original design contracts — leave those as-is per scope D-05 (screens that call Supabase-backed hooks).
+   - RESOLVED: Plan 25-03 (Task 2) adds a single top-level `ErrorDisplay mode='screen'` guard in `HomeScreen.tsx` for `useHomeScreen` errors only. Widget hook errors remain silent per D-05 and their original design contracts.
 
 ---
 
@@ -580,4 +582,3 @@ None — no test infrastructure to create. All testing is manual.
 - Pitfalls: HIGH — all pitfalls identified from direct code inspection, not assumed
 
 **Research date:** 2026-05-05
-**Valid until:** 2026-06-05 (stable — no fast-moving dependencies)
