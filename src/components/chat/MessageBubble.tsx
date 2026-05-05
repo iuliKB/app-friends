@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
@@ -35,6 +36,8 @@ interface MessageBubbleProps {
   onImagePress?: (imageUrl: string) => void;
   // Phase 17 additions:
   lastPollVoteEvent?: { pollId: string; timestamp: number } | null;
+  // Phase 26 additions:
+  onRetry?: (tempId: string, body: string) => void;  // CHAT-03: retry failed optimistic message
 }
 
 const PRESET_EMOJIS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
@@ -177,6 +180,7 @@ export function MessageBubble({
   currentUserId = '',
   onImagePress,
   lastPollVoteEvent,
+  onRetry,
 }: MessageBubbleProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => StyleSheet.create({
@@ -362,6 +366,26 @@ export function MessageBubble({
       paddingHorizontal: SPACING.lg,
       marginBottom: SPACING.xs,
     },
+    // Phase 26 — pending/failed states (CHAT-03)
+    pendingBubble: {
+      opacity: 0.7,
+    },
+    failedBubble: {
+      borderWidth: 2,
+      borderColor: colors.interactive.destructive,
+    },
+    clockRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: SPACING.xs,
+      marginTop: SPACING.xs,
+    },
+    retryLabel: {
+      fontSize: FONT_SIZE.xs,
+      fontFamily: FONT_FAMILY.body.regular,
+      color: colors.interactive.destructive,
+      marginTop: SPACING.xs,
+    },
     // Phase 16 — image bubble styles
     imageBubbleWrapper: {
       width: 240,
@@ -484,6 +508,7 @@ export function MessageBubble({
               key={emoji}
               onPress={() => {
                 closeMenu();
+                void Haptics.selectionAsync();
                 onReact(message.id, emoji);
               }}
               style={[styles.emojiButton, isActive && styles.emojiButtonActive]}
@@ -573,6 +598,8 @@ export function MessageBubble({
               styles.ownBubble,
               isImage && { paddingHorizontal: 0, paddingVertical: 0 },
               !!message.reply_to_message_id && styles.replyMinWidth,
+              message.pending && styles.pendingBubble,   // D-17: ~70% opacity
+              message.failed && styles.failedBubble,     // D-18: red border
             ]}
           >
             {message.reply_to_message_id && (
@@ -611,6 +638,23 @@ export function MessageBubble({
               <Text style={isDeleted ? styles.deletedBody : styles.ownBody}>{bodyText}</Text>
             )}
           </View>
+          {/* CHAT-03: clock icon for pending text messages */}
+          {message.pending && !isImage && (
+            <View style={styles.clockRow}>
+              {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+              <Ionicons name="time-outline" size={12} color="rgba(245,245,245,0.5)" />
+              <Text style={styles.ownTimestamp}>Sending…</Text>
+            </View>
+          )}
+          {/* CHAT-03: retry tap for failed text messages */}
+          {message.failed && (
+            <TouchableOpacity
+              onPress={() => onRetry?.(message.tempId!, message.body ?? '')}
+              accessibilityLabel="Message failed to send. Tap to retry."
+            >
+              <Text style={styles.retryLabel}>Tap to retry</Text>
+            </TouchableOpacity>
+          )}
           {/* ReactionBadgeRow — D-04, D-05. Sibling to bubble, NOT inside it (Pitfall 5) */}
           {(message.reactions?.length ?? 0) > 0 && (
             <View style={styles.reactionBadgeRow}>
