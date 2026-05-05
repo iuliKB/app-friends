@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase';
 import { useChatStore } from '@/stores/useChatStore';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { WishListItem } from '@/components/squad/WishListItem';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useFriendWishList } from '@/hooks/useFriendWishList';
 import { useFriendsOfFriend, type FriendOfFriend } from '@/hooks/useFriendsOfFriend';
 
@@ -198,6 +199,18 @@ export default function FriendBirthdayPage() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator color={colors.interactive.accent} />
+      </View>
+    );
+  }
+
+  if (friendsError) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load mutual friends."
+          onRetry={refetchFriends}
+        />
       </View>
     );
   }

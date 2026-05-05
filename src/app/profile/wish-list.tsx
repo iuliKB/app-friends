@@ -11,12 +11,13 @@ import {
 } from 'react-native';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useMyWishList } from '@/hooks/useMyWishList';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 export default function WishListScreen() {
   const { colors } = useTheme();
-  const { items: wishListItems, addItem, deleteItem, loading } = useMyWishList();
+  const { items: wishListItems, addItem, deleteItem, loading, error, refetch } = useMyWishList();
   const [addingWishItem, setAddingWishItem] = useState(false);
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemUrl, setNewItemUrl] = useState('');
@@ -128,6 +129,18 @@ export default function WishListScreen() {
   }), [colors]);
 
   if (loading) return <LoadingIndicator />;
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load wish list."
+          onRetry={refetch}
+        />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView

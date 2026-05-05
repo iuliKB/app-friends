@@ -16,6 +16,7 @@ import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { GalleryViewerModal } from '@/components/plans/GalleryViewerModal';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useAllPlanPhotos } from '@/hooks/useAllPlanPhotos';
 import type { PlanPhotoWithUploader } from '@/types/database';
 import type { PlanPhotoGroup } from '@/hooks/useAllPlanPhotos';
@@ -41,7 +42,7 @@ export function MemoriesTabContent() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const session = useAuthStore((s) => s.session);
-  const { groups, isLoading, refetch, deletePhoto } = useAllPlanPhotos();
+  const { groups, isLoading, error, refetch, deletePhoto } = useAllPlanPhotos();
 
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerPhotos, setViewerPhotos] = useState<PlanPhotoWithUploader[]>([]);
@@ -122,6 +123,18 @@ export function MemoriesTabContent() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.interactive.accent} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load memories."
+          onRetry={refetch}
+        />
       </View>
     );
   }

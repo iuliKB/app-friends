@@ -29,6 +29,7 @@ import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useStreakData } from '@/hooks/useStreakData';
 import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -289,6 +290,18 @@ export default function SquadScreen() {
       }),
     [colors]
   );
+
+  if (streak.error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
+        <ErrorDisplay
+          mode="screen"
+          message="Couldn't load your streak."
+          onRetry={streak.refetch}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + SPACING.sm }]}>
