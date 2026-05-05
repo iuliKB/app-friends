@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -15,15 +16,56 @@ import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useMyWishList } from '@/hooks/useMyWishList';
+import type { WishListItem } from '@/hooks/useMyWishList';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 export default function WishListScreen() {
   const { colors } = useTheme();
-  const { items: wishListItems, addItem, deleteItem, loading, error, refetch } = useMyWishList();
+  const {
+    items: wishListItems,
+    addItem,
+    updateItem,
+    deleteItem,
+    loading,
+    error,
+    refetch,
+  } = useMyWishList();
+
+  // Add form
   const [addingWishItem, setAddingWishItem] = useState(false);
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemUrl, setNewItemUrl] = useState('');
   const [newItemNotes, setNewItemNotes] = useState('');
+
+  // Edit state — one item at a time
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editUrl, setEditUrl] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  function startEditing(item: WishListItem) {
+    setEditingId(item.id);
+    setEditTitle(item.title);
+    setEditUrl(item.url ?? '');
+    setEditNotes(item.notes ?? '');
+  }
+
+  function cancelEditing() {
+    setEditingId(null);
+    setEditTitle('');
+    setEditUrl('');
+    setEditNotes('');
+  }
+
+  async function handleSaveEdit(itemId: string) {
+    const trimmed = editTitle.trim();
+    if (!trimmed || savingEdit) return;
+    setSavingEdit(true);
+    await updateItem(itemId, trimmed, editUrl.trim() || undefined, editNotes.trim() || undefined);
+    setSavingEdit(false);
+    cancelEditing();
+  }
 
   async function handleAddWishItem() {
     const trimmedTitle = newItemTitle.trim();
@@ -49,7 +91,7 @@ export default function WishListScreen() {
           paddingBottom: SPACING.xxl * 2,
         },
 
-        // ── Section label ─────────────────────────────────────────
+        // ── Section label ────────────────────────────────────────
         sectionLabel: {
           fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.medium,
@@ -58,13 +100,21 @@ export default function WishListScreen() {
           marginBottom: SPACING.sm,
           marginLeft: SPACING.xs,
         },
+        sectionLabelFirst: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.secondary,
+          marginTop: SPACING.md,
+          marginBottom: SPACING.sm,
+          marginLeft: SPACING.xs,
+        },
 
-        // ── Item card ─────────────────────────────────────────────
+        // ── Item card (display mode) ──────────────────────────────
         itemCard: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
           flexDirection: 'row',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           paddingHorizontal: SPACING.md,
           paddingVertical: SPACING.md,
           marginBottom: SPACING.sm,
@@ -78,6 +128,7 @@ export default function WishListScreen() {
           justifyContent: 'center',
           marginRight: SPACING.md,
           flexShrink: 0,
+          marginTop: 1,
         },
         itemContent: { flex: 1 },
         itemTitle: {
@@ -97,19 +148,69 @@ export default function WishListScreen() {
           color: colors.text.secondary,
           marginTop: SPACING.xs,
         },
-        deleteBtn: {
+        itemActions: {
+          flexDirection: 'row',
+          gap: SPACING.xs,
+          flexShrink: 0,
+          marginLeft: SPACING.sm,
+        },
+        iconBtn: {
           width: 36,
           height: 36,
           alignItems: 'center',
           justifyContent: 'center',
-          marginLeft: SPACING.sm,
-          flexShrink: 0,
+        },
+
+        // ── Item card (edit mode) ─────────────────────────────────
+        editCard: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          marginBottom: SPACING.sm,
+          overflow: 'hidden',
+        },
+        editInput: {
+          height: 46,
+          paddingHorizontal: SPACING.md,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        editDivider: {
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: colors.border,
+          marginLeft: SPACING.md,
+        },
+        editActions: {
+          flexDirection: 'row',
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
+        },
+        editActionBtn: {
+          flex: 1,
+          height: 44,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        editActionDivider: {
+          width: StyleSheet.hairlineWidth,
+          backgroundColor: colors.border,
+        },
+        editCancelText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        editSaveText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.interactive.accent,
         },
 
         // ── Empty state ───────────────────────────────────────────
         emptyState: {
           alignItems: 'center',
-          paddingVertical: SPACING.xxl,
+          paddingTop: SPACING.xxl,
+          paddingBottom: SPACING.xl,
           gap: SPACING.md,
         },
         emptyTitle: {
@@ -156,9 +257,7 @@ export default function WishListScreen() {
           justifyContent: 'center',
           gap: SPACING.sm,
         },
-        addButtonDisabled: {
-          opacity: 0.4,
-        },
+        addButtonDisabled: { opacity: 0.4 },
         addButtonText: {
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.display.semibold,
@@ -219,42 +318,115 @@ export default function WishListScreen() {
           </View>
         ) : (
           <>
-            <Text style={styles.sectionLabel}>Your items</Text>
-            {wishListItems.map((item) => (
-              <View key={item.id} style={styles.itemCard}>
-                <View style={styles.itemIconWrap}>
-                  <Ionicons name="gift-outline" size={18} color={colors.interactive.accent} />
-                </View>
-                <View style={styles.itemContent}>
-                  <Text style={styles.itemTitle} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  {item.url ? (
+            <Text style={styles.sectionLabelFirst}>Your items</Text>
+            {wishListItems.map((item) =>
+              editingId === item.id ? (
+                // ── Edit mode ──
+                <View key={item.id} style={styles.editCard}>
+                  <TextInput
+                    style={styles.editInput}
+                    value={editTitle}
+                    onChangeText={setEditTitle}
+                    placeholder="Item title"
+                    placeholderTextColor={colors.text.secondary}
+                    maxLength={120}
+                    autoFocus
+                  />
+                  <View style={styles.editDivider} />
+                  <TextInput
+                    style={styles.editInput}
+                    value={editUrl}
+                    onChangeText={setEditUrl}
+                    placeholder="Link (optional)"
+                    placeholderTextColor={colors.text.secondary}
+                    maxLength={500}
+                    keyboardType="url"
+                    autoCapitalize="none"
+                  />
+                  <View style={styles.editDivider} />
+                  <TextInput
+                    style={styles.editInput}
+                    value={editNotes}
+                    onChangeText={setEditNotes}
+                    placeholder="Notes (optional)"
+                    placeholderTextColor={colors.text.secondary}
+                    maxLength={200}
+                  />
+                  <View style={styles.editActions}>
                     <TouchableOpacity
-                      onPress={() => void Linking.openURL(item.url!)}
-                      activeOpacity={0.7}
+                      style={styles.editActionBtn}
+                      onPress={cancelEditing}
+                      disabled={savingEdit}
                     >
-                      <Text style={styles.itemUrl} numberOfLines={1}>
-                        {item.url}
-                      </Text>
+                      <Text style={styles.editCancelText}>Cancel</Text>
                     </TouchableOpacity>
-                  ) : null}
-                  {item.notes ? (
-                    <Text style={styles.itemNotes} numberOfLines={2}>
-                      {item.notes}
-                    </Text>
-                  ) : null}
+                    <View style={styles.editActionDivider} />
+                    <TouchableOpacity
+                      style={styles.editActionBtn}
+                      onPress={() => void handleSaveEdit(item.id)}
+                      disabled={!editTitle.trim() || savingEdit}
+                    >
+                      {savingEdit ? (
+                        <ActivityIndicator size="small" color={colors.interactive.accent} />
+                      ) : (
+                        <Text style={[styles.editSaveText, !editTitle.trim() && { opacity: 0.4 }]}>
+                          Save
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={() => void deleteItem(item.id)}
-                  accessibilityLabel={`Remove ${item.title}`}
-                  accessibilityRole="button"
-                >
-                  <Ionicons name="trash-outline" size={18} color={colors.interactive.destructive} />
-                </TouchableOpacity>
-              </View>
-            ))}
+              ) : (
+                // ── Display mode ──
+                <View key={item.id} style={styles.itemCard}>
+                  <View style={styles.itemIconWrap}>
+                    <Ionicons name="gift-outline" size={18} color={colors.interactive.accent} />
+                  </View>
+                  <View style={styles.itemContent}>
+                    <Text style={styles.itemTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    {item.url ? (
+                      <TouchableOpacity
+                        onPress={() => void Linking.openURL(item.url!)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.itemUrl} numberOfLines={1}>
+                          {item.url}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null}
+                    {item.notes ? (
+                      <Text style={styles.itemNotes} numberOfLines={2}>
+                        {item.notes}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <View style={styles.itemActions}>
+                    <TouchableOpacity
+                      style={styles.iconBtn}
+                      onPress={() => startEditing(item)}
+                      accessibilityLabel={`Edit ${item.title}`}
+                      accessibilityRole="button"
+                    >
+                      <Ionicons name="pencil-outline" size={17} color={colors.text.secondary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.iconBtn}
+                      onPress={() => void deleteItem(item.id)}
+                      accessibilityLabel={`Remove ${item.title}`}
+                      accessibilityRole="button"
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={17}
+                        color={colors.interactive.destructive}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )
+            )}
           </>
         )}
 

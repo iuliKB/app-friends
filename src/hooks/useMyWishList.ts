@@ -1,6 +1,6 @@
 // Phase 11 v1.4 — useMyWishList (D-04, D-05)
 // CRUD for the current user's own wish list items.
-// Owner can add, delete. No claim information returned (owner cannot see claims — D-10).
+// Owner can add, edit, delete. No claim information returned (owner cannot see claims — D-10).
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -59,6 +59,17 @@ export function useMyWishList() {
     return { error: insertErr };
   }
 
+  async function updateItem(itemId: string, title: string, url?: string, notes?: string) {
+    if (!userId) return { error: new Error('Not authenticated') };
+    const { error: updateErr } = await supabase
+      .from('wish_list_items')
+      .update({ title, url: url ?? null, notes: notes ?? null })
+      .eq('id', itemId)
+      .eq('user_id', userId);
+    if (!updateErr) await refetch();
+    return { error: updateErr };
+  }
+
   async function deleteItem(itemId: string) {
     if (!userId) return { error: new Error('Not authenticated') };
     const { error: deleteErr } = await supabase
@@ -70,5 +81,5 @@ export function useMyWishList() {
     return { error: deleteErr };
   }
 
-  return { items, loading, error, refetch, addItem, deleteItem };
+  return { items, loading, error, refetch, addItem, updateItem, deleteItem };
 }
