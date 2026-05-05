@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
-status: verifying
-stopped_at: Phase 27 context gathered
-last_updated: "2026-05-05T18:03:06.961Z"
+status: executing
+stopped_at: Completed 27-01-PLAN.md — Wave 0 test scaffolds
+last_updated: "2026-05-05T20:34:49.726Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_plans: 18
+  completed_plans: 14
+  percent: 78
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 26 — home-chat-polish
+**Current focus:** Phase 27 — plans-squad-polish
 
 ## Current Position
 
-Phase: 27
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 27 (plans-squad-polish) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
 Last activity: 2026-05-05
 
 ```
@@ -80,6 +80,9 @@ Requirements covered: 0 / 27
 - [Phase 26-home-chat-polish]: failed: true mutation on sendMessage error replaces prev.filter remove — user sees content and can retry
 - [Phase 26-home-chat-polish]: onRetry wrapped in void cast in ChatRoomScreen — retryMessage returns Promise but onRetry prop is void
 - [Phase 26]: bubbleScaleAnim wraps own and others TouchableOpacity — scale fires only after all guards pass, ensuring it matches menu open
+- [Phase 27]: jest.config.js: node env + custom RN mock — jest-expo broken on RN 0.83.6; react-native preset setup.js TypeScript parse fails; TurboModuleRegistry DeviceInfo not available in Node
+- [Phase 27]: it.failing() for TDD RED scaffolds — wave 0 tests asserting not-yet-implemented behavior; suite exits 0 while preserving RED intent; change to plain it() when implementation lands
+- [Phase 27]: getByLabelText() replaces getByA11yLabel() — RTLN v13 removed legacy a11y query aliases; getByLabelText matches accessibilityLabel props
 
 ### Roadmap Evolution
 
@@ -96,5 +99,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T18:03:06.957Z
-Stopped at: Phase 27 context gathered
+Last session: 2026-05-05T20:34:49.722Z
+Stopped at: Completed 27-01-PLAN.md — Wave 0 test scaffolds
