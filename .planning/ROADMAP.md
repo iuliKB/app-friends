@@ -204,7 +204,9 @@ Plans:
   1. App icon on the device home screen shows the final 1024×1024 Campfire branded icon — no Expo placeholder
   2. Launching the app shows a branded splash screen with a smooth fade transition into the first screen
   3. Splash screen uses the correct background treatment for both light and dark OS mode — no jarring contrast mismatch on launch
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 28-01-PLAN.md — BRAND-01/02/03: android adaptiveIcon + expo-splash-screen plugin (light/dark) + SplashScreen.setOptions fade
 **UI hint**: yes
 
 ## Progress
@@ -227,8 +229,8 @@ Plans:
 | 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete    | 2026-05-05 |
 | 27. Plans & Squad Polish | v1.7 | 5/5 | Complete    | 2026-05-05 |
-| 28. Branding | v1.7 | 0/? | Not started | - |
+| 28. Branding | v1.7 | 0/1 | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-05-05 — Phase 27 plans defined (5 plans, 4 waves)*
+*Roadmap updated: 2026-05-06 — Phase 28 plans defined (1 plan, 1 wave)*
