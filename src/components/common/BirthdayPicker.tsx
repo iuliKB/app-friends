@@ -9,118 +9,149 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SPACING } from '@/theme';
 
-// ---------------------------------------------------------------------------
-// Data constants
-// ---------------------------------------------------------------------------
-
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 const MONTH_NAMES_FULL = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_DATE = new Date(CURRENT_YEAR - 100, 0, 1);
 const MAX_DATE = new Date();
 
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
-
 interface BirthdayPickerProps {
-  month: number | null; // 1-12 or null
-  day: number | null;   // 1-31 or null
-  year: number | null;  // 4-digit year or null
+  month: number | null;
+  day: number | null;
+  year: number | null;
   onChange: (month: number | null, day: number | null, year: number | null) => void;
   disabled?: boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
-export function BirthdayPicker({ month, day, year, onChange, disabled = false }: BirthdayPickerProps) {
+export function BirthdayPicker({
+  month,
+  day,
+  year,
+  onChange,
+  disabled = false,
+}: BirthdayPickerProps) {
   const { colors } = useTheme();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerDate, setPickerDate] = useState<Date>(new Date(1990, 0, 1));
 
-  const styles = useMemo(() => StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      gap: SPACING.md,
-    },
-    trigger: {
-      flex: 1,
-      height: 52,
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      paddingHorizontal: SPACING.lg,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    triggerDisabled: {
-      opacity: 0.5,
-    },
-    triggerTextPlaceholder: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    triggerTextSelected: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    clearLink: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.accent,
-      textAlign: 'right',
-      marginTop: SPACING.xs,
-    },
-    modalBackdrop: {
-      flex: 1,
-      justifyContent: 'flex-end',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    sheet: {
-      backgroundColor: colors.surface.card,
-      borderTopLeftRadius: RADII.lg,
-      borderTopRightRadius: RADII.lg,
-      paddingBottom: SPACING.xxl,
-    },
-    sheetHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    sheetTitle: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    doneButton: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.interactive.accent,
-    },
-    pickerCenter: {
-      alignItems: 'center',
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: 'row',
+          gap: SPACING.sm,
+        },
+        // Flat trigger — surface.base bg contrasts against outer surface.card
+        trigger: {
+          flex: 1,
+          height: 44,
+          backgroundColor: colors.surface.base,
+          borderRadius: RADII.md,
+          paddingHorizontal: SPACING.md,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        triggerDisabled: {
+          opacity: 0.5,
+        },
+        triggerTextPlaceholder: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        triggerTextSelected: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.primary,
+        },
+        // Chip-style Clear button — small, left-aligned, icon + text
+        clearChip: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+          alignSelf: 'flex-start',
+          marginTop: SPACING.sm,
+          backgroundColor: colors.border + '80',
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+        },
+        clearChipText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.secondary,
+        },
+        // Picker modal
+        modalBackdrop: {
+          flex: 1,
+          justifyContent: 'flex-end',
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(0,0,0,0.5)',
+        },
+        sheet: {
+          backgroundColor: colors.surface.card,
+          borderTopLeftRadius: RADII.lg,
+          borderTopRightRadius: RADII.lg,
+          paddingBottom: SPACING.xxl,
+        },
+        sheetHeader: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        sheetTitle: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        doneButton: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.interactive.accent,
+        },
+        pickerCenter: {
+          alignItems: 'center',
+        },
+      }),
+    [colors]
+  );
 
   function handleOpenPicker() {
     if (disabled) return;
@@ -158,7 +189,6 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
 
   return (
     <View>
-      {/* Three triggers side by side — all open the same native picker */}
       <View style={styles.row}>
         <TouchableOpacity
           style={[styles.trigger, disabled && styles.triggerDisabled]}
@@ -197,18 +227,20 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
         </TouchableOpacity>
       </View>
 
-      {/* Clear Birthday link — shown only when all three are set */}
+      {/* Chip-style Clear button */}
       {month !== null && day !== null && year !== null && (
         <TouchableOpacity
+          style={styles.clearChip}
           onPress={handleClearBirthday}
           accessibilityLabel="Clear birthday"
           activeOpacity={0.7}
         >
-          <Text style={styles.clearLink}>Clear Birthday</Text>
+          <Ionicons name="close-circle-outline" size={12} color={colors.text.secondary} />
+          <Text style={styles.clearChipText}>Clear birthday</Text>
         </TouchableOpacity>
       )}
 
-      {/* iOS: modal with native spinner + Done button */}
+      {/* iOS: modal with native spinner */}
       {Platform.OS === 'ios' && (
         <Modal
           visible={pickerVisible}
@@ -241,7 +273,7 @@ export function BirthdayPicker({ month, day, year, onChange, disabled = false }:
         </Modal>
       )}
 
-      {/* Android: native picker shown inline (has built-in OK/Cancel) */}
+      {/* Android: inline picker */}
       {Platform.OS === 'android' && pickerVisible && (
         <DateTimePicker
           value={pickerDate}

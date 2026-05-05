@@ -114,7 +114,7 @@ export default function EditProfileScreen() {
           paddingBottom: SPACING.xxl * 2,
         },
 
-        // ── Single unified card ───────────────────────────────────
+        // ── Unified card ──────────────────────────────────────────
         card: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
@@ -122,13 +122,18 @@ export default function EditProfileScreen() {
           marginTop: SPACING.lg,
         },
 
-        // Field: tiny label above + input below
+        // Label row: icon + label left | optional right element
         fieldLabelRow: {
           flexDirection: 'row',
           alignItems: 'center',
+          justifyContent: 'space-between',
           paddingHorizontal: SPACING.md,
-          paddingTop: SPACING.md, // 12px — breathing room from card top / divider
-          paddingBottom: SPACING.xs, // 4px — small gap between label and input
+          paddingTop: SPACING.md,
+          paddingBottom: SPACING.xs,
+        },
+        fieldLabelLeft: {
+          flexDirection: 'row',
+          alignItems: 'center',
           gap: SPACING.xs,
         },
         fieldLabel: {
@@ -136,6 +141,13 @@ export default function EditProfileScreen() {
           fontFamily: FONT_FAMILY.body.medium,
           color: colors.text.secondary,
         },
+        // Char count sits inline in the label row (right side)
+        charCountInline: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+
         textInput: {
           height: 40,
           paddingHorizontal: SPACING.md,
@@ -144,23 +156,14 @@ export default function EditProfileScreen() {
           color: colors.text.primary,
         },
         inputDisabled: { opacity: 0.5 },
-        charCount: {
-          fontSize: FONT_SIZE.xs,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.secondary,
-          textAlign: 'right',
-          paddingHorizontal: SPACING.md,
-          paddingBottom: SPACING.sm,
-        },
 
-        // ── Divider between fields ────────────────────────────────
         divider: {
           height: StyleSheet.hairlineWidth,
           backgroundColor: colors.border,
           marginLeft: SPACING.md,
         },
 
-        // ── Read-only username field ──────────────────────────────
+        // Read-only username row
         readOnlyRow: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -168,7 +171,6 @@ export default function EditProfileScreen() {
           paddingHorizontal: SPACING.md,
           gap: SPACING.sm,
           opacity: 0.6,
-          // no paddingBottom — conflicts with fixed height, shifts content off-center
         },
         readOnlyText: {
           flex: 1,
@@ -177,13 +179,13 @@ export default function EditProfileScreen() {
           color: colors.text.secondary,
         },
 
-        // ── Birthday field (inside same card) ─────────────────────
+        // Birthday pickers sit inside the card with standard padding
         birthdayRow: {
           paddingHorizontal: SPACING.md,
-          paddingBottom: SPACING.sm, // 8px — matches charCount.paddingBottom for consistency
+          paddingBottom: SPACING.sm,
         },
 
-        // ── Save button ───────────────────────────────────────────
+        // Save button
         buttonWrapper: { marginTop: SPACING.lg },
         hintText: {
           fontSize: FONT_SIZE.xs,
@@ -211,12 +213,16 @@ export default function EditProfileScreen() {
       >
         <ScreenHeader title="Edit Profile" />
 
-        {/* ── Single card: Display name / Username / Birthday ── */}
         <View style={styles.card}>
-          {/* Display name */}
+          {/* ── Display name — char count inline in label row ── */}
           <View style={styles.fieldLabelRow}>
-            <Ionicons name="person-outline" size={12} color={colors.text.secondary} />
-            <Text style={styles.fieldLabel}>Display name</Text>
+            <View style={styles.fieldLabelLeft}>
+              <Ionicons name="person-outline" size={12} color={colors.text.secondary} />
+              <Text style={styles.fieldLabel}>Display name</Text>
+            </View>
+            <Text style={styles.charCountInline}>
+              {displayName.length}/{APP_CONFIG.displayNameMaxLength}
+            </Text>
           </View>
           <TextInput
             style={[styles.textInput, saving && styles.inputDisabled]}
@@ -227,16 +233,15 @@ export default function EditProfileScreen() {
             maxLength={APP_CONFIG.displayNameMaxLength}
             editable={!saving}
           />
-          <Text style={styles.charCount}>
-            {displayName.length}/{APP_CONFIG.displayNameMaxLength}
-          </Text>
 
           <View style={styles.divider} />
 
-          {/* Username (read-only) */}
+          {/* ── Username (read-only) ── */}
           <View style={styles.fieldLabelRow}>
-            <Ionicons name="at-outline" size={12} color={colors.text.secondary} />
-            <Text style={styles.fieldLabel}>Username</Text>
+            <View style={styles.fieldLabelLeft}>
+              <Ionicons name="at-outline" size={12} color={colors.text.secondary} />
+              <Text style={styles.fieldLabel}>Username</Text>
+            </View>
           </View>
           <View style={styles.readOnlyRow}>
             <Ionicons name="lock-closed-outline" size={14} color={colors.text.secondary} />
@@ -245,10 +250,12 @@ export default function EditProfileScreen() {
 
           <View style={styles.divider} />
 
-          {/* Birthday */}
+          {/* ── Birthday ── */}
           <View style={styles.fieldLabelRow}>
-            <Ionicons name="calendar-outline" size={12} color={colors.text.secondary} />
-            <Text style={styles.fieldLabel}>Birthday</Text>
+            <View style={styles.fieldLabelLeft}>
+              <Ionicons name="calendar-outline" size={12} color={colors.text.secondary} />
+              <Text style={styles.fieldLabel}>Birthday</Text>
+            </View>
           </View>
           <View style={styles.birthdayRow}>
             <BirthdayPicker
@@ -265,7 +272,6 @@ export default function EditProfileScreen() {
           </View>
         </View>
 
-        {/* ── Save ── */}
         <View style={styles.buttonWrapper}>
           <PrimaryButton
             title="Save Changes"
