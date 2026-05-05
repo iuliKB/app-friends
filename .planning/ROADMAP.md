@@ -133,7 +133,7 @@
   4. Any PrimaryButton wired to an async operation disables itself and shows an inline spinner while the operation is in progress
 **Plans**: 2 plans
 Plans:
-- [ ] 24-01-PLAN.md — Animation tokens (src/theme/animation.ts) + barrel export + unit tests
+- [x] 24-01-PLAN.md — Animation tokens (src/theme/animation.ts) + barrel export + unit tests
 - [ ] 24-02-PLAN.md — SkeletonPulse component + POLISH-03/POLISH-04 verification
 **UI hint**: yes
 
@@ -204,7 +204,7 @@ Plans:
 | 21. Gallery Foundation | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 22. Gallery UI | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
-| 24. Polish Foundation | v1.7 | 0/2 | Not started | - |
+| 24. Polish Foundation | v1.7 | 1/2 | In Progress|  |
 | 25. Auth, Onboarding & Errors | v1.7 | 0/? | Not started | - |
 | 26. Home & Chat Polish | v1.7 | 0/? | Not started | - |
 | 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
