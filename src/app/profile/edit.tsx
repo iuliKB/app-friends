@@ -127,7 +127,8 @@ export default function EditProfileScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: SPACING.md,
-          paddingTop: SPACING.sm,
+          paddingTop: SPACING.md,   // 12px — breathing room from card top / divider
+          paddingBottom: SPACING.xs, // 4px — small gap between label and input
           gap: SPACING.xs,
         },
         fieldLabel: {
@@ -167,7 +168,7 @@ export default function EditProfileScreen() {
           paddingHorizontal: SPACING.md,
           gap: SPACING.sm,
           opacity: 0.6,
-          paddingBottom: SPACING.sm,
+          // no paddingBottom — conflicts with fixed height, shifts content off-center
         },
         readOnlyText: {
           flex: 1,
@@ -179,7 +180,7 @@ export default function EditProfileScreen() {
         // ── Birthday field (inside same card) ─────────────────────
         birthdayRow: {
           paddingHorizontal: SPACING.md,
-          paddingBottom: SPACING.md,
+          paddingBottom: SPACING.sm, // 8px — matches charCount.paddingBottom for consistency
         },
 
         // ── Save button ───────────────────────────────────────────
