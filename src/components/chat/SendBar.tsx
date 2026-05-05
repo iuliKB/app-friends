@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 
 export type AttachmentAction = 'poll' | 'split' | 'todo';
@@ -175,6 +176,7 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
     if (!canSend) return;
     const body = text.trim();
     setText('');
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onSend(body);
     onClearReply?.();   // Phase 14: clear reply bar after send
   }
