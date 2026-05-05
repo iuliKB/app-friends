@@ -4,11 +4,11 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { useChatList } from '@/hooks/useChatList';
 import { ChatListRow } from '@/components/chat/ChatListRow';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
-import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import type { ChatListItem } from '@/types/chat';
 
 export function ChatListScreen() {
@@ -57,7 +57,16 @@ export function ChatListScreen() {
   }), [colors]);
 
   if (loading && chatList.length === 0) {
-    return <LoadingIndicator />;
+    return (
+      <View style={[styles.list, { paddingTop: insets.top }]}>
+        <View style={{ paddingTop: SPACING.sm, paddingHorizontal: SPACING.lg }}>
+          <ScreenHeader title="Chats" />
+        </View>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <ChatSkeletonRow key={i} />
+        ))}
+      </View>
+    );
   }
 
   if (error) {
@@ -74,34 +83,54 @@ export function ChatListScreen() {
 
   return (
     <View style={[styles.list, { paddingTop: insets.top }]}>
-    <FlatList
-      data={chatList}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
-      ListHeaderComponent={
-        <View style={{ paddingTop: SPACING.sm, paddingHorizontal: SPACING.lg }}>
-          <ScreenHeader title="Chats" />
-        </View>
-      }
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          tintColor={colors.interactive.accent}
-        />
-      }
-      contentContainerStyle={chatList.length === 0 ? styles.emptyList : undefined}
-      style={styles.flatList}
-      ListEmptyComponent={
-        <EmptyState
-          icon="chatbubbles-outline"
-          iconType="ionicons"
-          heading="No conversations yet"
-          body="Start a DM from a friend's card, or create a plan to get a group chat going."
-        />
-      }
-    />
+      <FlatList
+        data={chatList}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ChatListRow item={item} onPress={() => handleChatPress(item)} />}
+        ListHeaderComponent={
+          <View style={{ paddingTop: SPACING.sm, paddingHorizontal: SPACING.lg }}>
+            <ScreenHeader title="Chats" />
+          </View>
+        }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.interactive.accent}
+          />
+        }
+        contentContainerStyle={chatList.length === 0 ? styles.emptyList : undefined}
+        style={styles.flatList}
+        ListEmptyComponent={
+          <EmptyState
+            icon="chatbubbles-outline"
+            iconType="ionicons"
+            heading="No conversations yet"
+            body="Start a DM from a friend's card, or create a plan to get a group chat going."
+          />
+        }
+      />
+    </View>
+  );
+}
+
+function ChatSkeletonRow() {
+  return (
+    <View
+      style={{
+        height: 72,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: SPACING.lg,
+        gap: SPACING.md,
+      }}
+    >
+      <SkeletonPulse width={44} height={44} />
+      <View style={{ flex: 1, gap: SPACING.xs }}>
+        <SkeletonPulse width="100%" height={14} />
+        <SkeletonPulse width="100%" height={12} />
+      </View>
     </View>
   );
 }
