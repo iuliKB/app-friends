@@ -127,7 +127,7 @@ export default function EditProfileScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: SPACING.md,
-          paddingTop: SPACING.md,   // 12px — breathing room from card top / divider
+          paddingTop: SPACING.md, // 12px — breathing room from card top / divider
           paddingBottom: SPACING.xs, // 4px — small gap between label and input
           gap: SPACING.xs,
         },
