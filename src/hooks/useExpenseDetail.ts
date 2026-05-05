@@ -171,7 +171,7 @@ export function useExpenseDetail(expenseId: string): ExpenseDetailData {
       }
 
       // Success: haptic feedback then reload fresh state
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       await refetch();
     },
     [userId, detail, expenseId, refetch]
