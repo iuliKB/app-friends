@@ -281,7 +281,7 @@ export default function ProfileScreen() {
           paddingBottom: SPACING.xxl * 2,
         },
 
-        // ── Header (profilescreen2 layout) ───────────────────────
+        // ── Header ───────────────────────────────────────────────
         header: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -304,7 +304,7 @@ export default function ProfileScreen() {
           justifyContent: 'center',
         },
 
-        // ── Hero (profilescreen2 centered layout) ────────────────
+        // ── Hero (profilescreen2 centered) ────────────────────────
         hero: {
           alignItems: 'center',
           paddingTop: SPACING.xl,
@@ -378,7 +378,7 @@ export default function ProfileScreen() {
           color: colors.text.primary,
         },
 
-        // ── Section label (ex1 style: plain, not uppercase) ──────
+        // ── Section label (ex1: plain, medium, not uppercase) ────
         sectionLabel: {
           fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.medium,
@@ -388,23 +388,35 @@ export default function ProfileScreen() {
           marginBottom: SPACING.sm,
         },
 
-        // ── Row card (ex1 style: each row = own floating card) ───
-        rowCard: {
-          flexDirection: 'row',
-          alignItems: 'center',
+        // ── Grouped section card (ex1: one card per section) ─────
+        sectionCard: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
           marginHorizontal: SPACING.lg,
-          marginBottom: SPACING.sm,
+          overflow: 'hidden',
+        },
+
+        // ── Row inside card ───────────────────────────────────────
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
           paddingHorizontal: SPACING.md,
           paddingVertical: SPACING.md,
           minHeight: 54,
         },
-        rowCardDisabled: {
+        rowDisabled: {
           opacity: 0.4,
         },
 
-        // ── Circular icon (ex1 style) ────────────────────────────
+        // ── Hairline between rows inside a section card ───────────
+        divider: {
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: colors.border,
+          // indent to align with text, skipping the icon
+          marginLeft: SPACING.md + 36 + SPACING.md,
+        },
+
+        // ── Circular icon (ex1 style) ─────────────────────────────
         iconCircle: {
           width: 36,
           height: 36,
@@ -424,7 +436,7 @@ export default function ProfileScreen() {
           marginRight: SPACING.md,
         },
 
-        // ── Row text ─────────────────────────────────────────────
+        // ── Row text ──────────────────────────────────────────────
         rowLabel: {
           flex: 1,
           fontSize: FONT_SIZE.lg,
@@ -444,7 +456,7 @@ export default function ProfileScreen() {
           marginRight: SPACING.xs,
         },
 
-        // ── Appearance card ──────────────────────────────────────
+        // ── Appearance card ───────────────────────────────────────
         appearanceCard: {
           backgroundColor: colors.surface.card,
           borderRadius: RADII.lg,
@@ -453,7 +465,7 @@ export default function ProfileScreen() {
           paddingVertical: SPACING.md,
         },
 
-        // ── Footer ───────────────────────────────────────────────
+        // ── Footer ────────────────────────────────────────────────
         logoutButton: {
           marginHorizontal: SPACING.lg,
           marginTop: SPACING.xxl,
@@ -494,7 +506,7 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header — profilescreen2 layout ── */}
+        {/* ── Header ── */}
         <View style={styles.header}>
           <View style={{ width: 36 }} />
           <Text style={styles.headerTitle}>Profile</Text>
@@ -548,108 +560,119 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Links — ex1 list style ── */}
+        {/* ── Links — ex1 grouped card ── */}
         <Text style={styles.sectionLabel}>Links</Text>
+        <View style={styles.sectionCard}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => router.push('/profile/wish-list' as never)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconCircle}>
+              <Ionicons name="gift-outline" size={18} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>My Wish List</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.border} />
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={styles.rowCard}
-          onPress={() => router.push('/profile/wish-list' as never)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.iconCircle}>
-            <Ionicons name="gift-outline" size={18} color={colors.interactive.accent} />
-          </View>
-          <Text style={styles.rowLabel}>My Wish List</Text>
-          <Ionicons name="chevron-forward" size={16} color={colors.border} />
-        </TouchableOpacity>
-
-        {/* ── Account — ex1 list style ── */}
+        {/* ── Account — ex1 grouped card ── */}
         <Text style={styles.sectionLabel}>Account</Text>
-
-        <View style={styles.rowCard}>
-          <View style={styles.iconCircleMuted}>
-            <Ionicons name="mail-outline" size={18} color={colors.text.secondary} />
+        <View style={styles.sectionCard}>
+          <View style={styles.row}>
+            <View style={styles.iconCircleMuted}>
+              <Ionicons name="mail-outline" size={18} color={colors.text.secondary} />
+            </View>
+            <Text style={styles.rowLabelMuted} numberOfLines={1} ellipsizeMode="tail">
+              {session?.user?.email ?? ''}
+            </Text>
           </View>
-          <Text style={styles.rowLabelMuted} numberOfLines={1} ellipsizeMode="tail">
-            {session?.user?.email ?? ''}
-          </Text>
+
+          <View style={styles.divider} />
+
+          <View style={styles.row}>
+            <View style={styles.iconCircleMuted}>
+              <Ionicons name="calendar-outline" size={18} color={colors.text.secondary} />
+            </View>
+            <Text style={styles.rowLabelMuted}>
+              {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.rowCard}>
-          <View style={styles.iconCircleMuted}>
-            <Ionicons name="calendar-outline" size={18} color={colors.text.secondary} />
-          </View>
-          <Text style={styles.rowLabelMuted}>
-            {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
-          </Text>
-        </View>
-
-        {/* ── Appearance — ex1 list style ── */}
+        {/* ── Appearance — ex1 grouped card ── */}
         <Text style={styles.sectionLabel}>Appearance</Text>
         <View style={styles.appearanceCard}>
           <ThemeSegmentedControl />
         </View>
 
-        {/* ── Notifications — ex1 list style ── */}
+        {/* ── Notifications — ex1 grouped card ── */}
         <Text style={styles.sectionLabel}>Notifications</Text>
-
-        <View style={styles.rowCard}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="notifications-outline" size={18} color={colors.interactive.accent} />
+        <View style={styles.sectionCard}>
+          <View style={styles.row}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="notifications-outline" size={18} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Plan invites</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={handleToggleNotifications}
+              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+              thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
+            />
           </View>
-          <Text style={styles.rowLabel}>Plan invites</Text>
-          <Switch
-            value={notificationsEnabled}
-            onValueChange={handleToggleNotifications}
-            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-            thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
-          />
+
+          <View style={styles.divider} />
+
+          <View style={styles.row}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="people-outline" size={18} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Friend availability</Text>
+            <Switch
+              value={friendFreeEnabled}
+              onValueChange={handleToggleFriendFree}
+              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+              thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
+            />
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.row}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="sunny-outline" size={18} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Morning prompt</Text>
+            <Switch
+              value={morningEnabled}
+              onValueChange={handleToggleMorning}
+              trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
+              thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
+            />
+          </View>
+
+          <View style={styles.divider} />
+
+          <TouchableOpacity
+            style={[styles.row, !morningEnabled && styles.rowDisabled]}
+            onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
+            disabled={!morningEnabled}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconCircle}>
+              <Ionicons name="time-outline" size={18} color={colors.interactive.accent} />
+            </View>
+            <Text style={styles.rowLabel}>Prompt time</Text>
+            <Text style={styles.rowTrailingText}>
+              {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+              })}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.border} />
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.rowCard}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="people-outline" size={18} color={colors.interactive.accent} />
-          </View>
-          <Text style={styles.rowLabel}>Friend availability</Text>
-          <Switch
-            value={friendFreeEnabled}
-            onValueChange={handleToggleFriendFree}
-            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-            thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
-          />
-        </View>
-
-        <View style={styles.rowCard}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="sunny-outline" size={18} color={colors.interactive.accent} />
-          </View>
-          <Text style={styles.rowLabel}>Morning prompt</Text>
-          <Switch
-            value={morningEnabled}
-            onValueChange={handleToggleMorning}
-            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-            thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[styles.rowCard, !morningEnabled && styles.rowCardDisabled]}
-          onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
-          disabled={!morningEnabled}
-          activeOpacity={0.7}
-        >
-          <View style={styles.iconCircle}>
-            <Ionicons name="time-outline" size={18} color={colors.interactive.accent} />
-          </View>
-          <Text style={styles.rowLabel}>Prompt time</Text>
-          <Text style={styles.rowTrailingText}>
-            {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
-              hour: 'numeric',
-              minute: '2-digit',
-            })}
-          </Text>
-          <Ionicons name="chevron-forward" size={16} color={colors.border} />
-        </TouchableOpacity>
 
         {showTimePicker && (
           <DateTimePicker
