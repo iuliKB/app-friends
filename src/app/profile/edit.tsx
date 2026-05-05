@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-
+import { Ionicons } from '@expo/vector-icons';
 import { BirthdayPicker } from '@/components/common/BirthdayPicker';
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
@@ -63,16 +63,11 @@ export default function EditProfileScreen() {
     if (!session) return;
     setSaving(true);
 
-    // Feb 29 → Feb 28 normalization (D-02): DB allows birthday_day=29 for month=2,
-    // but business rule is to store Feb 28 so the value is valid in non-leap years.
     const saveMonth = birthdayMonth;
     const saveDay = birthdayMonth === 2 && birthdayDay === 29 ? 28 : birthdayDay;
-
-    // Partial birthday guard (Pitfall 5): if exactly one field is set, treat as no birthday.
     const finalMonth = saveMonth !== null && saveDay !== null ? saveMonth : null;
     const finalDay = saveMonth !== null && saveDay !== null ? saveDay : null;
 
-    // Birthday year required when month+day are set (D-01)
     if (finalMonth !== null && finalDay !== null && birthdayYear === null) {
       Alert.alert('Birthday incomplete', 'Please add your birth year to save your birthday.');
       setSaving(false);
@@ -106,68 +101,101 @@ export default function EditProfileScreen() {
     birthdayYear !== originalBirthdayYear;
   const canSave = displayName.trim().length > 0 && isDirty && !saving;
 
-  const styles = useMemo(() => StyleSheet.create({
-    flex: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    scroll: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    scrollContent: {
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xxl,
-      paddingBottom: SPACING.xxl,
-    },
-    textInput: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      height: 52,
-      paddingHorizontal: SPACING.lg,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    inputDisabled: {
-      opacity: 0.5,
-    },
-    charCount: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 12,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'right',
-      marginTop: SPACING.xs,
-    },
-    fieldLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xl,
-      marginBottom: SPACING.sm,
-    },
-    usernameValue: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-    },
-    birthdayLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xl,
-      marginBottom: SPACING.sm,
-    },
-    buttonWrapper: {
-      marginTop: SPACING.xl,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        flex: { flex: 1, backgroundColor: colors.surface.base },
+        scroll: { flex: 1 },
+        scrollContent: {
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.lg,
+          paddingBottom: SPACING.xxl * 2,
+        },
 
-  if (loading) {
-    return <LoadingIndicator />;
-  }
+        // ── Section label ─────────────────────────────────────────
+        sectionLabel: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.secondary,
+          marginTop: SPACING.xl,
+          marginBottom: SPACING.sm,
+          marginLeft: SPACING.xs,
+        },
+
+        // ── Field card ────────────────────────────────────────────
+        fieldCard: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          overflow: 'hidden',
+        },
+        fieldLabelRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.md,
+          paddingTop: SPACING.sm,
+          gap: SPACING.xs,
+        },
+        fieldLabel: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.secondary,
+        },
+        textInput: {
+          height: 44,
+          paddingHorizontal: SPACING.md,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        inputDisabled: { opacity: 0.5 },
+        charCount: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'right',
+          paddingHorizontal: SPACING.md,
+          paddingBottom: SPACING.sm,
+        },
+
+        // ── Read-only username ────────────────────────────────────
+        readOnlyRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          paddingHorizontal: SPACING.md,
+          height: 52,
+          gap: SPACING.sm,
+          opacity: 0.6,
+        },
+        readOnlyText: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+
+        // ── Birthday card ─────────────────────────────────────────
+        birthdayCard: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          padding: SPACING.md,
+        },
+
+        // ── Save button ───────────────────────────────────────────
+        buttonWrapper: { marginTop: SPACING.xl },
+        hintText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.sm,
+        },
+      }),
+    [colors]
+  );
+
+  if (loading) return <LoadingIndicator />;
 
   return (
     <KeyboardAvoidingView
@@ -181,39 +209,54 @@ export default function EditProfileScreen() {
       >
         <ScreenHeader title="Edit Profile" />
 
-        {/* Display name field */}
-        <TextInput
-          style={[styles.textInput, saving && styles.inputDisabled]}
-          value={displayName}
-          onChangeText={setDisplayName}
-          placeholder="Display name"
-          placeholderTextColor={colors.text.secondary}
-          maxLength={APP_CONFIG.displayNameMaxLength}
-          editable={!saving}
-        />
-        <Text style={styles.charCount}>
-          {displayName.length}/{APP_CONFIG.displayNameMaxLength}
-        </Text>
+        {/* ── Profile section ── */}
+        <Text style={styles.sectionLabel}>Profile</Text>
 
-        {/* Read-only username display (D-06) */}
-        <Text style={styles.fieldLabel}>Username</Text>
-        <Text style={styles.usernameValue}>@{username ?? ''}</Text>
+        {/* Display name */}
+        <View style={styles.fieldCard}>
+          <View style={styles.fieldLabelRow}>
+            <Ionicons name="person-outline" size={12} color={colors.text.secondary} />
+            <Text style={styles.fieldLabel}>Display name</Text>
+          </View>
+          <TextInput
+            style={[styles.textInput, saving && styles.inputDisabled]}
+            value={displayName}
+            onChangeText={setDisplayName}
+            placeholder="Your name"
+            placeholderTextColor={colors.text.secondary}
+            maxLength={APP_CONFIG.displayNameMaxLength}
+            editable={!saving}
+          />
+          <Text style={styles.charCount}>
+            {displayName.length}/{APP_CONFIG.displayNameMaxLength}
+          </Text>
+        </View>
 
-        {/* Birthday field (D-03: below display name, above Save) */}
-        <Text style={styles.birthdayLabel}>Birthday</Text>
-        <BirthdayPicker
-          month={birthdayMonth}
-          day={birthdayDay}
-          year={birthdayYear}
-          onChange={(m, d, y) => {
-            setBirthdayMonth(m);
-            setBirthdayDay(d);
-            setBirthdayYear(y);
-          }}
-          disabled={saving}
-        />
+        {/* Username (read-only) */}
+        <Text style={styles.sectionLabel}>Username</Text>
+        <View style={styles.readOnlyRow}>
+          <Ionicons name="lock-closed-outline" size={16} color={colors.text.secondary} />
+          <Text style={styles.readOnlyText}>@{username ?? ''}</Text>
+          <Ionicons name="information-circle-outline" size={16} color={colors.text.secondary} />
+        </View>
 
-        {/* Save button */}
+        {/* ── Birthday section ── */}
+        <Text style={styles.sectionLabel}>Birthday</Text>
+        <View style={styles.birthdayCard}>
+          <BirthdayPicker
+            month={birthdayMonth}
+            day={birthdayDay}
+            year={birthdayYear}
+            onChange={(m, d, y) => {
+              setBirthdayMonth(m);
+              setBirthdayDay(d);
+              setBirthdayYear(y);
+            }}
+            disabled={saving}
+          />
+        </View>
+
+        {/* ── Save ── */}
         <View style={styles.buttonWrapper}>
           <PrimaryButton
             title="Save Changes"
@@ -222,6 +265,7 @@ export default function EditProfileScreen() {
             disabled={!canSave}
           />
         </View>
+        {!isDirty && <Text style={styles.hintText}>Make a change to enable saving</Text>}
       </ScrollView>
     </KeyboardAvoidingView>
   );
