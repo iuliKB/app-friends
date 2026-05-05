@@ -13,7 +13,7 @@ import { Image } from 'expo-image';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { ReactionsSheet } from '@/components/chat/ReactionsSheet';
 import { PollCard } from '@/components/chat/PollCard';
@@ -419,6 +419,7 @@ export function MessageBubble({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const highlightAnim = useRef(new Animated.Value(0)).current;
+  const bubbleScaleAnim = useRef(new Animated.Value(1)).current;
 
   const highlightBg = highlightAnim.interpolate({
     inputRange: [0, 1],
@@ -456,12 +457,27 @@ export function MessageBubble({
     if (message.message_type === 'deleted') return;
     // Non-own poll messages have no available actions — skip showing an empty pill
     if (isPoll && !isOwn) return;
+    // Scale fires only here — all guards passed, menu WILL open (CHAT-04)
+    Animated.spring(bubbleScaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      damping: ANIMATION.easing.spring.damping,
+      stiffness: ANIMATION.easing.spring.stiffness,
+      isInteraction: false,
+    }).start();
     setPillY(Math.max(60, event.nativeEvent.pageY - 80));
     setMenuVisible(true);
   }
 
   function closeMenu() {
     setMenuVisible(false);
+    Animated.spring(bubbleScaleAnim, {
+      toValue: 1.0,
+      useNativeDriver: true,
+      damping: ANIMATION.easing.spring.damping,
+      stiffness: ANIMATION.easing.spring.stiffness,
+      isInteraction: false,
+    }).start();
   }
 
   function handleReply() {
@@ -587,6 +603,7 @@ export function MessageBubble({
   if (isOwn) {
     return (
       <Animated.View style={{ backgroundColor: highlightBg }}>
+        <Animated.View style={{ transform: [{ scale: bubbleScaleAnim }] }}>
         <TouchableOpacity
           style={styles.ownContainer}
           onPress={handleTap}
@@ -683,6 +700,7 @@ export function MessageBubble({
             </Animated.Text>
           )}
         </TouchableOpacity>
+        </Animated.View>
         {contextMenu}
         {reactionsSheetVisible && (message.reactions?.length ?? 0) > 0 && (
           <ReactionsSheet
@@ -699,6 +717,7 @@ export function MessageBubble({
 
   return (
     <Animated.View style={{ backgroundColor: highlightBg }}>
+      <Animated.View style={{ transform: [{ scale: bubbleScaleAnim }] }}>
       <TouchableOpacity
         style={styles.othersContainer}
         onPress={handleTap}
@@ -788,6 +807,7 @@ export function MessageBubble({
           )}
         </View>
       </TouchableOpacity>
+      </Animated.View>
       {contextMenu}
       {reactionsSheetVisible && (message.reactions?.length ?? 0) > 0 && (
         <ReactionsSheet
