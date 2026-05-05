@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
 status: executing
-stopped_at: Completed 27-02-PLAN.md — staggerDelay token + PlanCardSkeleton
-last_updated: "2026-05-05T20:37:19.224Z"
+stopped_at: Completed 27-03-PLAN.md — haptic wiring for SQUAD-01, SQUAD-02, PLANS-03
+last_updated: "2026-05-05T20:39:48.226Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 18
-  completed_plans: 15
-  percent: 83
+  completed_plans: 16
+  percent: 89
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 ## Current Position
 
 Phase: 27 (plans-squad-polish) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-05-05
 
@@ -84,6 +84,8 @@ Requirements covered: 0 / 27
 - [Phase 27]: it.failing() for TDD RED scaffolds — wave 0 tests asserting not-yet-implemented behavior; suite exits 0 while preserving RED intent; change to plain it() when implementation lands
 - [Phase 27]: getByLabelText() replaces getByA11yLabel() — RTLN v13 removed legacy a11y query aliases; getByLabelText matches accessibilityLabel props
 - [Phase 27]: staggerDelay: 80 added to ANIMATION.duration as authoritative source; PlanCardSkeleton uses View wrapper for partial-width SkeletonPulse
+- [Phase 27]: notificationAsync(Success) for friend accept (completion), impactAsync(Medium) for decline (neutral action) — semantically distinct haptic types
+- [Phase 27]: IOU settle haptic corrected from impactAsync(Medium) to notificationAsync(Success) — settle is a completion event
 
 ### Roadmap Evolution
 
@@ -100,5 +102,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T20:37:19.220Z
-Stopped at: Completed 27-02-PLAN.md — staggerDelay token + PlanCardSkeleton
+Last session: 2026-05-05T20:39:48.223Z
+Stopped at: Completed 27-03-PLAN.md — haptic wiring for SQUAD-01, SQUAD-02, PLANS-03

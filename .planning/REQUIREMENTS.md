@@ -40,13 +40,13 @@
 
 - [x] **PLANS-01**: Plans list (Explore tab) shows skeleton cards while plan data loads
 - [x] **PLANS-02**: RSVP buttons (Yes/No/Maybe) have a spring bounce animation and haptic feedback on press
-- [ ] **PLANS-03**: Successfully creating a plan triggers `notificationAsync(Success)` haptic feedback
+- [x] **PLANS-03**: Successfully creating a plan triggers `notificationAsync(Success)` haptic feedback
 - [ ] **PLANS-04**: Explore map shows a friendly empty state when no friend plans are nearby
 
 ### SQUAD — Squad & Social
 
-- [ ] **SQUAD-01**: Accepting a friend request triggers `notificationAsync(Success)` haptic; rejecting triggers `impactAsync(Medium)`
-- [ ] **SQUAD-02**: Settling an IOU expense triggers `notificationAsync(Success)` haptic
+- [x] **SQUAD-01**: Accepting a friend request triggers `notificationAsync(Success)` haptic; rejecting triggers `impactAsync(Medium)`
+- [x] **SQUAD-02**: Settling an IOU expense triggers `notificationAsync(Success)` haptic
 - [x] **SQUAD-03**: Squad Dashboard feature cards stagger-animate in on load (FadeIn with 80ms delay between cards)
 - [x] **SQUAD-04**: Claiming or unclaiming a birthday wish list item has spring scale press feedback
 
