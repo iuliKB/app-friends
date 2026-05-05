@@ -110,7 +110,7 @@ export default function EditProfileScreen() {
         scroll: { flex: 1 },
         scrollContent: {
           paddingHorizontal: SPACING.lg,
-          paddingTop: SPACING.sm,       // reduced — ScreenHeader already has paddingBottom: 16
+          paddingTop: SPACING.sm, // reduced — ScreenHeader already has paddingBottom: 16
           paddingBottom: SPACING.xxl * 2,
         },
 
@@ -120,8 +120,8 @@ export default function EditProfileScreen() {
           fontSize: FONT_SIZE.md,
           fontFamily: FONT_FAMILY.display.semibold,
           color: colors.text.primary,
-          marginTop: SPACING.lg,        // 16px between sections — not 24px
-          marginBottom: SPACING.sm,     // 8px breathing room below label
+          marginTop: SPACING.lg, // 16px between sections — not 24px
+          marginBottom: SPACING.sm, // 8px breathing room below label
           marginLeft: SPACING.xs,
         },
 
@@ -140,12 +140,12 @@ export default function EditProfileScreen() {
           gap: SPACING.xs,
         },
         fieldLabel: {
-          fontSize: FONT_SIZE.xs,       // 12px — clearly smaller than sectionLabel
+          fontSize: FONT_SIZE.xs, // 12px — clearly smaller than sectionLabel
           fontFamily: FONT_FAMILY.body.medium,
           color: colors.text.secondary,
         },
         textInput: {
-          height: 40,                   // tighter input — label above already adds context
+          height: 40, // tighter input — label above already adds context
           paddingHorizontal: SPACING.md,
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
@@ -193,7 +193,7 @@ export default function EditProfileScreen() {
         },
 
         // ── Save button ───────────────────────────────────────────
-        buttonWrapper: { marginTop: SPACING.lg },   // 16px — tighter than 24px
+        buttonWrapper: { marginTop: SPACING.lg }, // 16px — tighter than 24px
         hintText: {
           fontSize: FONT_SIZE.xs,
           fontFamily: FONT_FAMILY.body.regular,
