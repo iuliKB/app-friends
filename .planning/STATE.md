@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Polish & Launch Ready
-status: executing
-stopped_at: Completed 25-04-PLAN.md
-last_updated: "2026-05-05T02:24:54.549Z"
+status: verifying
+stopped_at: Completed 25-05-PLAN.md
+last_updated: "2026-05-05T02:27:52.851Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 86
+  completed_plans: 7
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-04)
 
 Phase: 25 (auth-onboarding-errors) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-05
 
 ```
@@ -69,6 +69,8 @@ Requirements covered: 0 / 27
 - [Phase 25-auth-onboarding-errors]: FriendRequests onRetry wired to fetchPendingRequests (not refetch alias) — shows pendingRequests not friends list
 - [Phase 25]: PlansListScreen uses fetchPlans (not refetch alias) for onRetry — usePlans exposes fetchPlans directly
 - [Phase 25]: birthday/[id].tsx error guard uses friendsError/refetchFriends — matches existing aliased destructure from useFriendsOfFriend
+- [Phase 25-auth-onboarding-errors]: OnboardingHintSheet uses no PanResponder and no backdrop tap-to-dismiss — only Get Started button closes it (D-11)
+- [Phase 25-auth-onboarding-errors]: AsyncStorage onboarding flag check gated on loading === false to prevent race where friends array is empty during initial data load
 
 ### Roadmap Evolution
 
@@ -85,5 +87,5 @@ Requirements covered: 0 / 27
 
 ## Session Continuity
 
-Last session: 2026-05-05T02:24:54.544Z
-Stopped at: Completed 25-04-PLAN.md
+Last session: 2026-05-05T02:27:52.846Z
+Stopped at: Completed 25-05-PLAN.md

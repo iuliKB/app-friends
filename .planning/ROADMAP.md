@@ -115,7 +115,7 @@
 ### v1.7 Polish & Launch Ready
 
 - [x] **Phase 24: Polish Foundation** - SkeletonPulse shimmer, animation tokens, EmptyState CTA variant, PrimaryButton loading spinner — primitives that every subsequent polish phase depends on (completed 2026-05-05)
-- [ ] **Phase 25: Auth, Onboarding & Errors** - Forgot-password flow, ToS/Privacy links on sign-up, error state audit across all data-fetching screens, first-run onboarding hint — all App Store-blocking items
+- [x] **Phase 25: Auth, Onboarding & Errors** - Forgot-password flow, ToS/Privacy links on sign-up, error state audit across all data-fetching screens, first-run onboarding hint — all App Store-blocking items (completed 2026-05-05)
 - [ ] **Phase 26: Home & Chat Polish** - Skeleton placeholders, press feedback, radar FADING pulse, zero-friends empty state, optimistic message send, haptics, long-press bubble animation
 - [ ] **Phase 27: Plans & Squad Polish** - Skeleton cards, RSVP spring animation, plan creation haptic, map empty state, friend-request + IOU + wish-list haptics, Squad Dashboard stagger animation
 - [ ] **Phase 28: Branding** - Final 1024×1024 app icon, branded splash screen with dark/light OS variants and fade transition — requires EAS build to verify on device
@@ -152,7 +152,7 @@ Plans:
 - [x] 25-02-PLAN.md — AUTH-03 hook layer: add error + refetch to useHomeScreen, useFriends, useChatRoom
 - [x] 25-03-PLAN.md — AUTH-03 screen batch 1: HomeScreen, FriendsList, FriendRequests, AddFriend, ChatListScreen, ChatRoomScreen
 - [x] 25-04-PLAN.md — AUTH-03 screen batch 2: PlansListScreen, PlanDashboardScreen, squad.tsx, wish-list.tsx, birthday/[id].tsx, MemoriesTabContent
-- [ ] 25-05-PLAN.md — AUTH-04 OnboardingHintSheet component + HomeScreen first-run flag wiring
+- [x] 25-05-PLAN.md — AUTH-04 OnboardingHintSheet component + HomeScreen first-run flag wiring
 **UI hint**: yes
 
 ### Phase 26: Home & Chat Polish
@@ -211,7 +211,7 @@ Plans:
 | 22. Gallery UI | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
 | 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
-| 25. Auth, Onboarding & Errors | v1.7 | 4/5 | In Progress|  |
+| 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete   | 2026-05-05 |
 | 26. Home & Chat Polish | v1.7 | 0/? | Not started | - |
 | 27. Plans & Squad Polish | v1.7 | 0/? | Not started | - |
 | 28. Branding | v1.7 | 0/? | Not started | - |
