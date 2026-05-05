@@ -226,7 +226,7 @@ Plans:
 | 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
 | 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete    | 2026-05-05 |
-| 27. Plans & Squad Polish | v1.7 | 5/5 | Complete   | 2026-05-05 |
+| 27. Plans & Squad Polish | v1.7 | 5/5 | Complete    | 2026-05-05 |
 | 28. Branding | v1.7 | 0/? | Not started | - |
 
 ---
