@@ -54,7 +54,7 @@
 
 - [x] **AUTH-01**: User can reset their password via an email link from the login screen
 - [x] **AUTH-02**: Sign-up screen shows visible Terms of Service and Privacy Policy links
-- [ ] **AUTH-03**: Every data-fetching screen shows ErrorDisplay with a retry action when the fetch fails
+- [x] **AUTH-03**: Every data-fetching screen shows ErrorDisplay with a retry action when the fetch fails
 - [ ] **AUTH-04**: First-run users see a one-time hint guiding them to set their status and add a friend
 
 ---
