@@ -17,18 +17,18 @@ created: 2026-05-05
 
 | Property | Value |
 |----------|-------|
-| **Framework** | jest 29.x (React Native / Expo) |
-| **Config file** | `jest.config.js` |
-| **Quick run command** | `npx jest --testPathPattern="home\|chat" --passWithNoTests` |
-| **Full suite command** | `npx jest --passWithNoTests` |
-| **Estimated runtime** | ~30 seconds |
+| **Framework** | Node.js test runner via `npx tsx` |
+| **Config file** | none — run test files directly with `npx tsx` |
+| **Quick run command** | `npx tsx tests/unit/useChatRoom.send.test.ts` |
+| **Full suite command** | `npx tsx tests/unit/*.test.ts` |
+| **Estimated runtime** | ~15 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `npx jest --testPathPattern="home\|chat" --passWithNoTests`
-- **After every plan wave:** Run `npx jest --passWithNoTests`
+- **After every task commit:** Run `npx tsx tests/unit/useChatRoom.send.test.ts`
+- **After every plan wave:** Run `npx tsx tests/unit/*.test.ts`
 - **Before `/gsd-verify-work`:** Full suite must be green
 - **Max feedback latency:** 30 seconds
 
@@ -44,7 +44,7 @@ created: 2026-05-05
 | 26-01-04 | 01 | 1 | HOME-04 | — | N/A | manual | all home cards compress to 0.96 on press | ❌ W0 | ⬜ pending |
 | 26-02-01 | 02 | 2 | CHAT-01 | — | N/A | manual | skeleton rows render while chat list loads | ❌ W0 | ⬜ pending |
 | 26-02-02 | 02 | 2 | CHAT-02 | — | N/A | manual | haptic fires on send + reaction tap | ❌ W0 | ⬜ pending |
-| 26-02-03 | 02 | 2 | CHAT-03 | — | N/A | unit | `npx jest --testPathPattern="useChatRoom" --passWithNoTests` | ❌ W0 | ⬜ pending |
+| 26-02-03 | 02 | 2 | CHAT-03 | — | N/A | unit | `npx tsx tests/unit/useChatRoom.send.test.ts` | ❌ W0 | ⬜ pending |
 | 26-02-04 | 02 | 2 | CHAT-04 | — | N/A | manual | long-press bubble compresses to 0.96 before context menu | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
@@ -53,7 +53,7 @@ created: 2026-05-05
 
 ## Wave 0 Requirements
 
-- Existing infrastructure covers all phase requirements. No new test files required — CHAT-03 optimistic send unit test leverages existing jest setup.
+- Existing infrastructure covers all phase requirements. No new test files required — CHAT-03 optimistic send unit test leverages existing Node.js test runner setup (`npx tsx`).
 
 ---
 

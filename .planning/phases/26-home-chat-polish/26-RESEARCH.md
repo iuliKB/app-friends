@@ -636,7 +636,7 @@ Cards explicitly NOT in scope: `RadarBubble` (uses scale for depth effect; addin
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **FADING pulse ring color — final hex**
    - What we know: must feel "caution/winding down" against dark green background (`#091A07`) and light backgrounds; amber-orange range
