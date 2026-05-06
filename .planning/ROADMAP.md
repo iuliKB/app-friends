@@ -232,7 +232,13 @@ Plans:
   2. Switching between Radar and Cards view and restarting the app restores the last-used mode — preference survives an app kill
   3. A user with zero friends sees a prominent "Invite friends" CTA that navigates to the Add Friend flow, not just a generic empty state
   4. Upcoming events cards have consistent date/time prominence, participant avatars, and visual hierarchy that feels native to the Campfire design system
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 29-01-PLAN.md — Wave 1: Test scaffolds for HOME-05, HOME-06, HOME-08
+- [ ] 29-02-PLAN.md — Wave 1: RadarBubble DEAD treatment (opacity 0.38, greyscale overlay, no Pressable)
+- [ ] 29-03-PLAN.md — Wave 1: HomeScreen EmptyState CTA update + OnboardingHintSheet removal
+- [ ] 29-04-PLAN.md — Wave 1: EventCard resize 240×160, date pill, AvatarStack size=28 maxVisible=5
+- [ ] 29-05-PLAN.md — Wave 2: UpcomingEventsSection skeleton + CARD_WIDTH/FlatList height sync
 **UI hint**: yes
 
 ### Phase 30: Squad Screen Overhaul
