@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +17,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ plan }: EventCardProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const hasImage = Boolean(plan.cover_image_url);
 
@@ -60,6 +60,7 @@ export function EventCard({ plan }: EventCardProps) {
 
   return (
     <TouchableOpacity
+      testID="event-card"
       style={[styles.card, SHADOWS.card]}
       onPress={handlePress}
       onPressIn={handlePressIn}
@@ -84,6 +85,35 @@ export function EventCard({ plan }: EventCardProps) {
           <View style={[StyleSheet.absoluteFill, { backgroundColor: pastelBg }]} />
         )}
 
+        {/* D-11: Date pill — absolutely positioned top-left */}
+        {dateLabel ? (
+          <View
+            testID="date-pill"
+            style={{
+              position: 'absolute',
+              top: SPACING.sm,
+              left: SPACING.sm,
+              backgroundColor: isDark
+                ? 'rgba(185,255,59,0.15)'
+                : 'rgba(77,124,0,0.12)',
+              borderRadius: RADII.sm,
+              paddingVertical: SPACING.xs,
+              paddingHorizontal: SPACING.sm,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: FONT_SIZE.xs,
+                fontFamily: FONT_FAMILY.body.regular,
+                color: colors.interactive.accent,
+                lineHeight: 12,
+              }}
+            >
+              {dateLabel}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Content layer — rendered above background */}
         <View style={styles.content}>
           {/* Title — D-04 */}
@@ -94,16 +124,9 @@ export function EventCard({ plan }: EventCardProps) {
             {plan.title}
           </Text>
 
-          {/* Date — D-04, D-18 */}
-          {dateLabel ? (
-            <Text style={[styles.date, { color: textColor }]} numberOfLines={1}>
-              {dateLabel}
-            </Text>
-          ) : null}
-
           {/* Bottom row: avatars + time icon — D-04 */}
           <View style={styles.bottomRow}>
-            <AvatarStack members={plan.members} size={24} maxVisible={3} />
+            <AvatarStack members={plan.members} size={28} maxVisible={5} />
             <View style={styles.timeIndicator}>
               <Ionicons name="time-outline" size={12} color={textColor} />
             </View>
@@ -116,11 +139,11 @@ export function EventCard({ plan }: EventCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    // D-01: 200x140px landscape card dimensions
+    // D-10: 240x160px landscape card dimensions (was 200x140)
     // eslint-disable-next-line campfire/no-hardcoded-styles
-    width: 200,
+    width: 240,
     // eslint-disable-next-line campfire/no-hardcoded-styles
-    height: 140,
+    height: 160,
     // D-05: RADII.xl (16) for extra rounded corners
     borderRadius: RADII.xl,
     overflow: 'hidden',
@@ -138,12 +161,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.lg,
     fontFamily: FONT_FAMILY.display.semibold,
     lineHeight: FONT_SIZE.lg * 1.2,
-  },
-  date: {
-    fontSize: FONT_SIZE.sm,
-    fontFamily: FONT_FAMILY.body.regular,
-    lineHeight: FONT_SIZE.sm * 1.3,
-    opacity: 0.9,
   },
   bottomRow: {
     flexDirection: 'row',
