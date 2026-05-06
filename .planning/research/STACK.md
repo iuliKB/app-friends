@@ -1,248 +1,154 @@
-# Technology Stack — v1.7 Polish & Launch Ready
+# Technology Stack — v1.8 Deep UI Refinement & Screen Overhaul
 
-**Project:** Campfire v1.7
-**Researched:** 2026-05-04
-**Scope:** Polish milestone only — animations, haptics patterns, skeleton loading, gesture refinements, app icon/splash screen config. Existing stack (Expo 55, RN 0.83.6, Reanimated 4.2.1, GestureHandler 2.30, expo-haptics, expo-linear-gradient, expo-splash-screen) not re-researched.
+**Project:** Campfire v1.8
+**Researched:** 2026-05-06
+**Scope:** Stack additions and patterns required for overhauling 5 screens (Home, Squad, Explore, Auth, Welcome/Onboarding). Existing validated stack not re-researched.
 **Overall Confidence:** HIGH
 
 ---
 
-## What Is Already Installed and Covers All Polish Needs
+## Summary
 
-No new npm packages are required for v1.7. Every polish capability is achievable with the existing stack.
+The project already has the two most important libraries for this overhaul: `react-native-reanimated 4.2.1` and `react-native-gesture-handler ~2.30.0`. All gesture-driven interactions (card swipe, swipe rows, drag) and Reanimated-backed animations (layout transitions, spring micro-animations, entering/exiting) are already available without adding new dependencies.
 
-| Already Installed | Version | What It Covers in v1.7 |
-|---|---|---|
-| `react-native-reanimated` | 4.2.1 | Skeleton shimmer (withRepeat + withTiming), entering/exiting layout animations (FadeIn, SlideInUp, ZoomIn), spring micro-animations |
-| `react-native-worklets` | 0.7.4 | Required peer for Reanimated 4 — already installed, no action |
-| `react-native-gesture-handler` | ~2.30.0 | `Swipeable` (reanimated variant) for swipe-to-dismiss/action rows; `Pressable` for uniform press feedback across platforms |
-| `expo-haptics` | ~55.0.14 | All haptic patterns needed: `impactAsync(Light/Medium/Heavy)`, `notificationAsync(Success/Warning/Error)`, `selectionAsync()` |
-| `expo-linear-gradient` | ~55.0.13 | Shimmer sweep for skeleton loaders — gradient already imported in `FriendSwipeCard.tsx` |
-| `expo-splash-screen` | ~55.0.19 | Splash screen config via plugin; `preventAutoHideAsync` + `hide()` already used |
-| `expo-image` | ~55.0.9 | Progressive image loading (blurhash placeholder → full image) — replaces skeleton for image-heavy screens |
+**One new library is warranted:** `react-native-pager-view` for the Welcome/Onboarding 3-screen slide flow. It ships native iOS `UIPageViewController` and Android `ViewPager2` under the hood, is included in Expo Go, supports the New Architecture, and is the pattern recommended by Expo's own documentation for paginated slide flows. All other UI/UX improvements for the 5 target screens are achievable with the existing stack plus pure-RN patterns.
+
+`expo-glass-effect` is already installed and usable for iOS 26+ glass surfaces on certain screens — but it is iOS-only and degrades to a plain `View` on Android. Treat it as an enhancement, not a structural dependency.
 
 ---
 
-## Skeleton Loading: Build From Existing Stack, Do Not Add a Library
+## Existing Stack: What Already Covers v1.8 Needs
+
+These are already in `package.json` and require no action — only intentional use in the new screen implementations.
+
+| Already Installed | Version | What It Covers in v1.8 |
+|---|---|---|
+| `react-native-reanimated` | 4.2.1 | Card swipe physics (withSpring, useSharedValue, useAnimatedStyle), entering/exiting layout animations (FadeIn, SlideInUp, ZoomIn), stagger entrance for dashboard cards |
+| `react-native-worklets` | 0.7.4 | Required peer for Reanimated 4 — already present |
+| `react-native-gesture-handler` | ~2.30.0 | `Gesture.Pan()` for swipe card stack, `ReanimatedSwipeable` for swipe-action rows in Squad/Home lists |
+| `expo-haptics` | ~55.0.14 | Tactile feedback on swipe confirm, button presses, status changes |
+| `expo-linear-gradient` | ~55.0.13 | Gradient overlays on Auth/Welcome screens, card fade masks |
+| `expo-glass-effect` | ~55.0.10 | iOS 26+ liquid glass effect for status pill, tab bar, modal surfaces — iOS only, degrades to View on Android |
+| `expo-blur` | (not installed — see below) | — |
+| `react-native-safe-area-context` | ~5.6.2 | Edge-to-edge Auth/Welcome layouts with correct insets |
+| `expo-image` | ~55.0.9 | Blurhash-placeholder avatar loading on radar view, friend cards |
+| `react-native-svg` | 15.15.3 | Radar bubble positioning geometry if SVG-based layout is chosen |
+| `@expo-google-fonts/*` | ^0.4.x | Custom typography already available (Nunito, Plus Jakarta Sans, Fredoka, Bricolage Grotesque) |
+
+---
+
+## Required Addition: react-native-pager-view
 
 **Confidence:** HIGH
 
-The project uses Reanimated 4.2.1 and expo-linear-gradient. Both Moti (the dominant skeleton library) and `react-native-reanimated-skeleton` have active compatibility problems with Reanimated 4.x:
+**Why needed:** The Welcome/Onboarding flow is a 3-screen horizontal slide with dot pagination. This is a fundamentally different interaction from card stacks — it requires snapping, native momentum physics per page, and a dot indicator that tracks scroll position. Two approaches exist:
 
-- **Moti 0.30.0** — open GitHub issue (nandorojo/moti#391, opened Sep 2025, still unresolved as of May 2026): animations malfunction with Reanimated 4.1+. Do not install.
-- **react-native-reanimated-skeleton** — targets Reanimated v3 internally, requires a postinstall script to swap `react-native-linear-gradient` for `expo-linear-gradient`. Fragile, low-maintenance.
+1. `FlatList` with `horizontal` + `pagingEnabled` + `onViewableItemsChanged` — pure React Native, no new dependency, but has a documented Android bug where the last page bounces back when shorter than screen width, and the dot indicator lags because it updates on `viewabilityChange` events rather than scroll position.
 
-**The correct approach: a thin `SkeletonBox` component using tools already in the project.**
+2. `react-native-pager-view` — wraps native `UIPageViewController` (iOS) and `ViewPager2` (Android), native momentum physics per platform, scroll position available via `onPageScroll` with `position` + `offset` floats for smooth dot interpolation, included in Expo Go, New Architecture compatible.
 
-The shimmer effect requires exactly two pieces: a pulsing opacity via `withRepeat`+`withTiming` (Reanimated 4, already installed) and theme-aware background colors from `useTheme()`. No `expo-linear-gradient` sweep is needed — an opacity pulse is visually equivalent for small group sizes (3–15 people) and has zero dependency overhead.
+The Expo documentation explicitly lists `react-native-pager-view` under SDK references and confirms it works in Expo Go managed workflow. For a 3-screen brand onboarding flow — a first-run, high-polish surface — the native pager is correct.
 
-```typescript
-// src/components/common/SkeletonBox.tsx — ~30 lines, zero new imports
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
-import { useTheme, RADII } from '@/theme';
+**Version:** 8.0.1 (current as of May 2026, supports New Architecture / Fabric)
 
-export function SkeletonBox({ width, height, borderRadius = RADII.sm }: Props) {
-  const { colors } = useTheme();
-  const opacity = useSharedValue(1);
-
-  useEffect(() => {
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.4, { duration: 700 }),
-        withTiming(1, { duration: 700 })
-      ),
-      -1,   // infinite
-      false // do not reverse (sequence already handles it)
-    );
-  }, []);
-
-  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
-  return (
-    <Animated.View
-      style={[{ width, height, borderRadius, backgroundColor: colors.surface.card }, animStyle]}
-    />
-  );
-}
+```bash
+npx expo install react-native-pager-view
 ```
 
-**Where to use:** Home screen friend list while status data loads, Plans/Explore list while plans fetch, Chat list while conversations load. The existing `LoadingIndicator` (full-screen `ActivityIndicator`) stays for initial app-level loads; `SkeletonBox` is for in-list placeholders.
+**Dot indicator:** Build from scratch using the `onPageScroll` callback's `position` + `offset` values to drive `Animated.Value` interpolation into dot width/opacity. This is ~40 lines and requires no additional library.
+
+```typescript
+// Dot width interpolation pattern — no additional library needed
+const scrollX = useRef(new Animated.Value(0)).current;
+
+// In PagerView:
+onPageScroll={Animated.event(
+  [{ nativeEvent: { offset: scrollX } }],
+  { useNativeDriver: false }
+)}
+
+// Dot style:
+const dotWidth = scrollX.interpolate({
+  inputRange: pages.map((_, i) => i),
+  outputRange: pages.map((_, i) => i === activeIndex ? 24 : 8),
+  extrapolate: 'clamp',
+});
+```
 
 ---
 
-## Animation Patterns: What Reanimated 4 Provides Out of the Box
+## Optional Addition: expo-blur (for Bottom Sheet / Modal Backdrops)
 
-**Confidence:** HIGH (verified via Context7 /software-mansion/react-native-reanimated)
+**Confidence:** MEDIUM
 
-Reanimated 4.2.1 (already installed) provides everything needed for polish-level animations. No additional animation library is warranted.
+**Why potentially useful:** `expo-blur`'s `BlurView` adds glassmorphism-style backdrop blur behind modals, sheets, and overlays. The status pill bottom sheet and onboarding skip overlays could use this for a premium feel. `expo-glass-effect` (already installed) covers iOS 26+ liquid glass on surfaces, but `expo-blur` handles the translucent-background-behind-modal pattern that `expo-glass-effect` does not.
 
-### Layout Animations (Entering/Exiting)
+**SDK 55 status:** Stable on Android via RenderNode API (Android 12+). Requires wrapping blurred content in `<BlurTargetView>` for Android. iOS uses `UIVisualEffectView` as before.
 
-Apply directly to `Animated.View` with no additional setup. Useful for list items appearing, modals mounting, and confirmation feedback:
+**Known limitation:** `BlurView` cannot cross a React Native `Modal` boundary on Android — `BlurTargetView` and `BlurView` must live in the same native window. The existing bottom sheet implementation (custom modal) should be tested before committing to blur here.
 
-```typescript
-import Animated, { FadeIn, FadeOut, SlideInUp, ZoomIn } from 'react-native-reanimated';
+**Verdict:** Install only if the design spec explicitly calls for backdrop blur on bottom sheets or modals. If the design uses solid surface colors from the existing token system, do not add this.
 
-// List item appearing
-<Animated.View entering={FadeIn.duration(200).delay(index * 50)}>
-
-// Bottom sheet mounting
-<Animated.View entering={SlideInUp.springify().damping(20)}>
-
-// Success confirmation
-<Animated.View entering={ZoomIn.springify().damping(15)}>
+```bash
+npx expo install expo-blur
 ```
 
-**Available families:** FadeIn/Out, SlideInUp/Down/Left/Right, ZoomIn/Out, BounceIn/Out, FlipInEasyX/Y. All modifiers: `.duration()`, `.delay()`, `.springify()`, `.damping()`, `.stiffness()`.
-
-### Spring Micro-animations (Already Pattern in FriendSwipeCard)
-
-The existing `withSpring` + `withTiming` pattern from `FriendSwipeCard.tsx` is the correct approach. Extend to button press feedback, card expansion, and status updates:
-
-```typescript
-// Press feedback: scale down then spring back
-const scale = useSharedValue(1);
-const onPressIn = () => { scale.value = withSpring(0.96, { damping: 20 }); };
-const onPressOut = () => { scale.value = withSpring(1, { damping: 15 }); };
-```
-
-### withRepeat for Continuous Effects
-
-Already documented above for skeleton shimmer. Also useful for the heartbeat freshness indicator (gentle pulse on FADING status bubbles in radar view).
+**Version:** expo-blur is versioned with the SDK — `npx expo install` pins it correctly.
 
 ---
 
-## Haptics: Patterns for Each Interaction Type
+## Patterns: What Needs No New Libraries
 
-**Confidence:** HIGH (verified via docs.expo.dev/versions/latest/sdk/haptics/)
+These capabilities are fully achievable with the existing stack. No new installs required.
 
-`expo-haptics` (already installed, already used in `FriendSwipeCard.tsx` and `ExpenseHeroCard.tsx`) covers all haptic needs. The API has five methods and is complete for v1.7:
+### Card Stack Swipe (Home Screen)
 
-| Method | Style/Type | Use Case in Campfire |
-|---|---|---|
-| `impactAsync(Light)` | UIImpactFeedbackGenerator | Button taps, row taps, toggle switches |
-| `impactAsync(Medium)` | UIImpactFeedbackGenerator | Confirm actions (RSVP yes, plan create) |
-| `impactAsync(Heavy)` | UIImpactFeedbackGenerator | Destructive actions (delete, settle IOU) |
-| `notificationAsync(Success)` | UINotificationFeedbackGenerator | Form submission success, RSVP confirmed |
-| `notificationAsync(Warning)` | UINotificationFeedbackGenerator | Rate limit hit, "already nudged" |
-| `notificationAsync(Error)` | UINotificationFeedbackGenerator | Network error, form validation fail |
-| `selectionAsync()` | UISelectionFeedbackGenerator | Picker scroll, segmented control switch, tab switch |
+The card stack already exists (`FriendSwipeCard.tsx` using `Gesture.Pan()`). The v1.8 overhaul should refine the physics, not rebuild the architecture. Key improvements are parameter-only changes:
 
-**Pattern to standardize:** Wrap in `.catch(() => {})` (existing pattern from `FriendSwipeCard`). Haptics fail silently on simulators and devices with haptics disabled — the catch prevents unhandled rejection noise.
+- **Velocity threshold:** Treat fling velocity > 800 px/s as a swipe regardless of distance. Already supported via `event.velocityX` in the pan gesture handler.
+- **Rotation interpolation:** `rotate: (translateX / SCREEN_WIDTH * 15) + 'deg'` gives the Tinder-style lean. Use `useAnimatedStyle` + `interpolate`.
+- **Background card scale:** Pre-render 2 cards behind the active card, each scaled 0.95 and 0.90. Animate scale to 1 as the active card flies off.
+- **Nudge / Skip action buttons:** Already present. Wire to the same `open()` / `dismiss()` callbacks used by swipe, so both gestures and buttons produce identical state transitions.
 
-**Android note:** `impactAsync` and `notificationAsync` map to Android's `VibrationEffect` API. `performAndroidHapticsAsync(type)` with `AndroidHaptics` enum is available for fine-grained Android control but is unnecessary for Campfire's use case — the cross-platform methods are sufficient.
+### Radar View Bubble Layout (Home Screen)
 
----
+The radar view already exists. Polished layout improvements are purely StyleSheet + Animated API:
 
-## Gesture Refinements: ReanimatedSwipeable Already Available
+- Bubble positioning: Use `position: 'absolute'` with calculated `top`/`left` from a deterministic layout function (fixed offsets per friend index, capped at 8 visible bubbles for 3–15 person groups).
+- Pulse ring: `useSharedValue` + `withRepeat(withTiming(1.3, { duration: 1200 }), -1)` on a transparent border circle — creates the FADING heartbeat pulse effect.
+- No SVG or external library needed for the radar layout itself.
 
-**Confidence:** HIGH (verified via Context7 /websites/swmansion_react-native-gesture-handler)
+### Onboarding Dot Indicator
 
-`react-native-gesture-handler` 2.30 (already installed) ships `Swipeable` in a Reanimated-based variant. Import path matters:
+Built inline in the Welcome screen using `Animated.Value` interpolation (see pattern above in PagerView section). ~40 lines, zero new dependency.
 
-```typescript
-// Old variant (uses Animated API — avoid in v1.7, incompatible with Reanimated 4 composability)
-import Swipeable from 'react-native-gesture-handler/Swipeable';
+### Auth Screen Keyboard Handling
 
-// Correct variant for Reanimated 4 projects
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-```
+The existing `KeyboardAvoidingView` from React Native core is sufficient for the redesigned Auth screens given they have a simple form structure. Set:
 
-`ReanimatedSwipeable` accepts `renderLeftActions(progress, translation)` and `renderRightActions(progress, translation)` where `progress` and `translation` are `SharedValue<number>` — composable with `useAnimatedStyle` for animated action reveals.
+- `behavior="padding"` on iOS
+- `behavior="height"` on Android (or set `android.softwareKeyboardLayoutMode: "pan"` in `app.json`)
 
-**Use cases in v1.7:** Swipe-to-dismiss on notification/chat rows, swipe-to-reveal IOU settle action, swipe-to-delete on plan participants. The Gesture API used in `FriendSwipeCard` (custom `Gesture.Pan()`) remains correct for the card stack; `ReanimatedSwipeable` is better for list rows where the container handles gesture coordination.
+`react-native-keyboard-controller` (popular alternative) requires a development build and does not work in Expo Go — confirmed by the library's own documentation. It also has an open issue with SDK 55 / Fabric (KeyboardToolbar persisting after dismiss). Do not add for this milestone.
 
-**`Pressable` from RNGH vs React Native core:** The RNGH `Pressable` (`import { Pressable } from 'react-native-gesture-handler'`) resolves press-inside-scroll conflicts more reliably than RN's built-in. Worth adopting in any new interactive list rows added during v1.7. Existing rows that already work correctly should not be migrated — change only where press-in-scroll conflicts are noticed.
+### Segmented Control / Tab Toggle (Squad Screen)
 
----
+The existing custom underline tab switcher (Squad Friends/Goals) is already the correct pattern. The v1.8 design may introduce additional segmented controls (e.g., IOU/Birthday toggle in Squad). Reuse the same `CustomTabBar.tsx` pattern or extract a smaller `SegmentedControl` component using `Pressable` + `Animated.View` underline. Zero new dependencies.
 
-## App Icon: Configuration, Not a New Library
+### Status Pill Animation
 
-**Confidence:** HIGH (verified via docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/)
+The status pill header is already built. Polishing the expand/collapse bottom sheet animation uses `SlideInUp.springify().damping(20)` from Reanimated's entering animation presets — already available.
 
-App icon generation requires asset files and `app.config.ts` changes — no new npm packages.
+### Map Pin Clustering (Explore Screen)
 
-### iOS Icon
+`react-native-maps` (already installed) supports `Marker` clustering via `Callout` and custom `Marker` components. For the Explore screen challenges feature, use custom `Marker` components with `expo-image` for avatars and `LinearGradient` for highlight rings. No new map library needed — the map tile and GPS filter are already built.
 
-- **File:** `./assets/images/icon.png` — 1024×1024px PNG, no transparency, no rounded corners (iOS masks automatically)
-- **Tool to create:** Figma template [Expo App Icon & Splash v2 (Community)](https://www.figma.com/community/file/1466490409418563617) — exports the correct sizes. Alternatively, any design tool that exports 1024×1024 PNG.
-- **EAS auto-generates** all required iOS icon sizes from the 1024×1024 source. No manual size exports needed.
-- **Dark/tinted icon variants** (iOS 18+): Supported via `ios.icon` with a nested object providing `any`, `dark`, and `tinted` image paths. Optional for v1.7 — implement if there's a designed dark variant.
+### Form Field Polish (Auth Screen)
 
-```typescript
-// app.config.ts — current icon config (already set, may need image replaced)
-icon: './assets/images/icon.png',
-```
-
-### Android Adaptive Icon
-
-Already configured in `app.config.ts`. Requires two files:
-- `android.adaptiveIcon.foregroundImage` — subject matter on transparent background (1024×1024 PNG)
-- `android.adaptiveIcon.backgroundColor` — solid color string (`'#ff6b35'`)
-
-The foreground image should have the icon subject centered in the inner 66% of the canvas (safe zone for all Android mask shapes — circle, squircle, rounded square). The system crops the outer edges.
-
-```typescript
-android: {
-  adaptiveIcon: {
-    foregroundImage: './assets/images/android-icon-foreground.png',
-    backgroundColor: '#ff6b35',
-    monochromeImage: './assets/images/android-icon-monochrome.png', // optional, Android 13+ themed icons
-  },
-}
-```
-
-**Asset generation shortcut:** [expo-assets-generator.vercel.app](https://expo-assets-generator.vercel.app/) generates all required sizes from a single source image. Useful if starting from a high-res design file rather than Figma.
-
----
-
-## Splash Screen: Config Plugin Already Installed
-
-**Confidence:** HIGH (verified via docs.expo.dev/versions/latest/sdk/splash-screen/)
-
-`expo-splash-screen` 55.0.19 is already installed and the `preventAutoHideAsync` + `hide()` lifecycle is in place. v1.7 changes are config-only in `app.config.ts`.
-
-### Current state in app.config.ts
-
-```typescript
-splash: {
-  backgroundColor: '#ff6b35',
-}
-```
-
-This uses the legacy `splash` key — works but does not support dark mode or the `imageWidth` sizing control.
-
-### Recommended v1.7 config
-
-Migrate from the legacy `splash` key to the plugin entry, which enables dark-mode splash and image sizing:
-
-```typescript
-plugins: [
-  // existing plugins...
-  [
-    'expo-splash-screen',
-    {
-      backgroundColor: '#ff6b35',
-      image: './assets/images/splash-icon.png',
-      imageWidth: 200,
-      dark: {
-        backgroundColor: '#0E0F11',  // matches surface.base dark token
-        image: './assets/images/splash-icon-dark.png',
-      },
-    }
-  ]
-]
-```
-
-**`SplashScreen.setOptions()`** — call before `hide()` to add a fade transition instead of an abrupt cut:
-
-```typescript
-SplashScreen.setOptions({ duration: 600, fade: true }); // iOS only; Android ignores fade
-await SplashScreen.hideAsync();
-```
-
-**Known caveat:** `resizeMode: 'cover'` has a documented display bug (expo/expo#33138) where the image shows gray margins. Use `contain` (default) or `native`. The `imageWidth` property gives sufficient control over icon sizing without `cover`.
-
-**Testing:** Splash screen cannot be tested in Expo Go — it requires a preview or production EAS build. This is expected and documented by Expo. For v1.7, the splash config can be finalized but hardware validation must wait until an EAS build is created.
+`FormField.tsx` (already a shared component) handles the base pattern. Auth screen redesign adds:
+- Focus ring: `borderColor` toggled via `onFocus`/`onBlur` using colors from `useTheme()`
+- Error inline display: Already handled by `FormField`'s `error` prop
+- Password show/hide toggle: Add an `Ionicons` eye icon inside the field using the existing icon pattern
 
 ---
 
@@ -250,51 +156,57 @@ await SplashScreen.hideAsync();
 
 | Avoid | Why | Use Instead |
 |---|---|---|
-| `moti` | Open incompatibility with Reanimated 4 (nandorojo/moti#391, unresolved May 2026). Animations break or behave strangely | Custom `SkeletonBox` using `withRepeat`+`withTiming` (30 lines) |
-| `react-native-reanimated-skeleton` | Targets Reanimated v3, requires fragile postinstall script to swap LinearGradient provider | Custom `SkeletonBox` (see above) |
-| `lottie-react-native` | Requires a native rebuild (not Expo Go compatible in managed workflow without EAS) | Reanimated layout animations for comparable results |
-| `react-native-animatable` | Legacy library, uses the old Animated API, not composable with Reanimated 4 | Reanimated 4 `entering`/`exiting` props on `Animated.View` |
-| `react-native-bounce-touchable` | Unnecessary — RNGH `Pressable` + `useSharedValue` spring achieves the same effect | RNGH `Pressable` with `useSharedValue` scale spring |
-| NativeWind / styled-components | No benefit over existing `useTheme()` + `useMemo([colors])` pattern; large bundle addition | Existing `useTheme()` design token system |
-| Any icon-set library (react-native-vector-icons) | Already using `expo-symbols` + `@expo/vector-icons` (Ionicons); adding another icon set creates inconsistency | Continue with Ionicons from `@expo/vector-icons` |
-
----
-
-## Version Compatibility
-
-| Package | Compatible With | Notes |
-|---|---|---|
-| `react-native-reanimated@4.2.1` | Expo SDK 55 / RN 0.83.6 | Requires `react-native-worklets@0.7.4` (already installed). New Architecture only — SDK 55 enables New Arch by default. |
-| `expo-haptics@~55.0.14` | Expo SDK 55 / RN 0.83.6 | All 5 methods confirmed working in Expo Go. `AndroidHaptics` enum Android-only but cross-platform methods work everywhere. |
-| `react-native-gesture-handler@~2.30.0` | Expo SDK 55 / RN 0.83.6 | `ReanimatedSwipeable` variant compatible with Reanimated 4. Use `ReanimatedSwipeable` import path, not legacy `Swipeable`. |
-| `expo-linear-gradient@~55.0.13` | Expo SDK 55 / RN 0.83.6 | For skeleton shimmer only if opacity pulse is insufficient. Optional — cross-component gradient already used in `FriendSwipeCard`. |
-| `expo-splash-screen@~55.0.19` | Expo SDK 55 / RN 0.83.6 | Config plugin approach replaces legacy `splash` key. `SplashScreen.setOptions({ fade: true })` is iOS only. |
+| `react-native-keyboard-controller` | Requires development build — not Expo Go compatible in managed workflow. Open SDK 55 regression (KeyboardToolbar persists on dismiss). | `KeyboardAvoidingView` from React Native core |
+| Any swipe-card library (`react-native-deck-swiper`, `rn-swiper-list`, etc.) | The card stack already exists using RNGH + Reanimated. Third-party card libraries add bundle weight, pin their own gesture handler versions, and offer less control over physics and visual style. | Existing `Gesture.Pan()` pattern in `FriendSwipeCard.tsx` |
+| `react-native-snap-carousel` | Unmaintained; last significant update 2022; has known crashes on New Architecture. | `react-native-pager-view` for fixed-page flows; FlatList for horizontally scrolling content |
+| `react-native-onboarding-swiper` | Opinionated UI (forces its own slide/button layout), no Reanimated 4 support confirmed, low maintenance. | `react-native-pager-view` + custom dot indicator (40 lines) |
+| NativeWind / Tamagui / Gluestack | No benefit over `useTheme()` + `useMemo([colors])` pattern. Adds enormous bundle weight, conflicts with ESLint `no-hardcoded-styles` enforcement, violates the "no UI libraries" constraint. | Existing design token system |
+| `lottie-react-native` | Not Expo Go compatible in managed workflow without EAS. Native rebuild required. | Reanimated 4 `entering`/`exiting` layout animations |
+| `react-spring` | Web-focused library. React Native support exists but is minimal compared to Reanimated. | Reanimated 4 `withSpring` |
+| `expo-blur` (unless design calls for it) | Adds complexity. Android support requires `BlurTargetView` wrapper and has known Modal boundary limitation. `expo-glass-effect` (already installed) covers the iOS glass surface use case. | `expo-glass-effect` for iOS glass surfaces; opaque surface tokens for cross-platform |
+| Any map library other than `react-native-maps` | `react-native-maps` is already installed and provides all needed map capabilities. | Existing `react-native-maps` with custom Marker components |
 
 ---
 
 ## Installation
 
-No new packages needed for v1.7. All polish capabilities use the existing stack.
-
 ```bash
-# No new installs required.
-# To verify all packages are at their correct SDK 55 versions:
-npx expo install --fix
+# Required: one new package
+npx expo install react-native-pager-view
+
+# Optional (only if design calls for backdrop blur on modals/sheets):
+npx expo install expo-blur
 ```
+
+---
+
+## Version Reference
+
+| Package | Version | Source Confidence |
+|---|---|---|
+| `react-native-reanimated` | 4.2.1 (already installed) | HIGH — verified SDK 55 compat via Expo changelog |
+| `react-native-gesture-handler` | ~2.30.0 (already installed) | HIGH — verified Expo Go compatible |
+| `react-native-pager-view` | 8.0.1 (new) | MEDIUM — latest npm version; Expo Go include confirmed by docs.expo.dev |
+| `expo-linear-gradient` | ~55.0.13 (already installed) | HIGH — SDK-matched version |
+| `expo-glass-effect` | ~55.0.10 (already installed) | HIGH — SDK 55, iOS 26+ only |
+| `expo-haptics` | ~55.0.14 (already installed) | HIGH — SDK-matched version |
+| `expo-blur` | SDK-matched via `npx expo install` | MEDIUM — stable Android in SDK 55 but Modal boundary limitation noted |
 
 ---
 
 ## Sources
 
-- Context7 `/software-mansion/react-native-reanimated` — `withRepeat`, `withSequence`, `entering`/`exiting` layout animations confirmed for v4.2.1
-- Context7 `/websites/swmansion_react-native-gesture-handler` — `ReanimatedSwipeable` API, `Pressable` props confirmed
-- Context7 `/nandorojo/moti` — Skeleton API confirmed; compatibility issue with Reanimated 4 cross-referenced
-- [GitHub nandorojo/moti#391](https://github.com/nandorojo/moti/issues/391) — Reanimated 4 incompatibility open issue, unresolved as of May 2026 — HIGH confidence
-- [expo-haptics docs (current SDK)](https://docs.expo.dev/versions/latest/sdk/haptics/) — All enum values and method signatures confirmed — HIGH confidence
-- [expo-splash-screen docs (current SDK)](https://docs.expo.dev/versions/latest/sdk/splash-screen/) — Plugin config, `setOptions()`, `imageWidth` confirmed — HIGH confidence
-- [Expo splash screen and app icon guide](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/) — 1024×1024 requirement, adaptive icon safe zone, EAS auto-generation confirmed — HIGH confidence
-- [expo/expo#33138](https://github.com/expo/expo/issues/33138) — `resizeMode: 'cover'` bug confirmed, use `contain` — MEDIUM confidence
+- [Expo SDK 55 Changelog](https://expo.dev/changelog/sdk-55) — React Native 0.83, Reanimated 4.x, New Architecture only
+- [Expo SDK 55 Migration Guide](https://reactnativerelay.com/article/expo-sdk-55-migration-guide-breaking-changes-sdk-53-to-55) — Reanimated 4.1.x, GestureHandler 2.28+
+- [react-native-pager-view Expo Docs](https://docs.expo.dev/versions/latest/sdk/view-pager/) — Included in Expo Go, confirmed
+- [react-native-pager-view npm](https://www.npmjs.com/package/react-native-pager-view) — Version 8.0.1, New Architecture support confirmed
+- [Reanimated Compatibility Table](https://docs.swmansion.com/react-native-reanimated/docs/guides/compatibility/) — v4.1.x/4.2.x/4.3.x all support RN 0.83
+- [ReanimatedSwipeable API](https://docs.swmansion.com/react-native-gesture-handler/docs/components/reanimated_swipeable/) — Drop-in replacement for Swipeable, SharedValue progress
+- [expo-blur BlurView Docs](https://docs.expo.dev/versions/latest/sdk/blur-view/) — BlurTargetView requirement for Android SDK 55
+- [expo-glass-effect Docs](https://docs.expo.dev/versions/latest/sdk/glass-effect/) — iOS 26+ UIVisualEffectView, degrades to View on Android
+- [react-native-keyboard-controller Expo Docs](https://docs.expo.dev/versions/latest/sdk/keyboard-controller/) — Requires development build, not Expo Go
+- [react-native-keyboard-controller SDK 55 issue](https://github.com/kirillzyusko/react-native-keyboard-controller/issues/1411) — KeyboardToolbar regression in SDK 55 / Fabric
 
 ---
-*Stack research for: Campfire v1.7 Polish & Launch Ready*
-*Researched: 2026-05-04*
+*Stack research for: Campfire v1.8 Deep UI Refinement & Screen Overhaul*
+*Researched: 2026-05-06*
