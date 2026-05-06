@@ -1,510 +1,485 @@
-# Architecture Research
+# Architecture Analysis: v1.8 UI/UX Screen Overhaul
 
-**Domain:** Polish milestone integration — React Native + Expo managed workflow (~25K LOC)
-**Researched:** 2026-05-04
-**Confidence:** HIGH (all findings are from direct codebase inspection)
-
-## Standard Architecture
-
-### System Overview
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                      Expo Router (app/)                          │
-│  _layout.tsx (ThemeProvider, GestureHandlerRootView,             │
-│               SplashScreen, font loading, notification routing)  │
-├──────────┬──────────┬──────────┬──────────┬─────────────────────┤
-│  (tabs)/ │  plans/  │  friends/│  squad/  │  profile/           │
-│ Home     │ [id].tsx │ [id].tsx │expenses/ │  edit.tsx           │
-│ Squad    │          │ add.tsx  │birthday/ │  wish-list.tsx      │
-│ Explore  │          │ requests │          │                     │
-│ Chats    │          │          │          │                     │
-│ Profile  │          │          │          │                     │
-├──────────┴──────────┴──────────┴──────────┴─────────────────────┤
-│                  Screen Layer (src/screens/)                      │
-│  HomeScreen  ChatListScreen  ChatRoomScreen  PlanDashboardScreen │
-│  PlansListScreen  PlanCreateModal  FriendsList  FriendRequests   │
-├─────────────────────────────────────────────────────────────────┤
-│               Feature Component Layer (src/components/)          │
-│  home/   chat/   plans/   squad/   status/   iou/   maps/       │
-├─────────────────────────────────────────────────────────────────┤
-│               Shared Component Library (src/components/common/)  │
-│  ScreenHeader  SectionHeader  EmptyState  LoadingIndicator       │
-│  FAB  PrimaryButton  FormField  AvatarCircle  ErrorDisplay       │
-│  OfflineBanner  BirthdayPicker  CustomTabBar  ThemeSegmentedControl│
-├─────────────────────────────────────────────────────────────────┤
-│                   Hook Layer (src/hooks/)                         │
-│  useHomeScreen  useChatList  useChatRoom  usePlans               │
-│  useFriends  useStatus  useIOUSummary  useUpcomingBirthdays       │
-├─────────────────────────────────────────────────────────────────┤
-│          Zustand Stores (src/stores/)   Theme (src/theme/)       │
-│  useAuthStore  useChatStore  useHomeStore  usePlansStore          │
-│  useStatusStore  |  ThemeContext / ThemeProvider / useTheme()     │
-├─────────────────────────────────────────────────────────────────┤
-│                     Supabase Client (src/lib/)                   │
-│  Postgres · Auth · Realtime · Storage · Edge Functions            │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component Tier | Responsibility | Polish Impact |
-|---------------|----------------|---------------|
-| `app/` routes | Navigation wiring, modal presentation, route params | Minimal — mostly config |
-| `screens/` | Data orchestration, hook composition, FlatList host | Skeleton loaders live here |
-| `components/[feature]/` | Feature-specific UI, local Animated logic | Animation improvements live here |
-| `components/common/` | Shared primitives — ScreenHeader, EmptyState, FAB etc | High-value enhancement targets |
-| `hooks/` | Data fetching + realtime subscriptions | Add loading/error return shapes |
-| `stores/` | Ephemeral UI state (Zustand) | Touch only for new UI state |
-| `theme/` | Design tokens + ThemeContext | Add animation timing tokens |
+**Milestone:** v1.8 Deep UI Refinement & Screen Overhaul
+**Analyzed:** 2026-05-06
+**Confidence:** HIGH (all findings from direct codebase inspection)
 
 ---
 
-## How Polish Changes Integrate with the Existing Architecture
+## Router and Auth Gate Overview
 
-### 1. The `useTheme()` + `useMemo([colors])` StyleSheet Pattern
+The app uses three `Stack.Protected` guards in `src/app/_layout.tsx`:
 
-**The pattern (everywhere in the codebase):**
-```typescript
-const { colors } = useTheme();
-const styles = useMemo(() => StyleSheet.create({
-  card: { backgroundColor: colors.surface.card },
-}), [colors]);
+```
+session && !needsProfileSetup  →  (tabs)         main app
+session &&  needsProfileSetup  →  profile-setup  first-run profile creation
+!session                       →  (auth)         login / sign-up
 ```
 
-**Integration rule for new components:** Every new component that uses colors from the theme MUST follow this pattern. `colors` is the only dynamic dependency — `SPACING`, `FONT_SIZE`, `RADII`, `SHADOWS` are static `as const` objects and do NOT belong inside `useMemo`.
+`needsProfileSetup` is driven by `useAuthStore` (Zustand). After sign-up or OAuth,
+`onAuthStateChange` fires in `_layout.tsx`, which checks `profiles.username` and writes the flag.
+After profile-setup completes, `setNeedsProfileSetup(false)` is called, Stack.Protected re-evaluates,
+and the navigator switches to `(tabs)` automatically — `AuthScreen` does not push a route.
 
-**Animation integration:** `Animated.Value` and `useSharedValue` refs are created outside `useMemo`. The animated style is either a separate `useAnimatedStyle` (Reanimated) or an inline `transform` on `Animated.View`. Never put animation refs inside `useMemo`.
+The Welcome/Onboarding flow must fit into this chain without adding a new `Stack.Protected` guard
+(adding guards mid-list is fragile — guards are evaluated top-to-bottom in JSX order).
 
-**Correct pattern for a new animated + themed component:**
+---
+
+## Screen 1: Home
+
+### Current Component Tree
+
+```
+(tabs)/index.tsx
+  → screens/home/HomeScreen.tsx
+      ├── OwnStatusCard              [status/OwnStatusCard.tsx]
+      │     reads useStatusStore; onPress → opens StatusPickerSheet
+      ├── StatusPickerSheet          [status/StatusPickerSheet.tsx]
+      │     writes useStatusStore → Supabase upsert
+      ├── RadarViewToggle            [home/RadarViewToggle.tsx]
+      │     reads/writes useViewPreference (AsyncStorage key @campfire/view_preference)
+      ├── RadarView                  [home/RadarView.tsx]
+      │     └── RadarBubble×N       [home/RadarBubble.tsx]
+      │           receives FriendWithStatus prop; computes heartbeat internally
+      ├── CardStackView              [home/CardStackView.tsx]
+      │     └── FriendSwipeCard     [home/FriendSwipeCard.tsx]
+      │           calls supabase.rpc('send_nudge') on nudge action
+      ├── UpcomingEventsSection      [home/UpcomingEventsSection.tsx]
+      │     reads usePlansStore (populated by usePlans() called in HomeScreen)
+      ├── RecentMemoriesSection      [home/RecentMemoriesSection.tsx]
+      │     own Supabase query via hook
+      ├── HomeWidgetRow              [home/HomeWidgetRow.tsx]
+      │     receives iouSummary + birthdays as props from HomeScreen
+      └── OnboardingHintSheet        [onboarding/OnboardingHintSheet.tsx]
+            Modal triggered by @campfire/onboarding_hint_shown AsyncStorage flag
+            *** REMOVED in v1.8 — replaced by WelcomeFlow ***
+```
+
+### Data Flow
+
+- `useHomeScreen` hook: calls `get_friends` RPC, then queries `effective_status` view, merges both
+  into `FriendWithStatus[]`, writes `useHomeStore`. Also subscribes a Supabase Realtime channel
+  (`home-statuses`) on the `statuses` table for live friend status updates.
+- `usePlans()` is called in HomeScreen to populate `usePlansStore`. `UpcomingEventsSection` reads
+  from the store client-side — it does not fetch directly.
+- `useIOUSummary` and `useUpcomingBirthdays` are direct Supabase hooks; results are passed as props
+  into `HomeWidgetRow` — they are not accessed from a store.
+- `OwnStatusCard` reads from `useStatusStore`. `StatusPickerSheet` writes to `useStatusStore` and
+  Supabase.
+- A 60-second `setInterval` in HomeScreen calls `setHeartbeatTick` to trigger re-renders that
+  recompute `computeHeartbeatState()` without a network fetch.
+
+### Integration Points for Overhaul
+
+| Area | What Changes | Stable Contracts |
+|------|-------------|-----------------|
+| OwnStatusCard redesign | Visual + layout only | `{ onPress: () => void }` prop interface; `useStatusStore` reads unchanged |
+| RadarView redesign | Visual + possible layout algorithm | Must preserve `onLayout`-based width measurement (NEVER `Dimensions.get`). `computeScatterPositions` is pure and replaceable |
+| CardStackView redesign | Stack shell and depth cards visual | `FriendSwipeCard` gesture physics live in a separate component — redesigning the stack container does not touch gesture code |
+| OnboardingHintSheet removal | Delete from HomeScreen | Remove `onboardingVisible` state, `ONBOARDING_FLAG_KEY` constant, and `OnboardingHintSheet` import from `HomeScreen.tsx` |
+| Section reordering | JSX order in ScrollView | Each section is an independent component — reorder by moving JSX lines |
+
+### New vs Modified Components
+
+- **REMOVE:** `OnboardingHintSheet` usage from `HomeScreen.tsx` (keep file for a release or delete)
+- **MODIFY:** `OwnStatusCard` — visual-only; props and hook interface unchanged
+- **MODIFY:** `RadarView` — visual; preserve `onLayout` + `computeScatterPositions` contract
+- **MODIFY:** `CardStackView` — visual shell; `FriendSwipeCard` prop interface unchanged
+- **MODIFY:** `HomeScreen.tsx` — remove onboarding state machine and `OnboardingHintSheet` import
+- **NO CHANGE:** `useHomeScreen`, `useStatusStore`, `useViewPreference`, `usePlans`,
+  `UpcomingEventsSection`, `HomeWidgetRow`, `RecentMemoriesSection`, `FriendSwipeCard` gesture logic
+
+---
+
+## Screen 2: Squad
+
+### Current Component Tree
+
+```
+(tabs)/squad.tsx  (self-contained — no separate screen file)
+  ├── ScreenHeader + Add Friend icon (person-add → /friends/add)
+  ├── Tab bar: Squad | Memories | Activity
+  │     custom Animated underline; Animated.ScrollView horizontal pager
+  │
+  ├── Page 0: Squad
+  │     FlatList<FriendWithStatus>
+  │       ListHeaderComponent: pending requests row (usePendingRequestsCount)
+  │       → CompactFriendRow → FriendActionSheet
+  │             onViewProfile → /friends/[id]
+  │             onStartDM    → get_or_create_dm_channel RPC → /chat/room
+  │             onRemoveFriend → removeFriend() from useFriends
+  │
+  ├── Page 1: Memories
+  │     MemoriesTabContent  [squad/MemoriesTabContent.tsx]
+  │
+  └── Page 2: Activity
+        StreakCard   [squad/StreakCard.tsx]    ← useStreakData
+        IOUCard      [squad/IOUCard.tsx]       ← useIOUSummary
+        BirthdayCard [squad/BirthdayCard.tsx]  ← useUpcomingBirthdays
+```
+
+### Data Flow
+
+- `useFriends()` — Supabase RPC `get_friends`; result held in local component state (not a store).
+- `usePendingRequestsCount()` — lightweight Supabase count query.
+- `useStreakData`, `useIOUSummary`, `useUpcomingBirthdays` — each is a direct Supabase hook; results
+  flow as props into the Activity tab cards.
+- Tab deep-link: `useLocalSearchParams({ tab })` in squad.tsx allows external screens (e.g., the
+  Home Memories widget) to arrive with `tab=memories`, triggering a `pagerRef.scrollTo` after a
+  50ms `setTimeout` to ensure layout is mounted first.
+- Entrance animations: three `Animated.Value` refs in `cardAnims` stagger on mount with a
+  `hasAnimated.current` guard preventing re-animation on refresh.
+
+### Integration Points for Overhaul
+
+| Area | What Changes | Stable Contracts |
+|------|-------------|-----------------|
+| Tab bar visual | Style changes to tab header and underline indicator | `indicatorTranslateX` interpolation logic, `scrollX` event, and `Animated.ScrollView` pager are functional — only styles change |
+| CompactFriendRow | Visual redesign | Props: `{ friend: FriendWithStatus; onPress: () => void }` — no changes |
+| Activity cards | Visual redesign of StreakCard, IOUCard, BirthdayCard | Each card receives typed props from its hook; no data changes |
+| Add Friend entry point | Currently header icon; may move to FAB | Update `rightAction` in `ScreenHeader` props; routing to `/friends/add` unchanged |
+| tab=memories deep-link | Must survive layout changes | `pagerRef.scrollTo({ x: SCREEN_WIDTH, animated: false })` — depends on page 1 being at index 1; do not reorder pages |
+
+### New vs Modified Components
+
+- **MODIFY:** `CompactFriendRow` — visual overhaul; prop interface unchanged
+- **MODIFY:** `StreakCard`, `IOUCard`, `BirthdayCard` — visual overhaul; data props unchanged
+- **MODIFY:** `squad.tsx` — tab bar visual styling; pager + data logic untouched
+- **NO CHANGE:** `useFriends`, `useStreakData`, `useIOUSummary`, `useUpcomingBirthdays`,
+  `FriendActionSheet`, `MemoriesTabContent`, tab deep-link logic
+
+---
+
+## Screen 3: Explore
+
+### Current Component Tree
+
+```
+(tabs)/plans.tsx
+  → screens/plans/PlansListScreen.tsx
+      ├── ScreenHeader with list/map toggle (two Ionicons icon buttons in rightAction)
+      ├── viewMode === 'map'  → ExploreMapView  [maps/ExploreMapView.tsx]
+      └── viewMode === 'list' → FlatList<PlanWithMembers>
+            ListHeaderComponent: invite banner → Invitations Modal (pageSheet)
+            PlanCard → router.push('/plans/[id]')
+      └── FAB → /plan-create (modal presentation)
+```
+
+### Data Flow
+
+- `usePlans()` — Supabase query; writes `usePlansStore`; same hook called on Home populates the
+  same store — Explore and Home share the same cache.
+- `useInvitations()` — separate Supabase query for pending plan invites; `accept`/`decline` methods
+  call Supabase directly and then re-fetch plans.
+- `ExploreMapView` receives `plans` as prop. Internally: calls `expo-location` for GPS, filters
+  plans by 25km haversine, renders `react-native-maps` MapView with `PROVIDER_DEFAULT`
+  (Apple Maps on iOS, Google Maps on Android).
+- Default `viewMode` is `'map'` — local `useState`, not persisted.
+
+### Integration Points for Overhaul
+
+| Area | What Changes | Stable Contracts |
+|------|-------------|-----------------|
+| Map visual | Custom markers, callout cards, map style | `DARK_MAP_STYLE` array in `src/lib/maps.ts`. `MapView` `userInterfaceStyle` and `customMapStyle` props control appearance. Custom `Marker` with `callout` child is the standard RN Maps pattern |
+| View toggle | Icon buttons in header — may change affordance | Just calls `setViewMode('map' | 'list')` — logic is trivial |
+| Invite UX | Banner + pageSheet modal may be redesigned | `useInvitations` hook returns same shape; visual wrapper is all that changes |
+| Challenges feature | New UI — design decision needed on placement | If inline in list view: add to `FlatList` `ListHeaderComponent`. If separate tab: replicate the Squad pager pattern in `PlansListScreen` |
+
+### New vs Modified Components
+
+- **MODIFY:** `PlansListScreen` — layout and visual overhaul; `usePlans` + `useInvitations` unchanged
+- **MODIFY:** `ExploreMapView` — possibly add map overlays or custom callout cards; `expo-location`
+  + `MapView` core logic is stable
+- **POSSIBLY NEW:** `ChallengesSection` or `ChallengesTab` — scoping depends on design decision
+- **NO CHANGE:** `usePlans`, `useInvitations`, `PlanCard`, `FAB`, haversine filter logic
+
+---
+
+## Screen 4: Auth
+
+### Current Component Tree
+
+```
+(auth)/index.tsx
+  → screens/auth/AuthScreen.tsx   (self-contained ~620 LOC)
+      ├── LinearGradient background: ['#091A07', '#0E0F11', '#0A0C0E']
+      ├── KeyboardAvoidingView + ScrollView
+      ├── Header section: emoji + "Campfire" + tagline
+      ├── AuthTabSwitcher  [auth/AuthTabSwitcher.tsx]   login | signup
+      ├── Animated form area (opacity crossfade on mode switch)
+      │     mode=login:      FormField(email) + FormField(password) + forgot link + PrimaryButton
+      │     mode=signup:     FormField(email) + FormField(password) + FormField(confirm) + PrimaryButton + ToS
+      │     mode=reset:      email field + send link button + back link
+      │     mode=reset-sent: success icon + message + back link
+      └── OAuth section (only when mode=login)
+            OAuthButton(google) + OAuthButton(apple) [iOS only]
+```
+
+### Auth Completion Flow
+
+On successful sign-in or sign-up, `supabase.auth.onAuthStateChange` fires in `_layout.tsx`. The
+layout checks `profiles.username` and sets `needsProfileSetup`. `Stack.Protected` gates re-evaluate
+and switch the navigator. `AuthScreen` does NOT call `router.push` — routing is entirely driven by
+the auth state change. Auth redesigns require zero changes to routing logic.
+
+### Integration Points for Overhaul
+
+| Area | What Changes | Stable Contracts |
+|------|-------------|-----------------|
+| Visual redesign | Background gradient, header layout, form spacing | All auth logic (signIn, signUp, OAuth, reset) stays in place |
+| AuthTabSwitcher | May be replaced by different visual pattern | Props: `{ activeTab: 'login' | 'signup'; onTabChange: (tab) => void }` — no changes |
+| OAuthButton | Visual overhaul | Props: `{ provider: 'google' | 'apple'; onPress: () => void; loading: boolean }` — no changes |
+| FormField | Used across the whole app | If Auth needs a different look, prefer a prop variant (e.g., `variant="dark"`) rather than changing default appearance — other screens use FormField too |
+| Gradient constant | Same gradient is hardcoded in AuthScreen + HomeScreen dark mode + _layout splash | Extract to `src/theme/gradients.ts` as `CAMPFIRE_DARK_GRADIENT` to prevent three diverging hex arrays |
+
+### New vs Modified Components
+
+- **MODIFY:** `AuthScreen.tsx` — visual redesign; all Supabase auth calls unchanged
+- **MODIFY:** `AuthTabSwitcher` — visual overhaul; props unchanged
+- **MODIFY:** `OAuthButton` — visual overhaul; props unchanged
+- **NO CHANGE:** Auth logic, Supabase calls, routing, `FormField`, `PrimaryButton`, `ErrorDisplay`
+
+---
+
+## Screen 5: Welcome / Onboarding
+
+### Current State
+
+`OnboardingHintSheet` is a bottom-sheet Modal shown once on HomeScreen when a new user has zero
+friends. It is triggered by checking AsyncStorage key `@campfire/onboarding_hint_shown` after
+friends data loads. It has a single CTA "Get Started" that writes the flag and dismisses.
+
+This is the entire existing onboarding experience. v1.8 replaces it with a full-screen 3-slide flow.
+
+### Recommended Integration Pattern
+
+**Use an in-tree overlay — do not add a new `Stack.Protected` guard.**
+
+The new `WelcomeFlow` renders as a full-screen `Modal` (or `position: 'absolute' + zIndex: 999`)
+overlay inside the `(tabs)` navigator. When `!welcomeComplete`, the overlay is shown on top of the
+tab navigator content. On the last slide CTA, it dismisses, revealing the app underneath.
+
+This approach is preferred over adding a new route segment because:
+1. Adding a new `Stack.Protected` guard requires modifying guard ordering in `RootLayoutStack` — a
+   high-risk change that affects all three existing guards.
+2. The tab navigator mounts underneath, so the first tab load is hidden (no flash) when Welcome
+   dismisses.
+3. Matches the existing `OnboardingHintSheet` modal pattern already in the codebase.
+
+### Store Changes
+
+Add to `src/stores/useAuthStore.ts`:
+
 ```typescript
-function AnimatedCard() {
-  const { colors } = useTheme();
-  const scale = useRef(new Animated.Value(1)).current;  // outside useMemo
+welcomeComplete: boolean;
+setWelcomeComplete: (v: boolean) => void;
+```
 
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      padding: SPACING.lg,
-    },
-  }), [colors]);  // only colors as dep
+Add to the initial load effect in `_layout.tsx` (inside the existing `supabase.auth.getSession()` chain):
 
-  return (
-    <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
-      {/* ... */}
-    </Animated.View>
-  );
+```typescript
+const welcomeDone = await AsyncStorage.getItem('@campfire/welcome_complete');
+if (welcomeDone === 'true') {
+  useAuthStore.getState().setWelcomeComplete(true);
 }
 ```
 
-**Reanimated pattern (for JS-thread to native-thread migration):**
-```typescript
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+### WelcomeFlow Component Structure
 
-function AnimatedCard() {
-  const { colors } = useTheme();
-  const scale = useSharedValue(1);
+Single file at `src/components/onboarding/WelcomeFlow.tsx`. Use an `Animated.ScrollView` horizontal
+pager (same pattern as Squad screen's tab pager — proven, no Reanimated needed):
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const styles = useMemo(() => StyleSheet.create({
-    card: { backgroundColor: colors.surface.card, borderRadius: RADII.lg },
-  }), [colors]);
-
-  return <Animated.View style={[styles.card, animatedStyle]} />;
-}
 ```
+WelcomeFlow.tsx
+  ├── pager: Animated.ScrollView horizontal pagingEnabled
+  │     ├── Slide 1: Brand + value prop  ("Your friends, one app.")
+  │     ├── Slide 2: Status feature intro  ("Let friends know you're free.")
+  │     └── Slide 3: Squad/friends intro  ("See who's around. Make it happen.")
+  ├── Dot indicators (derive from scrollX interpolation)
+  ├── "Next" / "Get Started" PrimaryButton per slide
+  └── "Skip" TouchableOpacity on slides 1-2
+```
+
+On "Get Started" or "Skip":
+1. Call `setWelcomeComplete(true)` in `useAuthStore`
+2. `AsyncStorage.setItem('@campfire/welcome_complete', 'true')`
+3. The overlay unmounts; tab navigator is revealed underneath
+
+### AsyncStorage Key
+
+Use `@campfire/welcome_complete` — distinct from the old `@campfire/onboarding_hint_shown`. This
+prevents the old flag from masking the new flow for users upgrading from v1.7. Existing v1.7 users
+will see the Welcome flow once on first v1.8 launch (acceptable — fast and skippable).
+
+### Trigger Condition
+
+In `(tabs)/_layout.tsx` (or root `_layout.tsx`), after auth gate resolves:
+
+```
+session && !needsProfileSetup && !welcomeComplete → render WelcomeFlow overlay
+```
+
+The overlay is a `Modal visible={!welcomeComplete}` rendered inside the tabs layout. When
+`welcomeComplete` becomes true, the Modal hides; React does not unmount the tab navigator.
+
+### New vs Modified Components
+
+- **NEW:** `src/components/onboarding/WelcomeFlow.tsx`
+- **REMOVE:** `OnboardingHintSheet` usage from `HomeScreen.tsx` (file can remain but is unused)
+- **MODIFY:** `src/stores/useAuthStore.ts` — add `welcomeComplete` + `setWelcomeComplete`
+- **MODIFY:** `src/app/_layout.tsx` — read `@campfire/welcome_complete` in initial load effect
+- **MODIFY:** `src/app/(tabs)/_layout.tsx` — render `WelcomeFlow` modal when `!welcomeComplete`
+- **MODIFY:** `src/screens/home/HomeScreen.tsx` — remove `onboardingVisible` state, `ONBOARDING_FLAG_KEY`, and `OnboardingHintSheet` import
 
 ---
 
-### 2. Skeleton Loaders Without Breaking FlatList Patterns
+## Build Order for the 5 Phases
 
-**Existing loading pattern (ChatListScreen is canonical):**
-```typescript
-if (loading && chatList.length === 0) {
-  return <LoadingIndicator />;
-}
-```
+### Dependency Analysis
 
-The `LoadingIndicator` (`ActivityIndicator` centered in `flex:1 View`) replaces the whole screen. This is functional but abrupt. Skeletons must replace this pattern, not the FlatList itself.
+| Dependency | Blocks |
+|-----------|--------|
+| Welcome defines `welcomeComplete` in `useAuthStore` | Home cleanup (removing onboarding) can only be finalized once Welcome's store field exists |
+| Auth is self-contained | Nothing blocks it; nothing depends on it |
+| Home's `OnboardingHintSheet` removal | Depends on Welcome being built first |
+| Squad is self-contained | No dependencies on other overhaul phases |
+| Explore is self-contained | No dependencies on other overhaul phases |
 
-**Integration point:** The screen-level guard (`if (loading && items.length === 0)`) is the single place to swap in a skeleton. The FlatList below that guard is untouched.
+### Recommended Phase Order
 
-**Skeleton pattern for FlatList screens:**
-```typescript
-// Replace the full-screen loading guard:
-if (loading && items.length === 0) {
-  return <ChatListSkeleton />;  // renders N skeleton rows, NOT a FlatList
-}
-```
+**Phase 1 — Auth Screen Redesign**
 
-`ChatListSkeleton` is a plain `View` with N skeleton row components — not a FlatList, not a ScrollView. It only renders while `loading === true && items.length === 0`. Once data arrives the real FlatList renders. This keeps FlatList untouched.
+Rationale: Fully self-contained. Changes are scoped to `src/screens/auth/AuthScreen.tsx` and
+`src/components/auth/*`. No shared infrastructure is touched. Low risk. Delivers polished first
+impression and establishes the visual language for subsequent screens. Extract the `LinearGradient`
+gradient array to `src/theme/gradients.ts` in this phase so Home and Auth stay in sync.
 
-**Skeleton animation — use `Animated.loop` on a shared interpolation:**
-```typescript
-// src/components/common/SkeletonPulse.tsx
-export function SkeletonPulse({ width, height, borderRadius }: Props) {
-  const { colors } = useTheme();
-  const opacity = useRef(new Animated.Value(0.3)).current;
+Deliverables:
+- Redesign `AuthScreen.tsx` layout and visual styling
+- Update `AuthTabSwitcher` and `OAuthButton` visuals
+- Create `src/theme/gradients.ts` with `CAMPFIRE_DARK_GRADIENT` constant
+- Update `HomeScreen.tsx` and `_layout.tsx` splash to reference the new constant
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.8, duration: 700, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.3, duration: 700, useNativeDriver: true }),
-      ])
-    ).start();
-    return () => opacity.stopAnimation();
-  }, [opacity]);
+**Phase 2 — Welcome / Onboarding Flow**
 
-  const styles = useMemo(() => StyleSheet.create({
-    base: { backgroundColor: colors.surface.card, width, height, borderRadius },
-  }), [colors, width, height, borderRadius]);
+Rationale: Adds `welcomeComplete` to `useAuthStore` and modifies `_layout.tsx` / `(tabs)/_layout.tsx`.
+Must land before the Home cleanup phase (which removes `OnboardingHintSheet`). Doing it second means
+Auth is polished, so the full new-user journey (Auth → Welcome → Home) can be tested end-to-end
+from this phase forward.
 
-  return <Animated.View style={[styles.base, { opacity }]} />;
-}
-```
+Deliverables:
+- Add `welcomeComplete` + `setWelcomeComplete` to `useAuthStore`
+- Read `@campfire/welcome_complete` from AsyncStorage in `_layout.tsx` initial load effect
+- Build `WelcomeFlow` component (3-slide pager, dot indicators, Next/Skip/Get Started CTAs)
+- Render `WelcomeFlow` as `Modal` in `(tabs)/_layout.tsx` when `!welcomeComplete`
 
-**Where to add skeletons:**
-- `ChatListScreen` — guard at line 58; replace with `<ChatListSkeleton />`
-- `HomeScreen` — no loading guard currently (uses inline conditional rendering); add one before the `ScrollView` renders the friend sections
-- `PlansListScreen` — existing `loading && plans.length === 0` guard
-- `FriendsList` — existing guard
+**Phase 3 — Home Screen Overhaul**
 
-**Do NOT add skeletons to:**
-- Components that already show meaningful cached data instantly (Zustand-backed)
-- Modals and sheets (they animate in, so the delay is invisible)
+Rationale: Now that Welcome is defined, `OnboardingHintSheet` can be cleanly removed. Home is the
+highest-traffic screen. All data hooks are stable — the overhaul is visual + layout only.
 
----
+Deliverables:
+- Remove `OnboardingHintSheet` from `HomeScreen.tsx` (state, flag, import, render)
+- Redesign `OwnStatusCard`, `RadarView`, `CardStackView` visuals
+- Reorder/adjust sections if design requires
+- Preserve `onLayout`-based width measurement in Radar/Cards (critical invariant)
 
-### 3. Parallel vs Sequential Screen Polish — Merge Conflict Strategy
+**Phase 4 — Squad Screen Overhaul**
 
-**The key insight:** Each screen composes a unique set of feature components from `src/components/[feature]/`. The `src/components/common/` library is the only shared layer. Parallel work on different screens is safe as long as phases do not simultaneously modify the same common component.
+Rationale: Self-contained. The `CompactFriendRow`, `StreakCard`, `IOUCard`, `BirthdayCard`, and the
+tab bar can all be redesigned without touching any other overhaul phase. Verify deep-link behavior
+(`tab=memories`) after any layout changes.
 
-**Safe to parallelise (no common file overlap):**
-| Phase | Primary Files Touched |
-|-------|-----------------------|
-| Home screen polish | `HomeScreen.tsx`, `components/home/*`, `RadarBubble.tsx` |
-| Chat polish | `ChatRoomScreen.tsx`, `ChatListScreen.tsx`, `components/chat/*` |
-| Plans polish | `PlanDashboardScreen.tsx`, `PlansListScreen.tsx`, `components/plans/*` |
-| Squad/IOU/Birthday | `app/(tabs)/squad.tsx`, `components/squad/*`, `components/iou/*` |
-| Profile + Auth | `app/profile/*`, `screens/auth/*` |
+Deliverables:
+- Redesign `squad.tsx` tab bar and pager visuals
+- Redesign `CompactFriendRow`, `StreakCard`, `IOUCard`, `BirthdayCard`
+- Update `FriendActionSheet` visual if required
+- Verify `tab=memories` deep-link still scrolls to page 1 correctly
 
-**Common components are sequential bottlenecks:** If two phases both enhance `EmptyState.tsx` or `LoadingIndicator.tsx`, they will conflict. The build order must be:
+**Phase 5 — Explore Screen Overhaul**
 
-1. Enhance `SkeletonPulse` (new file — no conflict)
-2. Enhance `EmptyState` (one phase, one PR)
-3. Enhance `LoadingIndicator` (replace with skeleton variant — one phase)
-4. Then per-screen phases in any order
+Rationale: Most complex due to `react-native-maps` and `expo-location` involvement. Scoped last
+to allow iteration on map specifics without blocking other screens. The challenges feature addition
+(if in v1.8 scope) lands here.
 
-**Shared animation tokens:** If adding animation duration constants to `src/theme/index.ts`, do it in one dedicated commit before feature phases start. Prevents diff conflicts on the barrel export.
+Deliverables:
+- Redesign `PlansListScreen` header, invite banner, view toggle affordance
+- Update `ExploreMapView` (custom markers, callout cards, or map style changes)
+- Add challenges UI if in scope (new `ChallengesSection` component or pager tab)
+- Verify `expo-location` permission request still fires correctly after layout changes
 
 ---
 
-### 4. App Icon and Splash Screen in Expo Managed Workflow
+## Shared Component Considerations
 
-**Current state (from `app.config.ts`):**
-- `icon`: `./assets/images/icon.png` — shared iOS/web icon
-- `android.adaptiveIcon.foregroundImage`: `./assets/images/android-icon-foreground.png`
-- `android.adaptiveIcon.backgroundColor`: `'#ff6b35'`
-- `splash.backgroundColor`: `'#ff6b35'` — no `image` key set (no static splash image currently)
-- `userInterfaceStyle: 'automatic'` (respects system light/dark)
-- The in-code splash (`_layout.tsx` lines 333–343) shows a `LinearGradient` with a fire emoji and "Campfire" text while fonts load
+### Components Shared Across Multiple Overhaul Screens
 
-**What needs updating:**
+| Component | Used By (v1.8 screens) | Risk If Changed Globally |
+|-----------|------------------------|--------------------------|
+| `FormField` | Auth, ProfileSetup, plan-create | HIGH — any visual change propagates everywhere; use a prop variant for Auth-specific styling |
+| `PrimaryButton` | Auth, WelcomeFlow, multiple modals | MEDIUM — test all call sites; add variant prop if needed |
+| `ScreenHeader` | Home, Squad, Explore, all sub-screens | HIGH — ~15 call sites; changes must be backward-compatible or opt-in via prop |
+| `AvatarCircle` | Squad CompactFriendRow, Friends, chat | LOW — purely visual, self-contained |
+| `EmptyState` | Home, Squad, Explore, Chat | LOW — self-contained |
 
-For the static splash (OS-level, shown before JS loads):
-- Add `splash.image` key pointing to `./assets/images/splash-icon.png` (file exists)
-- Set `splash.resizeMode` to `'contain'` or `'cover'`
-- iOS: optionally add `splash.dark.backgroundColor` for dark mode splash
+**Rule:** If an overhaul requires a visual change to a shared component that differs from its use
+elsewhere, add a prop variant (e.g., `size="large"`, `variant="hero"`) rather than changing the
+default rendering.
 
-For the app icon (iOS):
-- `icon.png` must be 1024x1024, no transparency, no rounded corners (App Store crops it)
-- No alpha channel — iOS rejects transparent icons
-- File already exists at `./assets/images/icon.png` — just replace content with final branded art
+### LinearGradient Pattern
 
-For Android adaptive icon:
-- `foregroundImage` should be 108dp safe zone within a 192dp canvas
-- `backgroundColor` is already set to `#ff6b35`
-- `android-icon-monochrome.png` exists — verify it uses the themed monochrome path
+Three places currently hardcode `['#091A07', '#0E0F11', '#0A0C0E']`:
+- `AuthScreen.tsx` (always wraps entire screen)
+- `HomeScreen.tsx` (dark mode only)
+- `_layout.tsx` loading splash
 
-**In-code splash (`_layout.tsx`):**
-- Currently renders a fire emoji (raw Unicode) — UX audit flags this as needing an SVG/Ionicons icon
-- Splash disappears after `ready && fontsLoaded` — this is the correct gate
-- The `LinearGradient` uses `DARK.splash.gradientStart/End` which are hardcoded to the dark palette — correct, this runs before ThemeProvider mounts
-
-**No native rebuild required** for icon/splash changes in Expo managed workflow — these are config-driven. EAS Build picks them up automatically. Expo Go will show new assets after a manifest reload with `--clear`.
+Extract to `src/theme/gradients.ts` as `CAMPFIRE_DARK_GRADIENT` during Phase 1. Reference the
+constant in all three files to prevent future drift.
 
 ---
 
-### 5. `src/components/common/` — Enhance vs Leave Alone
+## Architecture Invariants (Must Not Break)
 
-**The 13 current components:**
+1. **`useMemo([colors])` pattern** — all `StyleSheet.create` calls inside components must be
+   wrapped in `useMemo` with `colors` as a dependency. Violating this breaks dark/light switching.
 
-| Component | Verdict | Rationale |
-|-----------|---------|-----------|
-| `ScreenHeader.tsx` | Leave alone | Consistent across all screens; any change ripples everywhere |
-| `SectionHeader.tsx` | Leave alone | Simple, token-compliant, no polish gap |
-| `FAB.tsx` | Leave alone | Already has spring animation, correct pattern |
-| `PrimaryButton.tsx` | Minor enhance | Add loading state prop (`isLoading?: boolean`) for async CTA buttons |
-| `FormField.tsx` | Leave alone | Functional; no visual polish gap identified |
-| `AvatarCircle.tsx` | Leave alone | Simple, correct |
-| `ErrorDisplay.tsx` | Leave alone | Functional; appears infrequently |
-| `LoadingIndicator.tsx` | Enhance | Replace full-screen `ActivityIndicator` with skeleton-aware wrapper OR keep as-is and add separate `SkeletonPulse` |
-| `EmptyState.tsx` | Enhance | Add `actionable` variant with bigger icon and richer layout for cold-start onboarding states |
-| `OfflineBanner.tsx` | Leave alone | Works correctly, no UX gap |
-| `BirthdayPicker.tsx` | Leave alone | Native DateTimePicker pattern, correct |
-| `CustomTabBar.tsx` | Leave alone | Tab navigation; changing this touches all 5 tabs simultaneously |
-| `ThemeSegmentedControl.tsx` | Leave alone | Single-purpose, Profile-only |
+2. **`onLayout` not `Dimensions.get`** — `RadarView` and `CardStackView` measure container width
+   via `onLayout`. This must be preserved; `Dimensions.get` does not account for split screen
+   or orientation.
 
-**New common components to add (no existing component conflicts):**
+3. **FlatList, never ScrollView + .map()** — all lists use `FlatList`. Section redesigns must not
+   introduce `ScrollView + .map()` patterns.
 
-| New Component | Purpose | Used By |
-|---------------|---------|---------|
-| `SkeletonPulse.tsx` | Animated shimmer primitive | All skeleton screens |
-| `StatusBadge.tsx` | Status dot + icon (WCAG accessibility) | RadarBubble, CompactFriendRow, FriendProfile |
-| `CountdownPill.tsx` | "In 3h 45m" timer display | PlanCard, PlanDashboard |
+4. **ESLint `no-hardcoded-styles`** — all new components must use `@/theme` tokens. Where no exact
+   token exists, add an `// eslint-disable-next-line campfire/no-hardcoded-styles` comment with
+   a reason string.
 
----
+5. **No Reanimated** — all animations use React Native `Animated` API. Reanimated broke bottom
+   sheet on v4 and is excluded from this project. The horizontal pager pattern for WelcomeFlow
+   uses `Animated.ScrollView pagingEnabled` — same as Squad screen.
 
-## Recommended Project Structure for Polish Additions
+6. **`Stack.Protected` guard order** — guards in `RootLayoutStack` are evaluated top-to-bottom
+   in JSX. Do NOT add a new guard between the existing `profile-setup` and `(auth)` guards. The
+   WelcomeFlow is a Modal overlay inside the tabs navigator, not a new Stack screen.
 
-```
-src/
-├── components/
-│   ├── common/
-│   │   ├── SkeletonPulse.tsx       # NEW — shimmer primitive
-│   │   ├── StatusBadge.tsx         # NEW — accessible status indicator
-│   │   ├── CountdownPill.tsx       # NEW — plan countdown display
-│   │   ├── EmptyState.tsx          # ENHANCE — richer actionable variant
-│   │   └── PrimaryButton.tsx       # ENHANCE — loading state prop
-│   ├── home/
-│   │   ├── HomeScreenSkeleton.tsx  # NEW — skeleton for HomeScreen loading state
-│   │   └── ...existing files...
-│   └── chat/
-│       ├── ChatListSkeleton.tsx    # NEW — skeleton for chat list loading
-│       └── ...existing files...
-├── theme/
-│   └── index.ts                    # ENHANCE — add ANIMATION timing constants
-└── assets/images/
-    ├── icon.png                    # REPLACE — final branded 1024x1024
-    ├── android-icon-foreground.png # REPLACE — final branded adaptive icon
-    └── splash-icon.png             # UPDATE — ensure correct size/format
-```
-
----
-
-## Architectural Patterns
-
-### Pattern 1: Screen-Level Loading Guard Swap
-
-**What:** The pattern `if (loading && items.length === 0) { return <LoadingIndicator />; }` exists in every data-fetching screen. This is the single integration point for skeleton loaders.
-
-**When to use:** Always — skeleton components replace only this guard. The FlatList below is untouched.
-
-**Trade-offs:** Simple, zero risk of breaking FlatList. Downside: skeletons only show on first load, not on subsequent pull-to-refreshes (which is correct — existing data stays visible during refresh).
-
-### Pattern 2: Animated.Value Outside useMemo, Static Tokens Inside
-
-**What:** Animation refs (`useRef(new Animated.Value())`, `useSharedValue()`) live in component body. Static tokens (`SPACING`, `RADII`, `FONT_SIZE`) go inside `StyleSheet.create`. Dynamic tokens (`colors`) are the only `useMemo` dependency.
-
-**When to use:** Every component. Violating this pattern causes either stale styles (colors not updating on theme switch) or unnecessary StyleSheet recreations on every render.
-
-**Trade-offs:** Slightly verbose. Worth it — ESLint `no-hardcoded-styles` enforces that raw values never sneak into the static token positions.
-
-### Pattern 3: Reanimated for Native-Thread Animations, Animated API for Simple Cases
-
-**What:** The codebase currently uses `Animated` (JS thread) for most animations, with `react-native-reanimated` v4.2.1 and `react-native-gesture-handler` already installed. `FriendSwipeCard` is the only component currently using Reanimated.
-
-**When to migrate:** Migrate to Reanimated when: (a) animation runs during a JS-heavy operation (chat list scroll, realtime updates), (b) it is gesture-driven, or (c) it is on Android where JS-thread animations jank more severely.
-
-**Leave as Animated API:** Simple one-shot entry animations, pulse loops, opacity fades with no gesture component.
-
-### Pattern 4: Feature Skeletons Are Screen-Scoped, Not Component-Scoped
-
-**What:** Build `HomeScreenSkeleton` and `ChatListSkeleton` as dedicated components in their feature folder, composing `SkeletonPulse` primitives arranged to match the real screen layout.
-
-**When to use:** Any screen that has a `loading && items.length === 0` guard. The skeleton component handles the layout; the primitive handles the shimmer.
-
-**Trade-offs:** Slightly more files. Far better visual fidelity than a single generic "skeleton list" abstraction. Consistent with how `EmptyState` variants work in this codebase — each screen owns its loading state appearance.
-
----
-
-## Data Flow
-
-### Animation State Flow
-
-```
-useRef(new Animated.Value(initial))
-    |
-Animated.spring() / Animated.timing() called by event handler
-    |
-Animated.View reads value via transform / opacity
-    ^
-NO setState, NO store update — animation is self-contained
-```
-
-### Theme + StyleSheet Reactivity Flow
-
-```
-ThemeProvider (app/_layout.tsx)
-    | (useContext)
-useTheme() in every component
-    |
-colors object (referentially stable until theme changes)
-    |
-useMemo([colors]) recomputes StyleSheet only on theme switch
-    |
-Component re-renders with new styles
-```
-
-### Skeleton Loading Flow
-
-```
-Hook returns { loading: true, items: [] }
-    |
-Screen renders SkeletonComponent (N pulse rows)
-    | (data arrives)
-Hook returns { loading: false, items: [...] }
-    |
-Screen renders FlatList with real data
-    | (pull-to-refresh)
-Hook returns { loading: false, refreshing: true, items: [...] }
-    |
-FlatList RefreshControl spinner (skeleton NOT shown — data stays visible)
-```
-
----
-
-## Anti-Patterns
-
-### Anti-Pattern 1: colors Inside a Static StyleSheet.create at Module Scope
-
-**What people do:** `const styles = StyleSheet.create({ card: { backgroundColor: colors.surface.card } })` at module scope outside the component.
-
-**Why it's wrong:** `colors` from `useTheme()` is a React hook — it cannot be called at module scope. This compiles but captures the initial value and never updates when the theme switches.
-
-**Do this instead:** `const styles = useMemo(() => StyleSheet.create({ card: { backgroundColor: colors.surface.card } }), [colors])` inside the component body.
-
-### Anti-Pattern 2: FlatList Inside ScrollView for Skeleton Screens
-
-**What people do:** Add a `ScrollView` wrapper around a skeleton + FlatList to avoid warnings when both are rendered.
-
-**Why it's wrong:** `FlatList` relies on its parent having a bounded height for virtualisation. `ScrollView` gives it unbounded height, disabling virtualisation and loading all items into memory. PROJECT.md has "FlatList for all lists: No ScrollView + map" as a hard constraint.
-
-**Do this instead:** Render the skeleton as a plain `View` (not inside a ScrollView) for the `loading && items.length === 0` branch. The FlatList renders in its own branch, never nested in a ScrollView.
-
-### Anti-Pattern 3: Modifying app.config.ts Splash + Icon Paths Without Clearing Cache
-
-**What people do:** Update `icon.png` file content in-place without changing the path, assume Expo Go picks it up after refresh.
-
-**Why it's wrong:** Expo Go caches assets by path. An in-place image replace may not invalidate the cache.
-
-**Do this instead:** Replace the file content, then run `npx expo start --clear` to bust the bundle cache. For EAS Build, assets are always fetched fresh.
-
-### Anti-Pattern 4: New Animation Constants as Raw Numbers
-
-**What people do:** `Animated.timing(val, { duration: 250 })` with raw ms values scattered across files.
-
-**Why it's wrong:** Makes it impossible to globally tune animation timing. Also violates the spirit of the design token system.
-
-**Do this instead:** Add `ANIMATION` constants to `src/theme/index.ts`:
-```typescript
-export const ANIMATION = {
-  fast: 150,
-  normal: 250,
-  slow: 400,
-  spring: { speed: 50, bounciness: 8 },
-} as const;
-```
-Use in all animation calls. This is a one-time addition to the theme barrel before feature phases start.
-
----
-
-## Build Order for the Polish Milestone
-
-The correct sequencing is dictated by dependency: shared primitives before consumers.
-
-```
-Phase 0 — Theme + primitive additions (single PR, no screen work)
-  Add ANIMATION constants to src/theme/index.ts
-  Create src/components/common/SkeletonPulse.tsx
-  Enhance EmptyState.tsx (add actionable variant)
-  Enhance PrimaryButton.tsx (add isLoading prop)
-
-Phase 1 — App icon + splash (asset work, minimal code changes)
-  Replace assets/images/icon.png (1024x1024, no alpha)
-  Replace assets/images/android-icon-foreground.png
-  Update app.config.ts splash.image, splash.resizeMode
-  Update _layout.tsx splash: swap fire emoji for Ionicons flame
-
-Phase 2 — Home screen polish (isolated — touches only home/ components)
-  HomeScreenSkeleton.tsx (uses SkeletonPulse)
-  RadarBubble pulse animation on FADING status
-  HomeScreen.tsx: replace LoadingIndicator with HomeScreenSkeleton
-  Migrate HomeScreen crossfade to Reanimated (lines 51-80)
-
-Phase 3 — Chat polish (isolated — touches only chat/ components)
-  ChatListSkeleton.tsx (uses SkeletonPulse)
-  ChatListScreen: replace LoadingIndicator with ChatListSkeleton
-  MessageBubble: optimistic send state (clock icon + reduced opacity)
-  ChatListRow: sender prefix + smart timestamp
-  Migrate ChatRoomScreen animations to Reanimated
-
-Phase 4 — Plans + Explore polish (isolated — touches only plans/ + maps/)
-  RSVP buttons: selected state with icon + spring animation
-  PlanCard: CountdownPill integration
-  Plan invitation modal: spring entry animation
-
-Phase 5 — Squad + IOU + Birthday polish (isolated — touches squad/ + iou/)
-  Squad tab stagger animation on every useFocusEffect
-  CompactFriendRow: add trailing icon for action menu
-
-Phase 6 — Auth + Onboarding (isolated — touches screens/auth/)
-  Forgot password flow
-  ToS/Privacy Policy links
-  Account deletion flow
-  Cold-start empty state: invite flow on zero-friends Home
-```
-
-**Conflict-safe because:** Phases 2–6 touch entirely separate component directories. Phase 0 is the only PR that touches `src/theme/` and `src/components/common/` — it must merge before any feature phase starts. After that, phases 2–6 can be built as independent sequential PRs with zero file overlap.
-
----
-
-## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Polish Notes |
-|---------|---------------------|--------------|
-| Supabase Storage | Signed URL fetch, 1h TTL | No change needed for polish |
-| Supabase Realtime | postgres_changes subscription | No change needed for polish |
-| expo-haptics | `Haptics.impactAsync()` | Add to RSVP selection, skeleton-to-content transition |
-| expo-image | Already used in GalleryViewerModal | Use for lazy-loaded images with blurhash placeholder |
-
-### Internal Boundaries
-
-| Boundary | Communication | Polish Notes |
-|----------|---------------|--------------|
-| ThemeContext to all components | `useTheme()` hook | Adding ANIMATION to theme barrel does not break existing consumers |
-| `components/common/` to all screens | Direct import | SkeletonPulse is additive; EmptyState changes are backward-compatible with an added optional prop |
-| Animated API and Reanimated | Both coexist in same codebase | Migration is file-by-file; no global refactor needed |
-| `_layout.tsx` font loading | `SplashScreen.preventAutoHideAsync()` + `useFonts()` | Splash icon change is asset-only; gate logic unchanged |
+7. **`useAuthStore` is Zustand (no persistence)** — `welcomeComplete` must also be read from
+   AsyncStorage on app boot; Zustand state resets on process kill. The `_layout.tsx` initial
+   load effect is the correct place to read it alongside the existing session/profile checks.
 
 ---
 
 ## Sources
 
-- Direct inspection of `/Users/iulian/Develop/campfire/src/` (HIGH confidence — codebase as of 2026-05-04)
-- `app.config.ts` for Expo splash/icon config (HIGH confidence)
-- `src/app/_layout.tsx` for SplashScreen gate pattern (HIGH confidence)
-- `UX-AUDIT.md` for polish item inventory (HIGH confidence)
-- React Native Reanimated v4 coexistence with Animated API: standard practice, both libraries in `package.json` (HIGH confidence)
-- Expo managed workflow icon/splash: asset-only changes, no native rebuild required (HIGH confidence)
+- Direct inspection of `/Users/iulian/Develop/campfire/src/` (HIGH confidence — codebase 2026-05-06)
+- `src/app/_layout.tsx` — auth gate logic, Stack.Protected ordering
+- `src/screens/home/HomeScreen.tsx` — onboarding hook, section composition
+- `src/app/(tabs)/squad.tsx` — tab pager pattern, deep-link param handling
+- `src/screens/plans/PlansListScreen.tsx` — Explore map/list toggle, invitations modal
+- `src/screens/auth/AuthScreen.tsx` — form state machine, OAuth flow, gradient
+- `src/components/onboarding/OnboardingHintSheet.tsx` — existing onboarding baseline
+- `src/stores/useAuthStore.ts` — current store shape for Welcome integration plan
 
 ---
-*Architecture research for: Campfire v1.7 Polish & Launch Ready milestone*
-*Researched: 2026-05-04*
+*Architecture analysis for: Campfire v1.8 UI/UX Screen Overhaul*
+*Analyzed: 2026-05-06*
