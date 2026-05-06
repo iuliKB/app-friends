@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
+  Animated,
   FlatList,
   StyleSheet,
   Text,
@@ -8,19 +9,39 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { EventCard } from '@/components/home/EventCard';
+import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { useUpcomingEvents } from '@/hooks/useUpcomingEvents';
 import type { PlanWithMembers } from '@/types/plans';
 
-// D-01: card width 200 + D-UI-SPEC: gap between cards = SPACING.md (12)
+// D-10: card width 240 + D-UI-SPEC: gap between cards = SPACING.md (12)
 // eslint-disable-next-line campfire/no-hardcoded-styles
-const CARD_WIDTH = 200;
+const CARD_WIDTH = 240;
 const CARD_GAP = SPACING.md;
 
-export function UpcomingEventsSection() {
+interface UpcomingEventsSectionProps {
+  isLoading?: boolean;
+}
+
+export function UpcomingEventsSection({ isLoading = false }: UpcomingEventsSectionProps) {
   const { colors } = useTheme();
+  const skeletonOpacity = useRef(new Animated.Value(1)).current;
+
+  // Fade out skeleton when isLoading transitions from true → false
+  useEffect(() => {
+    if (!isLoading) {
+      Animated.timing(skeletonOpacity, {
+        toValue: 0,
+        duration: ANIMATION.duration.normal, // 300ms
+        useNativeDriver: true,
+      }).start();
+    } else {
+      skeletonOpacity.setValue(1); // Reset when loading starts again
+    }
+  }, [isLoading, skeletonOpacity]);
+
   const styles = useMemo(() => StyleSheet.create({
     container: {
       // Section container — no horizontal padding here; header and list handle their own
@@ -37,7 +58,7 @@ export function UpcomingEventsSection() {
     flatList: {
       // RESEARCH.md Pitfall 1: horizontal FlatList in ScrollView needs explicit height
       // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 140, // matches EventCard height
+      height: 160, // matches EventCard height (D-10)
     },
     listContent: {
       // UI-SPEC: left pad aligns first card with screen content; right pad shows bleed
@@ -48,11 +69,11 @@ export function UpcomingEventsSection() {
       paddingHorizontal: SPACING.lg,
     },
     placeholderCard: {
-      // D-12: same 200x140 dimensions as EventCard but with dashed border
+      // D-10: same 240x160 dimensions as EventCard but with dashed border (Pitfall 3 — raw numbers)
       // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 200,
+      width: 240,
       // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 140,
+      height: 160,
       borderRadius: RADII.xl,
       backgroundColor: colors.surface.card,
       borderWidth: 1,
@@ -104,7 +125,13 @@ export function UpcomingEventsSection() {
         <SectionHeader title="Upcoming events ✨" rightAction={seeAllAction} />
       </View>
 
-      {upcomingEvents.length === 0 ? (
+      {isLoading ? (
+        // HOME-08: Loading skeleton — 2 shimmer cards while plans load (D-09/D-10)
+        <Animated.View style={{ opacity: skeletonOpacity, flexDirection: 'row', paddingLeft: SPACING.lg, gap: CARD_GAP }}>
+          <SkeletonPulse width={240} height={160} />
+          <SkeletonPulse width={240} height={160} />
+        </Animated.View>
+      ) : upcomingEvents.length === 0 ? (
         // D-12: Empty state — placeholder card with calendar icon + CTA
         <View style={styles.listPadding}>
           <TouchableOpacity
