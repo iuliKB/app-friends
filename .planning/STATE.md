@@ -1,54 +1,50 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.7
-milestone_name: Polish & Launch Ready
-status: verifying
-stopped_at: Completed 28-01-PLAN.md (Phase 28 branding — all plans done)
-last_updated: "2026-05-05T23:15:32.606Z"
-last_activity: 2026-05-05
+milestone: v1.8
+milestone_name: Deep UI Refinement & Screen Overhaul
+status: defining_requirements
+stopped_at: Milestone v1.8 started — defining requirements
+last_updated: "2026-05-06T00:00:00.000Z"
+last_activity: 2026-05-06
 progress:
   total_phases: 5
-  completed_phases: 5
-  total_plans: 19
-  completed_plans: 19
-  percent: 100
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-04)
+See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 28 — branding
+**Current focus:** Milestone v1.8 — defining requirements and roadmap
 
 ## Current Position
 
-Phase: 28
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-05-05
-
-```
-v1.7 Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/5 phases)
-```
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-06 — Milestone v1.8 started
 
 ## Phase Structure
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 24 | Polish Foundation | POLISH-01, POLISH-02, POLISH-03, POLISH-04 | Not started |
-| 25 | Auth, Onboarding & Errors | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Not started |
-| 26 | Home & Chat Polish | HOME-01–04, CHAT-01–04 | Not started |
-| 27 | Plans & Squad Polish | PLANS-01–04, SQUAD-01–04 | Not started |
-| 28 | Branding | BRAND-01, BRAND-02, BRAND-03 | Not started |
+| 29 | Home Screen Overhaul | TBD | Not started |
+| 30 | Squad Screen Overhaul | TBD | Not started |
+| 31 | Explore Screen Overhaul | TBD | Not started |
+| 32 | Auth Screen Redesign | TBD | Not started |
+| 33 | Welcome / Onboarding | TBD | Not started |
 
 ## Performance Metrics
 
 Plans executed this milestone: 0
 Phases completed: 0
-Requirements covered: 0 / 27
+Requirements covered: 0 / 0
 
 ## Accumulated Context
 
@@ -64,40 +60,15 @@ Requirements covered: 0 / 27
 - [v1.6]: react-native-maps iOS must use Apple Maps (PROVIDER_DEFAULT) — Google Maps iOS config plugin broken in SDK 55; no API key needed for dev
 - [v1.6]: plan-gallery Storage bucket is PRIVATE (signed URLs) — plan covers are public, gallery photos are not
 - [v1.6]: add_plan_photo SECURITY DEFINER RPC enforces 10-photo cap server-side — client-side check is UI only
-- [Phase 25]: Tab switcher and OAuth section hidden during reset flow — contextually irrelevant mid-flow, simplifies UX
-- [Phase 25]: Additive-only hook changes for AUTH-03: refetch aliases expose existing internal functions, no callers required modification
-- [Phase 25-auth-onboarding-errors]: FriendRequests onRetry wired to fetchPendingRequests (not refetch alias) — shows pendingRequests not friends list
-- [Phase 25]: PlansListScreen uses fetchPlans (not refetch alias) for onRetry — usePlans exposes fetchPlans directly
-- [Phase 25]: birthday/[id].tsx error guard uses friendsError/refetchFriends — matches existing aliased destructure from useFriendsOfFriend
-- [Phase 25-auth-onboarding-errors]: OnboardingHintSheet uses no PanResponder and no backdrop tap-to-dismiss — only Get Started button closes it (D-11)
-- [Phase 25-auth-onboarding-errors]: AsyncStorage onboarding flag check gated on loading === false to prevent race where friends array is empty during initial data load
-- [Phase 26]: Skeleton condition is loading && friends.length === 0 — pull-to-refresh keeps existing content visible
-- [Phase 26]: CardStackView skeleton gated on cardWidth > 0 to match onLayout measurement pattern before rendering
-- [Phase 26-home-chat-polish]: FADING_PULSE_COLOR exported from RadarBubble.tsx for test verification; variant prop approach over separate component
-- [Phase 26-home-chat-polish]: rn-mock-preload.js patches Module._resolveFilename for tsx RN component tests; .npmrc node-options makes it transparent
-- [Phase 26]: ChatSkeletonRow is file-local in ChatListScreen — skeleton is an implementation detail, not exported
-- [Phase 26]: void Haptics.impactAsync(Light) before onSend in SendBar.handleSend — fire-and-forget, never await in sync event handler
-- [Phase 26-home-chat-polish]: failed: true mutation on sendMessage error replaces prev.filter remove — user sees content and can retry
-- [Phase 26-home-chat-polish]: onRetry wrapped in void cast in ChatRoomScreen — retryMessage returns Promise but onRetry prop is void
-- [Phase 26]: bubbleScaleAnim wraps own and others TouchableOpacity — scale fires only after all guards pass, ensuring it matches menu open
-- [Phase 27]: jest.config.js: node env + custom RN mock — jest-expo broken on RN 0.83.6; react-native preset setup.js TypeScript parse fails; TurboModuleRegistry DeviceInfo not available in Node
-- [Phase 27]: it.failing() for TDD RED scaffolds — wave 0 tests asserting not-yet-implemented behavior; suite exits 0 while preserving RED intent; change to plain it() when implementation lands
-- [Phase 27]: getByLabelText() replaces getByA11yLabel() — RTLN v13 removed legacy a11y query aliases; getByLabelText matches accessibilityLabel props
-- [Phase 27]: staggerDelay: 80 added to ANIMATION.duration as authoritative source; PlanCardSkeleton uses View wrapper for partial-width SkeletonPulse
-- [Phase 27]: notificationAsync(Success) for friend accept (completion), impactAsync(Medium) for decline (neutral action) — semantically distinct haptic types
-- [Phase 27]: IOU settle haptic corrected from impactAsync(Medium) to notificationAsync(Success) — settle is a completion event
-- [Phase 27]: PlanCardSkeleton shown in list view only when loading && plans.length === 0 (My Plans gate, D-03/D-04)
-- [Phase 27]: ExploreMapView empty overlay uses absoluteFill + pointerEvents=none so map remains interactive
-- [Phase 27]: ANIMATION.duration.staggerDelay is now single source of truth for 80ms stagger — raw number removed from squad.tsx
-- [Phase 27]: Three separate Animated.Values in RSVPButtons — one per button; AnimatedTouchable at module scope; triggerBounce guard mirrors handlePress guard
-- [Phase 27]: Animated.View wrapper pattern for WishListItem Pressable — scale on wrapper, opacity: 0.7 press style removed
-- [Phase 28-branding]: fadeDuration not valid in expo-splash-screen SDK 55 plugin — use SplashScreen.setOptions({ duration: 400, fade: true }) at module scope instead
-- [Phase 28-branding]: Android adaptiveIcon reuses icon.png as foreground (D-03); #ff6b35 config backgroundColor provides background layer
+- [v1.7]: /ui-ux-pro-max plugin used for all UI/UX design work — audit-first approach per screen
+- [v1.8]: One phase per screen — audit → user feedback + references → /ui-ux-pro-max design → execute
+- [v1.8]: Phase order: Home → Squad → Explore → Auth → Welcome (main screens first, entry flows last)
 
 ### Roadmap Evolution
 
-- [v1.7]: Phase 24 (Polish Foundation) unblocks all other phases — SkeletonPulse, animation tokens, EmptyState CTA, PrimaryButton spinner must land first
-- [v1.7]: Phase 28 (Branding) placed last — requires EAS build to verify icon and splash on real device
+- [v1.7]: Phase 24 (Polish Foundation) unblocked all subsequent polish phases
+- [v1.7]: Phase 28 (Branding) placed last — EAS build verification deferred pending Apple Dev account
+- [v1.8]: Auth and Welcome placed at end — designed after main screens to match established visual language
 
 ### Pending Todos
 
@@ -105,9 +76,9 @@ Requirements covered: 0 / 27
 
 ### Blockers/Concerns
 
-- Phase 28 (Branding) splash screen dark/light variants and EAS build verification deferred until Apple Dev account acquired (same pattern as v1.3 hardware gate)
+- EAS build / Apple Dev account still pending for hardware smoke test (carried from v1.7)
 
 ## Session Continuity
 
-Last session: 2026-05-05T23:03:24.332Z
-Stopped at: Completed 28-01-PLAN.md (Phase 28 branding — all plans done)
+Last session: 2026-05-06T00:00:00.000Z
+Stopped at: Milestone v1.8 started — requirements definition in progress

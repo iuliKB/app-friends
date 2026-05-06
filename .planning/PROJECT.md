@@ -8,18 +8,16 @@ Campfire is a "friendship OS" — an all-in-one social coordination app for clos
 
 The daily availability status ("Free / Busy / Maybe") drives daily active use and makes it effortless for friends to see who's around and spin up spontaneous plans. If nothing else works, this must.
 
-## Current Milestone: v1.7 Polish & Launch Ready
+## Current Milestone: v1.8 Deep UI Refinement & Screen Overhaul
 
-**Goal:** Take every shipped feature from functional to great — comprehensive UI/UX polish, interaction refinements, and feature improvements across the entire app, plus final app icon and splash screen branding.
+**Goal:** Audit and overhaul every major screen — finish partially-built features (map, challenges), redesign Home/Squad/Explore/Auth UI from the ground up using /ui-ux-pro-max, and add a Welcome onboarding flow.
 
 **Target features:**
-- Screen-by-screen UI polish (every screen, consistent visual quality)
-- UX & interaction polish (animations, haptics, loading/empty/error states)
-- Status & home screen refinements (radar, card views, status composer)
-- Plans & Explore improvements (creation flow, dashboard, map, RSVP)
-- Chat & messaging polish (bubbles, reactions, media, polls)
-- Social features polish (IOU, birthday, friend profiles, Squad dashboard)
-- App icon & splash screen (final branded assets)
+- Home Screen overhaul (radar, cards, status — audit-first redesign)
+- Squad Screen overhaul (birthdays, IOU, streak, friends — finish + polish)
+- Explore Screen overhaul (map + challenges — partially built, needs completion)
+- Auth Screen redesign (Login + Sign Up — visual refresh, better UX)
+- Welcome / Onboarding screens (new 3-screen slide flow — brand new)
 
 ## Requirements
 
@@ -105,7 +103,11 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Active
 
-(none — v1.7 Phase 28 complete; milestone Polish & Launch Ready shipped)
+- Home Screen overhaul — radar view, card stack, status pill, event cards — v1.8
+- Squad Screen overhaul — birthdays, IOU, streak, friends list — v1.8
+- Explore Screen overhaul — map discovery, challenges feature completion — v1.8
+- Auth Screen redesign — login, sign up, form UX — v1.8
+- Welcome / Onboarding — 3-screen slide flow, first-run experience — v1.8
 
 ### Out of Scope
 
@@ -125,7 +127,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ## Context
 
-Shipped v1.6 Places, Themes & Memories — 8 milestones complete (v1.0–v1.6). Total ~25,000 LOC TypeScript.
+Shipped v1.7 Polish & Launch Ready — 9 milestones complete (v1.0–v1.7). Total ~26,000 LOC TypeScript.
 Tech stack: React Native + Expo (managed workflow), TypeScript strict, Supabase (Postgres + Auth + Realtime + Storage + Edge Functions), Zustand.
 
 Navigation: 5-tab layout Home|Squad|Explore|Chats|Profile. Squad is the social hub (friend list, requests, add friend, Goals streak, IOUs, Birthdays). Profile is account-focused (@username, email, member since, settings, notification toggles, morning prompt config, wish list, birthday, APPEARANCE theme picker).
@@ -214,4 +216,4 @@ Known technical considerations:
 | MemoriesRedirect replaces Squad tab Memories stub (v1.6 Phase 23) | Eliminates duplicate gallery implementation; both Squad and Home entry points route to canonical /memories screen | ✓ Good |
 
 ---
-*Last updated: 2026-05-06 — Phase 27 complete (plans-squad-polish: loading skeletons, haptic feedback, spring animations)*
+*Last updated: 2026-05-06 — Milestone v1.8 started (Deep UI Refinement & Screen Overhaul)*
