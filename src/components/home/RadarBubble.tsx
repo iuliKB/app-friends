@@ -159,9 +159,10 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
   const targetSize = heartbeatState === 'dead' ? 48 : (BubbleSizeMap[friend.status] ?? 36);
 
   // 3. Outer opacity
+  const isDead = heartbeatState === 'dead';
   let baseOpacity: number;
-  if (heartbeatState === 'dead') {
-    baseOpacity = 0.5;
+  if (isDead) {
+    baseOpacity = 0.38;  // D-01: changed from 0.5; clearer DEAD vs FADING (0.6) distinction
   } else if (heartbeatState === 'fading') {
     baseOpacity = 0.6; // FADING: opacity 0.6
   } else {
@@ -243,34 +244,58 @@ export function RadarBubble({ friend, depthScale = 1.0, depthOpacity = 1.0 }: Ra
     <Animated.View
       style={[styles.outerWrapper, { opacity: finalOpacity, transform: [{ scale: finalScale }] }]}
     >
-      <Pressable
-        onPress={handlePress}
-        onLongPress={handleLongPress}
-        delayLongPress={400}
-        hitSlop={hitSlop}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-      >
-        <Animated.View style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}>
-          {isAlive && <PulseRing size={targetSize} statusColor={statusColor} variant="alive" />}
-          {heartbeatState === 'fading' && (
-            <PulseRing size={targetSize} statusColor={FADING_PULSE_COLOR} variant="fading" />
-          )}
-          {showGradient && (
-            <LinearGradient
-              colors={gradientColors as [string, string]}
-              start={{ x: 0.5, y: 0.5 }}
-              end={{ x: 1, y: 1 }}
-              style={[StyleSheet.absoluteFill, { borderRadius: targetSize / 2 }]}
+      {isDead ? (
+        <View>
+          <Animated.View style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}>
+            <AvatarCircle
+              size={targetSize}
+              imageUri={friend.avatar_url}
+              displayName={friend.display_name}
             />
-          )}
-          <AvatarCircle
-            size={targetSize}
-            imageUri={friend.avatar_url}
-            displayName={friend.display_name}
-          />
-        </Animated.View>
-      </Pressable>
+            {/* Greyscale simulation overlay — INSIDE bubbleContainer, ABOVE AvatarCircle */}
+            <View
+              style={[
+                StyleSheet.absoluteFillObject,
+                {
+                  backgroundColor: colors.surface.base,
+                  opacity: 0.55,
+                  borderRadius: targetSize / 2,  // static number, NOT sizeAnim (Animated.Value not valid for borderRadius)
+                },
+              ]}
+              pointerEvents="none"
+            />
+          </Animated.View>
+        </View>
+      ) : (
+        <Pressable
+          onPress={handlePress}
+          onLongPress={handleLongPress}
+          delayLongPress={400}
+          hitSlop={hitSlop}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+        >
+          <Animated.View style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}>
+            {isAlive && <PulseRing size={targetSize} statusColor={statusColor} variant="alive" />}
+            {heartbeatState === 'fading' && (
+              <PulseRing size={targetSize} statusColor={FADING_PULSE_COLOR} variant="fading" />
+            )}
+            {showGradient && (
+              <LinearGradient
+                colors={gradientColors as [string, string]}
+                start={{ x: 0.5, y: 0.5 }}
+                end={{ x: 1, y: 1 }}
+                style={[StyleSheet.absoluteFill, { borderRadius: targetSize / 2 }]}
+              />
+            )}
+            <AvatarCircle
+              size={targetSize}
+              imageUri={friend.avatar_url}
+              displayName={friend.display_name}
+            />
+          </Animated.View>
+        </Pressable>
+      )}
       <Text
         style={[styles.nameLabel, { maxWidth: targetSize + 16, color: nameLabelColor }]}
         numberOfLines={1}
