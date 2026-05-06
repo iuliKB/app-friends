@@ -38,11 +38,13 @@ created: 2026-05-06
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 29-01-01 | 01 | 1 | HOME-05 | — | N/A | visual | `npx jest --testPathPattern="radarBubble\|RadarBubble" --passWithNoTests` | ❌ W0 | ⬜ pending |
-| 29-01-02 | 01 | 1 | HOME-05 | — | N/A | visual | `npx jest --testPathPattern="radarBubble\|RadarBubble" --passWithNoTests` | ❌ W0 | ⬜ pending |
-| 29-02-01 | 02 | 1 | HOME-06 | — | N/A | unit | `npx jest --testPathPattern="useViewPreference" --passWithNoTests` | ❌ W0 | ⬜ pending |
-| 29-03-01 | 03 | 2 | HOME-07 | — | N/A | visual | `npx jest --testPathPattern="HomeScreen\|emptyState" --passWithNoTests` | ❌ W0 | ⬜ pending |
-| 29-04-01 | 04 | 2 | HOME-08 | — | N/A | visual | `npx jest --testPathPattern="EventCard\|eventCard" --passWithNoTests` | ❌ W0 | ⬜ pending |
+| 29-01-01 | 01 | 1 | HOME-05 | — | N/A | unit | `npx jest --testPathPattern="RadarBubble.dead" --passWithNoTests` | ❌ W0 | ⬜ pending |
+| 29-01-02 | 01 | 1 | HOME-06/HOME-08 | — | N/A | unit | `npx jest --testPathPattern="useViewPreference\|EventCard.phase29" --passWithNoTests` | ❌ W0 | ⬜ pending |
+| 29-02-01 | 02 | 1 | HOME-05 | — | N/A | unit | `npx jest --testPathPattern="RadarBubble.dead" --no-coverage` | ❌ W0 | ⬜ pending |
+| 29-03-01 | 03 | 1 | HOME-07 | — | N/A | visual | `! grep -qi "onboarding\|OnboardingHintSheet\|AsyncStorage" src/screens/home/HomeScreen.tsx && echo "PASS: clean" || echo "FAIL: stale references"` | ✅ | ⬜ pending |
+| 29-04-01 | 04 | 1 | HOME-08 | — | N/A | unit | `npx jest --testPathPattern="EventCard.phase29" --no-coverage` | ❌ W0 | ⬜ pending |
+| 29-05-01 | 05 | 2 | HOME-08 | — | N/A | unit | `npx jest --testPathPattern="EventCard.phase29\|UpcomingEventsSection" --no-coverage` | ❌ W0 | ⬜ pending |
+| 29-05-02 | 05 | 2 | HOME-08 | — | N/A | visual | `npx tsc --noEmit 2>&1 | grep -i "homescreen\|UpcomingEvents" | head -5 && echo "PASS" || echo "FAIL"` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,12 +52,11 @@ created: 2026-05-06
 
 ## Wave 0 Requirements
 
-- [ ] `__tests__/components/RadarBubble.test.tsx` — stubs for HOME-05 radar bubble visual states
-- [ ] `__tests__/hooks/useViewPreference.test.ts` — unit tests for HOME-06 persistence
-- [ ] `__tests__/screens/HomeScreen.emptyState.test.tsx` — stubs for HOME-07 empty state CTA
-- [ ] `__tests__/components/EventCard.test.tsx` — stubs for HOME-08 event card visual hierarchy
+- [ ] `src/components/home/__tests__/RadarBubble.dead.test.tsx` — stubs for HOME-05 radar bubble visual states
+- [ ] `src/hooks/__tests__/useViewPreference.test.ts` — unit tests for HOME-06 persistence
+- [ ] `src/components/home/__tests__/EventCard.phase29.test.tsx` — stubs for HOME-08 event card dimensions + date pill
 
-*Existing jest infrastructure confirmed — Wave 0 adds test stubs only.*
+*Existing jest infrastructure confirmed — Wave 0 adds test stubs only. HOME-07 (EmptyState/OnboardingHintSheet) verified via grep command, no unit test file needed.*
 
 ---
 

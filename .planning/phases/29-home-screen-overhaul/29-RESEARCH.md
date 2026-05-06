@@ -361,22 +361,22 @@ if (heartbeatState === 'dead') {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Loading signal for UpcomingEventsSection skeleton (D-09)**
    - What we know: `useUpcomingEvents` returns only `PlanWithMembers[]`. `usePlans()` in `HomeScreen` has a `loading` flag.
    - What's unclear: Does `usePlansStore` expose a `loading` selector? If yes, `UpcomingEventsSection` can self-contain the skeleton. If no, the loading prop must be threaded from `HomeScreen`.
-   - Recommendation: Planner reads `src/stores/usePlansStore.ts` before writing the Plan 04 action.
+   - RESOLVED via PATTERNS.md: `usePlansStore` has no `loading` field — Option A (prop threading from HomeScreen) is required.
 
 2. **Route for "Invite friends" CTA (D-07)**
    - What we know: D-07 says "Add Friend screen (`/friends/add`)". Current code navigates to `/(tabs)/squad`.
    - What's unclear: Whether `/friends/add` is a valid registered expo-router route.
-   - Recommendation: Planner verifies by grepping `app/` for `friends/add` route file.
+   - RESOLVED: `src/app/friends/add.tsx` confirmed present — route is valid.
 
 3. **Existing date text in EventCard after adding date pill (D-11)**
    - What we know: `EventCard` currently renders a `dateLabel` text element inside `styles.content`. The UI-SPEC adds a date pill at the top of the card.
    - What's unclear: Whether the existing inline date text should be removed (to avoid duplicate date display) or kept (as secondary context below the title).
-   - Recommendation: UI-SPEC describes the pill as providing date prominence — the inline date below the title appears redundant. Planner should remove it as part of D-11, keeping only the top-left pill.
+   - RESOLVED: Inline date text removed per D-11 — pill is the sole date display per UI-SPEC.
 
 ---
 
