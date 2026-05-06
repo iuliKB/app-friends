@@ -35,7 +35,7 @@ export function HomeScreen() {
   const { friends, loading, error, refreshing, handleRefresh, refetch } = useHomeScreen();
   const router = useRouter();
 
-  usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
+  const { loading: plansLoading } = usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
 
@@ -220,7 +220,7 @@ export function HomeScreen() {
         )}
 
         {/* D-09: Upcoming events section — below Radar/Cards view */}
-        <UpcomingEventsSection />
+        <UpcomingEventsSection isLoading={plansLoading} />
 
         <RecentMemoriesSection />
 
