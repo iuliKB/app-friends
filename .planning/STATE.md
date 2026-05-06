@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 29-02-PLAN.md
-last_updated: "2026-05-06T20:07:40.966Z"
+stopped_at: Completed 29-03-PLAN.md
+last_updated: "2026-05-06T20:10:02.020Z"
 last_activity: 2026-05-06
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
-  percent: 40
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 29 (home-screen-overhaul) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-05-06
 
@@ -70,6 +70,7 @@ Requirements covered: 0 / 18
 - [Phase 29-home-screen-overhaul]: UNSAFE_queryAllByType(Pressable) used over queryAllByRole('button') in test scaffolds — RTNU 13.x queryAllByRole does not work with string-element RN mocks
 - [Phase 29-home-screen-overhaul]: SHADOWS added to src/__mocks__/theme.js — EventCard imports SHADOWS.card which was missing from the stub (only SHADOW singular was present)
 - [Phase 29]: borderRadius: targetSize/2 (static) on DEAD overlay — Animated.Value not valid for borderRadius without useNativeDriver: false
+- [Phase 29]: EmptyState CTA navigates to /friends/add (root-level route) not /(tabs)/squad — directly opens the Add Friend form per D-06/D-07
 
 ### Roadmap Evolution
 
@@ -88,5 +89,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-06T20:07:40.963Z
-Stopped at: Completed 29-02-PLAN.md
+Last session: 2026-05-06T20:10:02.017Z
+Stopped at: Completed 29-03-PLAN.md
