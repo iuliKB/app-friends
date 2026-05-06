@@ -10,7 +10,8 @@
 - ✅ **v1.4 Squad Dashboard & Social Tools** — Phases 5-11 (shipped 2026-04-17)
 - ✅ **v1.5 Chat & Profile** — Phases 12-17 (shipped 2026-04-22)
 - ✅ **v1.6 Places, Themes & Memories** — Phases 18-23 (shipped 2026-05-04)
-- 🔄 **v1.7 Polish & Launch Ready** — Phases 24-28 (in progress)
+- ✅ **v1.7 Polish & Launch Ready** — Phases 24-28 (shipped 2026-05-05)
+- 🔄 **v1.8 Deep UI Refinement & Screen Overhaul** — Phases 29-33 (in progress)
 
 ## Archived Milestones
 
@@ -100,7 +101,7 @@
 <summary>✅ v1.6 Places, Themes & Memories (Phases 18-23) — SHIPPED 2026-05-04</summary>
 
 - [x] Phase 18: Theme Foundation (3/3 plans) — completed 2026-04-28
-- [x] Phase 19: Theme Migration (3/3 plans) — completed 2026-04-28
+- [x] Phase 19: Theme Migration (3/3 plans) — completed 2026-04-29
 - [x] Phase 20: Map Feature (6/6 plans) — completed 2026-04-29
 - [x] Phase 21: Gallery Foundation (3/3 plans) — completed 2026-04-30
 - [x] Phase 22: Gallery UI (3/3 plans) — completed 2026-04-30
@@ -110,15 +111,28 @@
 
 </details>
 
+<details>
+<summary>✅ v1.7 Polish & Launch Ready (Phases 24-28) — SHIPPED 2026-05-05</summary>
+
+- [x] Phase 24: Polish Foundation (2/2 plans) — completed 2026-05-05
+- [x] Phase 25: Auth, Onboarding & Errors (5/5 plans) — completed 2026-05-05
+- [x] Phase 26: Home & Chat Polish (6/6 plans) — completed 2026-05-05
+- [x] Phase 27: Plans & Squad Polish (5/5 plans) — completed 2026-05-05
+- [x] Phase 28: Branding (1/1 plan) — completed 2026-05-05
+
+**Key deliverables:** SkeletonPulse shimmer + animation tokens, forgot-password flow, ToS/Privacy links, error state audit, OnboardingHintSheet first-run hint, Home/Chat press feedback + haptics + FADING pulse ring, Plans/Squad skeleton cards + RSVP spring + Squad stagger animation, app icon + branded splash screen.
+
+</details>
+
 ## Phases
 
-### v1.7 Polish & Launch Ready
+### v1.8 Deep UI Refinement & Screen Overhaul
 
-- [x] **Phase 24: Polish Foundation** - SkeletonPulse shimmer, animation tokens, EmptyState CTA variant, PrimaryButton loading spinner — primitives that every subsequent polish phase depends on (completed 2026-05-05)
-- [x] **Phase 25: Auth, Onboarding & Errors** - Forgot-password flow, ToS/Privacy links on sign-up, error state audit across all data-fetching screens, first-run onboarding hint — all App Store-blocking items (completed 2026-05-05)
-- [x] **Phase 26: Home & Chat Polish** - Skeleton placeholders, press feedback, radar FADING pulse, zero-friends empty state, optimistic message send, haptics, long-press bubble animation (completed 2026-05-05)
-- [x] **Phase 27: Plans & Squad Polish** - Skeleton cards, RSVP spring animation, plan creation haptic, map empty state, friend-request + IOU + wish-list haptics, Squad Dashboard stagger animation (completed 2026-05-05)
-- [x] **Phase 28: Branding** - Final 1024×1024 app icon, branded splash screen with dark/light OS variants and fade transition — requires EAS build to verify on device (completed 2026-05-05)
+- [ ] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max
+- [ ] **Phase 30: Squad Screen Overhaul** - Polish Squad Dashboard cards (Streak, Birthday, IOU) and Friends list to feel native and information-dense without overwhelming
+- [ ] **Phase 31: Explore Screen Overhaul** - 3-state bottom sheet, theme fix for all three map components, reset-to-location chip, and plan card polish
+- [ ] **Phase 32: Auth Screen Redesign** - Fix the always-dark LinearGradient bug, extract gradient tokens, and add specific login error messaging
+- [ ] **Phase 33: Welcome / Onboarding Flow** - Brand-new 3-screen slide onboarding flow using react-native-pager-view, gated by AsyncStorage key, implemented as full-screen modal overlay
 
 ## Phase Details
 
@@ -209,6 +223,67 @@ Plans:
 - [x] 28-01-PLAN.md — BRAND-01/02/03: android adaptiveIcon + expo-splash-screen plugin (light/dark) + SplashScreen.setOptions fade
 **UI hint**: yes
 
+### Phase 29: Home Screen Overhaul
+**Goal**: Home screen has a ground-up visual redesign — radar bubbles clearly communicate freshness, the view-mode preference persists, and the events section has a polished, consistent layout
+**Depends on**: Phase 28
+**Requirements**: HOME-05, HOME-06, HOME-07, HOME-08
+**Success Criteria** (what must be TRUE):
+  1. At a glance, ALIVE radar bubbles look distinct from FADING (dimmed) and DEAD (visually distinct treatment) friends — no tap required to understand who is available
+  2. Switching between Radar and Cards view and restarting the app restores the last-used mode — preference survives an app kill
+  3. A user with zero friends sees a prominent "Invite friends" CTA that navigates to the Add Friend flow, not just a generic empty state
+  4. Upcoming events cards have consistent date/time prominence, participant avatars, and visual hierarchy that feels native to the Campfire design system
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 30: Squad Screen Overhaul
+**Goal**: Squad Dashboard cards and Friends list are information-dense but not cluttered — each card surfaces one hero metric with a clear action, and the friends list feels polished and native
+**Depends on**: Phase 29
+**Requirements**: SQUAD-05, SQUAD-06, SQUAD-07, SQUAD-08
+**Success Criteria** (what must be TRUE):
+  1. Each Squad Dashboard card (Streak, Birthday, IOU) shows exactly one primary metric and one tappable CTA — no secondary statistics visible on the card surface
+  2. The Friends list (CompactFriendRow) has polished avatar display with a visible status freshness indicator and consistent spacing that matches the app's design system
+  3. The Birthday card shows a clear days-until-birthday countdown and the IOU card shows net balance with a directional indicator (owe vs. owed) — readable at a glance without tapping in
+  4. The Streak card has a visually prominent streak count with positive-only framing and a clear progress indicator — no anxiety-inducing visuals
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 31: Explore Screen Overhaul
+**Goal**: Explore map has an interactive 3-state bottom sheet, respects light/dark theme on all three map surfaces, and has a reset-to-location action — map and plan list feel complete and polished
+**Depends on**: Phase 29
+**Requirements**: EXPLORE-01, EXPLORE-02, EXPLORE-03, EXPLORE-04
+**Success Criteria** (what must be TRUE):
+  1. The Explore map bottom sheet has three distinct states — Peek (compact plan count), Half (scrollable list), Full (full list with map minimized) — and tapping a map pin shows an inline plan preview without leaving the map
+  2. The Explore map, Plan Dashboard map tile, and Location Picker all switch between light and dark map styles when the OS theme changes — no component is stuck in dark mode
+  3. A "Reset to my location" chip re-centers the map on the user's current GPS position when tapped
+  4. The Explore plan list has consistent card layout with improved loading skeleton and a contextual empty state — loading and empty conditions both look intentional
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 32: Auth Screen Redesign
+**Goal**: Auth screen correctly adapts to the OS light/dark theme and provides specific, actionable error messages that help users recover from login failures
+**Depends on**: Phase 29
+**Requirements**: AUTH-05, AUTH-06
+**Success Criteria** (what must be TRUE):
+  1. Switching the device to light mode and opening the Auth screen shows the correct light-mode LinearGradient background — the always-dark bug at `AuthScreen.tsx:410` is gone
+  2. When a user enters an email with no account, the error reads "No account found with this email" — not a generic failure
+  3. When a user enters the wrong password for a known email, the error reads "Incorrect password" — not a generic failure
+  4. Gradient values are defined in `src/theme/gradients.ts` and imported by AuthScreen — no raw hex color arrays in the component file
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 33: Welcome / Onboarding Flow
+**Goal**: New users see a branded 3-screen slide onboarding flow before reaching the main app — existing users never see it, and the flow cannot be accidentally triggered by iOS swipe-back
+**Depends on**: Phase 32
+**Requirements**: ONBOARD-01, ONBOARD-02, ONBOARD-03, ONBOARD-04
+**Success Criteria** (what must be TRUE):
+  1. A user launching the app for the first time (no `@campfire/welcome_complete` key) sees a full-screen 3-slide onboarding flow powered by react-native-pager-view before reaching any tab screen
+  2. Every Welcome slide has a visible Skip button that routes immediately to the main app — not the next slide
+  3. Completing the final slide routes to Squad → Friends tab if the user has zero friends, or to Home tab if they have at least one friend
+  4. A returning user (key present) never sees the Welcome flow — app opens directly to the main tab layout
+  5. The iOS swipe-back gesture is disabled on the Welcome screen — users cannot accidentally dismiss it mid-onboarding
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -226,11 +301,16 @@ Plans:
 | 22. Gallery UI | v1.6 | 3/3 | Complete | 2026-04-30 |
 | 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
 | 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
-| 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete    | 2026-05-05 |
-| 26. Home & Chat Polish | v1.7 | 6/6 | Complete    | 2026-05-05 |
-| 27. Plans & Squad Polish | v1.7 | 5/5 | Complete    | 2026-05-05 |
-| 28. Branding | v1.7 | 1/1 | Complete    | 2026-05-05 |
+| 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete | 2026-05-05 |
+| 26. Home & Chat Polish | v1.7 | 6/6 | Complete | 2026-05-05 |
+| 27. Plans & Squad Polish | v1.7 | 5/5 | Complete | 2026-05-05 |
+| 28. Branding | v1.7 | 1/1 | Complete | 2026-05-05 |
+| 29. Home Screen Overhaul | v1.8 | 0/? | Not started | - |
+| 30. Squad Screen Overhaul | v1.8 | 0/? | Not started | - |
+| 31. Explore Screen Overhaul | v1.8 | 0/? | Not started | - |
+| 32. Auth Screen Redesign | v1.8 | 0/? | Not started | - |
+| 33. Welcome / Onboarding Flow | v1.8 | 0/? | Not started | - |
 
 ---
 
-*Roadmap updated: 2026-05-06 — Phase 28 plans defined (1 plan, 1 wave)*
+*Roadmap updated: 2026-05-06 — v1.8 roadmap created (Phases 29-33, 18 requirements mapped)*

@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: defining_requirements
-stopped_at: Milestone v1.8 started — defining requirements
+status: roadmap_ready
+stopped_at: Roadmap created — ready to plan Phase 29
 last_updated: "2026-05-06T00:00:00.000Z"
 last_activity: 2026-05-06
 progress:
@@ -21,30 +21,30 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Milestone v1.8 — defining requirements and roadmap
+**Current focus:** Milestone v1.8 — roadmap created, ready to plan Phase 29
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 29 (Home Screen Overhaul) — not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-06 — Milestone v1.8 started
+Status: Roadmap ready
+Last activity: 2026-05-06 — v1.8 roadmap created (5 phases, 18 requirements)
 
 ## Phase Structure
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 29 | Home Screen Overhaul | TBD | Not started |
-| 30 | Squad Screen Overhaul | TBD | Not started |
-| 31 | Explore Screen Overhaul | TBD | Not started |
-| 32 | Auth Screen Redesign | TBD | Not started |
-| 33 | Welcome / Onboarding | TBD | Not started |
+| 29 | Home Screen Overhaul | HOME-05, HOME-06, HOME-07, HOME-08 | Not started |
+| 30 | Squad Screen Overhaul | SQUAD-05, SQUAD-06, SQUAD-07, SQUAD-08 | Not started |
+| 31 | Explore Screen Overhaul | EXPLORE-01, EXPLORE-02, EXPLORE-03, EXPLORE-04 | Not started |
+| 32 | Auth Screen Redesign | AUTH-05, AUTH-06 | Not started |
+| 33 | Welcome / Onboarding Flow | ONBOARD-01, ONBOARD-02, ONBOARD-03, ONBOARD-04 | Not started |
 
 ## Performance Metrics
 
 Plans executed this milestone: 0
 Phases completed: 0
-Requirements covered: 0 / 0
+Requirements covered: 0 / 18
 
 ## Accumulated Context
 
@@ -63,12 +63,17 @@ Requirements covered: 0 / 0
 - [v1.7]: /ui-ux-pro-max plugin used for all UI/UX design work — audit-first approach per screen
 - [v1.8]: One phase per screen — audit → user feedback + references → /ui-ux-pro-max design → execute
 - [v1.8]: Phase order: Home → Squad → Explore → Auth → Welcome (main screens first, entry flows last)
+- [v1.8 Phase 29]: OnboardingHintSheet stays in place through Phase 29 — removed only in Phase 33
+- [v1.8 Phase 31]: All three map userInterfaceStyle: 'dark' instances fixed in Phase 31 together — ExploreMapView, PlanDashboardScreen, LocationPicker
+- [v1.8 Phase 32]: LinearGradient always-dark bug at AuthScreen.tsx:410 is a required deliverable; gradient tokens extracted to src/theme/gradients.ts
+- [v1.8 Phase 33]: react-native-pager-view@8.0.1 installed; AsyncStorage key @campfire/welcome_complete (NOT @campfire/onboarding_hint_shown); implemented as full-screen Modal overlay inside (tabs)/_layout.tsx (not a new Stack route); gestureEnabled: false to prevent iOS swipe-back conflict
 
 ### Roadmap Evolution
 
 - [v1.7]: Phase 24 (Polish Foundation) unblocked all subsequent polish phases
 - [v1.7]: Phase 28 (Branding) placed last — EAS build verification deferred pending Apple Dev account
 - [v1.8]: Auth and Welcome placed at end — designed after main screens to match established visual language
+- [v1.8]: Phase 29 depends on Phase 28; Phases 30-33 depend on Phase 29 (sequential screen-by-screen rollout)
 
 ### Pending Todos
 
@@ -81,4 +86,4 @@ Requirements covered: 0 / 0
 ## Session Continuity
 
 Last session: 2026-05-06T00:00:00.000Z
-Stopped at: Milestone v1.8 started — requirements definition in progress
+Stopped at: v1.8 roadmap created — next action is /gsd-plan-phase 29
