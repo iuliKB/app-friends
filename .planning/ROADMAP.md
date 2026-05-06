@@ -311,7 +311,7 @@ Plans:
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete | 2026-05-05 |
 | 27. Plans & Squad Polish | v1.7 | 5/5 | Complete | 2026-05-05 |
 | 28. Branding | v1.7 | 1/1 | Complete | 2026-05-05 |
-| 29. Home Screen Overhaul | v1.8 | 5/5 | Complete   | 2026-05-06 |
+| 29. Home Screen Overhaul | v1.8 | 5/5 | Complete    | 2026-05-06 |
 | 30. Squad Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 31. Explore Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 32. Auth Screen Redesign | v1.8 | 0/? | Not started | - |
