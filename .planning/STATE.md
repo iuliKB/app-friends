@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Phase 29 UI-SPEC approved
-last_updated: "2026-05-06T19:56:45.375Z"
-last_activity: 2026-05-06 -- Phase 29 planning complete
+stopped_at: Completed 29-01-PLAN.md
+last_updated: "2026-05-06T20:04:48.723Z"
+last_activity: 2026-05-06
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 5
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Milestone v1.8 — roadmap created, ready to plan Phase 29
+**Current focus:** Phase 29 — home-screen-overhaul
 
 ## Current Position
 
-Phase: 29 (Home Screen Overhaul) — not started
-Plan: —
+Phase: 29 (home-screen-overhaul) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-05-06 -- Phase 29 planning complete
+Last activity: 2026-05-06
 
 ## Phase Structure
 
@@ -67,6 +67,8 @@ Requirements covered: 0 / 18
 - [v1.8 Phase 31]: All three map userInterfaceStyle: 'dark' instances fixed in Phase 31 together — ExploreMapView, PlanDashboardScreen, LocationPicker
 - [v1.8 Phase 32]: LinearGradient always-dark bug at AuthScreen.tsx:410 is a required deliverable; gradient tokens extracted to src/theme/gradients.ts
 - [v1.8 Phase 33]: react-native-pager-view@8.0.1 installed; AsyncStorage key @campfire/welcome_complete (NOT @campfire/onboarding_hint_shown); implemented as full-screen Modal overlay inside (tabs)/_layout.tsx (not a new Stack route); gestureEnabled: false to prevent iOS swipe-back conflict
+- [Phase 29-home-screen-overhaul]: UNSAFE_queryAllByType(Pressable) used over queryAllByRole('button') in test scaffolds — RTNU 13.x queryAllByRole does not work with string-element RN mocks
+- [Phase 29-home-screen-overhaul]: SHADOWS added to src/__mocks__/theme.js — EventCard imports SHADOWS.card which was missing from the stub (only SHADOW singular was present)
 
 ### Roadmap Evolution
 
@@ -85,5 +87,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-06T19:32:49.899Z
-Stopped at: Phase 29 UI-SPEC approved
+Last session: 2026-05-06T20:04:48.719Z
+Stopped at: Completed 29-01-PLAN.md

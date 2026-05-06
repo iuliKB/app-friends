@@ -234,7 +234,7 @@ Plans:
   4. Upcoming events cards have consistent date/time prominence, participant avatars, and visual hierarchy that feels native to the Campfire design system
 **Plans**: 5 plans
 Plans:
-- [ ] 29-01-PLAN.md — Wave 1: Test scaffolds for HOME-05, HOME-06, HOME-08
+- [x] 29-01-PLAN.md — Wave 1: Test scaffolds for HOME-05, HOME-06, HOME-08
 - [ ] 29-02-PLAN.md — Wave 1: RadarBubble DEAD treatment (opacity 0.38, greyscale overlay, no Pressable)
 - [ ] 29-03-PLAN.md — Wave 1: HomeScreen EmptyState CTA update + OnboardingHintSheet removal
 - [ ] 29-04-PLAN.md — Wave 1: EventCard resize 240×160, date pill, AvatarStack size=28 maxVisible=5
@@ -311,7 +311,7 @@ Plans:
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete | 2026-05-05 |
 | 27. Plans & Squad Polish | v1.7 | 5/5 | Complete | 2026-05-05 |
 | 28. Branding | v1.7 | 1/1 | Complete | 2026-05-05 |
-| 29. Home Screen Overhaul | v1.8 | 0/? | Not started | - |
+| 29. Home Screen Overhaul | v1.8 | 1/5 | In Progress|  |
 | 30. Squad Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 31. Explore Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 32. Auth Screen Redesign | v1.8 | 0/? | Not started | - |

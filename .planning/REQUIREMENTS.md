@@ -11,10 +11,10 @@
 
 ### HOME — Home Screen Overhaul (Phase 29)
 
-- [ ] **HOME-05**: Radar bubbles clearly distinguish ALIVE, FADING (dimmed), and DEAD (visually distinct) friend statuses at a glance without requiring user interaction
-- [ ] **HOME-06**: User's last-used view mode (Radar vs Cards) is saved to AsyncStorage and restored on next app launch
+- [x] **HOME-05**: Radar bubbles clearly distinguish ALIVE, FADING (dimmed), and DEAD (visually distinct) friend statuses at a glance without requiring user interaction
+- [x] **HOME-06**: User's last-used view mode (Radar vs Cards) is saved to AsyncStorage and restored on next app launch
 - [ ] **HOME-07**: User with zero friends sees a prominent "Invite friends" CTA that routes to the Add Friend flow (replaces or augments current empty state)
-- [ ] **HOME-08**: Upcoming events section has polished card layout with consistent visual hierarchy, date/time prominence, and participant avatars
+- [x] **HOME-08**: Upcoming events section has polished card layout with consistent visual hierarchy, date/time prominence, and participant avatars
 
 ### SQUAD — Squad Screen Overhaul (Phase 30)
 
