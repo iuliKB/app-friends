@@ -1,80 +1,67 @@
-# Requirements — v1.7 Polish & Launch Ready
+# Requirements — v1.8 Deep UI Refinement & Screen Overhaul
 
-**Milestone goal:** Take every shipped feature from functional to great — comprehensive UI/UX polish, interaction refinements, and feature improvements across the entire app, plus final app icon and splash screen branding.
+**Milestone goal:** Audit and overhaul every major screen — finish partially-built features, redesign Home/Squad/Explore/Auth UI from the ground up using /ui-ux-pro-max, and add a Welcome onboarding flow for new users.
 
-**REQ-ID format:** `[CATEGORY]-[NUMBER]`
+**REQ-ID format:** `[CATEGORY]-[NUMBER]` (continuing from v1.7 numbering)
 **Phase coverage:** See Traceability section (filled by roadmapper)
 
 ---
 
 ## Active Requirements
 
-### POLISH — Foundation
+### HOME — Home Screen Overhaul (Phase 29)
 
-- [ ] **POLISH-01**: User sees SkeletonPulse shimmer placeholders on any screen while data is loading
-- [ ] **POLISH-02**: Animation durations and easing values are defined as `src/theme/` tokens so animation is consistent across the app
-- [ ] **POLISH-03**: EmptyState component supports an optional CTA button to guide users to action from empty screens
-- [ ] **POLISH-04**: PrimaryButton shows an inline spinner when an async operation is in progress
+- [ ] **HOME-05**: Radar bubbles clearly distinguish ALIVE, FADING (dimmed), and DEAD (visually distinct) friend statuses at a glance without requiring user interaction
+- [ ] **HOME-06**: User's last-used view mode (Radar vs Cards) is saved to AsyncStorage and restored on next app launch
+- [ ] **HOME-07**: User with zero friends sees a prominent "Invite friends" CTA that routes to the Add Friend flow (replaces or augments current empty state)
+- [ ] **HOME-08**: Upcoming events section has polished card layout with consistent visual hierarchy, date/time prominence, and participant avatars
 
-### BRAND — App Icon & Splash
+### SQUAD — Squad Screen Overhaul (Phase 30)
 
-- [x] **BRAND-01**: App has a final 1024×1024 branded Campfire icon replacing the Expo placeholder
-- [x] **BRAND-02**: Splash screen uses branded imagery with a fade transition configured via the expo-splash-screen plugin
-- [x] **BRAND-03**: Splash screen adapts to dark/light OS mode (separate dark and light background treatments)
+- [ ] **SQUAD-05**: Each Squad Dashboard card (Streak, Birthday, IOU) displays one primary hero metric and one clear CTA — no information overload on the card surface
+- [ ] **SQUAD-06**: Friends list (CompactFriendRow) has polished avatar display, status freshness indicator, and consistent spacing that feels native to the app's design system
+- [ ] **SQUAD-07**: Birthday card shows clear days-until-birthday countdown; IOU card shows net balance at a glance with directional indicator (you owe vs. owed to you)
+- [ ] **SQUAD-08**: Streak card has a visually prominent streak count with positive-only framing and a clear visual progress indicator
 
-### HOME — Home Screen
+### EXPLORE — Explore Screen Overhaul (Phase 31)
 
-- [x] **HOME-01**: Home screen shows SkeletonPulse placeholders while friend status data loads
-- [x] **HOME-02**: New user with zero friends sees an actionable empty state guiding them to add a friend
-- [x] **HOME-03**: Friends with FADING heartbeat status show a subtle animated pulse on their radar bubble
-- [x] **HOME-04**: All tappable cards on the home screen have spring press feedback (scale 1.0→0.96)
+- [ ] **EXPLORE-01**: Explore map has a 3-state bottom sheet (Peek: compact plan count preview / Half: scrollable plan list / Full: full plan list with map minimized) — tapping a map pin shows an inline plan preview without navigating away from the map
+- [ ] **EXPLORE-02**: Explore map, Plan Dashboard map tile, and Location Picker all respect the app's current light/dark theme (fixes hardcoded `userInterfaceStyle: 'dark'` on all three components)
+- [ ] **EXPLORE-03**: Explore map has a "Reset to my location" chip that re-centers the map on the user's current GPS position
+- [ ] **EXPLORE-04**: Plan list (Explore tab) has a polished card layout with consistent visual hierarchy, improved loading skeleton, and a contextual empty state
 
-### CHAT — Chat & Messaging
+### AUTH — Auth Screen Redesign (Phase 32)
 
-- [x] **CHAT-01**: Chat list screen shows skeleton rows while conversations load
-- [x] **CHAT-02**: Sending a message triggers `impactAsync(Light)` haptic; tapping a reaction triggers `selectionAsync()`
-- [x] **CHAT-03**: Sent messages appear immediately in the conversation with a subtle "sending" indicator before server confirmation
-- [x] **CHAT-04**: Long-pressing a message bubble shows a subtle scale press animation before the context menu appears
+- [ ] **AUTH-05**: Auth screen applies the correct light/dark theme — the LinearGradient background respects the OS theme setting (fixes the always-dark bug at `AuthScreen.tsx:410`)
+- [ ] **AUTH-06**: Login error messages are specific: "No account found with this email" vs "Incorrect password" rather than a generic failure message
 
-### PLANS — Plans & Explore
+### ONBOARD — Welcome / Onboarding Flow (Phase 33)
 
-- [x] **PLANS-01**: Plans list (Explore tab) shows skeleton cards while plan data loads
-- [x] **PLANS-02**: RSVP buttons (Yes/No/Maybe) have a spring bounce animation and haptic feedback on press
-- [x] **PLANS-03**: Successfully creating a plan triggers `notificationAsync(Success)` haptic feedback
-- [x] **PLANS-04**: Explore map shows a friendly empty state when no friend plans are nearby
-
-### SQUAD — Squad & Social
-
-- [x] **SQUAD-01**: Accepting a friend request triggers `notificationAsync(Success)` haptic; rejecting triggers `impactAsync(Medium)`
-- [x] **SQUAD-02**: Settling an IOU expense triggers `notificationAsync(Success)` haptic
-- [x] **SQUAD-03**: Squad Dashboard feature cards stagger-animate in on load (FadeIn with 80ms delay between cards)
-- [x] **SQUAD-04**: Claiming or unclaiming a birthday wish list item has spring scale press feedback
-
-### AUTH — Auth, Onboarding & Errors
-
-- [x] **AUTH-01**: User can reset their password via an email link from the login screen
-- [x] **AUTH-02**: Sign-up screen shows visible Terms of Service and Privacy Policy links
-- [x] **AUTH-03**: Every data-fetching screen shows ErrorDisplay with a retry action when the fetch fails
-- [x] **AUTH-04**: First-run users see a one-time hint guiding them to set their status and add a friend
+- [ ] **ONBOARD-01**: New users see a 3-screen slide onboarding flow (powered by `react-native-pager-view`) before reaching the main app — each slide introduces a core Campfire concept
+- [ ] **ONBOARD-02**: A Skip button is visible on every Welcome slide and routes directly to the main app (not the next slide)
+- [ ] **ONBOARD-03**: The final Welcome slide CTA routes to Squad → Friends tab if the user has zero friends, or to Home if the user already has friends
+- [ ] **ONBOARD-04**: Welcome flow is gated by the `@campfire/welcome_complete` AsyncStorage key — new users (key absent) see the flow; existing users (key present) never see it
 
 ---
 
 ## Future Requirements
 
-- Account deletion flow — important before App Store submission, defer to v1.8
-- Animated splash screen (Lottie) — complex, requires EAS, defer to v1.8
-- Pull-to-refresh haptic on all list screens — nice to have, defer to v1.8
-- Keyboard avoiding improvements for chat on older iOS — not blocking, defer to v1.8
+- Account deletion flow — important before App Store submission, defer to v1.9
+- Animated splash screen (Lottie) — complex, requires EAS, defer to v1.9
+- Pull-to-refresh haptic on all list screens — nice to have, defer to v1.9
+- Keyboard avoiding improvements for chat on older iOS — not blocking, defer to v1.9
+- OAuth button hierarchy (Apple ≥ Google) — App Store best practice, defer to v1.9
+- Password confirm field removal on sign-up — mobile UX improvement, defer to v1.9
 
 ---
 
 ## Out of Scope
 
-- App Store metadata, screenshots, description — not submitting yet (v1.8)
-- New features of any kind — this milestone is polish only
-- Playwright visual regression baseline updates — web renderer is not representative of native polish
-- Android adaptive icon monochromeImage — not blocking, no EAS build yet
-- React Native New Architecture opt-in — Reanimated 4 works without explicit flag, defer deliberate opt-in
+- App Store metadata, screenshots, description — not submitting yet
+- New features (challenges, live location, calendar sync) — polish milestone only
+- Playwright visual regression baseline updates — web renderer not representative of native polish
+- Android adaptive icon monochromeImage — no EAS build yet
+- React Native New Architecture deliberate opt-in — Reanimated 4 works without explicit flag
 
 ---
 
@@ -82,34 +69,25 @@
 
 | REQ-ID | Requirement | Phase |
 |--------|-------------|-------|
-| POLISH-01 | SkeletonPulse component | Phase 24 |
-| POLISH-02 | Animation theme tokens | Phase 24 |
-| POLISH-03 | EmptyState CTA variant | Phase 24 |
-| POLISH-04 | PrimaryButton loading state | Phase 24 |
-| BRAND-01 | App icon | Phase 28 |
-| BRAND-02 | Splash screen | Phase 28 |
-| BRAND-03 | Dark/light splash variants | Phase 28 |
-| HOME-01 | Home skeleton | Phase 26 |
-| HOME-02 | Zero-friend empty state | Phase 26 |
-| HOME-03 | Radar FADING pulse | Phase 26 |
-| HOME-04 | Home card press feedback | Phase 26 |
-| CHAT-01 | Chat list skeleton | Phase 26 |
-| CHAT-02 | Chat haptics | Phase 26 |
-| CHAT-03 | Optimistic send | Phase 26 |
-| CHAT-04 | Message bubble press | Phase 26 |
-| PLANS-01 | Plans list skeleton | Phase 27 |
-| PLANS-02 | RSVP spring animation | Phase 27 |
-| PLANS-03 | Plan creation haptic | Phase 27 |
-| PLANS-04 | Map empty state | Phase 27 |
-| SQUAD-01 | Friend request haptics | Phase 27 |
-| SQUAD-02 | IOU settle haptic | Phase 27 |
-| SQUAD-03 | Squad dashboard stagger | Phase 27 |
-| SQUAD-04 | Wish list press feedback | Phase 27 |
-| AUTH-01 | Forgot password | Phase 25 |
-| AUTH-02 | ToS & Privacy links | Phase 25 |
-| AUTH-03 | Error state audit | Phase 25 |
-| AUTH-04 | First-run onboarding hint | Phase 25 |
+| HOME-05 | Radar ALIVE/FADING/DEAD visual distinction | Phase 29 |
+| HOME-06 | View mode persistence (AsyncStorage) | Phase 29 |
+| HOME-07 | Zero-friends "Invite friends" CTA | Phase 29 |
+| HOME-08 | Events section card polish | Phase 29 |
+| SQUAD-05 | Dashboard card hero metric + CTA redesign | Phase 30 |
+| SQUAD-06 | Friends list polish | Phase 30 |
+| SQUAD-07 | Birthday + IOU card layout | Phase 30 |
+| SQUAD-08 | Streak card visual polish | Phase 30 |
+| EXPLORE-01 | 3-state map bottom sheet | Phase 31 |
+| EXPLORE-02 | Map theme fix (light/dark) | Phase 31 |
+| EXPLORE-03 | Reset to my location chip | Phase 31 |
+| EXPLORE-04 | Plan list card polish | Phase 31 |
+| AUTH-05 | Auth screen light/dark theme fix | Phase 32 |
+| AUTH-06 | Specific login error messages | Phase 32 |
+| ONBOARD-01 | 3-screen Welcome slide flow | Phase 33 |
+| ONBOARD-02 | Real Skip button | Phase 33 |
+| ONBOARD-03 | Smart final CTA routing | Phase 33 |
+| ONBOARD-04 | New-users-only gate | Phase 33 |
 
 ---
 
-*Last updated: 2026-05-04 — v1.7 traceability filled by roadmapper*
+*Last updated: 2026-05-06 — v1.8 requirements defined*
