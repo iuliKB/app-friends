@@ -1,341 +1,304 @@
-# Pitfalls Research
+# Domain Pitfalls: v1.8 UI Overhaul
 
-**Domain:** Large-scale UI/UX polish pass on an existing React Native + Expo managed workflow app (Campfire v1.7)
-**Researched:** 2026-05-04
-**Confidence:** HIGH (animation threading, FlatList memoization, useMemo/StyleSheet pattern, scope creep), MEDIUM (Expo splash/icon limits in EAS, visual regression without tooling)
-
----
-
-## Critical Pitfalls
-
-### Pitfall 1: Adding `useNativeDriver: false` to New Animations That Animate Layout Properties
-
-**What goes wrong:**
-During a polish pass, developers add new entrance, exit, or highlight animations. If the animated property is `backgroundColor`, `height`, `width`, or any other layout property, `useNativeDriver: true` will throw a runtime error: "Style property 'height' is not supported by native animated module." The reflex fix is to use `useNativeDriver: false` everywhere to avoid the error — but that moves all animations onto the JS thread, where they drop frames whenever JS is busy (network calls, state updates, scroll events).
-
-This codebase already has a mixed pattern: `useNativeDriver: true` for transforms/opacity (RadarBubble pulse, swipe card), and `useNativeDriver: false` for height/backgroundColor (ReEngagementBanner, OfflineBanner, MessageBubble highlight, PollCard). Adding polish animations without distinguishing which thread they belong to degrades the existing smooth animations.
-
-**Why it happens:**
-The distinction "which CSS properties can run natively" is not obvious. The rule is: `transform` and `opacity` can run on the UI thread; everything else (`backgroundColor`, `height`, `width`, `borderRadius`, `padding`, `margin`, `top`, `left`) cannot.
-
-**How to avoid:**
-- Before writing any new animation, determine what property is being animated.
-- `transform` + `opacity`: always `useNativeDriver: true`.
-- `backgroundColor`, `height`, `width`, or any layout prop: `useNativeDriver: false`, with a comment explaining why (`// height animation — layout prop, cannot use native driver`).
-- The existing codebase already follows this convention (see RadarBubble.tsx line 165, ReEngagementBanner.tsx line 72). Match it.
-- If you need a smooth color-transition animation that must stay on the native thread, use `transform: [{ scale }]` + opacity as a proxy for "highlight" effects rather than animating backgroundColor directly.
-
-**Warning signs:**
-- Runtime error: "Style property 'X' is not supported by native animated module."
-- New animation jank during rapid user interaction (scroll, swipe) because it landed on the JS thread without intention.
-- `useNativeDriver` not specified at all (React Native will warn but animate anyway on the JS thread by default).
-
-**Phase to address:**
-Every phase that adds animations. Establish a code-review checklist item: "Does this animation use the correct driver for its property type?"
+**Domain:** React Native + Expo SDK 55 screen-by-screen visual overhaul
+**Researched:** 2026-05-06
+**Applies to:** Home, Squad, Explore, Auth, Welcome/Onboarding screens
 
 ---
 
-### Pitfall 2: Mixing a `useNativeDriver: true` Value with a `useNativeDriver: false` Animation
+## 1. Theme Token Migration Mistakes
 
-**What goes wrong:**
-An `Animated.Value` is bound to both a native-driver animation (e.g., a spring on `opacity`) and a JS-thread animation (e.g., a timing on `height`) on the same value. React Native throws: "Animated node [X] has already been attached to a native node." The app crashes or the animation silently misbehaves.
+### Pitfall 1.1: Hardcoded Gradient Colors Silently Break Light Mode
 
-This codebase has FriendSwipeCard.tsx which has a comment noting this exact constraint ("useNativeDriver conflict between static opacity and animated transforms"). Adding more animations to the swipe card or similar multi-animated components risks this error.
+**What goes wrong:** Both `HomeScreen` and `AuthScreen` pass hardcoded hex values directly to `LinearGradient`: `colors={['#091A07', '#0E0F11', '#0A0C0E']}`. These are dark-mode-only values. The overhaul will likely introduce new gradient elements — if the pattern is copied without branching on `isDark`, the gradient renders as a dark overlay over a light surface in light mode.
 
-**Why it happens:**
-Polish passes often extend existing animated components — adding a new effect to a component that already has animations. A developer adds a new `Animated.timing` on an existing `Animated.Value` without checking which driver owns it.
+**Why it happens:** `LinearGradient` accepts a `colors` prop that is not a StyleSheet property, so the ESLint `no-hardcoded-styles` rule does not flag it. Hardcoded gradient arrays bypass the only enforcement mechanism in the project.
 
-**How to avoid:**
-- Each `Animated.Value` ref must use exactly one driver type throughout its lifetime. Add a comment at the `useRef(new Animated.Value(...))` call declaring the driver: `// native driver — only transform/opacity animations`.
-- If you need both layout and transform animations on the same component, use two separate `Animated.Value` refs with separate drivers.
-- When extending an animated component, grep for all `useNativeDriver` references in that file before adding a new animation.
+**Evidence:** `src/screens/home/HomeScreen.tsx:269`, `src/screens/auth/AuthScreen.tsx:410`. HomeScreen correctly guards with `if (isDark) { return <LinearGradient ...> }` and falls back to `backgroundColor: colors.surface.base` for light mode. AuthScreen does NOT guard — it always renders the dark gradient regardless of theme.
 
-**Warning signs:**
-- Error: "Animated node [N] has already been attached to a native node."
-- Adding an animation to an existing animated component without reading all existing driver declarations first.
-- A single `Animated.Value` used in both a transform and a layout property interpolation.
+**Prevention:**
+- For every new gradient: branch on `isDark` or read gradient stops from the theme (`colors.splash.gradientStart` already exists in both theme files).
+- Add gradient color pairs to `light-colors.ts` and `colors.ts` rather than inlining hex strings.
+- AuthScreen's existing always-dark gradient is a pre-existing bug that must be fixed during its overhaul phase.
 
-**Phase to address:**
-Any phase adding animations to existing animated components (swipe cards, bubbles, banners). Especially high risk in "home screen polish" and "chat polish" phases.
+**Phase at risk:** Auth Screen redesign (primary), Home Screen overhaul (any new decorative gradient elements).
 
 ---
 
-### Pitfall 3: `useMemo(() => StyleSheet.create({...}), [colors])` — Stale Styles from Incorrect Dependency Array
+### Pitfall 1.2: Raw RGBA Status-Color Values Not Theme-Aware
 
-**What goes wrong:**
-The codebase uses the pattern `const styles = useMemo(() => StyleSheet.create({...}), [colors])` in ~20+ files (squad.tsx, profile.tsx, wish-list.tsx, edit.tsx, expenses/index.tsx). During a polish pass, new style properties that reference tokens other than `colors` get added — for example, `SPACING.lg`, `FONT_SIZE.md`, `BORDER_RADIUS.sm`. If those variables are not in the `useMemo` dependency array, the styles are stale after the initial render.
+**What goes wrong:** `RadarBubble` and `FriendSwipeCard` use hardcoded `rgba()` strings keyed to status colors (e.g., `rgba(34,197,94,0.30)` for free). The dark-mode status green is `#4ADE80`; the light-mode equivalent is `#16A34A`. At 30% opacity on a dark background the visual result is correct; at 30% opacity on a white card it is a different perceived color. When the overhaul adds new status-tinted elements and copies these rgba strings, the result looks correct in dark mode only.
 
-In practice: `SPACING` and `FONT_SIZE` are imported as `as const` module-level values that never change at runtime, so they do not need to be in the dependency array. But `colors` does change (theme toggle). The trap is forgetting `colors` when adding to the dependency array — e.g., changing the array from `[colors]` to `[colors, someOtherProp]` and accidentally dropping `colors`, causing styles to freeze at the color state when the component first mounted.
+**Evidence:** `src/components/home/RadarBubble.tsx:29-31`, `src/components/home/FriendSwipeCard.tsx:41-43`. Both use the dark-mode numeric RGB values hardcoded inside `rgba()`, but both components already call `useTheme()`.
 
-**Why it happens:**
-During a polish pass, developers add new style properties to existing `useMemo` blocks and adjust the dependency array without carefully checking what was already there. ESLint `react-hooks/exhaustive-deps` will flag missing deps — but only if the rule is enabled and the variable is used inside the closure. If a dev suppresses the warning or has the rule off, the stale styles are silent.
+**Prevention:**
+- For new status-wash elements, derive rgba from the resolved theme token: read `colors.status.free` and append a hex alpha (`+ '4D'` for 30% opacity) rather than hardcoding RGB numbers.
+- Wrap the derived value in `useMemo([colors])` so it updates on theme change.
 
-**How to avoid:**
-- The dependency array for `useMemo(() => StyleSheet.create({...}))` should contain exactly one item: `[colors]`. All spacing/typography tokens are `as const` constants — they are invariant at runtime and do not need to be listed.
-- Never widen the dependency array to include non-color values unless those values actually change at runtime (e.g., a prop that changes frequently). Adding `[colors, layout.width]` causes style recomputation on every orientation change — usually unnecessary.
-- Ensure `react-hooks/exhaustive-deps` is enabled in ESLint (it is in this project). Do not suppress it on `useMemo` style blocks.
-
-**Warning signs:**
-- Style stays frozen after theme toggle (element has wrong theme color).
-- `react-hooks/exhaustive-deps` warning on a style `useMemo` that is being suppressed with `eslint-disable`.
-- Style `useMemo` dependency array contains `[]` (empty) — will never update after mount.
-
-**Phase to address:**
-Every phase. Any new screen or component with dynamic styles must use `[colors]` as its dependency array. Review all new `useMemo` style blocks before merging.
+**Phase at risk:** Home Screen overhaul (new bubble or card elements), Squad Screen overhaul (friend row status indicators).
 
 ---
 
-### Pitfall 4: New Styled Components That Import `COLORS` Directly Instead of `useTheme()`
+### Pitfall 1.3: `useMemo([colors])` Omitted on New Sub-Components Created During Screen Split
 
-**What goes wrong:**
-The v1.6 theme migration successfully converted all 98+ files from static `COLORS` imports to `useTheme()`. During v1.7 polish, new components and screens are written. If a new component imports `COLORS` directly (or worse, uses hardcoded hex values), it will always display the dark theme regardless of the user's selection.
+**What goes wrong:** Every existing screen uses `const styles = useMemo(() => StyleSheet.create({...}), [colors])`. When a large screen is split into sub-components during a redesign (common during overhaul), developers may write styles at module level (`const styles = StyleSheet.create({...})`). The styles become static and do not react to theme changes. The ESLint rule catches raw values but not a missing `useMemo` wrapper.
 
-This is invisible in dark mode (the default and common test path). The breakage surfaces when a user switches to light mode and sees a component with dark background hardcoded in — for example, a new tooltip, modal, badge, or empty state added during polish.
+**Why it happens:** When extracting a new named component from a screen during a redesign, the simpler static form is written first. Without the `useTheme()` + `useMemo([colors])` pattern it is not flagged by linting.
 
-**Why it happens:**
-When writing new components quickly during a polish pass, developers reach for the familiar pattern from pre-v1.6 code they may be referencing. The ESLint rule `campfire/no-hardcoded-styles` catches raw hex values but does not catch `import { COLORS } from '@/theme'` (importing the static object is syntactically valid and passes lint).
+**Prevention:**
+- Every new component that references `colors.*` in a StyleSheet must use `useMemo([colors])`.
+- When splitting a screen into sub-components during overhaul, the full `useTheme()` + `useMemo([colors])` pattern must be applied even for components that live in the same file.
 
-**How to avoid:**
-- Treat `COLORS` import (outside `src/theme/`) as a banned pattern — the ESLint rule should already warn, but add a team convention: every new component starts with `const { colors } = useTheme()`.
-- Polish sprint setup: before starting each phase, run `grep -r "import.*COLORS" src/ --include="*.tsx" --include="*.ts"` and verify the count is zero (or matches only `src/theme/` files). Any new COLORS import is a regression.
-- When reviewing PRs for polish phases, first-pass check is a `grep` for `COLORS` in diff output.
-
-**Warning signs:**
-- `import { COLORS }` appearing in a new file's diff.
-- A new component looks correct in dark mode but has wrong colors in light mode.
-- New `StyleSheet.create({...})` blocks without a wrapping `useMemo` referencing `colors`.
-
-**Phase to address:**
-Every phase. Highest risk in "social features polish" and "chat polish" phases that add new sub-components (badges, pills, modals, empty states).
+**Phase at risk:** All five overhaul phases — most likely during Squad (most sub-sections) and Home (radar + card + widget splits).
 
 ---
 
-### Pitfall 5: FlatList Performance Regression from Complex Item Components Without `React.memo`
+### Pitfall 1.4: Map Views Hardcode `userInterfaceStyle: 'dark'` — Breaks Light Theme
 
-**What goes wrong:**
-Polish passes typically make list item components more visually rich — adding avatars, animated badges, multi-line text, progress indicators, or reaction counts. Each visual addition increases per-item render cost. Without `React.memo` on list item components, every parent state change (incoming realtime message, status update, pull-to-refresh completion) causes every visible item to re-render, even if the item's data did not change.
+**What goes wrong:** All three map instances pass `userInterfaceStyle: 'dark'` unconditionally on iOS. When a user has the app theme set to "light" or "system" on a device with light system appearance, the map tile renders in dark mode while the surrounding UI is light. This is a jarring visual mismatch that will be obvious after the Explore Screen overhaul brings the map into sharper visual focus.
 
-In the ChatRoomScreen FlatList (which has the most frequent state updates — new messages arrive in real time), a MessageBubble with reactions, reply previews, media, and highlight animation is expensive. If `renderItem` is defined inline (not extracted and memoized with `useCallback`), every new message causes all visible bubbles to re-render.
+**Evidence:** `src/components/maps/ExploreMapView.tsx:127`, `src/screens/plans/PlanDashboardScreen.tsx:719`, `src/components/maps/LocationPicker.tsx:199`. All three hardcode the value.
 
-**Why it happens:**
-Adding visual complexity to a list item does not break the app — it just makes it slower. The slowdown is proportional to list size and state update frequency, so it is not noticed in small test datasets (5–10 items) but becomes a problem in real chats with 50–200 messages.
+**Prevention:**
+- Replace the static spread with a dynamic value: `userInterfaceStyle: isDark ? 'dark' : 'light'` (where `isDark` comes from `useTheme()`).
+- The `DARK_MAP_STYLE` array used for Android `customMapStyle` is also dark-only. On Android + light theme, either pass no `customMapStyle` (system auto-style) or create a `LIGHT_MAP_STYLE` constant.
+- Fix all three map instances in the Explore overhaul phase to avoid split state.
 
-**How to avoid:**
-- Wrap all FlatList item components in `React.memo`. This is already done for some components; audit the list during polish.
-- Extract `renderItem` to a `useCallback` (or define it outside the component if it has no closure deps). Never define `renderItem` as an inline arrow function inside JSX.
-- For ChatRoomScreen specifically: the message list is inverted and high-frequency. Ensure `MessageBubble` is wrapped in `React.memo` with a proper `areEqual` comparison if props include complex objects.
-- Add `keyExtractor` as a stable `useCallback` — never inline.
-
-**Warning signs:**
-- `renderItem` defined as `renderItem={({ item }) => <ItemComponent {...item} />}` inline in JSX.
-- FlatList item component not wrapped in `React.memo`.
-- Scroll jank appears only after adding a new visual element to the item (not present before the polish change).
-- React DevTools shows all visible items re-rendering on a single new message arrival.
-
-**Phase to address:**
-Chat polish phase (highest risk — real-time updates + complex bubbles). Also: friend list, birthday list, IOU list phases. Any phase that enriches FlatList items.
+**Phase at risk:** Explore Screen overhaul (primary). LocationPicker is used in plan creation — fix in the same phase to prevent regression.
 
 ---
 
-### Pitfall 6: Expo Splash Screen and App Icon Cannot Be Verified in Expo Go
+## 2. Animation Performance Without Reanimated (Except FriendSwipeCard)
 
-**What goes wrong:**
-From Expo SDK 52 onward, Expo Go shows the app icon during loading instead of the splash screen. The actual splash screen experience — including animated splash via `SplashScreen.setOptions()`, background color, and resize mode — is only visible in a production or preview EAS build. Configuring the splash and icon in `app.config.ts` and testing in Expo Go gives a false pass: the developer sees the Expo Go splash (or app icon), not the configured splash.
+### Pitfall 2.1: Multiple Concurrent `Animated.loop` Instances on Home Screen
 
-Additionally, EAS generates all icon sizes from the provided 1024x1024 source. If the provided asset has a border or white background added by the designer, iOS rounded-rect corners will expose it, producing a box-in-circle appearance.
+**What goes wrong:** At runtime, HomeScreen mounts up to N RadarBubble components (one per friend), each with a `PulseRing` running an `Animated.loop`. Plus `OwnStatusCard` and `OwnStatusPill` each have their own pulse loop. If the overhaul adds another looping animation (e.g., a glow on the status pill or a skeleton shimmer), the cumulative loop count approaches the point where Animated.event flush latency becomes perceptible, especially on lower-end Android.
 
-**Why it happens:**
-Expo Go is the fast feedback loop. Splash screen and icon changes require a rebuild (EAS build or `expo prebuild`), which is slow. Developers test in Expo Go to avoid waiting, see "it worked," and skip the EAS verification step.
+**Evidence:** `src/components/home/RadarBubble.tsx:68`, `src/components/status/OwnStatusCard.tsx:124`, `src/components/status/OwnStatusPill.tsx:93` — each runs an independent `Animated.loop`.
 
-**How to avoid:**
-- App icon and splash screen work requires an EAS preview build to verify. Budget time for this — do not put it at the end of the milestone without planning the build cycle.
-- Icon asset requirements: 1024x1024 PNG, transparent background (no white/solid fill), no rounded corners in the source (the OS applies its own masking). For Android adaptive icon, provide separate foreground (with padding) and background layers.
-- Splash screen testing: use `expo build:preview` or `eas build --profile preview` and install on a device or simulator. Do not accept Expo Go as verification for splash/icon.
-- Specify both `icon` (shared) and `android.adaptiveIcon.foregroundImage` + `android.adaptiveIcon.backgroundColor` in app.config.ts for correct Android adaptive behavior.
+**Prevention:**
+- Do not add any new `Animated.loop` to HomeScreen without first counting the existing loop count with a full friend list (up to 15 concurrent loops).
+- New looping effects must use `isInteraction: false` in every timing call (the existing code already does this — match the pattern).
+- Prefer static visual differentiation (border, opacity offset) over looping animations for secondary indicators.
+- The 60-second `setHeartbeatTick` interval (`HomeScreen.tsx:50-54`) forces re-renders on a timer — any new looping animation adds to the frame-budget pressure at that boundary.
 
-**Warning signs:**
-- Checking splash screen "works" only in Expo Go.
-- Icon looks correct in Expo Go but has a white box on iOS rounded corners in a real build.
-- `SplashScreen.setOptions({ fade: true })` not observable in Expo Go.
-
-**Phase to address:**
-App icon and splash screen phase. Should be verified with an EAS preview build as the phase's completion criterion, not Expo Go observation.
+**Phase at risk:** Home Screen overhaul (radar redesign, new card UI elements).
 
 ---
 
-### Pitfall 7: Scope Creep — Polish Touching Too Many Files Simultaneously
+### Pitfall 2.2: Crossfade Overlay with `absoluteFill` and `minHeight: 260` Is Fragile Under Layout Change
 
-**What goes wrong:**
-A "polish pass" invitation encourages developers to fix everything at once. In a 25,000 LOC codebase with 170 TypeScript files, if each file is touched for "minor improvements" (tightening spacing, adjusting colors, tweaking animations), the resulting PR becomes a 150-file diff. Code review is impossible, merge conflicts are guaranteed on any parallel work, and bugs introduced during polish are untraceable to specific changes.
+**What goes wrong:** The Radar/Cards crossfade uses `position: absolute` for the Cards layer and `minHeight: 260` on the container. If the overhaul changes the radar's natural height (larger bubbles, new row, grid layout), the Cards layer will overflow or clip because its absolute positioning is anchored to a stale `minHeight`. This produces a visual glitch where the card stack appears truncated or overlaps the section below it.
 
-The specific risk for this codebase: v1.7 targets every screen. Without strict phase boundaries, a developer working on "status & home screen refinements" might simultaneously fix something they notice in PlanDashboard, which touches the same components being refined in the "plans & explore" phase — resulting in conflicts and double-work.
+**Evidence:** `src/screens/home/HomeScreen.tsx:145-152` — `viewSwitcher` has `minHeight: 260` and `absoluteFill` for the cards layer.
 
-**Why it happens:**
-Polish work is opportunistic. While fixing one thing, the developer notices five others. The work feels small per item but accumulates. Without feature-flag or branch isolation per phase, everything lands in one commit/PR.
+**Prevention:**
+- If the radar layout height changes, update `minHeight` to match, or switch to measuring height dynamically with `onLayout` stored in state.
+- Consider removing the `minHeight` and instead rendering both layers as `position: absolute` inside a container whose height is driven by the radar layer's `onLayout`.
 
-**How to avoid:**
-- Each phase touches a bounded set of screens/components. Define the scope explicitly in REQUIREMENTS.md as a file list or tab-by-tab boundary.
-- Use the rule: if you notice a polish issue outside your current phase's scope, add it to a tracked list (a POLISH-BACKLOG note or issue) rather than fixing it in-place.
-- Commit structure: each phase should have multiple small, screen-scoped commits ("polish: home screen radar spacing and pulse animation") rather than one massive "UI polish" commit.
-- Every phase PR should be reviewable in under 20 minutes. If a PR is larger than ~30 files, it is out of scope.
-
-**Warning signs:**
-- A single commit or PR touching files across all tabs (home, squad, explore, chats, profile, common components) simultaneously.
-- Commit message "misc polish" or "cleanup across screens."
-- Merge conflicts on `src/theme/` or shared components between parallel polish phases.
-
-**Phase to address:**
-All phases. The REQUIREMENTS.md should include an explicit "scope boundary" list per phase. The roadmap structure itself is the primary mitigation.
+**Phase at risk:** Home Screen overhaul.
 
 ---
 
-### Pitfall 8: Testing Polish Changes Without a Reproducible Verification Path
+### Pitfall 2.3: FriendSwipeCard Uses Reanimated — Its API Must Not Be Mixed with Core Animated
 
-**What goes wrong:**
-Polish changes are inherently visual and subjective. Without a reproducible test path, regressions are invisible until a real user encounters them. The specific risk: a spacing change in a shared component (e.g., `ScreenHeader`, `SectionHeader`, `SectionList`) breaks the layout on screens the developer did not explicitly check during the polish session.
+**What goes wrong:** `FriendSwipeCard` is the only component that uses Reanimated (`useSharedValue`, `useAnimatedStyle`, `withTiming`, `withSpring`) and `GestureDetector` from RNGH v2. All other animation code in the codebase uses React Native's `Animated`. If the overhaul modifies `FriendSwipeCard` and a developer reaches for `Animated.timing`, they will mix the two animation APIs. Mixing `Animated.Value` and `SharedValue` on the same element causes silent failures — the values do not compose and the animation may not run.
 
-This codebase has a Playwright + Expo Web visual regression suite (validated in v1.1). However, Playwright runs against the web renderer — React Native StyleSheet properties are approximated, not pixel-identical to iOS/Android. Animations, haptics, and platform-native elements (DateTimePicker, bottom sheets, Modal) are invisible in Playwright.
+**Evidence:** `src/components/home/FriendSwipeCard.tsx:17-19` imports from `react-native-reanimated` and `react-native-gesture-handler`. Reanimated 4.2.1 is installed but only this one component uses it.
 
-**Why it happens:**
-There are no automated visual tests for native mobile. Manual testing is slow and coverage is bounded by developer patience. Polish bugs (a 2px padding regression, a color that is slightly off in dark mode) are low-severity individually but compound into a "feels rough" experience.
+**Prevention:**
+- Any modification to `FriendSwipeCard` must stay entirely within the Reanimated API.
+- If a new gesture-based component is added, it must use the same Reanimated + GestureDetector pattern — not `PanResponder` + `Animated.Value`.
+- `runOnJS()` is required for any callback that touches React state or navigation from a gesture worklet — never call `router.push` or `setState` directly inside an `onEnd` handler.
 
-**How to avoid:**
-- Use the Playwright suite for regression detection on non-animated, non-modal UI (screen layouts, colors, text). Run it before and after each phase.
-- For animated and modal elements: define a manual verification checklist per phase (included in HUMAN-UAT.md for each phase). Specifically: test on both light and dark theme, and verify on both iOS simulator and Android simulator.
-- For shared components (`ScreenHeader`, `SectionHeader`, `FAB`, `PrimaryButton`): when a shared component changes, manually check all ~15 screens that use it, not just the one being polished.
-- "Looks done" criterion for polish: change reviewed on device (not only in code), both themes checked, at minimum one platform (iOS simulator or Android emulator).
-
-**Warning signs:**
-- Shared component changed without listing all consumers in the review.
-- Polish phase accepted with "it looks good in the simulator" without specifying which theme and platform.
-- Playwright suite skipped ("it's just visual changes").
-
-**Phase to address:**
-All phases. The UAT format (HUMAN-UAT.md) should include explicit "both themes, both platforms" checkboxes for each phase.
+**Phase at risk:** Home Screen overhaul (CardStack redesign), any new gesture-driven component.
 
 ---
 
-## Technical Debt Patterns
+### Pitfall 2.4: `useNativeDriver: false` Acceptable for Layout Props But Never for Loops
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Add `useNativeDriver: false` to avoid runtime error without checking property type | No crash | All animations on JS thread; scroll jank when JS is busy | Never — always use the correct driver for the property type |
-| Skip `React.memo` on new FlatList item components during polish | Less boilerplate | Re-renders all visible items on every parent state change; jank in high-frequency lists | Never for FlatList items in realtime screens (chat, home) |
-| Define `renderItem` as inline arrow function inside JSX | Shorter code | New function reference on every parent render; defeats `React.memo` on item component | Never — extract to `useCallback` or module-level function |
-| Import `COLORS` directly in a new polish component | Slightly faster to write | Component ignores theme toggle; dark values in light mode | Never — every component uses `useTheme()` |
-| Verify splash screen and icon only in Expo Go | Immediate feedback | EAS build may have different appearance (icon border, splash timing) | Never — requires EAS preview build verification |
-| Touch all screens at once in a single polish PR | Faster flow | 150-file diff; untraceable regressions; guaranteed merge conflicts | Never — scope per phase, commit per screen |
-| Empty `useMemo` dependency array `[]` for style block | Style computed once | Styles frozen at first render; theme toggle has no effect | Never if `colors` is referenced; acceptable only for genuinely static, non-color styles |
+**What goes wrong:** `RadarBubble` correctly uses `useNativeDriver: false` for its size animation because width/height are layout properties. But this pattern, if applied to a new looping animation, blocks the JS thread continuously during the loop. The existing `useNativeDriver: false` usages are all one-shot (fire on status change, then stop) — never looping.
 
----
+**Evidence:** `src/components/home/RadarBubble.tsx:176-189` has the `useNativeDriver: false` comment explaining the justification. The `ReEngagementBanner.tsx:72`, `ChatTabBar.tsx:36,42`, `OfflineBanner.tsx:30` are also one-shot.
 
-## Integration Gotchas
+**Prevention:**
+- Never use `useNativeDriver: false` inside an `Animated.loop`. If a looping animation needs to touch a layout property, find an alternative: pre-compute the final size and use `LayoutAnimation.configureNext`, or substitute a transform-scale proxy.
+- Mark every new `useNativeDriver: false` with a comment: `// layout prop [width/height/backgroundColor] — cannot use native driver, fires only on [trigger], not in a loop`.
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| `Animated.Value` + multiple animation calls | Mixing `useNativeDriver: true` and `useNativeDriver: false` on the same value | One value, one driver type. Use separate values for different property categories. |
-| `useTheme()` + new component during polish | Import `COLORS` static object as a shortcut | Always `const { colors } = useTheme()` — no exceptions |
-| `useMemo` + `StyleSheet.create` | Empty or wrong dependency array | Dependency array must include `colors` (and only runtime-varying values) |
-| FlatList + complex item | Inline `renderItem` and no `React.memo` on item component | Extract `renderItem` to `useCallback`; wrap item component in `React.memo` |
-| Expo splash/icon + Expo Go testing | Accept Expo Go observation as verification | Requires EAS preview build; Expo Go shows app icon, not configured splash |
-| OfflineBanner / ReEngagementBanner + height animation | Adding `useNativeDriver: true` because it "seems faster" | Height is a layout property — must use `useNativeDriver: false` (matches existing pattern) |
+**Phase at risk:** Home Screen overhaul, any new animated card or bubble component.
 
 ---
 
-## Performance Traps
+## 3. Onboarding Slide Flow in Expo Router
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| All new animations set `useNativeDriver: false` | Scroll jank during animations on low-end Android | Audit property type first; use native driver for transform/opacity | Immediately visible on mid-range Android under load |
-| FlatList item without `React.memo` on high-frequency list | Every new chat message re-renders all visible bubbles | Wrap item in `React.memo`; `useCallback` on `renderItem` | ~50+ items in list with real-time updates |
-| Shared component style change without checking all consumers | Layout breaks on unvisited screens | List all consumers of changed component; spot-check each | Immediately — but only discovered during QA |
-| New animation on an already-animated component with wrong driver | Runtime crash or silent misbehavior | Read all existing `useNativeDriver` declarations before adding new animation | First render of the affected component |
-| `useMemo` style dep array doesn't include `colors` | Styles frozen at initial theme; theme toggle has no visible effect | Always include `colors` in dep array | Every theme toggle after app launch |
+### Pitfall 3.1: Welcome Route Must Live Outside `(tabs)` or Routing Breaks
 
----
+**What goes wrong:** The new 3-screen onboarding flow needs a route. If added as a tab screen (`(tabs)/welcome`), the tab navigator will show it in the tab bar. If added inside `(auth)`, it is only accessible before session creation — but the spec says it shows after login when `friends.length === 0`.
 
-## Security Mistakes
+**Why it happens:** Expo Router's `Stack.Protected` guards in `_layout.tsx` tie route visibility to authentication state. Any new route must be placed in the correct group or it will be inaccessible.
 
-*Not a primary concern for a UI polish pass. The existing security posture (RLS, SECURITY DEFINER RPCs, private storage bucket, signed URLs) remains unchanged by polish work. The main risk is accidentally introducing a new `COLORS` static import that bypasses theme logic — not a security issue, but a correctness one covered above.*
+**Evidence:** `src/app/_layout.tsx:224-239` — `Stack.Protected guard={!!session && !needsProfileSetup}` controls authenticated routes. A new `/onboarding` screen must be inside this protected group.
 
----
+**Prevention:**
+- Add a top-level route `/onboarding` (file: `src/app/onboarding/index.tsx` or `_layout.tsx` + slides) at the root Stack level, inside `Stack.Protected guard={!!session && !needsProfileSetup}`.
+- Control entry via AsyncStorage and `router.replace('/onboarding')` from HomeScreen on first load.
+- Use `router.replace` (not `push`) so the back gesture from slide 1 does not return to the onboarding intro.
 
-## UX Pitfalls
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Animation added without haptic feedback on key actions (FAB tap, swipe-to-action, confirm) | Action feels unresponsive on physical device even if animation is present | Add `Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)` alongside new animations for destructive/confirmatory actions |
-| Loading skeleton not updated when item layout changes during polish | Skeleton dimensions mismatch content; layout shift on load completion | Update skeleton dimensions to match polished item component dimensions |
-| Empty states missed during polish (only happy path tested) | Screens look unstyled when user has no data | Every polish phase must include empty state verification in UAT |
-| Error state text not updated when screen copy is polished | Error text uses old/inconsistent voice | Polish includes error and empty state copy review, not just success states |
-| New modal/bottom sheet not following theme | Modal appears in wrong theme (dark when app is light) | Verify `Modal`, `BottomSheet` content uses `useTheme()` — modals render in a separate tree and can miss context |
-| Polish changes only tested on developer's device size | Layout breaks on smaller screens (iPhone SE) or larger screens (tablets) | Test on at least two simulator screen sizes per phase |
-| Haptics added to every interaction (over-haptic) | Feels buzzy and annoying; users turn off system haptics | Use haptics selectively: destructive actions, confirmations, swipe thresholds — not every tap |
+**Phase at risk:** Welcome/Onboarding phase.
 
 ---
 
-## "Looks Done But Isn't" Checklist
+### Pitfall 3.2: Old AsyncStorage Flag Silences the New Flow for All Existing Users
 
-- [ ] **Animation threading:** Every new animation declares `useNativeDriver` with a comment explaining why (true for transform/opacity, false for layout props).
-- [ ] **Driver consistency:** No `Animated.Value` is used with both `useNativeDriver: true` and `useNativeDriver: false` in the same component.
-- [ ] **Theme correctness:** No new component imports `COLORS` directly — `grep -r "import.*COLORS" src/ --include="*.tsx"` returns zero results outside `src/theme/`.
-- [ ] **useMemo styles:** Every new `useMemo(() => StyleSheet.create({...}))` has `[colors]` in its dependency array.
-- [ ] **FlatList items:** Every FlatList item component added or modified during polish is wrapped in `React.memo`; `renderItem` is defined outside JSX or wrapped in `useCallback`.
-- [ ] **Both themes tested:** Each polished screen verified in light mode AND dark mode before phase sign-off.
-- [ ] **Both platforms tested:** Each polished screen verified on iOS simulator AND Android emulator.
-- [ ] **Shared component ripple:** When a shared component (`ScreenHeader`, `SectionHeader`, `FAB`, `PrimaryButton`, etc.) is modified, all screens using it are spot-checked.
-- [ ] **App icon/splash:** Splash screen and app icon verified in an EAS preview build — not Expo Go.
-- [ ] **Empty states:** Every polished screen includes verified empty state appearance (both themes).
-- [ ] **Modal/bottom sheet theme:** Any new Modal or bottom sheet uses `useTheme()` internally (modals render outside the normal view hierarchy).
-- [ ] **Phase scope:** PR diff touches only files within the declared phase scope; out-of-scope findings logged in backlog, not fixed inline.
+**What goes wrong:** HomeScreen checks `@campfire/onboarding_hint_shown` in AsyncStorage before showing `OnboardingHintSheet`. All existing users who dismissed the old sheet have this flag set. If the new Welcome flow uses the same key, it will never show for any existing user — even if the new flow covers new content.
+
+**Evidence:** `src/screens/home/HomeScreen.tsx:56-70` — the key is `@campfire/onboarding_hint_shown`.
+
+**Prevention:**
+- Use a new flag key for the new flow: `@campfire/welcome_v18_shown` or similar.
+- Remove the `OnboardingHintSheet` import and flag check from HomeScreen in the same phase that introduces the Welcome route.
+- Decide and document whether the new flow shows for all users (regardless of friend count) or only zero-friends users — before implementation.
+
+**Phase at risk:** Welcome/Onboarding phase, Home Screen overhaul (OnboardingHintSheet removal).
 
 ---
 
-## Recovery Strategies
+### Pitfall 3.3: iOS Back Gesture Conflicts with Horizontal Slide Pager
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Animation crashes from mixed-driver Animated.Value | LOW | Identify the conflicting animation pair; create a second `Animated.Value` with the correct driver; remove the conflicting animation from the shared value |
-| Theme breakage from new COLORS import | LOW-MEDIUM | `grep` for all new COLORS imports in the diff; replace with `useTheme()` + `colors` destructure; verify both themes |
-| `useMemo` dep array missing `colors` causing frozen styles | LOW | Add `colors` to dependency array; verify styles update on theme toggle |
-| FlatList jank from un-memoized item components | MEDIUM | Wrap item in `React.memo`; extract `renderItem` to `useCallback`; profile before/after with React DevTools |
-| Scope creep producing 150-file PR | HIGH — review burden | Split PR by tab/feature area; revert cross-scope changes to a separate backlog issue; re-review phase by phase |
-| Splash/icon looks wrong in EAS build | LOW-MEDIUM | Fix asset (transparent background, correct dimensions); re-submit EAS preview build; does not require app store submission |
-| Shared component change breaks unvisited screens | MEDIUM | List all consumers with `grep`; spot-check each; fix layout regressions; add to UAT checklist |
+**What goes wrong:** A 3-screen slide pager built with `ScrollView pagingEnabled horizontal` will conflict with the iOS system swipe-back gesture when the onboarding flow is inside a Stack navigator. The system gesture handler claims horizontal swipes that start within ~20px of the screen edge, causing unpredictable navigation (user trying to advance slides goes back instead).
 
----
+**Evidence:** The Squad pager at `src/app/(tabs)/squad.tsx:345-351` avoids this because it is inside a tab navigator where the back gesture is disabled. The onboarding Stack navigator does NOT disable the back gesture by default.
 
-## Pitfall-to-Phase Mapping
+**Prevention:**
+- Disable the Stack screen's gesture: `<Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />`.
+- Use a forward-only navigation model: "Next" button advances, no swipe-back within slides, only a "Skip" button that calls `router.replace('/(tabs)/')`.
+- As a reference for the indicator animation, follow the Squad pager pattern: a single `Animated.View` with `translateX` interpolated from `scrollX` (native thread) rather than per-dot scale/color animations (layout properties, JS thread).
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Wrong `useNativeDriver` for property type | Every animation phase | Code review: every new `Animated.timing/spring` has driver comment matching property type |
-| Mixed-driver conflict on existing Animated.Value | Home screen polish, chat polish (highest animated complexity) | No runtime "already attached to native node" error; all animations play smoothly |
-| `useMemo` dep array missing `colors` | Every new screen/component phase | `react-hooks/exhaustive-deps` passes with no suppressions on style `useMemo` blocks |
-| New component importing `COLORS` directly | Every phase | `grep -r "import.*COLORS" src/ --include="*.tsx"` returns zero outside `src/theme/` |
-| FlatList item re-render regression | Chat polish, friend list polish, plans list polish | React DevTools Profiler: item does not re-render when unrelated parent state changes |
-| Splash/icon not verified in EAS build | App icon + splash phase | EAS preview build installed on device/simulator; splash and icon match design spec |
-| Scope creep / uncontrolled diff size | All phases | Each phase PR is ≤30 files; commit messages are screen-scoped |
-| Visual regression on shared component change | Any phase touching shared components | Playwright suite passes; all consumer screens spot-checked in both themes |
-| Modal/bottom sheet missing theme | Any phase adding new modals | New modal verified in light + dark mode; uses `useTheme()` internally |
+**Phase at risk:** Welcome/Onboarding phase.
 
 ---
 
-## Sources
+### Pitfall 3.4: Slide Dot Indicators Using Color or Size Animations Block JS Thread
 
-- [Using Native Driver for Animated — React Native docs](https://reactnative.dev/blog/2017/02/14/using-native-driver-for-animated) — Property support limitations, driver compatibility rules
-- [Animations — React Native docs](https://reactnative.dev/docs/animations) — `useNativeDriver` limitations, layout property restrictions
-- [Optimizing FlatList Configuration — React Native docs](https://reactnative.dev/docs/optimizing-flatlist-configuration) — `React.memo`, `renderItem` extraction, `maxToRenderPerBatch`
-- [FlatList Optimization: Avoid Re-Rendering When Adding or Removing Items — Brains & Beards 2025](https://brainsandbeards.com/blog/2025-dont-rerender-new-flatlist-items/) — `React.memo` prevents re-renders on list mutations
-- [Splash screen and app icon — Expo Documentation](https://docs.expo.dev/develop/user-interface/splash-screen-and-app-icon/) — Asset requirements, EAS vs Expo Go differences
-- [Expo SDK 52 Changelog](https://expo.dev/changelog/2024-11-12-sdk-52) — "Expo Go shows app icon instead of splash screen" change
-- [Icon Shows in Place of Splash Screen with Expo Go — expo/expo#33215](https://github.com/expo/expo/issues/33215) — Confirmed behavior from SDK 52+
-- [Reactive styles in React Native — Supercharge's Digital Product Guide](https://medium.com/supercharges-mobile-product-guide/reactive-styles-in-react-native-79a41fbdc404) — `useMemo` + `StyleSheet.create` pattern, dependency array correctness
-- [React Native Dark Mode Implementation Guide 2025 — RN Example](https://reactnativeexample.com/react-native-dark-mode-implementation-guide-2025/) — Context with `useMemo`, theme-aware StyleSheet patterns
-- [How to Avoid Scope Creep During Refactoring — Andrei Gridnev](https://andreigridnev.com/blog/2019-01-20-four-tips-to-avoid-scope-creep-during-refactoring/) — Bounded scope, backlog-first approach for noticed issues
-- Campfire codebase — existing `useNativeDriver` pattern in RadarBubble.tsx (line 165), ReEngagementBanner.tsx (line 72), FriendSwipeCard.tsx (line 234), MessageBubble.tsx (lines 407-408), OfflineBanner.tsx (line 30)
-- Campfire codebase — existing `useMemo(() => StyleSheet.create({...}), [colors])` pattern in squad.tsx (line 200), profile.tsx (line 290), wish-list.tsx (line 36), edit.tsx (line 109)
+**What goes wrong:** Onboarding slide indicators (dot row) are commonly animated by interpolating `scrollX` to `width` or `backgroundColor`. Width and backgroundColor are layout/color properties that cannot use `useNativeDriver: true`. Running multiple indicator dot animations simultaneously during a swipe causes competing JS-thread work alongside the scroll event handler.
+
+**Prevention:**
+- Use a single sliding indicator element with `translateX` (transform, native thread) rather than per-dot scale/color animations.
+- Reference the Squad pager's indicator at `src/app/(tabs)/squad.tsx:101-107` — it slides one element via `translateX` interpolated from `scrollX`, entirely on the native thread.
+
+**Phase at risk:** Welcome/Onboarding phase.
 
 ---
-*Pitfalls research for: Campfire v1.7 — large-scale UI/UX polish pass on React Native + Expo managed workflow*
-*Researched: 2026-05-04*
+
+## 4. Risks of Breaking Existing Functionality During Visual Redesign
+
+### Pitfall 4.1: Auth Screen Redesign Must Preserve the 3-State Machine
+
+**What goes wrong:** AuthScreen manages three distinct `authMode` states (`login` / `reset` / `reset-sent`) with fade transitions between them. A visual redesign that restructures the layout (e.g., extracting password reset as a separate route) will break `onAuthStateChange` routing in `_layout.tsx` if the auth route structure changes.
+
+**Evidence:** `src/app/(auth)/index.tsx` exports a single `AuthScreen`. The root layout routes all `!session` users here via `Stack.Protected guard={!session}`. `WebBrowser.maybeCompleteAuthSession()` must be called at module level of the entry auth screen (currently `AuthScreen.tsx:20`) — if the entry screen changes, this call must move.
+
+**Prevention:**
+- Keep the auth state machine in a single AuthScreen component. Redesign the visual presentation, not the state structure.
+- If sub-routes are added under `(auth)/`, verify `WebBrowser.maybeCompleteAuthSession()` is still called on cold start at the entry point.
+
+**Phase at risk:** Auth Screen redesign.
+
+---
+
+### Pitfall 4.2: Squad Tab Deep-Link (`?tab=memories`) Breaks If Tab Order or Names Change
+
+**What goes wrong:** The Squad screen accepts a `tab` query param. `HomeScreen` and `MemoriesRedirect` navigate to `/(tabs)/squad?tab=memories`. The handler scrolls to `x: SCREEN_WIDTH` (index 1). If the overhaul renames tabs, changes their order, or removes the Memories tab, the deep link silently fails — scrolling to an incorrect index or targeting a tab name that no longer exists.
+
+**Evidence:** `src/app/(tabs)/squad.tsx:50-57` — hardcoded `x: SCREEN_WIDTH` (index 1). Tab order in `TABS = ['Squad', 'Memories', 'Activity']`.
+
+**Prevention:**
+- Before changing Squad tab names or order, search all `router.push('/(tabs)/squad?tab=...')` callsites and update them atomically.
+- Define tab name constants and reference them in both the navigator and the navigation caller — eliminates silent string mismatch.
+
+**Phase at risk:** Squad Screen overhaul.
+
+---
+
+### Pitfall 4.3: Supabase Realtime Subscriptions Lost or Doubled During Screen Remount
+
+**What goes wrong:** Visual redesigns frequently change how components are mounted — e.g., switching from a single ScrollView to a tab pager means sub-components are now conditionally mounted. If a `useEffect` cleanup does not unsubscribe properly, duplicate channels accumulate on each navigation. The app silently exceeds the 200-connection free-tier Realtime limit.
+
+**Why it happens:** A component that was always-mounted (inside a ScrollView) may now mount only on active tab in a pager. Each mount adds a new channel; each unmount that misses cleanup leaves a dangling channel.
+
+**Prevention:**
+- Every `supabase.channel(...).subscribe()` must have `channel.unsubscribe()` in the `useEffect` return.
+- Audit the hooks used by each overhauled screen: `useHomeScreen`, `useFriends`, `usePlans`, `useStatus` — verify each cleans up on unmount.
+- When moving a component from "always mounted" to "mounted only on active tab," test by navigating away and back multiple times and verifying the Supabase client's active channel count does not grow.
+
+**Phase at risk:** Home Screen overhaul (status realtime), Squad Screen overhaul (friends realtime), Explore Screen overhaul (plans realtime for map pins).
+
+---
+
+### Pitfall 4.4: FlatList Inside Horizontal Pager Collapses to Zero Height on Android If Flex Chain Breaks
+
+**What goes wrong:** The Squad pager wraps a `FlatList` inside a horizontal `Animated.ScrollView`. On Android, a `FlatList` without an explicit height or `flex: 1` inside a horizontal scroll container collapses to zero height. The current setup works because `page: { width: SCREEN_WIDTH, flex: 1 }` propagates flex to the list. If the overhaul adds a sticky subheader above the FlatList (changing the flex chain), the list silently disappears on Android while appearing correctly on iOS.
+
+**Evidence:** `src/app/(tabs)/squad.tsx:249-252` — `page` style has `flex: 1`. PROJECT.md Key Decisions: "FlatList inside ScrollView breaks Android scroll silently."
+
+**Prevention:**
+- Maintain `flex: 1` on every page container in the pager.
+- If a subheader is added above the FlatList, the subheader must have a fixed height or `flexShrink: 0`, and the FlatList must retain explicit `flex: 1`.
+- Test on Android after any layout change to the Squad pager container.
+
+**Phase at risk:** Squad Screen overhaul.
+
+---
+
+### Pitfall 4.5: Status Picker Sheet `sheetVisible` State Must Survive Potential Trigger Relocation
+
+**What goes wrong:** `StatusPickerSheet` is triggered from local `useState` in `HomeScreen`. If the overhaul moves the status pill trigger to a sticky header, tab bar, or any component outside the HomeScreen component boundary, the `sheetVisible` state must be lifted — local state cannot communicate across component boundaries.
+
+**Evidence:** `src/screens/home/HomeScreen.tsx:58-59` — `sheetVisible` is local `useState`.
+
+**Prevention:**
+- If the status pill trigger stays inside HomeScreen, keep state local — no change needed.
+- If the trigger moves outside HomeScreen (e.g., to a tab bar or persistent header), lift `sheetVisible` to `useStatusStore` or a dedicated context before moving the trigger.
+
+**Phase at risk:** Home Screen overhaul.
+
+---
+
+### Pitfall 4.6: Location Permission Denied Has No Recovery Path in ExploreMapView
+
+**What goes wrong:** `ExploreMapView` calls `Location.requestForegroundPermissionsAsync()` on mount. If the user denies permission, the map shows with a fallback region (Toronto) and no "Enable location" affordance. After the Explore overhaul adds prominence to the "near me" discovery feature, the permission-denied state becomes a dead end that hides the primary value proposition.
+
+**Evidence:** `src/components/maps/ExploreMapView.tsx:37-48` — `permissionGranted` is set but there is no conditional UI for the denied path.
+
+**Prevention:**
+- Add a permission-denied empty state with an "Enable location" button that calls `Linking.openSettings()`.
+- Do not add a second `Location.requestForegroundPermissionsAsync()` call — once denied on iOS, the OS requires the user to go to Settings; calling again returns `denied` silently.
+
+**Phase at risk:** Explore Screen overhaul.
+
+---
+
+### Pitfall 4.7: ESLint `no-hardcoded-styles` Rule Blocks Merges — Overuse of Suppress Comments Creates Debt
+
+**What goes wrong:** The project has 229 existing ESLint-disable lines for the hardcoded-styles rule. During a large overhaul, it is tempting to suppress broadly to "fix later," leading to values that will not be caught when the design system changes.
+
+**Evidence:** Existing suppression count by file: `PollCard.tsx` (16), `MessageBubble.tsx` (14), `BirthdayWishListPanel.tsx` (14), `FriendSwipeCard.tsx` (9). The overhaul touches 5 major screens — each will have new styling needs.
+
+**Prevention:**
+- Before writing new screen sections, check `src/theme/spacing.ts`, `typography.ts`, and `radii.ts` to see if the value already exists. Suppress only when a token genuinely does not exist.
+- If a value will be used in more than one place in the redesign, add it to the token files rather than suppress twice.
+- During code review, count new `eslint-disable` additions: more than 5 new suppressions per screen is a signal to revisit the token files.
+
+**Phase at risk:** All five overhaul phases.
+
+---
+
+## Phase-Specific Warning Summary
+
+| Phase | Highest-Risk Pitfall | Primary Mitigation |
+|-------|---------------------|-------------------|
+| Home Screen overhaul | Concurrent Animated.loop count (2.1), crossfade container minHeight (2.2), FriendSwipeCard API mixing (2.3) | Count loops before adding any; measure height with onLayout if radar size changes |
+| Squad Screen overhaul | tab param deep-link breakage (4.2), FlatList height collapse in pager (4.4), Realtime remount (4.3) | Search all `?tab=` usages before renaming; test on Android after page container changes |
+| Explore Screen overhaul | userInterfaceStyle hardcoded dark (1.4), permission-denied UX gap (4.6), Realtime channel doubling (4.3) | Fix userInterfaceStyle in same PR; add denied state with `Linking.openSettings()` |
+| Auth Screen redesign | Dark-only gradient (1.1), 3-state machine preservation (4.1), WebBrowser.maybeCompleteAuthSession placement (4.1) | Branch gradient on `isDark`; keep authMode state machine in single component |
+| Welcome / Onboarding | Flag key collision (3.2), back gesture conflict (3.3), route placement (3.1), dot indicator thread (3.4) | New AsyncStorage key; disable Stack gesture; use translateX-based indicator |
