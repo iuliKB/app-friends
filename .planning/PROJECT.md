@@ -103,7 +103,7 @@ The daily availability status ("Free / Busy / Maybe") drives daily active use an
 
 ### Active
 
-- Home Screen overhaul — radar view, card stack, status pill, event cards — v1.8
+- Home Screen overhaul — DEAD bubble visual, EmptyState cleanup, EventCard 240×160 + date pill, loading skeleton — Validated in Phase 29: home-screen-overhaul
 - Squad Screen overhaul — birthdays, IOU, streak, friends list — v1.8
 - Explore Screen overhaul — map discovery, challenges feature completion — v1.8
 - Auth Screen redesign — login, sign up, form UX — v1.8
@@ -216,4 +216,4 @@ Known technical considerations:
 | MemoriesRedirect replaces Squad tab Memories stub (v1.6 Phase 23) | Eliminates duplicate gallery implementation; both Squad and Home entry points route to canonical /memories screen | ✓ Good |
 
 ---
-*Last updated: 2026-05-06 — Milestone v1.8 started (Deep UI Refinement & Screen Overhaul)*
+*Last updated: 2026-05-07 — Phase 29 complete (Home Screen Overhaul: DEAD bubble, EmptyState, EventCard resize, loading skeleton)*
