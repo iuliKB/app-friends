@@ -22,6 +22,12 @@ const FONT_FAMILY = {
 };
 const RADII = { xs: 4, sm: 6, md: 8, lg: 12, xl: 16, xxl: 24, full: 9999 };
 const SHADOW = { sm: {}, md: {}, lg: {} };
+const SHADOWS = {
+  fab: {},
+  card: {},
+  swipeCard: {},
+  none: {},
+};
 
 const ANIMATION = {
   duration: { fast: 200, normal: 300, slow: 700, verySlow: 1200 },
@@ -41,6 +47,7 @@ module.exports = {
   FONT_FAMILY,
   RADII,
   SHADOW,
+  SHADOWS,
   ANIMATION,
   COLORS,
   DARK: COLORS,
