@@ -128,7 +128,7 @@
 
 ### v1.8 Deep UI Refinement & Screen Overhaul
 
-- [ ] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max
+- [x] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max (completed 2026-05-06)
 - [ ] **Phase 30: Squad Screen Overhaul** - Polish Squad Dashboard cards (Streak, Birthday, IOU) and Friends list to feel native and information-dense without overwhelming
 - [ ] **Phase 31: Explore Screen Overhaul** - 3-state bottom sheet, theme fix for all three map components, reset-to-location chip, and plan card polish
 - [ ] **Phase 32: Auth Screen Redesign** - Fix the always-dark LinearGradient bug, extract gradient tokens, and add specific login error messaging
@@ -238,7 +238,7 @@ Plans:
 - [x] 29-02-PLAN.md — Wave 1: RadarBubble DEAD treatment (opacity 0.38, greyscale overlay, no Pressable)
 - [x] 29-03-PLAN.md — Wave 1: HomeScreen EmptyState CTA update + OnboardingHintSheet removal
 - [x] 29-04-PLAN.md — Wave 1: EventCard resize 240×160, date pill, AvatarStack size=28 maxVisible=5
-- [ ] 29-05-PLAN.md — Wave 2: UpcomingEventsSection skeleton + CARD_WIDTH/FlatList height sync
+- [x] 29-05-PLAN.md — Wave 2: UpcomingEventsSection skeleton + CARD_WIDTH/FlatList height sync
 **UI hint**: yes
 
 ### Phase 30: Squad Screen Overhaul
@@ -311,7 +311,7 @@ Plans:
 | 26. Home & Chat Polish | v1.7 | 6/6 | Complete | 2026-05-05 |
 | 27. Plans & Squad Polish | v1.7 | 5/5 | Complete | 2026-05-05 |
 | 28. Branding | v1.7 | 1/1 | Complete | 2026-05-05 |
-| 29. Home Screen Overhaul | v1.8 | 4/5 | In Progress|  |
+| 29. Home Screen Overhaul | v1.8 | 5/5 | Complete   | 2026-05-06 |
 | 30. Squad Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 31. Explore Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 32. Auth Screen Redesign | v1.8 | 0/? | Not started | - |

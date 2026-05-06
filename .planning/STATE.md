@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: executing
-stopped_at: Completed 29-04-PLAN.md
-last_updated: "2026-05-06T20:13:10.605Z"
+status: verifying
+stopped_at: Completed 29-05-PLAN.md
+last_updated: "2026-05-06T20:16:47.668Z"
 last_activity: 2026-05-06
 progress:
   total_phases: 10
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 
 Phase: 29 (home-screen-overhaul) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-06
 
 ## Phase Structure
@@ -72,6 +72,7 @@ Requirements covered: 0 / 18
 - [Phase 29]: borderRadius: targetSize/2 (static) on DEAD overlay — Animated.Value not valid for borderRadius without useNativeDriver: false
 - [Phase 29]: EmptyState CTA navigates to /friends/add (root-level route) not /(tabs)/squad — directly opens the Add Friend form per D-06/D-07
 - [Phase 29-home-screen-overhaul]: Date pill placed as Animated.View direct child (sibling of styles.content) not inside flex-end content View — absolute positioning requires sibling placement for correct top-left anchoring
+- [Phase 29]: Skeleton fade uses Animated.timing (useNativeDriver: true) with skeletonOpacity.setValue(1) reset for repeated loading cycles
 
 ### Roadmap Evolution
 
@@ -90,5 +91,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-06T20:13:10.602Z
-Stopped at: Completed 29-04-PLAN.md
+Last session: 2026-05-06T20:16:47.664Z
+Stopped at: Completed 29-05-PLAN.md
