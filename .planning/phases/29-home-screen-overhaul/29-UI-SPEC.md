@@ -30,6 +30,12 @@ Source: `src/theme/` barrel exports confirmed in codebase scan.
 
 ---
 
+## Primary Visual Anchor
+
+The ALIVE radar bubble — rendered at full opacity with an active green `PulseRing` (variant `'alive'`, 1200ms cycle, scale 1.7) — is the primary visual anchor of the Home screen. It is the first element the eye should land on. All other radar states (FADING at 0.6 opacity, DEAD at 0.38 opacity) are visually subordinate to it.
+
+---
+
 ## Spacing Scale
 
 Declared values from `src/theme/spacing.ts` — no raw numbers permitted in any Phase 29 component:
@@ -44,6 +50,7 @@ Declared values from `src/theme/spacing.ts` — no raw numbers permitted in any 
 | `SPACING.xxl` | 32px | EmptyState horizontal padding |
 
 Exceptions:
+- `SPACING.md` = 12px is not in the canonical 8-point standard set {4, 8, 16, 24, 32, 48, 64}. It is a pre-existing project token from `src/theme/spacing.ts`, is a multiple of 4, and does not break grid alignment. Justified exception — no raw number substitution needed.
 - Touch targets for DEAD bubbles: non-interactive (no `Pressable` wrapper). Existing `hitSlop` on small ALIVE/FADING bubbles (`targetSize < 44 ? { top: 4, bottom: 4, left: 4, right: 4 }`) is preserved.
 - Date pill height: not a SPACING token — pill is sized by its text (`FONT_SIZE.xs` = 12px) + 4px vertical padding each side = ~20px tall. Acceptable exception for inline pill.
 
@@ -51,19 +58,20 @@ Exceptions:
 
 ## Typography
 
-Source: `src/theme/typography.ts`. Phase 29 uses the following subset:
+Source: `src/theme/typography.ts`. Phase 29 uses exactly 4 font sizes:
 
 | Role | Token | Size | Font Family | Weight | Line Height |
 |------|-------|------|-------------|--------|-------------|
-| Body / card title | `FONT_SIZE.lg` | 16px | `FONT_FAMILY.display.semibold` | 600 | 1.2 (19px) |
-| Secondary / date label | `FONT_SIZE.sm` | 13px | `FONT_FAMILY.body.regular` | 400 | 1.3 (17px) |
-| Caption / date pill | `FONT_SIZE.xs` | 12px | `FONT_FAMILY.body.medium` | 500 | 1.0 (flat) |
-| Section heading | `FONT_SIZE.xl` | 20px | `FONT_FAMILY.display.semibold` | 600 | 1.2 (24px) |
-| Name label (radar) | `FONT_SIZE.sm` | 13px | `FONT_FAMILY.body.regular` | 400 | — (single line) |
-| EmptyState heading | `FONT_SIZE.xl` | 20px | `FONT_FAMILY.display.semibold` | 600 | 1.2 |
+| Card title | `FONT_SIZE.lg` | 16px | `FONT_FAMILY.display.semibold` | 600 | 1.2 (19px) |
 | EmptyState body | `FONT_SIZE.md` | 14px | `FONT_FAMILY.body.regular` | 400 | 1.5 |
+| Caption / date pill / date label / name label (radar) | `FONT_SIZE.xs` | 12px | `FONT_FAMILY.body.regular` | 400 | 1.0 flat (pill) / — (single line, labels) |
+| Section heading / EmptyState heading | `FONT_SIZE.xl` | 20px | `FONT_FAMILY.display.semibold` | 600 | 1.2 (24px) |
 
-Active weights in this phase: **regular (400)** and **semibold (600)** only.
+**4-size scale:** 12px (caption/labels) · 14px (body) · 16px (card title) · 20px (heading).
+
+Note: `FONT_SIZE.sm` (13px) is NOT used in Phase 29. Date labels and name labels both use `FONT_SIZE.xs` (12px) — the 1px difference was imperceptible and created an unnecessary fifth size.
+
+Active weights in this phase: **regular (400)** and **semibold (600)** only. The date pill uses `FONT_FAMILY.body.regular` (weight 400) — the accent-color background already provides sufficient visual prominence at 12px; medium weight is imperceptible at that size and would add a third active weight.
 
 ---
 
@@ -81,13 +89,13 @@ Source: `src/theme/colors.ts` (dark) and `src/theme/light-colors.ts` (light). Al
 | Status: Maybe | `colors.status.maybe` | `#FACC15` (dark) / `#D97706` (light) | — | Maybe bubble PulseRing + gradient |
 | Status: Busy | `colors.status.busy` | `#F87171` (dark) / `#DC2626` (light) | — | Busy bubble PulseRing + gradient |
 | Destructive | `colors.interactive.destructive` | `#F87171` (dark) / `#DC2626` (light) | — | Not used in Phase 29 |
-| Text primary | `colors.text.primary` | `#F5F5F5` (dark) / `#1A1D23` (light) | — | Card titles, name labels |
-| Text secondary | `colors.text.secondary` | `#9CA3AF` (dark) / `#64748B` (light) | — | Date labels, empty state body |
+| Text primary | `colors.text.primary` | `#F5F5F5` (dark) / `#1A1D23` (light) | — | Card titles |
+| Text secondary | `colors.text.secondary` | `#9CA3AF` (dark) / `#64748B` (light) | — | Date labels, name labels (DEAD/FADING), empty state body |
 | Border | `colors.border` | `#1E2128` (dark) / `#D1D5DB` (light) | — | Placeholder card dashed border |
 
 **Accent (`colors.interactive.accent`) is reserved for:**
 - "See all" link in the Upcoming Events section header
-- Date pill background on EventCard (Claude's discretion: use `colors.interactive.accent` at 15% opacity as pill background, accent text at full opacity — provides theme-aware highlight without burning the full neon in light mode)
+- Date pill background on EventCard (use `colors.interactive.accent` at 15% opacity as pill background, accent text at full opacity — provides theme-aware highlight without burning the full neon in light mode)
 - `PrimaryButton` background in the EmptyState CTA
 
 Accent is NOT used for: radar bubble colors, event card backgrounds, name labels, or any general interactive highlight.
@@ -130,7 +138,7 @@ Accent is NOT used for: radar bubble colors, event card backgrounds, name labels
 - No accessibility role or label (inaccessible by intent — DEAD friend is visually suppressed)
 - Visual state: opacity 0.38, greyscale overlay, no gradient, no pulse ring
 - Same bubble size as current DEAD: `BubbleSizeMap.dead` = 48px
-- Name label: `colors.text.secondary`, `numberOfLines={1}`
+- Name label: `colors.text.secondary`, `FONT_SIZE.xs` (12px), `numberOfLines={1}`
 
 ### ALIVE Bubble (HOME-05, unchanged)
 
@@ -144,7 +152,7 @@ Accent is NOT used for: radar bubble colors, event card backgrounds, name labels
 - Outer opacity: 0.6
 - No gradient
 - `Pressable` active (DM + action sheet available)
-- Name label: `colors.text.secondary`
+- Name label: `colors.text.secondary`, `FONT_SIZE.xs` (12px)
 
 ### EventCard (HOME-08)
 
@@ -154,7 +162,7 @@ Accent is NOT used for: radar bubble colors, event card backgrounds, name labels
 - Date pill: positioned `top: SPACING.sm` (8px), `left: SPACING.sm` (8px), absolute within card
   - Background: `colors.interactive.accent` at 15% opacity (`rgba(185,255,59,0.15)` dark / `rgba(77,124,0,0.12)` light)
   - Text: `colors.interactive.accent` at full opacity
-  - Font: `FONT_SIZE.xs` (12px), `FONT_FAMILY.body.medium` (500), `lineHeight: 12`
+  - Font: `FONT_SIZE.xs` (12px), `FONT_FAMILY.body.regular` (400), `lineHeight: 12`
   - Padding: `SPACING.xs` (4px) vertical, `SPACING.sm` (8px) horizontal
   - Border radius: `RADII.sm` (6px)
   - Content: formatted date string via existing `formatEventCardDate()`, e.g. "Thu May 8"
@@ -180,6 +188,14 @@ Accent is NOT used for: radar bubble colors, event card backgrounds, name labels
 - Component: existing `EmptyState` — pass updated props only
 - Remove: `OnboardingHintSheet` render and its associated `useState`/`useEffect` in `HomeScreen.tsx`
 
+### Events Section Empty State (HOME-08)
+
+- Heading: "No plans yet"
+- Body: "Start one and invite your crew"
+- Placeholder card: tappable card with dashed border (`colors.border`), background `colors.surface.card`
+- Placeholder card label: **"Plan something"** — rendered in `FONT_SIZE.xs` (12px), `colors.text.secondary`, centered
+- Placeholder card action: navigate to `/plan-create`
+
 ### View Mode Persistence (HOME-06)
 
 - No visual change — `useViewPreference.ts` already persists via `campfire:home_view` AsyncStorage key
@@ -196,7 +212,8 @@ Accent is NOT used for: radar bubble colors, event card backgrounds, name labels
 | Empty state body | "Add friends to see who's free and make plans" |
 | Events section empty heading | "No plans yet" |
 | Events section empty body | "Start one and invite your crew" |
-| Events section empty CTA | (tap placeholder card → navigate to `/plan-create`) |
+| Events section placeholder card label | "Plan something" |
+| Events section placeholder card action | Navigate to `/plan-create` on tap |
 | Events section header | "Upcoming events ✨" (existing, unchanged) |
 | Events section "See all" | "See all" (existing, unchanged) |
 | DEAD bubble accessibility | None — DEAD bubbles are non-interactive and excluded from accessibility tree |
