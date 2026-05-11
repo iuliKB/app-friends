@@ -16,13 +16,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
-import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII, ANIMATION } from '@/theme';
+import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { CompactFriendRow } from '@/components/squad/CompactFriendRow';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
-import { StreakCard } from '@/components/squad/StreakCard';
-import { IOUCard } from '@/components/squad/IOUCard';
-import { BirthdayCard } from '@/components/squad/BirthdayCard';
+import { BentoGrid } from '@/components/squad/bento/BentoGrid';
 import { MemoriesTabContent } from '@/components/squad/MemoriesTabContent';
 import { useFriends } from '@/hooks/useFriends';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
@@ -69,34 +67,10 @@ export default function SquadScreen() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const [loadingDM, setLoadingDM] = useState(false);
 
-  // Activity card entrance animations — fire once on mount, never on refresh
-  const cardAnims = useRef([
-    new Animated.Value(0), // StreakCard
-    new Animated.Value(0), // IOUCard
-    new Animated.Value(0), // BirthdayCard
-  ]).current;
-  const hasAnimated = useRef(false);
-
   useEffect(() => {
     fetchFriends();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (hasAnimated.current) return;
-    hasAnimated.current = true;
-    Animated.stagger(
-      ANIMATION.duration.staggerDelay,
-      cardAnims.map((anim) =>
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-          isInteraction: false,
-        })
-      )
-    ).start();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Underline indicator: translateX driven by scroll position on native thread
   // Each tab is SCREEN_WIDTH/3 wide; indicator slides to tab index × that width
@@ -142,7 +116,6 @@ export default function SquadScreen() {
     setRefreshingActivity(true);
     await Promise.all([streak.refetch(), iouSummary.refetch(), birthdays.refetch()]);
     setRefreshingActivity(false);
-    // hasAnimated.current intentionally NOT reset — cards never re-animate on refresh
   }
 
   function handleCloseSheet() {
@@ -181,21 +154,6 @@ export default function SquadScreen() {
     } else {
       fetchFriends();
     }
-  }
-
-  function AnimatedCard({ anim, children }: { anim: Animated.Value; children: React.ReactNode }) {
-    return (
-      <Animated.View
-        style={{
-          opacity: anim,
-          transform: [
-            { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) },
-          ],
-        }}
-      >
-        {children}
-      </Animated.View>
-    );
   }
 
   const styles = useMemo(
@@ -427,15 +385,7 @@ export default function SquadScreen() {
               />
             }
           >
-            <AnimatedCard anim={cardAnims[0]!}>
-              <StreakCard streak={streak} />
-            </AnimatedCard>
-            <AnimatedCard anim={cardAnims[1]!}>
-              <IOUCard summary={iouSummary} />
-            </AnimatedCard>
-            <AnimatedCard anim={cardAnims[2]!}>
-              <BirthdayCard birthdays={birthdays} />
-            </AnimatedCard>
+            <BentoGrid iou={iouSummary} streak={streak} birthdays={birthdays} />
           </ScrollView>
         </View>
       </Animated.ScrollView>
