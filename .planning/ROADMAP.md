@@ -81,6 +81,32 @@
 
 </details>
 
+### Phase 30: Unify navigation source-of-truth and chat-entry handlers
+
+**Goal:** Fix the bottom navigation bar showing on `ChatRoomScreen` when entered from non-canonical paths (e.g., Squad → Memories → PlanDashboard → "Open Chat" pill). Root cause: `CustomTabBar.tsx` keys visibility off navigator topology rather than current surface. Introduce `useNavigationStore` (zustand) as the single source of truth for bar visibility, refactor `CustomTabBar` to consume it, hoist `chat/room` to root Stack so it never mounts inside a tab's nested stack, consolidate the 12+ `/chat/room` callers (and four duplicate "create-DM-and-push" blocks) behind one helper, and remove related legacy/dead code (`FriendsList` legacy route, `RecentMemoriesSection`). Full scope and research findings: `.planning/phases/30-unify-navigation-source-of-truth-and-chat-entry-handlers/CONTEXT.md`.
+**Requirements**: TBD (no formal REQ-IDs — must-haves derived from CONTEXT.md verification anchor)
+**Depends on:** Phase 29
+**Plans:** 7 plans
+
+Plans:
+- [ ] 30-01-PLAN.md — Create `useNavigationStore` zustand slice (Wave 1)
+- [ ] 30-02-PLAN.md — Create `openChat` helper consolidating 13 callsites + 8 duplicate DM blocks (Wave 1)
+- [ ] 30-03-PLAN.md — Hoist `chat/room` to root Stack + register `<Stack.Screen name="chat" />` in root `_layout.tsx` (Wave 1)
+- [ ] 30-04-PLAN.md — Refactor `CustomTabBar` to consume `useNavigationStore` + add `useFocusEffect` writer in `ChatRoomScreen` (Wave 2, depends on 01 + 03)
+- [ ] 30-05-PLAN.md — Migrate all 10 callsite files (4 home DM duplicates, 4 routing handlers, 2 sheet handlers) to use `openChat` (Wave 2, depends on 02 + 03 + 07)
+- [ ] 30-06-PLAN.md — Delete dead-code `RecentMemoriesSection.tsx` (Wave 1)
+- [ ] 30-07-PLAN.md — Delete legacy `/friends` index route + `FriendsList.tsx` (Wave 1)
+
+### Phase 31: Adopt TanStack Query for server-state caching and cross-screen reactivity
+
+**Goal:** Replace the ~35 per-hook `useState + useFocusEffect + supabase` fetch pattern with TanStack Query for all server state. Establishes query-key conventions, optimistic-mutation conventions, and a Supabase Realtime → query-cache integration pattern. Enables cross-screen reactivity (editing data in one screen instantly reflects in others without manual refetch), eliminates wasteful refetch-on-focus, and unifies optimistic-update handling. Zustand remains the home for client/UI state only (auth, navigation surface, UI flags) — explicit boundary documented. Migration is incremental: pilot vertical first (likely habits), then batch by surface (chat, plans, friends, expenses, home aggregates, misc). Depends on Phase 30 shipping first so routing/layout is stable. Full scope and migration plan: `.planning/phases/31-adopt-tanstack-query-for-server-state-caching-and-cross-scre/CONTEXT.md`.
+**Requirements**: TBD
+**Depends on:** Phase 30
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 31 to break down)
+
 ---
 
 <details>
@@ -235,7 +261,6 @@ Plans:
 - [x] 29-03-PLAN.md — Wave 1: HomeScreen EmptyState CTA update + OnboardingHintSheet removal
 - [x] 29-04-PLAN.md — Wave 1: EventCard resize 240×160, date pill, AvatarStack size=28 maxVisible=5
 - [x] 29-05-PLAN.md — Wave 2: UpcomingEventsSection skeleton + CARD_WIDTH/FlatList height sync
-**UI hint**: yes
 
 ### Phase 29.1: Habits & To-Do Features (INSERTED)
 
