@@ -1,4 +1,4 @@
-export type MessageType = 'text' | 'image' | 'poll' | 'deleted';
+export type MessageType = 'text' | 'image' | 'poll' | 'deleted' | 'system' | 'todo';
 
 export interface MessageReaction {
   emoji: string;
