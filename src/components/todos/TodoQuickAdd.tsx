@@ -1,15 +1,14 @@
 // Phase 29.1 Plan 06 — TodoQuickAdd component.
-// Inline single-line quick-add for the Mine section of /squad/todos.
+// Inline single-line quick-add. Currently unused by the To-Dos screen (the
+// home-feed creation path is the FAB → /squad/todos/create); kept for
+// historical continuity with Phase 29.1 Plan 06 artifacts. May be reused if
+// inline composition is reintroduced later.
 //
 // Behavior:
 //   • Single-line TextInput, placeholder "Quick add to-do"
 //   • Submit on onSubmitEditing (Enter) or on tap of trailing `+` button
 //   • After submit: clear input, call onAdd(title); show inline spinner while pending
 //   • Title required (>0 chars after trim) before submit fires
-//
-// Pattern: TextInput shape cloned from PollCreationSheet.tsx:196-204; uses
-// useTheme() + useMemo([colors]) per v1.6 lock. The parent (TodosIndexScreen)
-// calls `supabase.rpc('create_todo', { p_title, ... })` from `onAdd`.
 
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -46,7 +45,7 @@ export function TodoQuickAdd({ onAdd }: TodoQuickAddProps) {
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
           // eslint-disable-next-line campfire/no-hardcoded-styles
-          paddingVertical: 12, // matches FormField precedent (14) but shorter for inline row
+          paddingVertical: 12,
         },
         submitButton: {
           width: 32,

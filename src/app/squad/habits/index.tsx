@@ -1,19 +1,17 @@
 // Phase 29.1 Plan 05 — Habits list screen.
 // Route: /squad/habits (Expo Router maps habits/index.tsx → /squad/habits).
 //
-// Layout: ScreenHeader "Habits" → optional "Invitations" section (HabitInvitationRow
-// per pending row) → FlatList of HabitRow → FAB "+ New habit".
-//
-// Pattern: clones src/app/squad/expenses/index.tsx shape (SafeAreaView +
-// header container + FlatList + RefreshControl + FAB + skeleton/empty/error
-// branches). Hook substitution: useHabits().
+// Layout: HabitsProgressHero (today's progress ring) → optional "Invitations"
+// section (HabitInvitationRow per pending row) → FlatList of HabitRow → FAB
+// "+ New habit". The native stack header (squad/_layout.tsx) supplies the
+// "Habits" title — the in-screen ScreenHeader was removed to avoid a
+// duplicate title above the hero.
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTheme, FONT_FAMILY, FONT_SIZE, SPACING } from '@/theme';
-import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FAB } from '@/components/common/FAB';
 import { SkeletonPulse } from '@/components/common/SkeletonPulse';
@@ -21,6 +19,7 @@ import { useHabits } from '@/hooks/useHabits';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { HabitRow } from '@/components/habits/HabitRow';
+import { HabitsProgressHero } from '@/components/habits/HabitsProgressHero';
 import {
   HabitInvitationRow,
   type PendingHabitInvitation,
@@ -85,7 +84,7 @@ export default function HabitsIndexScreen() {
         console.warn('inviter profiles fetch failed', profErr);
       } else {
         inviterNameById = Object.fromEntries(
-          (((profileRows ?? []) as unknown) as Array<{ id: string; display_name: string | null }>).map(
+          ((profileRows ?? []) as unknown as { id: string; display_name: string | null }[]).map(
             (p) => [p.id, p.display_name ?? 'A friend']
           )
         );
@@ -138,12 +137,14 @@ export default function HabitsIndexScreen() {
     await Promise.all([fetchPendingInvites(), refetch()]);
   }, [fetchPendingInvites, refetch]);
 
+  const doneToday = useMemo(() => habits.filter((h) => h.did_me_check_in_today).length, [habits]);
+  const totalToday = habits.length;
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
         container: { flex: 1, backgroundColor: colors.surface.base },
-        headerContainer: { paddingHorizontal: SPACING.lg },
-        listContent: { paddingTop: SPACING.md, paddingBottom: SPACING.xxl },
+        listContent: { paddingBottom: SPACING.xxl },
         emptyContainer: { flex: 1 },
         sectionHeader: {
           paddingHorizontal: SPACING.lg,
@@ -173,20 +174,24 @@ export default function HabitsIndexScreen() {
     [colors]
   );
 
-  function renderInvitationsSection() {
-    if (invitesLoading) return null;
-    if (pendingInvites.length === 0) return null;
+  function renderListHeader() {
+    const showInvites = !invitesLoading && pendingInvites.length > 0;
     return (
       <View>
-        <Text style={styles.sectionHeader}>Invitations · {pendingInvites.length}</Text>
-        {pendingInvites.map((invite) => (
-          <HabitInvitationRow
-            key={invite.habit_id}
-            habit={invite}
-            onAccept={handleInviteResolved}
-            onDecline={handleInviteResolved}
-          />
-        ))}
+        <HabitsProgressHero doneToday={doneToday} totalToday={totalToday} />
+        {showInvites && (
+          <View>
+            <Text style={styles.sectionHeader}>Invitations · {pendingInvites.length}</Text>
+            {pendingInvites.map((invite) => (
+              <HabitInvitationRow
+                key={invite.habit_id}
+                habit={invite}
+                onAccept={handleInviteResolved}
+                onDecline={handleInviteResolved}
+              />
+            ))}
+          </View>
+        )}
       </View>
     );
   }
@@ -194,9 +199,7 @@ export default function HabitsIndexScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.headerContainer}>
-          <ScreenHeader title="Habits" />
-        </View>
+        <HabitsProgressHero doneToday={0} totalToday={0} />
         {[0, 1, 2].map((n) => (
           <View key={n} style={styles.skeletonRow}>
             <SkeletonPulse width="100%" height={56} />
@@ -209,12 +212,10 @@ export default function HabitsIndexScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.headerContainer}>
-          <ScreenHeader title="Habits" />
-        </View>
         <FlatList
           data={[]}
           renderItem={null}
+          ListHeaderComponent={<HabitsProgressHero doneToday={doneToday} totalToday={totalToday} />}
           refreshControl={
             <RefreshControl
               refreshing={false}
@@ -246,9 +247,6 @@ export default function HabitsIndexScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <ScreenHeader title="Habits" />
-      </View>
       <FlatList<HabitOverviewRow>
         data={habits}
         keyExtractor={(item) => item.habit_id}
@@ -256,7 +254,7 @@ export default function HabitsIndexScreen() {
           <HabitRow habit={item} onToggle={handleToggle} onPress={handleRowPress} />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListHeaderComponent={renderInvitationsSection()}
+        ListHeaderComponent={renderListHeader()}
         contentContainerStyle={
           !hasHabits && !hasInvites ? styles.emptyContainer : styles.listContent
         }

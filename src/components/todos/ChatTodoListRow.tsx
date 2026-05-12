@@ -1,254 +1,205 @@
-// Phase 29.1 Plan 06 — ChatTodoListRow component.
-// Renders one ChatTodoRow in /squad/todos/index.tsx "From chats" section (D-13).
-//
-// Collapsed state:  📋 {title} · {done}/{total} done   +  chevron-down (0°)
-// Expanded state:   same header + chevron rotates 180° + child item list
-//
-// Controlled-prop expansion (W9 — checker pass 1): parent owns expanded state
-// and decides when items are fetched. Component renders based on `items.length`:
-//   • items.length === 0 → collapsed view
-//   • items.length > 0   → expanded view (with child items sorted incomplete-first)
-//   • items empty + loadingItems → 3 skeleton rows
-//
-// Animation: LayoutAnimation.easeInEaseOut on container height (UI-SPEC §Animation
-// > Chat to-do list expand). Chevron rotation: Animated.timing on rotation value.
+// Phase 29.1 Plan 06 — ChatTodoListRow (flat row).
+// Renders a SINGLE chat-todo-item as a flat row, matching the Mine-section
+// visual contract (44×44 checkbox on the left, title, sub-row with due-date +
+// source list attribution). No per-list dropdown — the parent screen
+// flattens each chat list into its child items.
 
-import React, { useEffect, useMemo, useRef } from 'react';
-import {
-  Animated,
-  LayoutAnimation,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  UIManager,
-  View,
-} from 'react-native';
+import React, { useMemo, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SPACING, ANIMATION } from '@/theme';
-import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { TILE_ACCENTS, ACCENT_FILL } from '@/components/squad/bento/tileAccents';
-import type { ChatTodoItem, ChatTodoRow } from '@/types/todos';
-
-// Android requires explicit opt-in for LayoutAnimation to take effect
-// (precedent: most RN projects toggle this once globally; safe to call here).
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+import type { ChatTodoItem } from '@/types/todos';
 
 interface ChatTodoListRowProps {
-  row: ChatTodoRow;
-  items: ChatTodoItem[]; // empty = collapsed; populated = expanded (controlled-prop)
-  loadingItems: boolean; // true while child items load
-  onExpand: (listId: string) => void; // header tapped — parent fetches items + re-renders
-  onToggleItem: (itemId: string) => Promise<unknown>;
+  item: ChatTodoItem;
+  listTitle: string;
+  onToggle: (itemId: string) => Promise<unknown>;
 }
 
-export function ChatTodoListRow({
-  row,
-  items,
-  loadingItems,
-  onExpand,
-  onToggleItem,
-}: ChatTodoListRowProps) {
-  const { colors } = useTheme();
-  const expanded = items.length > 0 || loadingItems;
-  // Chevron rotation driven by Animated.timing (useNativeDriver: true)
-  const chevronRotation = useRef(new Animated.Value(0)).current;
+function formatShortDate(dateLocal: string): string {
+  const parts = dateLocal.split('-');
+  const y = Number(parts[0] ?? 0);
+  const m = Number(parts[1] ?? 1);
+  const d = Number(parts[2] ?? 1);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
 
-  useEffect(() => {
-    Animated.timing(chevronRotation, {
-      toValue: expanded ? 1 : 0,
-      duration: ANIMATION.duration.fast,
-      useNativeDriver: true,
-    }).start();
-  }, [expanded, chevronRotation]);
+function daysUntilLocal(dueDateLocal: string): number {
+  const parts = dueDateLocal.split('-');
+  const dueY = Number(parts[0] ?? 0);
+  const dueM = Number(parts[1] ?? 1);
+  const dueD = Number(parts[2] ?? 1);
+  const due = new Date(dueY, dueM - 1, dueD).getTime();
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return Math.round((due - today) / (1000 * 60 * 60 * 24));
+}
+
+function formatDueLabel(dateLocal: string | null, completed: boolean): {
+  text: string | null;
+  isOverdue: boolean;
+} {
+  if (!dateLocal) return { text: null, isOverdue: false };
+  const days = daysUntilLocal(dateLocal);
+  if (days < 0 && !completed) {
+    return { text: `OVERDUE · ${formatShortDate(dateLocal)}`, isOverdue: true };
+  }
+  if (days === 0) return { text: 'Due today', isOverdue: false };
+  if (days === 1) return { text: 'Due tomorrow', isOverdue: false };
+  if (days > 1) return { text: `Due in ${days} days`, isOverdue: false };
+  return { text: `Due ${formatShortDate(dateLocal)}`, isOverdue: false };
+}
+
+export function ChatTodoListRow({ item, listTitle, onToggle }: ChatTodoListRowProps) {
+  const { colors } = useTheme();
+  const checkScale = useRef(new Animated.Value(1)).current;
+  const isCompleted = item.completed_at !== null;
+  const dueInfo = formatDueLabel(item.due_date, isCompleted);
+  const showOverdueBorder = dueInfo.isOverdue;
+  // For single-item chat todos the parent list title typically equals the
+  // item title — don't show duplicate text in that case.
+  const showAttribution = listTitle && listTitle.trim() !== item.title.trim();
 
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        container: {
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
-          minHeight: 56,
-          gap: SPACING.sm,
-        },
-        headerRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: SPACING.sm,
-          minHeight: 44,
-        },
-        headerPressed: { opacity: 0.75 },
-        headerText: {
-          flex: 1,
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.medium,
-          color: colors.text.primary,
-        },
-        progressText: {
-          fontSize: FONT_SIZE.xs,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.secondary,
-        },
-        chevronWrap: {
-          width: 28,
-          height: 28,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        itemsList: {
-          paddingLeft: SPACING.lg,
-          gap: SPACING.xs,
-        },
-        itemRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingVertical: SPACING.sm,
+          minHeight: 64,
           gap: SPACING.md,
-          minHeight: 44,
         },
-        itemTitle: {
-          flex: 1,
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.primary,
+        overdueBorder: {
+          borderLeftWidth: 3,
+          borderLeftColor: colors.interactive.destructive,
         },
-        itemTitleCompleted: {
-          textDecorationLine: 'line-through',
-          opacity: 0.6,
-        },
-        itemToggleWrapper: {
+        toggleWrapper: {
           width: 44,
           height: 44,
           alignItems: 'center',
           justifyContent: 'center',
         },
-        itemCheckbox: {
-          width: 24,
-          height: 24,
+        checkbox: {
+          width: 28,
+          height: 28,
           borderRadius: RADII.full,
           alignItems: 'center',
           justifyContent: 'center',
           borderWidth: 2,
         },
-        skeletonRow: {
-          marginVertical: SPACING.xs,
+        contentColumn: { flex: 1, gap: SPACING.xs },
+        title: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.primary,
+        },
+        titleCompleted: {
+          textDecorationLine: 'line-through',
+          opacity: 0.6,
+        },
+        subRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          flexWrap: 'wrap',
+        },
+        subLabel: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        subLabelOverdue: {
+          color: colors.interactive.destructive,
+          fontFamily: FONT_FAMILY.body.semibold,
+        },
+        attribution: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        dot: {
+          fontSize: FONT_SIZE.xs,
+          color: colors.text.secondary,
         },
       }),
     [colors]
   );
 
-  function handleHeaderPress() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    // Trigger LayoutAnimation BEFORE invoking the parent callback so the
-    // parent's setState-driven re-render gets the easeInEaseOut transition
-    // (per UI-SPEC §Animation > Chat to-do list expand).
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    onExpand(row.list_id);
-  }
+  const checkboxStyle = isCompleted
+    ? {
+        backgroundColor: TILE_ACCENTS.todos + ACCENT_FILL,
+        borderColor: TILE_ACCENTS.todos,
+      }
+    : {
+        backgroundColor: 'transparent',
+        borderColor: colors.text.secondary,
+      };
 
-  async function handleItemToggle(itemId: string, wasCompleted: boolean) {
+  async function handleToggle() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    const result = await onToggleItem(itemId);
-    if (!wasCompleted) {
+    checkScale.setValue(0.8);
+    Animated.spring(checkScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      damping: ANIMATION.easing.spring.damping,
+      stiffness: ANIMATION.easing.spring.stiffness,
+    }).start();
+    const result = await onToggle(item.id);
+    if (!isCompleted) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
     return result;
   }
 
-  // Sort: incomplete first, completed last (per plan §action).
-  const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const aDone = a.completed_at !== null ? 1 : 0;
-      const bDone = b.completed_at !== null ? 1 : 0;
-      if (aDone !== bDone) return aDone - bDone;
-      return a.position - b.position;
-    });
-  }, [items]);
-
-  const rotateInterpolation = chevronRotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const a11yLabel = row.is_list
-    ? `To-do list ${row.title}, ${row.done_count} of ${row.total_count} done`
-    : `To-do ${row.title}`;
+  const a11yToggleLabel = isCompleted
+    ? `Mark "${item.title}" not done`
+    : `Mark "${item.title}" done`;
+  const a11yRowLabel = showAttribution
+    ? `${item.title}${dueInfo.text ? `. ${dueInfo.text}` : ''}. From ${listTitle}.`
+    : `${item.title}${dueInfo.text ? `. ${dueInfo.text}` : ''}.`;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.row, showOverdueBorder && styles.overdueBorder]}
+      accessibilityRole="text"
+      accessibilityLabel={a11yRowLabel}
+    >
       <Pressable
-        onPress={handleHeaderPress}
-        style={({ pressed }) => [styles.headerRow, pressed && styles.headerPressed]}
-        accessibilityRole="button"
-        accessibilityLabel={a11yLabel}
-        accessibilityHint="Tap to expand"
+        style={styles.toggleWrapper}
+        onPress={handleToggle}
+        hitSlop={8}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: isCompleted }}
+        accessibilityLabel={a11yToggleLabel}
       >
-        <Text style={styles.headerText} numberOfLines={1}>
-          {`📋 ${row.title}`}
-        </Text>
-        <Text style={styles.progressText}>{`· ${row.done_count}/${row.total_count} done`}</Text>
         <Animated.View
-          style={[styles.chevronWrap, { transform: [{ rotate: rotateInterpolation }] }]}
+          style={[styles.checkbox, checkboxStyle, { transform: [{ scale: checkScale }] }]}
         >
-          <Ionicons name="chevron-down" size={18} color={colors.text.secondary} />
+          {isCompleted && <Ionicons name="checkmark" size={18} color={TILE_ACCENTS.todos} />}
         </Animated.View>
       </Pressable>
 
-      {expanded && (
-        <View style={styles.itemsList}>
-          {loadingItems && items.length === 0 ? (
-            <>
-              {[0, 1, 2].map((n) => (
-                <View key={n} style={styles.skeletonRow}>
-                  <SkeletonPulse width="100%" height={40} />
-                </View>
-              ))}
-            </>
-          ) : (
-            sortedItems.map((item) => {
-              const completed = item.completed_at !== null;
-              const itemCheckboxStyle = completed
-                ? {
-                    backgroundColor: TILE_ACCENTS.todos + ACCENT_FILL,
-                    borderColor: TILE_ACCENTS.todos,
-                  }
-                : {
-                    backgroundColor: 'transparent',
-                    borderColor: colors.text.secondary,
-                  };
-              return (
-                <View key={item.id} style={styles.itemRow}>
-                  <Text
-                    style={[styles.itemTitle, completed && styles.itemTitleCompleted]}
-                    numberOfLines={2}
-                  >
-                    {item.title}
-                  </Text>
-                  <Pressable
-                    style={styles.itemToggleWrapper}
-                    onPress={() => handleItemToggle(item.id, completed)}
-                    hitSlop={8}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: completed }}
-                    accessibilityLabel={
-                      completed ? `Mark "${item.title}" not done` : `Mark "${item.title}" done`
-                    }
-                  >
-                    <View style={[styles.itemCheckbox, itemCheckboxStyle]}>
-                      {completed && (
-                        <Ionicons name="checkmark" size={14} color={TILE_ACCENTS.todos} />
-                      )}
-                    </View>
-                  </Pressable>
-                </View>
-              );
-            })
-          )}
-        </View>
-      )}
+      <View style={styles.contentColumn}>
+        <Text style={[styles.title, isCompleted && styles.titleCompleted]} numberOfLines={2}>
+          {item.title}
+        </Text>
+        {(dueInfo.text || showAttribution) && (
+          <View style={styles.subRow}>
+            {dueInfo.text && (
+              <Text style={[styles.subLabel, dueInfo.isOverdue && styles.subLabelOverdue]}>
+                {dueInfo.text}
+              </Text>
+            )}
+            {dueInfo.text && showAttribution && <Text style={styles.dot}>·</Text>}
+            {showAttribution && <Text style={styles.attribution}>{listTitle}</Text>}
+          </View>
+        )}
+      </View>
     </View>
   );
 }

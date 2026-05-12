@@ -1,15 +1,13 @@
 // Phase 29.1 Plan 06 — TodoRow component.
-// Renders one MyTodoRow in /squad/todos/index.tsx Mine section:
-//   • Title (FONT_SIZE.md / body.medium / text.primary), strikethrough when completed
-//   • Due-date label below title — `OVERDUE · {date}`, `Due today`, `Due tomorrow`,
-//     `Due in N days`, or `No due date`. Overdue label is destructive-colored.
-//   • Priority chip (Low / Medium / High) with UI-SPEC colors.
-//   • 3px destructive left border when `is_overdue && !completed_at`.
-//   • 44×44 done-toggle checkbox on the right; filled `TILE_ACCENTS.todos`
-//     when completed.
+// Renders one MyTodoRow in /squad/todos/index.tsx.
 //
-// Pattern: clones HabitRow.tsx layout (Plan 05); priority chip styled like
-// the Solo/Group chip; overdue treatment from UI-SPEC §Color > Overdue treatment.
+// Layout (left → right):
+//   • 44×44 done-toggle checkbox on the LEFT; filled `TILE_ACCENTS.todos` when completed
+//   • Title (FONT_SIZE.md / body.medium / text.primary), strikethrough when completed
+//   • Sub-row: priority dot + due-date label + optional "HIGH" tag
+//   • 3px destructive left border when `is_overdue && !completed_at`
+//
+// Overdue treatment from UI-SPEC §Color > Overdue treatment.
 
 import React, { useMemo, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -25,11 +23,7 @@ interface TodoRowProps {
   onPress: (todoId: string) => void;
 }
 
-// Format MMM D from YYYY-MM-DD (local). Always interpret as a local date
-// (avoid the UTC-slice off-by-one — Pitfall 5 reference).
 function formatShortDate(dateLocal: string): string {
-  // Build Date from explicit local parts so the timezone interpretation matches
-  // the date_local semantics on the server (YYYY-MM-DD with no offset).
   const parts = dateLocal.split('-');
   const y = Number(parts[0] ?? 0);
   const m = Number(parts[1] ?? 1);
@@ -71,7 +65,6 @@ function formatDueLabel(todo: MyTodoRow): {
   const days = daysUntilLocal(todo.due_date);
   if (days === 1) return { text: 'Due tomorrow', isOverdue: false, isMissing: false };
   if (days > 1) return { text: `Due in ${days} days`, isOverdue: false, isMissing: false };
-  // days <= 0 but not flagged is_overdue — RPC said completed or edge case; fall back to short date
   return { text: `Due ${formatShortDate(todo.due_date)}`, isOverdue: false, isMissing: false };
 }
 
@@ -83,6 +76,17 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
   const { colors } = useTheme();
   const checkScale = useRef(new Animated.Value(1)).current;
 
+  const isCompleted = todo.completed_at !== null;
+  const dueInfo = formatDueLabel(todo);
+  const showOverdueBorder = todo.is_overdue && !isCompleted;
+
+  const priorityColor =
+    todo.priority === 'high'
+      ? colors.interactive.destructive
+      : todo.priority === 'medium'
+        ? colors.feedback.info
+        : colors.text.secondary;
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -91,7 +95,7 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
           alignItems: 'center',
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
-          minHeight: 56,
+          minHeight: 64,
           gap: SPACING.md,
         },
         rowPressed: { opacity: 0.75 },
@@ -99,6 +103,20 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
           // 3px destructive left border per UI-SPEC §Color > Overdue treatment
           borderLeftWidth: 3,
           borderLeftColor: colors.interactive.destructive,
+        },
+        toggleWrapper: {
+          width: 44,
+          height: 44,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        checkbox: {
+          width: 28,
+          height: 28,
+          borderRadius: RADII.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderWidth: 2,
         },
         contentColumn: { flex: 1, gap: SPACING.xs },
         title: {
@@ -115,6 +133,13 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
           alignItems: 'center',
           gap: SPACING.sm,
         },
+        priorityDot: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          width: 6,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          height: 6,
+          borderRadius: RADII.full,
+        },
         dueLabel: {
           fontSize: FONT_SIZE.xs,
           fontFamily: FONT_FAMILY.body.regular,
@@ -124,56 +149,15 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
           color: colors.interactive.destructive,
           fontFamily: FONT_FAMILY.body.semibold,
         },
-        chip: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: SPACING.sm,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
-          paddingVertical: 4, // UI-SPEC phase exception — chip pill (precedent: YourZoneSection.tsx:223)
-          borderRadius: RADII.full,
-          borderWidth: 1,
-          gap: SPACING.xs,
-        },
-        chipText: {
+        highTag: {
           fontSize: FONT_SIZE.xs,
-          fontFamily: FONT_FAMILY.body.semibold,
+          fontFamily: FONT_FAMILY.body.bold,
           letterSpacing: 0.5,
-        },
-        toggleWrapper: {
-          // 44×44 tap target (iOS HIG min)
-          width: 44,
-          height: 44,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        checkbox: {
-          width: 28,
-          height: 28,
-          borderRadius: RADII.full,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderWidth: 2,
         },
       }),
     [colors]
   );
 
-  const isCompleted = todo.completed_at !== null;
-  const dueInfo = formatDueLabel(todo);
-  const showOverdueBorder = todo.is_overdue && !isCompleted;
-
-  // Priority chip palette per UI-SPEC §Color:
-  // low = text.secondary, medium = feedback.info, high = interactive.destructive
-  const priorityBorderColor =
-    todo.priority === 'high'
-      ? colors.interactive.destructive
-      : todo.priority === 'medium'
-        ? colors.feedback.info
-        : colors.text.secondary;
-  const priorityBgColor = priorityBorderColor + ACCENT_FILL;
-  const priorityTextColor = priorityBorderColor;
-
-  // Done checkbox: filled TILE_ACCENTS.todos when completed
   const checkboxStyle = isCompleted
     ? {
         backgroundColor: TILE_ACCENTS.todos + ACCENT_FILL,
@@ -186,7 +170,6 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
 
   async function handleToggle() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    // Spring scale 0.8 → 1.0 (matches HabitRow pattern, ANIMATION.easing.spring)
     checkScale.setValue(0.8);
     Animated.spring(checkScale, {
       toValue: 1,
@@ -196,7 +179,6 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
     }).start();
     const result = await onToggle(todo.id);
     if (!isCompleted) {
-      // Just transitioned to done — success haptic
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
     return result;
@@ -217,27 +199,6 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
       accessibilityRole="button"
       accessibilityLabel={`${todo.title}. ${dueInfo.text}. Priority ${priorityLabel(todo.priority)}.`}
     >
-      <View style={styles.contentColumn}>
-        <Text style={[styles.title, isCompleted && styles.titleCompleted]} numberOfLines={2}>
-          {todo.title}
-        </Text>
-        <View style={styles.bottomRow}>
-          <Text style={[styles.dueLabel, dueInfo.isOverdue && styles.dueLabelOverdue]}>
-            {dueInfo.text}
-          </Text>
-          <View
-            style={[
-              styles.chip,
-              { borderColor: priorityBorderColor, backgroundColor: priorityBgColor },
-            ]}
-          >
-            <Text style={[styles.chipText, { color: priorityTextColor }]}>
-              {priorityLabel(todo.priority)}
-            </Text>
-          </View>
-        </View>
-      </View>
-
       <Pressable
         style={styles.toggleWrapper}
         onPress={handleToggle}
@@ -252,6 +213,21 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
           {isCompleted && <Ionicons name="checkmark" size={18} color={TILE_ACCENTS.todos} />}
         </Animated.View>
       </Pressable>
+
+      <View style={styles.contentColumn}>
+        <Text style={[styles.title, isCompleted && styles.titleCompleted]} numberOfLines={2}>
+          {todo.title}
+        </Text>
+        <View style={styles.bottomRow}>
+          <View style={[styles.priorityDot, { backgroundColor: priorityColor }]} />
+          <Text style={[styles.dueLabel, dueInfo.isOverdue && styles.dueLabelOverdue]}>
+            {dueInfo.text}
+          </Text>
+          {todo.priority === 'high' && !isCompleted && (
+            <Text style={[styles.highTag, { color: priorityColor }]}>HIGH</Text>
+          )}
+        </View>
+      </View>
     </Pressable>
   );
 }
