@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 29.1-03-PLAN.md (hook layer)
-last_updated: "2026-05-12T02:17:54.997Z"
+stopped_at: Completed 29.1-04-PLAN.md (Bento tile integration)
+last_updated: "2026-05-12T02:26:42.702Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 13
-  completed_plans: 8
-  percent: 62
+  completed_plans: 9
+  percent: 69
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 29.1 (habits-to-do-features) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -82,6 +82,10 @@ Requirements covered: 0 / 18
 - [Phase 29.1-03]: Snapshot capture uses ref-mirrored state (habitsRef/mineRef) not setState-updater pattern — React 18 deferred setState callbacks make the plan-draft pattern unreliable; ref-based reads are synchronous
 - [Phase 29.1-03]: Auth-store import path is @/stores/useAuthStore (project actual), not plan-draft @/store/auth — all new hooks and test mocks use the real path
 - [Phase 29.1-03]: useHabits Realtime filter is user_id=eq.${userId} (caller only) — HabitOverviewRow does not expose member_ids; co-member updates surface via manual refetch on screen focus
+- [Phase 29.1-04]: HabitsTile hero rendered as two adjacent Text nodes ({done} + /{total}) — numerator flips accent-colored, denominator stays text.secondary per UI-SPEC §Color
+- [Phase 29.1-04]: TodosTile accent flips on overdueCount > 0 only (not total > 0) — violet stays for due-today-only state; destructive only when truly overdue
+- [Phase 29.1-04]: reanimated jest mock extended with useReducedMotion + default.View host strings (Rule 3 deviation) — required for any Bento-component test rendering through BentoCard
+- [Phase 29.1-04]: BentoGrid row arrangement: Row 1=IOU+Habits, Row 2=Birthdays+ToDos, Row 3=Streak+Goals (Squad Challenges placeholder D-15 preserved) — matches UI-SPEC §Component Inventory exactly
 
 ### Roadmap Evolution
 
@@ -101,5 +105,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-12T02:17:54.993Z
-Stopped at: Completed 29.1-03-PLAN.md (hook layer)
+Last session: 2026-05-12T02:26:42.699Z
+Stopped at: Completed 29.1-04-PLAN.md (Bento tile integration)
