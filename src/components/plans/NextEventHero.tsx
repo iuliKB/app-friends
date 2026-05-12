@@ -19,7 +19,7 @@ import type { PlanWithMembers } from '@/types/plans';
 // artwork on top with date badge + relative pill, solid info panel below
 // with eyebrow + title + meta + avatar stack.
 
-const HERO_IMAGE_HEIGHT = 120;
+const HERO_IMAGE_HEIGHT = 168;
 
 interface NextEventHeroProps {
   plan: PlanWithMembers;
@@ -69,8 +69,8 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
         },
         infoPanel: {
           paddingHorizontal: SPACING.lg,
-          paddingTop: SPACING.sm,
-          paddingBottom: SPACING.md,
+          paddingTop: SPACING.xs,
+          paddingBottom: SPACING.sm,
           gap: SPACING.xs,
           backgroundColor: colors.interactive.accent,
         },
@@ -114,7 +114,7 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
           backgroundColor: 'rgba(14,15,17,0.25)',
         },
         avatarRow: {
-          marginTop: SPACING.sm,
+          marginTop: SPACING.xs,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -152,7 +152,7 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
         <EventArtwork
           plan={plan}
           height={HERO_IMAGE_HEIGHT}
-          monogramSize={64}
+          monogramSize={88}
           showDateBadge={false}
         />
 
