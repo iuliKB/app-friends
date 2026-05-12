@@ -129,7 +129,6 @@
 ### v1.8 Deep UI Refinement & Screen Overhaul
 
 - [x] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max (completed 2026-05-06)
-- [x] **Phase 30: Squad Screen Overhaul** - Friends list (CompactFriendRow) polish only — the Bento tile redesign (Streak / Birthday / IOU cards) is superseded by Phase 29.1 (D-21) (completed 2026-05-12)
 
 ## Phase Details
 
@@ -253,14 +252,3 @@ Plans:
 - [x] 29.1-05-PLAN.md — Habits feature surfaces: /squad/habits/* routes + 5 components (HabitRow, HabitCadencePicker, HabitMemberStrip, HabitCheckinHistory, HabitInvitationRow)
 - [x] 29.1-06-PLAN.md — To-Dos feature surfaces: /squad/todos/* routes + 3 components (TodoRow, ChatTodoListRow, TodoQuickAdd)
 - [x] 29.1-07-PLAN.md — Chat integration: ChatTodoPickerSheet + ChatTodoBubble + SystemMessageRow + MessageBubble render branches + ChatRoomScreen wire-up
-- [x] 29.1-08-PLAN.md — Home widgets: HomeHabitsTile + HomeTodosTile + HomeHabitsTodosRow + TileShell/EyebrowPill refactor + ROADMAP Phase 30 D-21 supersession note
-
-### Phase 30: Squad Screen Overhaul
-**Goal**: The Friends list (CompactFriendRow) feels polished and native — avatars, status freshness indicators, and consistent spacing that matches the design system established across the app.
-**Depends on**: Phase 29
-**Requirements**: SQUAD-06
-**Note**: Bento tile redesign (originally SQUAD-05, SQUAD-07, SQUAD-08) was superseded by Phase 29.1 (Habits & To-Dos) per D-21. Phase 29.1 shipped the Squad → Activity Bento grid with HabitsTile, TodosTile, and the rearranged Streak/Birthday/IOU tile pairing in a 3×2 layout — covering the original SQUAD-05 hero-metric, SQUAD-07 Birthday + IOU card layout, and SQUAD-08 Streak card polish requirements. Phase 30 now focuses on Friends list polish only.
-**Success Criteria** (what must be TRUE):
-  1. The Friends list (CompactFriendRow) has polished avatar display with a visible status freshness indicator and consistent spacing that matches the app's design system
-**Plans**: TBD
-**UI hint**: yes
