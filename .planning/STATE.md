@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Phase 29.1 UI-SPEC approved
-last_updated: "2026-05-12T01:53:23.228Z"
-last_activity: 2026-05-12 -- Phase 29.1 execution started
+stopped_at: Completed 29.1-01-PLAN.md (migration 0024 pushed live)
+last_updated: "2026-05-12T01:59:46.320Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 13
-  completed_plans: 5
-  percent: 38
+  completed_plans: 6
+  percent: 46
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 29.1 (habits-to-do-features) — EXECUTING
-Plan: 1 of 8
-Status: Executing Phase 29.1
-Last activity: 2026-05-12 -- Phase 29.1 execution started
+Plan: 2 of 8
+Status: Ready to execute
+Last activity: 2026-05-12
 
 ## Phase Structure
 
@@ -73,6 +73,10 @@ Requirements covered: 0 / 18
 - [Phase 29]: EmptyState CTA navigates to /friends/add (root-level route) not /(tabs)/squad — directly opens the Add Friend form per D-06/D-07
 - [Phase 29-home-screen-overhaul]: Date pill placed as Animated.View direct child (sibling of styles.content) not inside flex-end content View — absolute positioning requires sibling placement for correct top-left anchoring
 - [Phase 29]: Skeleton fade uses Animated.timing (useNativeDriver: true) with skeletonOpacity.setValue(1) reset for repeated loading cycles
+- [Phase 29.1-01]: Migration 0024 widens messages.message_type CHECK to include 'system' and 'todo' while preserving 'deleted' from migration 0019; full set is ('text','image','poll','deleted','system','todo')
+- [Phase 29.1-01]: messages INSERT RLS policy WITH CHECK whitelists only ('text','image','poll'); 'system'/'todo' rows are RPC-only via SECURITY DEFINER bypass (mitigates T-29.1-03 spoofing)
+- [Phase 29.1-01]: Todos read RPC split into get_my_todos + get_chat_todos for cleaner per-section row shapes (vs unified kind discriminator)
+- [Phase 29.1-01]: is_habit_member helper filters accepted_at IS NOT NULL so pending invitees cannot read other members' check-ins (T-29.1-12)
 
 ### Roadmap Evolution
 
@@ -92,5 +96,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-12T01:06:44.860Z
-Stopped at: Phase 29.1 UI-SPEC approved
+Last session: 2026-05-12T01:59:46.316Z
+Stopped at: Completed 29.1-01-PLAN.md (migration 0024 pushed live)
