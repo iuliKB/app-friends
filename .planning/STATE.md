@@ -4,10 +4,10 @@ milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: verifying
 stopped_at: Completed 29.1-08-PLAN.md (Home widgets + ROADMAP D-21) — Phase 29.1 COMPLETE
-last_updated: "2026-05-12T21:17:17.016Z"
+last_updated: "2026-05-12T21:17:23.656Z"
 last_activity: 2026-05-12
 progress:
-  total_phases: 10
+  total_phases: 9
   completed_phases: 2
   total_plans: 13
   completed_plans: 13

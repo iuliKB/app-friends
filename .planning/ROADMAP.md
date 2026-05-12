@@ -131,7 +131,6 @@
 - [x] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max (completed 2026-05-06)
 - [x] **Phase 30: Squad Screen Overhaul** - Friends list (CompactFriendRow) polish only — the Bento tile redesign (Streak / Birthday / IOU cards) is superseded by Phase 29.1 (D-21) (completed 2026-05-12)
 - [ ] **Phase 31: Explore Screen Overhaul** - 3-state bottom sheet, theme fix for all three map components, reset-to-location chip, and plan card polish
-- [ ] **Phase 32: Auth Screen Redesign** - Fix the always-dark LinearGradient bug, extract gradient tokens, and add specific login error messaging
 
 ## Phase Details
 
@@ -276,17 +275,5 @@ Plans:
   2. The Explore map, Plan Dashboard map tile, and Location Picker all switch between light and dark map styles when the OS theme changes — no component is stuck in dark mode
   3. A "Reset to my location" chip re-centers the map on the user's current GPS position when tapped
   4. The Explore plan list has consistent card layout with improved loading skeleton and a contextual empty state — loading and empty conditions both look intentional
-**Plans**: TBD
-**UI hint**: yes
-
-### Phase 32: Auth Screen Redesign
-**Goal**: Auth screen correctly adapts to the OS light/dark theme and provides specific, actionable error messages that help users recover from login failures
-**Depends on**: Phase 29
-**Requirements**: AUTH-05, AUTH-06
-**Success Criteria** (what must be TRUE):
-  1. Switching the device to light mode and opening the Auth screen shows the correct light-mode LinearGradient background — the always-dark bug at `AuthScreen.tsx:410` is gone
-  2. When a user enters an email with no account, the error reads "No account found with this email" — not a generic failure
-  3. When a user enters the wrong password for a known email, the error reads "Incorrect password" — not a generic failure
-  4. Gradient values are defined in `src/theme/gradients.ts` and imported by AuthScreen — no raw hex color arrays in the component file
 **Plans**: TBD
 **UI hint**: yes
