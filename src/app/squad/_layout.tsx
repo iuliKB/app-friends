@@ -19,6 +19,9 @@ export default function SquadLayout() {
       <Stack.Screen name="habits/index" options={{ title: 'Habits' }} />
       <Stack.Screen name="habits/[id]" options={{ title: 'Habit' }} />
       <Stack.Screen name="habits/create" options={{ title: 'New habit' }} />
+      <Stack.Screen name="todos/index" options={{ title: 'To-Dos' }} />
+      <Stack.Screen name="todos/[id]" options={{ title: 'To-do' }} />
+      <Stack.Screen name="todos/create" options={{ title: 'New to-do' }} />
     </Stack>
   );
 }
