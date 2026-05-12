@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 29.1-05-PLAN.md (Squad habits screens)
-last_updated: "2026-05-12T02:36:58.145Z"
+stopped_at: Completed 29.1-06-PLAN.md (Squad todos screens)
+last_updated: "2026-05-12T02:49:51.963Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 13
-  completed_plans: 10
-  percent: 77
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 29.1 (habits-to-do-features) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -89,6 +89,10 @@ Requirements covered: 0 / 18
 - [Phase 29.1-05]: Habit detail screen calls supabase.rpc('toggle_habit_today_checkin') directly instead of mounting useHabits() — avoids re-fetching the whole habit list per toggle; useHabitDetail.refetch() already covers the local data needs
 - [Phase 29.1-05]: Pending habit invitations rendered as FlatList ListHeaderComponent (not SectionList) — different row shapes (HabitInvitationRow card vs HabitRow row) and asymmetric empty states don't fit SectionList; ListHeaderComponent drops cleanly when no invites
 - [Phase 29.1-05]: (supabase as any) cast applied at 3 RPC + 2 table-query sites for create_habit/toggle_habit_today_checkin/habits/habit_members — same untyped-RPC pattern as useChatRoom.ts:612 + useHabitDetail.ts; database.ts regeneration deferred until migration 0024 deploys remotely (still local-only per Plan 01 SUMMARY)
+- [Phase 29.1-06]: ChatTodoListRow uses controlled-prop expansion exclusively (W9) — parent owns expanded state; items.length is the sole truth, no internal useState; LayoutAnimation.configureNext called BEFORE onExpand so the parent's setState-driven re-render gets the easeInEaseOut transition
+- [Phase 29.1-06]: /squad/todos/[id] disambiguates Mine vs chat-origin via two table lookups (todos first, then chat_todo_items with chat_todo_lists+group_channels join) — avoids a discriminator URL param; RLS gates both reads; cleaner deep-link surface
+- [Phase 29.1-06]: Chat-origin Mark done is one-way in v1 — complete_chat_todo is idempotent server-side but client UI explicitly disables Mark done for already-completed chat items; Mine items can flip freely via direct UPDATE on completed_at
+- [Phase 29.1-06]: src/__mocks__/react-native.js extended with LayoutAnimation + UIManager (Rule 3 deviation, scoped to mock file) — required for any test that exercises ChatTodoListRow's expand-tap path; matches Plan 04 reanimated mock extension precedent
 
 ### Roadmap Evolution
 
@@ -108,5 +112,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-12T02:36:58.141Z
-Stopped at: Completed 29.1-05-PLAN.md (Squad habits screens)
+Last session: 2026-05-12T02:49:51.960Z
+Stopped at: Completed 29.1-06-PLAN.md (Squad todos screens)
