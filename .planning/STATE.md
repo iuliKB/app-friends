@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: verifying
-stopped_at: Completed 29-05-PLAN.md
-last_updated: "2026-05-06T22:10:36.259Z"
+stopped_at: Phase 29.1 context gathered
+last_updated: "2026-05-12T00:39:04.345Z"
 last_activity: 2026-05-06
 progress:
-  total_phases: 10
+  total_phases: 11
   completed_phases: 1
   total_plans: 5
   completed_plans: 5
@@ -80,6 +80,7 @@ Requirements covered: 0 / 18
 - [v1.7]: Phase 28 (Branding) placed last — EAS build verification deferred pending Apple Dev account
 - [v1.8]: Auth and Welcome placed at end — designed after main screens to match established visual language
 - [v1.8]: Phase 29 depends on Phase 28; Phases 30-33 depend on Phase 29 (sequential screen-by-screen rollout)
+- Phase 29.1 inserted after Phase 29: Habits & To-Do Features (URGENT)
 
 ### Pending Todos
 
@@ -91,5 +92,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-06T20:16:47.664Z
-Stopped at: Completed 29-05-PLAN.md
+Last session: 2026-05-12T00:39:04.334Z
+Stopped at: Phase 29.1 context gathered
