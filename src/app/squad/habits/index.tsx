@@ -42,22 +42,21 @@ export default function HabitsIndexScreen() {
       return;
     }
     setInvitesLoading(true);
-    // Cast through any: database.ts has not been regenerated since migration 0024;
-    // same pattern as useHabitDetail.ts in Plan 03.
-    const { data, error: queryErr } = await (supabase as any)
+    // habits.created_by references auth.users(id), so PostgREST cannot embed
+    // public.profiles directly. Two-step fetch: invites → habits → profiles
+    // (same pattern as useGroupMembers / useHabitDetail).
+    const { data: inviteRows, error: queryErr } = await (supabase as any)
       .from('habit_members')
-      .select(
-        'habit_id, habits!inner(id, title, cadence, created_by, profiles:created_by(display_name))'
-      )
+      .select('habit_id, habits!inner(id, title, cadence, created_by)')
       .is('accepted_at', null)
       .eq('user_id', userId);
-    setInvitesLoading(false);
     if (queryErr) {
       console.warn('pending habit invitations fetch failed', queryErr);
+      setInvitesLoading(false);
       setPendingInvites([]);
       return;
     }
-    const rows = ((data ?? []) as unknown[]).map((row) => {
+    const invites = ((inviteRows ?? []) as unknown[]).map((row) => {
       const r = row as {
         habit_id: string;
         habits?: {
@@ -65,17 +64,43 @@ export default function HabitsIndexScreen() {
           title: string;
           cadence: 'daily' | 'weekly' | 'n_per_week';
           created_by: string;
-          profiles?: { display_name: string | null } | null;
         } | null;
       };
       return {
         habit_id: r.habit_id,
         title: r.habits?.title ?? '(Untitled habit)',
         cadence: (r.habits?.cadence ?? 'daily') as PendingHabitInvitation['cadence'],
-        inviter_name: r.habits?.profiles?.display_name ?? 'A friend',
+        inviter_id: r.habits?.created_by ?? null,
       };
     });
-    setPendingInvites(rows);
+
+    let inviterNameById: Record<string, string> = {};
+    const inviterIds = invites.map((i) => i.inviter_id).filter((v): v is string => !!v);
+    if (inviterIds.length > 0) {
+      const { data: profileRows, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', inviterIds);
+      if (profErr) {
+        console.warn('inviter profiles fetch failed', profErr);
+      } else {
+        inviterNameById = Object.fromEntries(
+          (((profileRows ?? []) as unknown) as Array<{ id: string; display_name: string | null }>).map(
+            (p) => [p.id, p.display_name ?? 'A friend']
+          )
+        );
+      }
+    }
+
+    setPendingInvites(
+      invites.map((i) => ({
+        habit_id: i.habit_id,
+        title: i.title,
+        cadence: i.cadence,
+        inviter_name: (i.inviter_id && inviterNameById[i.inviter_id]) || 'A friend',
+      }))
+    );
+    setInvitesLoading(false);
   }, [userId]);
 
   useEffect(() => {

@@ -51,20 +51,19 @@ export function useHabitDetail(habitId: string): HabitDetailData {
     setLoading(true);
     setError(null);
 
-    // Parallel fetch: habit row + members (with profile join) + last-30-day check-ins.
+    // Parallel fetch: habit row + members + last-30-day check-ins.
+    // habit_members.user_id references auth.users(id), so PostgREST cannot embed
+    // public.profiles directly — fetch members first, then profiles by id (same
+    // pattern as useGroupMembers). database.ts not regenerated since 0024, so
+    // (supabase as any) cast at the new table call sites.
     const [
       { data: habitRow, error: habitErr },
       { data: memberRows, error: memberErr },
       { data: checkinRows, error: checkinErr },
     ] = await Promise.all([
-      supabase.from('habits').select('*').eq('id', habitId).single(),
-      supabase
-        .from('habit_members')
-        .select(
-          '*, profiles!habit_members_user_id_fkey(display_name, avatar_url)'
-        )
-        .eq('habit_id', habitId),
-      supabase
+      (supabase as any).from('habits').select('*').eq('id', habitId).single(),
+      (supabase as any).from('habit_members').select('*').eq('habit_id', habitId),
+      (supabase as any)
         .from('habit_checkins')
         .select('*')
         .eq('habit_id', habitId)
@@ -77,29 +76,47 @@ export function useHabitDetail(habitId: string): HabitDetailData {
         habitErr?.message ?? memberErr?.message ?? checkinErr?.message ?? 'unknown';
       console.warn('useHabitDetail fetch failed', msg);
       setError(msg);
-    } else {
-      setHabit((habitRow as unknown) as Habit | null);
-      setMembers(
-        ((memberRows ?? []) as unknown[]).map((row) => {
-          const r = row as {
-            habit_id: string;
-            user_id: string;
-            accepted_at: string | null;
-            joined_at: string;
-            profiles?: { display_name: string | null; avatar_url: string | null } | null;
-          };
-          return {
-            habit_id: r.habit_id,
-            user_id: r.user_id,
-            accepted_at: r.accepted_at,
-            joined_at: r.joined_at,
-            display_name: r.profiles?.display_name ?? '',
-            avatar_url: r.profiles?.avatar_url ?? null,
-          };
-        })
-      );
-      setCheckins(((checkinRows ?? []) as unknown) as HabitCheckin[]);
+      setLoading(false);
+      return;
     }
+
+    const memberRowsTyped = ((memberRows ?? []) as unknown) as Array<{
+      habit_id: string;
+      user_id: string;
+      accepted_at: string | null;
+      joined_at: string;
+    }>;
+
+    let profilesById: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+    if (memberRowsTyped.length > 0) {
+      const userIds = memberRowsTyped.map((m) => m.user_id);
+      const { data: profileRows, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .in('id', userIds);
+      if (profErr) {
+        console.warn('useHabitDetail: failed to load profiles', profErr);
+      } else {
+        profilesById = Object.fromEntries(
+          (((profileRows ?? []) as unknown) as Array<{ id: string; display_name: string | null; avatar_url: string | null }>).map(
+            (p) => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }]
+          )
+        );
+      }
+    }
+
+    setHabit((habitRow as unknown) as Habit | null);
+    setMembers(
+      memberRowsTyped.map((r) => ({
+        habit_id: r.habit_id,
+        user_id: r.user_id,
+        accepted_at: r.accepted_at,
+        joined_at: r.joined_at,
+        display_name: profilesById[r.user_id]?.display_name ?? '',
+        avatar_url: profilesById[r.user_id]?.avatar_url ?? null,
+      }))
+    );
+    setCheckins(((checkinRows ?? []) as unknown) as HabitCheckin[]);
     setLoading(false);
   }, [userId, habitId]);
 
