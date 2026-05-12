@@ -246,11 +246,11 @@ Plans:
 **Goal:** Two new social features (Habits + To-Dos) integrated end-to-end across schema → Bento tiles in Squad → Activity → full-screen list/detail routes → chat attachment with two-step picker → system message roundtrip → home widgets. Wires up the existing chat "To-Do List" attachment stub and adds idempotent group-habit check-ins with per-user Realtime fan-out.
 **Requirements**: Uses inline decisions D-01..D-21 (see 29.1-CONTEXT.md) — no REQ-IDs
 **Depends on:** Phase 29
-**Plans:** 1/8 plans executed
+**Plans:** 2/8 plans executed
 
 Plans:
 - [x] 29.1-01-PLAN.md — Migration 0024 (6 tables + 2 helpers + 8 RPCs + RLS) + [BLOCKING] supabase db push
-- [ ] 29.1-02-PLAN.md — TypeScript types (habits.ts, todos.ts) + MessageType extension ('system' + 'todo')
+- [x] 29.1-02-PLAN.md — TypeScript types (habits.ts, todos.ts) + MessageType extension ('system' + 'todo')
 - [ ] 29.1-03-PLAN.md — Hooks: useHabits + useHabitDetail + useTodos + useChatTodos + useSpotlight extension + dateLocal util
 - [ ] 29.1-04-PLAN.md — Bento tiles: HabitsTile + TodosTile + grid ROWS=4 + tileAccents extension + SpotlightTile icon/accent map
 - [ ] 29.1-05-PLAN.md — Habits feature surfaces: /squad/habits/* routes + 5 components (HabitRow, HabitCadencePicker, HabitMemberStrip, HabitCheckinHistory, HabitInvitationRow)

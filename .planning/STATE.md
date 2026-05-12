@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 29.1-01-PLAN.md (migration 0024 pushed live)
-last_updated: "2026-05-12T01:59:46.320Z"
+stopped_at: Completed 29.1-02-PLAN.md (types contract layer)
+last_updated: "2026-05-12T02:04:18.201Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 13
-  completed_plans: 6
-  percent: 46
+  completed_plans: 7
+  percent: 54
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 29.1 (habits-to-do-features) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -77,6 +77,8 @@ Requirements covered: 0 / 18
 - [Phase 29.1-01]: messages INSERT RLS policy WITH CHECK whitelists only ('text','image','poll'); 'system'/'todo' rows are RPC-only via SECURITY DEFINER bypass (mitigates T-29.1-03 spoofing)
 - [Phase 29.1-01]: Todos read RPC split into get_my_todos + get_chat_todos for cleaner per-section row shapes (vs unified kind discriminator)
 - [Phase 29.1-01]: is_habit_member helper filters accepted_at IS NOT NULL so pending invitees cannot read other members' check-ins (T-29.1-12)
+- [Phase 29.1-02]: Type contracts mirror live migration 0024 RPC return rows verbatim (snake_case fields, no remapping); MyTodoRow is a standalone interface (not Todo intersection) and ChatTodoRow tracks next_due_date + is_overdue/is_due_today instead of plan's draft chat_name/earliest_due_date — type must reflect runtime payload
+- [Phase 29.1-02]: MessageType union widening produced net-zero new tsc errors (122 → 122) — existing consumers fall through on unknown types; system/todo render branches arrive in Plan 03 hooks + Plan 07 MessageBubble
 
 ### Roadmap Evolution
 
@@ -96,5 +98,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-12T01:59:46.316Z
-Stopped at: Completed 29.1-01-PLAN.md (migration 0024 pushed live)
+Last session: 2026-05-12T02:04:18.197Z
+Stopped at: Completed 29.1-02-PLAN.md (types contract layer)
