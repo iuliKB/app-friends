@@ -25,20 +25,22 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 
 ## Current Position
 
-Phase: 30
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-05-12
+Phase: 29.1
+Plan: Complete
+Status: v1.8 milestone complete — Phases 29 + 29.1 shipped; Phases 30–33 removed 2026-05-13
+Last activity: 2026-05-13
 
 ## Phase Structure
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 29 | Home Screen Overhaul | HOME-05, HOME-06, HOME-07, HOME-08 | Not started |
-| 30 | Squad Screen Overhaul | SQUAD-05, SQUAD-06, SQUAD-07, SQUAD-08 | Not started |
-| 31 | Explore Screen Overhaul | EXPLORE-01, EXPLORE-02, EXPLORE-03, EXPLORE-04 | Not started |
-| 32 | Auth Screen Redesign | AUTH-05, AUTH-06 | Not started |
-| 33 | Welcome / Onboarding Flow | ONBOARD-01, ONBOARD-02, ONBOARD-03, ONBOARD-04 | Not started |
+| 24 | Polish Foundation | POLISH-01, POLISH-02, POLISH-03, POLISH-04 | Complete |
+| 25 | Auth, Onboarding & Errors | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | Complete |
+| 26 | Home & Chat Polish | HOME-01, HOME-02, HOME-03, HOME-04, CHAT-01, CHAT-02, CHAT-03, CHAT-04 | Complete |
+| 27 | Plans & Squad Polish | PLANS-01, PLANS-02, PLANS-03, PLANS-04, SQUAD-01, SQUAD-02, SQUAD-03, SQUAD-04 | Complete |
+| 28 | Branding | BRAND-01, BRAND-02, BRAND-03 | Complete |
+| 29 | Home Screen Overhaul | HOME-05, HOME-06, HOME-07, HOME-08 | Complete |
+| 29.1 | Habits & To-Do Features | D-01..D-21 (inline) | Complete |
 
 ## Performance Metrics
 
@@ -63,10 +65,10 @@ Requirements covered: 0 / 18
 - [v1.7]: /ui-ux-pro-max plugin used for all UI/UX design work — audit-first approach per screen
 - [v1.8]: One phase per screen — audit → user feedback + references → /ui-ux-pro-max design → execute
 - [v1.8]: Phase order: Home → Squad → Explore → Auth → Welcome (main screens first, entry flows last)
-- [v1.8 Phase 29]: OnboardingHintSheet stays in place through Phase 29 — removed only in Phase 33
-- [v1.8 Phase 31]: All three map userInterfaceStyle: 'dark' instances fixed in Phase 31 together — ExploreMapView, PlanDashboardScreen, LocationPicker
-- [v1.8 Phase 32]: LinearGradient always-dark bug at AuthScreen.tsx:410 is a required deliverable; gradient tokens extracted to src/theme/gradients.ts
-- [v1.8 Phase 33]: react-native-pager-view@8.0.1 installed; AsyncStorage key @campfire/welcome_complete (NOT @campfire/onboarding_hint_shown); implemented as full-screen Modal overlay inside (tabs)/_layout.tsx (not a new Stack route); gestureEnabled: false to prevent iOS swipe-back conflict
+- [v1.8 Phase 29, historical]: OnboardingHintSheet stayed in place through Phase 29; planned future removal in Phase 33 was dropped when Phase 33 was removed on 2026-05-13
+- [v1.8 removed Phase 31, historical]: Phase 31 was planned to unify all three map userInterfaceStyle: 'dark' instances (ExploreMapView, PlanDashboardScreen, LocationPicker); Phase 31 was removed on 2026-05-13 before any work landed
+- [v1.8 removed Phase 32, historical]: Phase 32 had identified the LinearGradient always-dark bug at AuthScreen.tsx:410 as a required deliverable and planned to extract gradient tokens to src/theme/gradients.ts; Phase 32 was removed on 2026-05-13 before any work landed
+- [v1.8 removed Phase 33, historical]: Phase 33 had pre-installed react-native-pager-view@8.0.1 and decided on AsyncStorage key @campfire/welcome_complete (NOT @campfire/onboarding_hint_shown), implemented as a full-screen Modal overlay inside (tabs)/_layout.tsx (not a new Stack route) with gestureEnabled: false to prevent iOS swipe-back conflict; Phase 33 was removed on 2026-05-13 before any work landed
 - [Phase 29-home-screen-overhaul]: UNSAFE_queryAllByType(Pressable) used over queryAllByRole('button') in test scaffolds — RTNU 13.x queryAllByRole does not work with string-element RN mocks
 - [Phase 29-home-screen-overhaul]: SHADOWS added to src/__mocks__/theme.js — EventCard imports SHADOWS.card which was missing from the stub (only SHADOW singular was present)
 - [Phase 29]: borderRadius: targetSize/2 (static) on DEAD overlay — Animated.Value not valid for borderRadius without useNativeDriver: false
@@ -98,14 +100,14 @@ Requirements covered: 0 / 18
 - [Phase 29.1-07]: MessageBubble render-branch order: isSystem -> isTodo -> isPoll -> own/others; long-press bails on isSystem and isTodo before any scale animation fires (Pitfall 9 + 10)
 - [Phase 29.1-08]: TileShell + EyebrowPill factored from YourZoneSection.tsx into HomeTilePrimitives.tsx as shared neon-green Home primitives — both YourZoneSection and the new Habits/To-Dos home widgets consume the same primitives (Pitfall 7 mitigation, no copy-paste drift)
 - [Phase 29.1-08]: Home widgets use neon-green accent only — Add chip on HomeTodosTile uses the same rgba(185,255,59,...) palette as EyebrowPill, NOT TILE_ACCENTS.todos violet (Pitfall 7 visual-language separation enforced via grep-absence acceptance criteria)
-- [Phase 29.1-08]: ROADMAP Phase 30 scope reduced to SQUAD-06 only (Friends list polish) per D-21 — Bento tile redesign originally assigned to SQUAD-05/07/08 was delivered by Phase 29.1's Activity-tab Bento grid (HabitsTile + TodosTile + rearranged 3x2 layout)
+- [Phase 29.1-08, historical]: ROADMAP Phase 30 scope had been reduced to SQUAD-06 only (Friends list polish) per D-21 — the Bento tile redesign originally assigned to SQUAD-05/07/08 was delivered by Phase 29.1's Activity-tab Bento grid (HabitsTile + TodosTile + rearranged 3x2 layout); Phase 30 was then removed entirely on 2026-05-13
 
 ### Roadmap Evolution
 
 - [v1.7]: Phase 24 (Polish Foundation) unblocked all subsequent polish phases
 - [v1.7]: Phase 28 (Branding) placed last — EAS build verification deferred pending Apple Dev account
 - [v1.8]: Auth and Welcome placed at end — designed after main screens to match established visual language
-- [v1.8]: Phase 29 depends on Phase 28; Phases 30-33 depend on Phase 29 (sequential screen-by-screen rollout)
+- [v1.8]: Phase 29 depended on Phase 28; Phases 30–33 had been scoped to depend on Phase 29 (sequential screen-by-screen rollout) but were removed on 2026-05-13 before any work landed
 - Phase 29.1 inserted after Phase 29: Habits & To-Do Features (URGENT)
 
 ### Pending Todos
