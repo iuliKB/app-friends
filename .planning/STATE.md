@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 29.1-06-PLAN.md (Squad todos screens)
-last_updated: "2026-05-12T02:49:51.963Z"
+stopped_at: Completed 29.1-07-PLAN.md (Chat to-do roundtrip)
+last_updated: "2026-05-12T03:07:03.516Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 29.1 (habits-to-do-features) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -93,6 +93,9 @@ Requirements covered: 0 / 18
 - [Phase 29.1-06]: /squad/todos/[id] disambiguates Mine vs chat-origin via two table lookups (todos first, then chat_todo_items with chat_todo_lists+group_channels join) — avoids a discriminator URL param; RLS gates both reads; cleaner deep-link surface
 - [Phase 29.1-06]: Chat-origin Mark done is one-way in v1 — complete_chat_todo is idempotent server-side but client UI explicitly disables Mark done for already-completed chat items; Mine items can flip freely via direct UPDATE on completed_at
 - [Phase 29.1-06]: src/__mocks__/react-native.js extended with LayoutAnimation + UIManager (Rule 3 deviation, scoped to mock file) — required for any test that exercises ChatTodoListRow's expand-tap path; matches Plan 04 reanimated mock extension precedent
+- [Phase 29.1-07]: ChatTodoBubble owns internal expand state (leaf in FlatList) while ChatTodoListRow uses controlled-prop (Plan 06) — different placements warrant different patterns
+- [Phase 29.1-07]: Lazy-fetch of chat_todo_list + items lives in ChatRoomScreen (per-message cache + in-flight Set) — keeps useChatRoom untouched and Plan 03's setState-snapshot latent bug isolated
+- [Phase 29.1-07]: MessageBubble render-branch order: isSystem -> isTodo -> isPoll -> own/others; long-press bails on isSystem and isTodo before any scale animation fires (Pitfall 9 + 10)
 
 ### Roadmap Evolution
 
@@ -112,5 +115,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-12T02:49:51.960Z
-Stopped at: Completed 29.1-06-PLAN.md (Squad todos screens)
+Last session: 2026-05-12T03:07:03.512Z
+Stopped at: Completed 29.1-07-PLAN.md (Chat to-do roundtrip)
