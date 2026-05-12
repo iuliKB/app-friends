@@ -19,7 +19,7 @@ import type { PlanWithMembers } from '@/types/plans';
 // (gradient + monogram + date badge), title + meta on the right. Designed to
 // stack densely below the hero.
 
-const ART_SIZE = 96;
+const ART_SIZE = 80;
 
 interface EventListCardProps {
   plan: PlanWithMembers;
@@ -70,11 +70,17 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
         infoColumn: {
           flex: 1,
           paddingHorizontal: SPACING.md,
-          paddingVertical: SPACING.md,
+          paddingVertical: SPACING.sm,
           gap: SPACING.xs,
           justifyContent: 'center',
         },
+        titleRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+        },
         title: {
+          flex: 1,
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.display.semibold,
           color: colors.text.primary,
@@ -91,10 +97,6 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
           color: colors.text.secondary,
           lineHeight: FONT_SIZE.sm * 1.3,
           flexShrink: 1,
-        },
-        avatarRow: {
-          marginTop: SPACING.xs,
-          alignItems: 'flex-start',
         },
       }),
     [colors, isDark]
@@ -125,14 +127,19 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
             plan={plan}
             height={ART_SIZE}
             showRelativePill={false}
-            monogramSize={40}
+            monogramSize={32}
           />
         </View>
 
         <View style={styles.infoColumn}>
-          <Text style={styles.title} numberOfLines={1}>
-            {plan.title}
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title} numberOfLines={1}>
+              {plan.title}
+            </Text>
+            {going.length > 0 ? (
+              <AvatarStack members={going} maxVisible={3} size={20} />
+            ) : null}
+          </View>
 
           {labels ? (
             <View style={styles.metaRow}>
@@ -149,12 +156,6 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
               <Text style={styles.metaText} numberOfLines={1}>
                 {plan.location}
               </Text>
-            </View>
-          ) : null}
-
-          {going.length > 0 ? (
-            <View style={styles.avatarRow}>
-              <AvatarStack members={going} maxVisible={4} size={22} />
             </View>
           ) : null}
         </View>
