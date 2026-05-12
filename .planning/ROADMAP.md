@@ -129,7 +129,7 @@
 ### v1.8 Deep UI Refinement & Screen Overhaul
 
 - [x] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max (completed 2026-05-06)
-- [ ] **Phase 30: Squad Screen Overhaul** - Friends list (CompactFriendRow) polish only — the Bento tile redesign (Streak / Birthday / IOU cards) is superseded by Phase 29.1 (D-21)
+- [x] **Phase 30: Squad Screen Overhaul** - Friends list (CompactFriendRow) polish only — the Bento tile redesign (Streak / Birthday / IOU cards) is superseded by Phase 29.1 (D-21) (completed 2026-05-12)
 - [ ] **Phase 31: Explore Screen Overhaul** - 3-state bottom sheet, theme fix for all three map components, reset-to-location chip, and plan card polish
 - [ ] **Phase 32: Auth Screen Redesign** - Fix the always-dark LinearGradient bug, extract gradient tokens, and add specific login error messaging
 - [ ] **Phase 33: Welcome / Onboarding Flow** - Brand-new 3-screen slide onboarding flow using react-native-pager-view, gated by AsyncStorage key, implemented as full-screen modal overlay

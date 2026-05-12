@@ -4,7 +4,7 @@ milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: verifying
 stopped_at: Completed 29.1-08-PLAN.md (Home widgets + ROADMAP D-21) — Phase 29.1 COMPLETE
-last_updated: "2026-05-12T03:18:29.848Z"
+last_updated: "2026-05-12T10:08:14.248Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 11
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 
 ## Current Position
 
-Phase: 29.1 (habits-to-do-features) — EXECUTING
-Plan: 8 of 8
+Phase: 30
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-05-12
 
