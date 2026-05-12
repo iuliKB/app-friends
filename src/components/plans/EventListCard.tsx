@@ -19,7 +19,7 @@ import type { PlanWithMembers } from '@/types/plans';
 // (gradient + monogram + date badge), title + meta on the right. Designed to
 // stack densely below the hero.
 
-const ART_SIZE = 80;
+const ART_SIZE = 104;
 
 interface EventListCardProps {
   plan: PlanWithMembers;
@@ -127,7 +127,7 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
             plan={plan}
             height={ART_SIZE}
             showRelativePill={false}
-            monogramSize={32}
+            monogramSize={42}
           />
         </View>
 
