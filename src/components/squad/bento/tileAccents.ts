@@ -9,6 +9,8 @@ export const TILE_ACCENTS = {
   birthday: '#F472B6', // pink-400 — celebratory, plays against the dark base
   streak: '#FB923C', // orange-400 — flame/warmth without bleeding into red
   goals: '#60A5FA', // blue-400 — achievement/progress, cool counterweight
+  habits: '#22D3EE', // cyan-400 — "checked / habitual / clear" (Phase 29.1 UI-SPEC §Color)
+  todos: '#A78BFA', // violet-400 — "task / agenda / list" (Phase 29.1 UI-SPEC §Color)
   neutral: '#B9FF3B', // fall back to the brand neon when no semantic fits
 } as const;
 
