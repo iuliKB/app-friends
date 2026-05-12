@@ -1,24 +1,19 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, Easing, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
+import { useTheme, SPACING } from '@/theme';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
-import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { useHomeScreen } from '@/hooks/useHomeScreen';
-import { OwnStatusCard } from '@/components/status/OwnStatusCard';
+import { StatusCard } from '@/components/home/StatusCard';
+import type { StatusKey } from '@/components/home/statusCardTokens';
+import { useStatusStore } from '@/stores/useStatusStore';
+import { computeHeartbeatState } from '@/lib/heartbeat';
 import { StatusPickerSheet } from '@/components/status/StatusPickerSheet';
-import { RadarViewToggle } from '@/components/home/RadarViewToggle';
+import { OnboardingHintSheet } from '@/components/onboarding/OnboardingHintSheet';
 import { RadarView } from '@/components/home/RadarView';
 import { CardStackView } from '@/components/home/CardStackView';
 import { useViewPreference } from '@/hooks/useViewPreference';
@@ -26,8 +21,28 @@ import { usePlans } from '@/hooks/usePlans';
 import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 import { UpcomingEventsSection } from '@/components/home/UpcomingEventsSection';
-import { RecentMemoriesSection } from '@/components/home/RecentMemoriesSection';
-import { HomeWidgetRow } from '@/components/home/HomeWidgetRow';
+import { MemoriesSection } from '@/components/home/MemoriesSection';
+import { YourZoneSection } from '@/components/home/YourZoneSection';
+import { HomeTopBar } from '@/components/home/HomeTopBar';
+import { FriendsSectionHeader } from '@/components/home/FriendsSectionHeader';
+
+// Heights for the radar / cards crossfade container — close to parity with
+// the radar (260px), so the parent height barely shifts between modes.
+const VIEW_HEIGHT = {
+  radar: 290,
+  cards: 290,
+};
+
+const ONBOARDING_FLAG_KEY = '@campfire/onboarding_hint_shown';
+
+function formatUntil(expiresAt: string): string {
+  const d = new Date(expiresAt);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const period = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return m === 0 ? `until ${h12}${period}` : `until ${h12}:${String(m).padStart(2, '0')}${period}`;
+}
 
 export function HomeScreen() {
   const { colors, isDark } = useTheme();
@@ -35,114 +50,132 @@ export function HomeScreen() {
   const { friends, loading, error, refreshing, handleRefresh, refetch } = useHomeScreen();
   const router = useRouter();
 
-  const { loading: plansLoading } = usePlans(); // Populates usePlansStore so UpcomingEventsSection can filter client-side
+  function handleNavigateToSquad() {
+    router.push('/(tabs)/squad');
+  }
+
+  const { loading: plansLoading } = usePlans();
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
 
   // OVR-06: 60s tick to force heartbeat re-evaluation across own + friend rows
-  // without a refetch. setHeartbeatTick is enough to trigger a re-render that
-  // recomputes computeHeartbeatState() in RadarBubble + the partition above.
+  // without a refetch.
   const [, setHeartbeatTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setHeartbeatTick((t) => t + 1), 60_000);
     return () => clearInterval(id);
   }, []);
 
+  // --- Onboarding hint sheet ---
+  const [onboardingVisible, setOnboardingVisible] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_FLAG_KEY).then((value) => {
+      if (!value) setOnboardingVisible(true);
+    });
+  }, []);
+  function handleOnboardingDismiss() {
+    AsyncStorage.setItem(ONBOARDING_FLAG_KEY, '1').catch(() => {});
+    setOnboardingVisible(false);
+  }
+
+  // --- Status picker sheet ---
   const [sheetVisible, setSheetVisible] = useState(false);
 
+  // --- Radar / cards view toggle + crossfade ---
   const [view, setView, prefLoading] = useViewPreference();
 
-  // Crossfade animated values — radar starts visible, cards hidden
   const radarOpacity = useRef(new Animated.Value(1)).current;
   const cardsOpacity = useRef(new Animated.Value(0)).current;
+  // Container height animates between radar (compact) and cards (tall) modes —
+  // cards view is position:absolute so it doesn't push parent layout on its own.
+  const switcherHeight = useRef(new Animated.Value(VIEW_HEIGHT.radar)).current;
 
-  // Crossfade effect — runs when view changes
   useEffect(() => {
-    if (view === 'radar') {
-      Animated.parallel([
-        Animated.timing(radarOpacity, {
-          toValue: 1,
-          duration: 250,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-        Animated.timing(cardsOpacity, {
-          toValue: 0,
-          duration: 250,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(radarOpacity, {
-          toValue: 0,
-          duration: 250,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-        Animated.timing(cardsOpacity, {
-          toValue: 1,
-          duration: 250,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-          isInteraction: false,
-        }),
-      ]).start();
-    }
-  }, [view, radarOpacity, cardsOpacity]);
+    const isRadar = view === 'radar';
+    Animated.parallel([
+      Animated.timing(radarOpacity, {
+        toValue: isRadar ? 1 : 0,
+        duration: 250,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+        isInteraction: false,
+      }),
+      Animated.timing(cardsOpacity, {
+        toValue: isRadar ? 0 : 1,
+        duration: 250,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+        isInteraction: false,
+      }),
+      Animated.timing(switcherHeight, {
+        toValue: isRadar ? VIEW_HEIGHT.radar : VIEW_HEIGHT.cards,
+        duration: 250,
+        easing: Easing.inOut(Easing.ease),
+        // height can't use native driver — runs on JS thread in parallel
+        useNativeDriver: false,
+        isInteraction: false,
+      }),
+    ]).start();
+  }, [view, radarOpacity, cardsOpacity, switcherHeight]);
 
-  const styles = useMemo(() => StyleSheet.create({
-    root: {
-      flex: 1,
-    },
-    scrollView: {
-      flex: 1,
-    },
-    scrollContent: {
-      // no token — computed inline with safe area inset
-    },
-    headerContainer: {
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.sm,
-    },
-    statusCardContainer: {
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.lg,
-    },
-    toggleContainer: {
-      marginTop: SPACING.xl,
-    },
-    viewSwitcher: {
-      position: 'relative',
-      minHeight: 260,
-    },
-    absoluteFill: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-    },
-    freeHeaderContainer: {
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xxl,
-      paddingBottom: SPACING.sm,
-    },
-    freeHeaderTitle: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    freeHeaderSubtitle: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-  }), [colors]);
+  // --- Friend counts for the section header ---
+  const { freeCount, maybeCount, totalActiveCount } = useMemo(() => {
+    let free = 0;
+    let maybe = 0;
+    let active = 0;
+    for (const f of friends) {
+      const state = computeHeartbeatState(f.status_expires_at, f.last_active_at);
+      if (state === 'dead') continue;
+      active++;
+      if (f.status === 'free') free++;
+      else if (f.status === 'maybe') maybe++;
+    }
+    return { freeCount: free, maybeCount: maybe, totalActiveCount: active };
+  }, [friends]);
+
+  // --- Own status, mapped to StatusCard's StatusKey domain ---
+  const currentStatus = useStatusStore((s) => s.currentStatus);
+  const ownStatus: StatusKey = useMemo(() => {
+    if (!currentStatus) return 'inactive';
+    const state = computeHeartbeatState(
+      currentStatus.status_expires_at,
+      currentStatus.last_active_at
+    );
+    if (state === 'dead') return 'inactive';
+    return currentStatus.status as StatusKey;
+  }, [currentStatus]);
+  const ownContextTag = currentStatus?.context_tag ?? undefined;
+  const statusExpiry = currentStatus?.status_expires_at
+    ? formatUntil(currentStatus.status_expires_at)
+    : null;
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        root: {
+          flex: 1,
+        },
+        scrollView: {
+          flex: 1,
+        },
+        scrollContent: {
+          paddingTop: SPACING.sm,
+        },
+        statusCardContainer: {
+          paddingHorizontal: SPACING.lg,
+        },
+        viewSwitcher: {
+          position: 'relative',
+        },
+        absoluteFill: {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+        },
+      }),
+    []
+  );
 
   const rootStyle = [styles.root, { paddingTop: insets.top }];
 
@@ -162,7 +195,7 @@ export function HomeScreen() {
     <>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: SPACING.sm, paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -171,67 +204,70 @@ export function HomeScreen() {
           />
         }
       >
-        {/* Screen title */}
-        <View style={styles.headerContainer}>
-          <ScreenHeader title="Campfire" />
-        </View>
+        <HomeTopBar />
+
         <View style={styles.statusCardContainer}>
-          <OwnStatusCard onPress={() => setSheetVisible(true)} />
-        </View>
-
-        {/* Friends status section header */}
-        <View style={styles.freeHeaderContainer}>
-          <Text style={styles.freeHeaderTitle}>Free right now</Text>
-          <Text style={styles.freeHeaderSubtitle}>
-            {friends.filter((f) => f.status === 'free').length} friends available
-          </Text>
-        </View>
-
-        {/* View toggle */}
-        {!prefLoading && (
-          <View style={styles.toggleContainer}>
-            <RadarViewToggle value={view} onValueChange={setView} />
-          </View>
-        )}
-
-        {/* Radar / Cards crossfade */}
-        <View style={styles.viewSwitcher}>
-          <Animated.View style={{ opacity: radarOpacity }} pointerEvents={view === 'radar' ? 'auto' : 'none'}>
-            <RadarView friends={friends} loading={loading} />
-          </Animated.View>
-          <Animated.View
-            style={[styles.absoluteFill, { opacity: cardsOpacity }]}
-            pointerEvents={view === 'cards' ? 'auto' : 'none'}
-          >
-            <CardStackView friends={friends} loading={loading} />
-          </Animated.View>
-        </View>
-
-        {/* HOME-07: Zero-friends empty state — inline card (D-06, D-07) */}
-        {!loading && friends.length === 0 && (
-          <EmptyState
-            icon="👥"
-            iconType="emoji"
-            heading="Invite your crew"
-            body="Add friends to see who's free and make plans"
-            ctaLabel="Invite friends"
-            onCta={() => router.push('/friends/add')}
+          <StatusCard
+            status={ownStatus}
+            context={ownContextTag}
+            expiry={statusExpiry}
+            onEditPress={() => setSheetVisible(true)}
           />
+        </View>
+
+        {!loading && friends.length === 0 ? (
+          /* Zero-friends empty state */
+          <EmptyState
+            icon="people-outline"
+            iconType="ionicons"
+            heading="No friends yet"
+            body="Add a friend to see where they're at and make plans."
+            ctaLabel="Add a friend"
+            onCta={handleNavigateToSquad}
+          />
+        ) : (
+          <>
+            {/* Friends section header — title + free count + radar/cards pill */}
+            <FriendsSectionHeader
+              freeCount={freeCount}
+              maybeCount={maybeCount}
+              totalActiveCount={totalActiveCount}
+              view={view}
+              onViewChange={setView}
+              showToggle={!prefLoading}
+            />
+
+            {/* Radar / Cards crossfade — animated height between modes */}
+            <Animated.View style={[styles.viewSwitcher, { height: switcherHeight }]}>
+              <Animated.View
+                style={[styles.absoluteFill, { opacity: radarOpacity }]}
+                pointerEvents={view === 'radar' ? 'auto' : 'none'}
+              >
+                <RadarView friends={friends} loading={loading} />
+              </Animated.View>
+              <Animated.View
+                style={[styles.absoluteFill, { opacity: cardsOpacity }]}
+                pointerEvents={view === 'cards' ? 'auto' : 'none'}
+              >
+                <CardStackView friends={friends} loading={loading} />
+              </Animated.View>
+            </Animated.View>
+          </>
         )}
 
-        {/* D-09: Upcoming events section — below Radar/Cards view */}
+        {/* Upcoming events section — below Radar/Cards view */}
         <UpcomingEventsSection isLoading={plansLoading} />
 
-        <RecentMemoriesSection />
+        {/* Memories — full-width photo slider hero */}
+        <MemoriesSection />
 
-        <HomeWidgetRow iouSummary={iouSummary} birthdays={birthdays} />
+        {/* "Your circle" — Streak (left) + Birthdays / IOUs stacked (right) */}
+        <YourZoneSection iouSummary={iouSummary} birthdays={birthdays} />
       </ScrollView>
 
-      <StatusPickerSheet
-        visible={sheetVisible}
-        onClose={() => setSheetVisible(false)}
-      />
+      <StatusPickerSheet visible={sheetVisible} onClose={() => setSheetVisible(false)} />
 
+      <OnboardingHintSheet visible={onboardingVisible} onDismiss={handleOnboardingDismiss} />
     </>
   );
 
@@ -249,9 +285,5 @@ export function HomeScreen() {
     );
   }
 
-  return (
-    <View style={[rootStyle, { backgroundColor: colors.surface.base }]}>
-      {content}
-    </View>
-  );
+  return <View style={[rootStyle, { backgroundColor: colors.surface.base }]}>{content}</View>;
 }

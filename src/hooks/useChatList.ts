@@ -8,6 +8,24 @@ import type { ChatListItem } from '@/types/chat';
 
 const CACHE_TTL_MS = 30_000; // 30 seconds
 
+type MsgEntry = { body: string; created_at: string; sender_id: string };
+
+async function getUnreadInfo(
+  chatId: string,
+  msgs: MsgEntry[],
+  currentUserId: string,
+): Promise<{ hasUnread: boolean; unreadCount: number }> {
+  const latest = msgs[0];
+  if (!latest || latest.sender_id === currentUserId) return { hasUnread: false, unreadCount: 0 };
+  const lastRead = await AsyncStorage.getItem(`chat:last_read:${chatId}`);
+  const hasUnread = !lastRead || latest.created_at > lastRead;
+  if (!hasUnread) return { hasUnread: false, unreadCount: 0 };
+  const unreadCount = msgs.filter(
+    (m) => m.sender_id !== currentUserId && (!lastRead || m.created_at > lastRead),
+  ).length;
+  return { hasUnread: true, unreadCount };
+}
+
 export function useChatList(): {
   chatList: ChatListItem[];
   loading: boolean;
@@ -43,8 +61,8 @@ export function useChatList(): {
       otherUserId: (r.user_a === session.user.id ? r.user_b : r.user_a) as string,
     }));
 
-    // Step C — Fetch latest message per plan chat
-    const planLatestMap = new Map<string, { body: string; created_at: string; sender_id: string }>();
+    // Step C — Fetch all messages per plan chat (sorted desc; [0] = latest)
+    const planMsgsMap = new Map<string, MsgEntry[]>();
     if (memberPlanIds.length > 0) {
       const { data: planMsgs } = await supabase
         .from('messages')
@@ -55,18 +73,17 @@ export function useChatList(): {
 
       for (const msg of planMsgs ?? []) {
         const pid = msg.plan_id as string;
-        if (!planLatestMap.has(pid)) {
-          planLatestMap.set(pid, {
-            body: msg.body as string,
-            created_at: msg.created_at as string,
-            sender_id: msg.sender_id as string,
-          });
-        }
+        if (!planMsgsMap.has(pid)) planMsgsMap.set(pid, []);
+        planMsgsMap.get(pid)!.push({
+          body: msg.body as string,
+          created_at: msg.created_at as string,
+          sender_id: msg.sender_id as string,
+        });
       }
     }
 
-    // Step D — Fetch latest message per DM channel
-    const dmLatestMap = new Map<string, { body: string; created_at: string; sender_id: string }>();
+    // Step D — Fetch all messages per DM channel (sorted desc; [0] = latest)
+    const dmMsgsMap = new Map<string, MsgEntry[]>();
     if (dmChannels.length > 0) {
       const dmIds = dmChannels.map((d) => d.id);
       const { data: dmMsgs } = await supabase
@@ -78,18 +95,17 @@ export function useChatList(): {
 
       for (const msg of dmMsgs ?? []) {
         const cid = msg.dm_channel_id as string;
-        if (!dmLatestMap.has(cid)) {
-          dmLatestMap.set(cid, {
-            body: msg.body as string,
-            created_at: msg.created_at as string,
-            sender_id: msg.sender_id as string,
-          });
-        }
+        if (!dmMsgsMap.has(cid)) dmMsgsMap.set(cid, []);
+        dmMsgsMap.get(cid)!.push({
+          body: msg.body as string,
+          created_at: msg.created_at as string,
+          sender_id: msg.sender_id as string,
+        });
       }
     }
 
     // Step E — Fetch plan titles for plan chats with messages
-    const planIdsWithMessages = [...planLatestMap.keys()];
+    const planIdsWithMessages = [...planMsgsMap.keys()];
     const planTitleMap = new Map<string, string>();
     if (planIdsWithMessages.length > 0) {
       const { data: plans } = await supabase
@@ -103,7 +119,7 @@ export function useChatList(): {
     }
 
     // Step F — Fetch profiles for DM other users with messages
-    const otherUserIds = dmChannels.filter((d) => dmLatestMap.has(d.id)).map((d) => d.otherUserId);
+    const otherUserIds = dmChannels.filter((d) => dmMsgsMap.has(d.id)).map((d) => d.otherUserId);
     const profileMap = new Map<string, { display_name: string; avatar_url: string | null }>();
     if (otherUserIds.length > 0) {
       const { data: profiles } = await supabase
@@ -139,8 +155,8 @@ export function useChatList(): {
       }
     }
 
-    // Step F2 — Fetch latest message per group channel
-    const groupLatestMap = new Map<string, { body: string; created_at: string; sender_id: string }>();
+    // Step F2 — Fetch all messages per group channel (sorted desc; [0] = latest)
+    const groupMsgsMap = new Map<string, MsgEntry[]>();
     if (groupChannelIds.length > 0) {
       const { data: groupMsgs } = await supabase
         .from('messages')
@@ -151,34 +167,26 @@ export function useChatList(): {
 
       for (const msg of groupMsgs ?? []) {
         const cid = msg.group_channel_id as string;
-        if (!groupLatestMap.has(cid)) {
-          groupLatestMap.set(cid, {
-            body: msg.body as string,
-            created_at: msg.created_at as string,
-            sender_id: msg.sender_id as string,
-          });
-        }
+        if (!groupMsgsMap.has(cid)) groupMsgsMap.set(cid, []);
+        groupMsgsMap.get(cid)!.push({
+          body: msg.body as string,
+          created_at: msg.created_at as string,
+          sender_id: msg.sender_id as string,
+        });
       }
-    }
-
-    // Step G — Check unread status via AsyncStorage
-    async function checkUnread(chatId: string, lastMessageAt: string): Promise<boolean> {
-      const lastRead = await AsyncStorage.getItem(`chat:last_read:${chatId}`);
-      if (!lastRead) return true;
-      return lastMessageAt > lastRead;
     }
 
     // Step H — Build ChatListItem[]
     const items: ChatListItem[] = [];
-
     const currentUserId = session.user.id;
 
     // Plan chat items
-    for (const [planId, latest] of planLatestMap.entries()) {
+    for (const [planId, msgs] of planMsgsMap.entries()) {
       const title = planTitleMap.get(planId);
       if (!title) continue;
-      const hasUnread =
-        latest.sender_id !== currentUserId && (await checkUnread(planId, latest.created_at));
+      const latest = msgs[0];
+      if (!latest) continue;
+      const { hasUnread, unreadCount } = await getUnreadInfo(planId, msgs, currentUserId);
       items.push({
         id: planId,
         type: 'plan',
@@ -187,17 +195,20 @@ export function useChatList(): {
         lastMessage: latest.body,
         lastMessageAt: latest.created_at,
         hasUnread,
+        unreadCount,
+        isMuted: false,
       });
     }
 
     // DM chat items
     for (const channel of dmChannels) {
-      const latest = dmLatestMap.get(channel.id);
-      if (!latest) continue;
+      const msgs = dmMsgsMap.get(channel.id);
+      if (!msgs || msgs.length === 0) continue;
       const profile = profileMap.get(channel.otherUserId);
       if (!profile) continue;
-      const hasUnread =
-        latest.sender_id !== currentUserId && (await checkUnread(channel.id, latest.created_at));
+      const latest = msgs[0];
+      if (!latest) continue;
+      const { hasUnread, unreadCount } = await getUnreadInfo(channel.id, msgs, currentUserId);
       items.push({
         id: channel.id,
         type: 'dm',
@@ -206,6 +217,8 @@ export function useChatList(): {
         lastMessage: latest.body,
         lastMessageAt: latest.created_at,
         hasUnread,
+        unreadCount,
+        isMuted: false,
       });
     }
 
@@ -213,10 +226,9 @@ export function useChatList(): {
     for (const channelId of groupChannelIds) {
       const name = groupNameMap.get(channelId);
       if (!name) continue;
-      const latest = groupLatestMap.get(channelId);
-      const hasUnread = latest
-        ? latest.sender_id !== currentUserId && (await checkUnread(channelId, latest.created_at))
-        : false;
+      const msgs = groupMsgsMap.get(channelId) ?? [];
+      const latest = msgs[0];
+      const { hasUnread, unreadCount } = await getUnreadInfo(channelId, msgs, currentUserId);
       items.push({
         id: channelId,
         type: 'group',
@@ -225,6 +237,8 @@ export function useChatList(): {
         lastMessage: latest?.body ?? 'No messages yet',
         lastMessageAt: latest?.created_at ?? new Date(0).toISOString(),
         hasUnread,
+        unreadCount,
+        isMuted: false,
         birthdayPersonId: groupBirthdayPersonMap.get(channelId) ?? null,
       });
     }
@@ -232,7 +246,41 @@ export function useChatList(): {
     // Sort by lastMessageAt descending
     items.sort((a, b) => (a.lastMessageAt > b.lastMessageAt ? -1 : 1));
 
-    setChatList(items);
+    // Step I — Fetch chat_preferences and apply mute/hide
+    const { data: prefRows } = await supabase
+      .from('chat_preferences')
+      .select('chat_type, chat_id, is_muted, is_hidden')
+      .eq('user_id', currentUserId);
+
+    const prefMap = new Map<string, { is_muted: boolean; is_hidden: boolean }>();
+    for (const p of prefRows ?? []) {
+      prefMap.set(`${p.chat_type}:${p.chat_id}`, {
+        is_muted: p.is_muted as boolean,
+        is_hidden: p.is_hidden as boolean,
+      });
+    }
+
+    // Also check AsyncStorage for locally-hidden/muted chats (guards against race
+    // conditions where the user refreshes before the Supabase upsert completes).
+    const [hiddenChecks, mutedChecks] = await Promise.all([
+      Promise.all(items.map((item) => AsyncStorage.getItem(`chat:hidden:${item.id}`))),
+      Promise.all(items.map((item) => AsyncStorage.getItem(`chat:muted:${item.id}`))),
+    ]);
+
+    const finalItems: ChatListItem[] = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]!;
+      const pref = prefMap.get(`${item.type}:${item.id}`);
+      if (pref?.is_hidden || hiddenChecks[i]) continue;
+      const isMuted = !!(pref?.is_muted || mutedChecks[i]);
+      if (isMuted) {
+        finalItems.push({ ...item, isMuted: true, hasUnread: false, unreadCount: 0 });
+      } else {
+        finalItems.push(item);
+      }
+    }
+
+    setChatList(finalItems);
   }
 
   const fetch = useCallback(async () => {

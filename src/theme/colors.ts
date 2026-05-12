@@ -62,4 +62,13 @@ export const COLORS = {
     gradientEnd: '#8DFF2F',
     text: '#0E0F11',
   },
+
+  // Auth / Welcome ember gradient — used as backdrop for unauthenticated screens.
+  // Tuple order matches LinearGradient's `colors` prop.
+  authGradient: {
+    colors: ['#091A07', '#0E0F11', '#0A0C0E'] as readonly [string, string, string],
+    locations: [0, 0.45, 1] as readonly [number, number, number],
+    start: { x: 1, y: 0 },
+    end: { x: 0, y: 0.8 },
+  },
 } as const;

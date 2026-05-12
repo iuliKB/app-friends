@@ -16,6 +16,7 @@ import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { ImageViewerModal } from '@/components/chat/ImageViewerModal';
 import { PollCreationSheet } from '@/components/chat/PollCreationSheet';
 import { useHeaderHeight } from '@react-navigation/elements';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRouter } from 'expo-router';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
@@ -30,6 +31,7 @@ import { PinnedPlanBanner } from '@/components/chat/PinnedPlanBanner';
 import { BirthdayWishListPanel } from '@/components/chat/BirthdayWishListPanel';
 import { GroupParticipantsSheet } from '@/components/chat/GroupParticipantsSheet';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
+import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import type { MessageWithProfile } from '@/types/chat';
 
 interface ChatRoomScreenProps {
@@ -52,12 +54,13 @@ export function ChatRoomScreen({
   const router = useRouter();
   const [participantsVisible, setParticipantsVisible] = useState(false);
   const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
   const session = useAuthStore((s) => s.session);
   const currentUserId = session?.user?.id ?? '';
 
   const {
     messages,
-    loading: _loading,
+    loading,
     error,
     refetch,
     sendMessage,
@@ -91,7 +94,9 @@ export function ChatRoomScreen({
 
   useEffect(() => {
     if (!groupChannelId || !friendName) return;
-    const title = friendName;
+    const title = birthdayPersonId
+      ? friendName.replace(/'s birthday$/i, '').trim()
+      : friendName;
     navigation.setOptions({
       headerTitle: () => (
         <TouchableOpacity onPress={() => setParticipantsVisible(true)} activeOpacity={0.7}>
@@ -107,7 +112,7 @@ export function ChatRoomScreen({
         </TouchableOpacity>
       ),
     });
-  }, [groupChannelId, friendName, navigation, colors]);
+  }, [groupChannelId, friendName, birthdayPersonId, navigation, colors]);
 
   function showToast(message?: string) {
     if (message) setToastMessage(message);
@@ -249,14 +254,23 @@ export function ChatRoomScreen({
     listContent: {
       paddingTop: SPACING.lg,
       paddingBottom: SPACING.sm,
+      paddingHorizontal: SPACING.md,
+    },
+    timeSeparatorWrap: {
+      alignSelf: 'center',
+      backgroundColor: colors.surface.card,
+      borderRadius: RADII.full,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.xs,
+      marginVertical: SPACING.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.border,
     },
     timeSeparator: {
       // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: FONT_WEIGHT.regular,
       color: colors.text.secondary,
-      textAlign: 'center',
-      marginVertical: SPACING.md,
     },
     toast: {
       position: 'absolute',
@@ -292,7 +306,7 @@ export function ChatRoomScreen({
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.surface.base }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={headerHeight + insets.bottom}
     >
       {planId ? <PinnedPlanBanner planId={planId} /> : null}
       {birthdayPersonId && groupChannelId ? (
@@ -300,9 +314,20 @@ export function ChatRoomScreen({
           birthdayPersonId={birthdayPersonId}
           groupChannelId={groupChannelId}
           birthdayPersonName={friendName?.replace(/'s birthday$/, '')}
+          onStartGiftPoll={(question, options) => {
+            sendPoll(question, options).then(({ error }) => {
+              if (error) Alert.alert('Error', 'Could not create the gift poll. Please try again.', [{ text: 'OK' }]);
+            });
+          }}
         />
       ) : null}
-      {messages.length === 0 ? (
+      {loading && messages.length === 0 ? (
+        <View style={{ flex: 1, paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, gap: SPACING.md }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <MessageSkeletonRow key={i} align={i % 3 === 0 ? 'right' : 'left'} />
+          ))}
+        </View>
+      ) : messages.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Start the conversation!</Text>
         </View>
@@ -320,7 +345,9 @@ export function ChatRoomScreen({
             return (
               <View>
                 {showSeparator && (
-                  <Text style={styles.timeSeparator}>{formatTimeSeparator(item.created_at)}</Text>
+                  <View style={styles.timeSeparatorWrap}>
+                    <Text style={styles.timeSeparator}>{formatTimeSeparator(item.created_at)}</Text>
+                  </View>
                 )}
                 <MessageBubble
                   message={item}
@@ -387,5 +414,17 @@ export function ChatRoomScreen({
         }}
       />
     </KeyboardAvoidingView>
+  );
+}
+
+function MessageSkeletonRow({ align }: { align: 'left' | 'right' }) {
+  const isRight = align === 'right';
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: isRight ? 'flex-end' : 'flex-start', gap: SPACING.sm }}>
+      {!isRight && <SkeletonPulse width={32} height={32} />}
+      <View style={{ gap: SPACING.xs, alignItems: isRight ? 'flex-end' : 'flex-start' }}>
+        <SkeletonPulse width={isRight ? 160 : 200} height={36} />
+      </View>
+    </View>
   );
 }

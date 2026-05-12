@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import type { ViewPreference } from '@/hooks/useViewPreference';
 
@@ -9,18 +10,20 @@ interface RadarViewToggleProps {
   onValueChange: (v: ViewPreference) => void;
 }
 
-const SEGMENTS: { label: string; value: ViewPreference }[] = [
-  { label: 'Radar', value: 'radar' },
-  { label: 'Cards', value: 'cards' },
+const SEGMENTS: { label: string; value: ViewPreference; icon: string }[] = [
+  { label: 'Radar', value: 'radar', icon: 'radio-outline' },
+  { label: 'Cards', value: 'cards', icon: 'albums-outline' },
 ];
 
 export function RadarViewToggle({ value, onValueChange }: RadarViewToggleProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const styles = useMemo(() => StyleSheet.create({
     container: {
       flexDirection: 'row',
       backgroundColor: colors.surface.card,
       borderRadius: RADII.md,
+      borderWidth: 1,
+      borderColor: colors.border,
       padding: SPACING.xs,
       // eslint-disable-next-line campfire/no-hardcoded-styles
       height: 44,
@@ -29,11 +32,14 @@ export function RadarViewToggle({ value, onValueChange }: RadarViewToggleProps) 
     segment: {
       flex: 1,
       borderRadius: RADII.sm,
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      gap: SPACING.xs,
     },
     activeSegment: {
-      backgroundColor: colors.surface.overlay,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      backgroundColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(77, 124, 0, 0.10)',
     },
     label: {
       fontSize: FONT_SIZE.md,
@@ -42,9 +48,9 @@ export function RadarViewToggle({ value, onValueChange }: RadarViewToggleProps) 
     },
     activeLabel: {
       fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
+      color: colors.interactive.accent,
     },
-  }), [colors]);
+  }), [colors, isDark]);
 
   async function handlePress(segValue: ViewPreference) {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -65,7 +71,12 @@ export function RadarViewToggle({ value, onValueChange }: RadarViewToggleProps) 
             accessibilityState={{ selected: isActive }}
             accessibilityLabel={`${seg.label} view`}
           >
-            <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
+            <Ionicons
+            name={seg.icon as React.ComponentProps<typeof Ionicons>['name']}
+            size={14}
+            color={isActive ? colors.interactive.accent : colors.text.secondary}
+          />
+          <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
           </TouchableOpacity>
         );
       })}

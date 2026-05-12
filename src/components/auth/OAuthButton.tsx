@@ -42,7 +42,7 @@ export function OAuthButton({ provider, onPress, loading = false }: OAuthButtonP
     },
     text: {
       fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.regular,
+      fontFamily: FONT_FAMILY.display.semibold,
       color: colors.text.primary,
     },
   }), [colors]);

@@ -15,9 +15,9 @@ export const FONT_FAMILY = {
 } as const;
 
 export const FONT_SIZE = {
-  xs: 11, // tab bar labels only
-  sm: 13, // timestamps, captions
-  md: 14, // form labels, secondary info
+  xs: 12, // captions, timestamps, tab labels
+  sm: 13, // secondary info
+  md: 14, // form labels, body
   lg: 16, // body text, card titles, button labels
   xl: 20, // section headings
   xxl: 24, // screen titles

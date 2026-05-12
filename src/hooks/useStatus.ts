@@ -82,7 +82,8 @@ export interface UseStatusResult {
   setStatus: (
     mood: StatusValue,
     tag: string | null,
-    windowId: WindowId
+    windowId: WindowId,
+    customExpiry?: Date
   ) => Promise<{ error: string | null }>;
   touch: () => Promise<void>;
 }
@@ -132,13 +133,18 @@ export function useStatus(): UseStatusResult {
     async (
       mood: StatusValue,
       tag: string | null,
-      windowId: WindowId
+      windowId: WindowId,
+      customExpiry?: Date
     ): Promise<{ error: string | null }> => {
       if (!session) return { error: 'Not ready' };
       setSaving(true);
 
       const now = new Date();
-      const expiry = computeWindowExpiry(windowId, now);
+      // When a custom expiry is provided, it overrides the canonical window math.
+      // window_id is stored as null in that case — there's no canned window to
+      // anchor the Keep-it action against.
+      const expiry = customExpiry ?? computeWindowExpiry(windowId, now);
+      const isCustom = customExpiry !== undefined;
       const nowIso = now.toISOString();
       const expiryIso = expiry.toISOString();
 
@@ -159,7 +165,7 @@ export function useStatus(): UseStatusResult {
           context_tag: tag,
           status_expires_at: expiryIso,
           last_active_at: nowIso,
-          window_id: windowId, // Phase 3 — carry for Keep-it action (CONTEXT D-03)
+          window_id: isCustom ? null : windowId, // Phase 3 — carry for Keep-it action (CONTEXT D-03)
         });
         // Phase 3 EXPIRY-01 — schedule 30-min-before-expiry local notification (D-01, D-02)
         scheduleExpiryNotification(expiry, mood).catch(() => {});

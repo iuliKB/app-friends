@@ -19,6 +19,7 @@ import {
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -339,7 +340,12 @@ export default function RootLayout() {
         colors={[DARK.splash.gradientStart, DARK.splash.gradientEnd]}
         style={styles.splash}
       >
-        <Text style={styles.splashEmoji}>🔥</Text>
+        <Ionicons
+          name="flame"
+          size={64}
+          color={DARK.splash.text}
+          style={styles.splashEmoji}
+        />
         <Text style={styles.splashTitle}>Campfire</Text>
         <ActivityIndicator color={DARK.splash.text} style={styles.splashLoader} />
       </LinearGradient>

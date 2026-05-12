@@ -38,23 +38,13 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
       paddingHorizontal: SPACING.lg,
       paddingVertical: SPACING.md,
     },
-    topRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: SPACING.sm,
-    },
-    label: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.interactive.accent,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      letterSpacing: 1, // no exact token — design spec requires 1pt letter-spacing for small caps label
-    },
     dot: {
       width: 10,
       height: 10,
       borderRadius: RADII.full,
+    },
+    dotInline: {
+      marginRight: SPACING.sm,
     },
     bottomRow: {
       flexDirection: 'row',
@@ -179,13 +169,10 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
       style={styles.card}
     >
       <Animated.View style={{ transform: [{ scale: cardScaleAnim }] }}>
-        <View style={styles.topRow}>
-          <Text style={styles.label}>{'YOUR STATUS'}</Text>
-          <Animated.View
-            style={[styles.dot, { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] }]}
-          />
-        </View>
         <View style={styles.bottomRow}>
+          <Animated.View
+            style={[styles.dot, styles.dotInline, { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] }]}
+          />
           <View style={styles.textContainer}>
             <Text style={[styles.title, !hasActiveStatus && styles.titleInactive]} numberOfLines={1}>
               {titleText}

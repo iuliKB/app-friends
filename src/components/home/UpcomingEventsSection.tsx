@@ -1,12 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import {
-  Animated,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Animated, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
@@ -16,9 +9,12 @@ import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { useUpcomingEvents } from '@/hooks/useUpcomingEvents';
 import type { PlanWithMembers } from '@/types/plans';
 
-// D-10: card width 240 + D-UI-SPEC: gap between cards = SPACING.md (12)
-// eslint-disable-next-line campfire/no-hardcoded-styles
+// Hero-card sizing — matches EventCard (240x220). Compact image-on-top layout
+// with ~1.4-card peek on a typical iPhone 16 Pro (393pt) screen.
+
 const CARD_WIDTH = 240;
+
+const CARD_HEIGHT = 220;
 const CARD_GAP = SPACING.md;
 
 interface UpcomingEventsSectionProps {
@@ -42,62 +38,64 @@ export function UpcomingEventsSection({ isLoading = false }: UpcomingEventsSecti
     }
   }, [isLoading, skeletonOpacity]);
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      // Section container — no horizontal padding here; header and list handle their own
-    },
-    headerWrapper: {
-      // SectionHeader has no built-in horizontal padding — add it here
-      paddingHorizontal: SPACING.lg,
-    },
-    seeAllText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.accent, // UI-SPEC: accent color for "See all"
-    },
-    flatList: {
-      // RESEARCH.md Pitfall 1: horizontal FlatList in ScrollView needs explicit height
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 160, // matches EventCard height (D-10)
-    },
-    listContent: {
-      // UI-SPEC: left pad aligns first card with screen content; right pad shows bleed
-      paddingLeft: SPACING.lg,
-      paddingRight: SPACING.sm,
-    },
-    listPadding: {
-      paddingHorizontal: SPACING.lg,
-    },
-    placeholderCard: {
-      // D-10: same 240x160 dimensions as EventCard but with dashed border (Pitfall 3 — raw numbers)
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 240,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 160,
-      borderRadius: RADII.xl,
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderStyle: 'dashed',
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: SPACING.xs,
-      padding: SPACING.lg,
-    },
-    placeholderHeading: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.secondary,
-      textAlign: 'center',
-    },
-    placeholderBody: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      lineHeight: FONT_SIZE.md * 1.5,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          // Section container — no horizontal padding here; header and list handle their own
+        },
+        headerWrapper: {
+          // SectionHeader has no built-in horizontal padding — add it here
+          paddingHorizontal: SPACING.lg,
+        },
+        seeAllText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.accent, // UI-SPEC: accent color for "See all"
+        },
+        flatList: {
+          // RESEARCH.md Pitfall 1: horizontal FlatList in ScrollView needs explicit height
+
+          height: CARD_HEIGHT, // matches hero EventCard height (300x220)
+        },
+        listContent: {
+          paddingHorizontal: SPACING.lg,
+        },
+        listPadding: {
+          paddingHorizontal: SPACING.lg,
+        },
+        placeholderCard: {
+          // Match the hero EventCard dimensions (300x220) so the empty state shares its footprint.
+
+          width: CARD_WIDTH,
+
+          height: CARD_HEIGHT,
+          borderRadius: RADII.xl,
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderStyle: 'dashed',
+          borderColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.xs,
+          padding: SPACING.lg,
+        },
+        placeholderHeading: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.secondary,
+          textAlign: 'center',
+        },
+        placeholderBody: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          lineHeight: FONT_SIZE.md * 1.5,
+        },
+      }),
+    [colors]
+  );
 
   const router = useRouter();
   const upcomingEvents = useUpcomingEvents();
@@ -122,14 +120,21 @@ export function UpcomingEventsSection({ isLoading = false }: UpcomingEventsSecti
     <View style={styles.container}>
       {/* D-10, D-11: SectionHeader with "Upcoming events" + "See all" right action */}
       <View style={styles.headerWrapper}>
-        <SectionHeader title="Upcoming events ✨" rightAction={seeAllAction} />
+        <SectionHeader title="Upcoming events" rightAction={seeAllAction} />
       </View>
 
       {isLoading ? (
         // HOME-08: Loading skeleton — 2 shimmer cards while plans load (D-09/D-10)
-        <Animated.View style={{ opacity: skeletonOpacity, flexDirection: 'row', paddingLeft: SPACING.lg, gap: CARD_GAP }}>
-          <SkeletonPulse width={240} height={160} />
-          <SkeletonPulse width={240} height={160} />
+        <Animated.View
+          style={{
+            opacity: skeletonOpacity,
+            flexDirection: 'row',
+            paddingLeft: SPACING.lg,
+            gap: CARD_GAP,
+          }}
+        >
+          <SkeletonPulse width={CARD_WIDTH} height={CARD_HEIGHT} />
+          <SkeletonPulse width={CARD_WIDTH} height={CARD_HEIGHT} />
         </Animated.View>
       ) : upcomingEvents.length === 0 ? (
         // D-12: Empty state — placeholder card with calendar icon + CTA

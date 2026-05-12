@@ -1,8 +1,19 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as AuthSession from 'expo-auth-session';
+import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useRef, useMemo, useState } from 'react';
-import { Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -10,6 +21,7 @@ import { AuthTabSwitcher } from '@/components/auth/AuthTabSwitcher';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { FormField } from '@/components/common/FormField';
 import { OAuthButton } from '@/components/auth/OAuthButton';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { APP_CONFIG } from '@/constants/config';
 import { useTheme, FONT_FAMILY, FONT_SIZE, SPACING } from '@/theme';
@@ -45,6 +57,22 @@ function validatePassword(password: string): string | undefined {
   return undefined;
 }
 
+function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
+function authSuccessHaptic() {
+  if (Platform.OS !== 'web') {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  }
+}
+
+function authErrorHaptic() {
+  if (Platform.OS !== 'web') {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+  }
+}
+
 function mapAuthError(message: string): string {
   if (message.includes('Invalid login credentials')) {
     return 'Incorrect email or password. Try again.';
@@ -76,6 +104,11 @@ export default function AuthScreen() {
   const [resetLoading, setResetLoading] = useState(false);
   const formOpacity = useRef(new Animated.Value(1)).current;
 
+  // Focus chain for keyboard return-key navigation
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
+
   function clearErrors() {
     setEmailError(undefined);
     setPasswordError(undefined);
@@ -97,6 +130,8 @@ export default function AuthScreen() {
       useNativeDriver: true,
     }).start(() => {
       setAuthMode('reset');
+      // Carry over typed email so users don't re-type it
+      if (!resetEmail && email) setResetEmail(email);
       Animated.timing(formOpacity, {
         toValue: 1,
         duration: ANIMATION.duration.fast,
@@ -126,18 +161,25 @@ export default function AuthScreen() {
   }
 
   async function handleSendResetLink() {
-    const emailErr = validateEmail(resetEmail);
-    if (emailErr) { setResetError(emailErr); return; }
+    const normalized = normalizeEmail(resetEmail);
+    const emailErr = validateEmail(normalized);
+    if (emailErr) {
+      setResetError(emailErr);
+      return;
+    }
     setResetLoading(true);
     setResetError(undefined);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail);
+      const { error } = await supabase.auth.resetPasswordForEmail(normalized);
       if (error) {
+        authErrorHaptic();
         setResetError(mapAuthError(error.message));
       } else {
+        authSuccessHaptic();
         setAuthMode('reset-sent');
       }
     } catch {
+      authErrorHaptic();
       setResetError('Something went wrong. Check your connection and try again.');
     } finally {
       setResetLoading(false);
@@ -147,7 +189,8 @@ export default function AuthScreen() {
   async function handleEmailAuth() {
     clearErrors();
 
-    const emailErr = validateEmail(email);
+    const normalized = normalizeEmail(email);
+    const emailErr = validateEmail(normalized);
     const passwordErr = validatePassword(password);
     let confirmErr: string | undefined;
 
@@ -158,23 +201,36 @@ export default function AuthScreen() {
     if (emailErr) setEmailError(emailErr);
     if (passwordErr) setPasswordError(passwordErr);
     if (confirmErr) setConfirmPasswordError(confirmErr);
-    if (emailErr || passwordErr || confirmErr) return;
+    if (emailErr || passwordErr || confirmErr) {
+      authErrorHaptic();
+      return;
+    }
 
     setLoading(true);
     try {
       if (activeTab === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: normalized,
+          password,
+        });
         if (error) {
+          authErrorHaptic();
           setGeneralError(mapAuthError(error.message));
+        } else {
+          authSuccessHaptic();
         }
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ email: normalized, password });
         if (error) {
+          authErrorHaptic();
           setGeneralError(mapAuthError(error.message));
+        } else {
+          authSuccessHaptic();
         }
         // onAuthStateChange in root layout handles needsProfileSetup → routes to profile-setup
       }
     } catch {
+      authErrorHaptic();
       setGeneralError('Something went wrong. Check your connection and try again.');
     } finally {
       setLoading(false);
@@ -193,6 +249,7 @@ export default function AuthScreen() {
         options: { redirectTo: redirectUri, skipBrowserRedirect: true },
       });
       if (error || !data.url) {
+        authErrorHaptic();
         setGeneralError('Something went wrong. Check your connection and try again.');
         return;
       }
@@ -210,9 +267,11 @@ export default function AuthScreen() {
             access_token: accessToken,
             refresh_token: refreshToken,
           });
+          authSuccessHaptic();
         }
       }
     } catch {
+      authErrorHaptic();
       setGeneralError('Something went wrong. Check your connection and try again.');
     } finally {
       setGoogleLoading(false);
@@ -236,6 +295,7 @@ export default function AuthScreen() {
         token: credential.identityToken,
       });
       if (error) throw error;
+      authSuccessHaptic();
 
       // Capture full name — only provided on first sign-in
       if (credential.fullName?.givenName || credential.fullName?.familyName) {
@@ -254,6 +314,7 @@ export default function AuthScreen() {
       ) {
         return;
       }
+      authErrorHaptic();
       setGeneralError('Something went wrong. Check your connection and try again.');
     } finally {
       setAppleLoading(false);
@@ -283,8 +344,8 @@ export default function AuthScreen() {
       fontSize: 32, // no exact token
     },
     headerTitle: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
+      fontSize: FONT_SIZE.display,
+      fontFamily: FONT_FAMILY.display.bold,
       color: colors.text.primary,
       marginTop: SPACING.xs,
     },
@@ -407,15 +468,15 @@ export default function AuthScreen() {
 
   return (
     <LinearGradient
-      colors={['#091A07', '#0E0F11', '#0A0C0E']}
-      locations={[0, 0.45, 1]}
-      start={{ x: 1, y: 0 }}
-      end={{ x: 0, y: 0.8 }}
+      colors={colors.authGradient.colors}
+      locations={colors.authGradient.locations}
+      start={colors.authGradient.start}
+      end={colors.authGradient.end}
       style={{ flex: 1 }}
     >
     <KeyboardAvoidingView
       style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
         style={styles.scroll}
@@ -424,7 +485,7 @@ export default function AuthScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerEmoji}>🔥</Text>
+          <Ionicons name="flame" size={40} color={colors.interactive.accent} />
           <Text style={styles.headerTitle}>Campfire</Text>
           <Text style={styles.headerTagline}>Your friends, one app.</Text>
         </View>
@@ -440,6 +501,7 @@ export default function AuthScreen() {
             {authMode === 'login' && (
               <>
                 <FormField
+                  ref={emailRef}
                   label="Email address"
                   value={email}
                   onChangeText={setEmail}
@@ -447,31 +509,49 @@ export default function AuthScreen() {
                   placeholder="you@example.com"
                   autoCapitalize="none"
                   keyboardType="email-address"
+                  textContentType="emailAddress"
+                  autoComplete="email"
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmitEditing={() => passwordRef.current?.focus()}
                 />
                 <View style={styles.fieldGap} />
                 <FormField
+                  ref={passwordRef}
                   label="Password"
                   value={password}
                   onChangeText={setPassword}
                   error={passwordError}
                   placeholder="••••••••"
                   secureTextEntry
-                  helperText={
-                    activeTab === 'signup'
-                      ? 'Min 8 characters, at least one letter and one number'
-                      : undefined
-                  }
+                  textContentType={activeTab === 'signup' ? 'newPassword' : 'password'}
+                  autoComplete={activeTab === 'signup' ? 'password-new' : 'password'}
+                  returnKeyType={activeTab === 'signup' ? 'next' : 'go'}
+                  blurOnSubmit={activeTab !== 'signup'}
+                  onSubmitEditing={() => {
+                    if (activeTab === 'signup') {
+                      confirmRef.current?.focus();
+                    } else {
+                      handleEmailAuth();
+                    }
+                  }}
                 />
                 {activeTab === 'signup' && (
                   <>
+                    <PasswordStrengthMeter password={password} />
                     <View style={styles.fieldGap} />
                     <FormField
+                      ref={confirmRef}
                       label="Confirm password"
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
                       error={confirmPasswordError}
                       placeholder="••••••••"
                       secureTextEntry
+                      textContentType="newPassword"
+                      autoComplete="password-new"
+                      returnKeyType="go"
+                      onSubmitEditing={handleEmailAuth}
                     />
                   </>
                 )}
@@ -487,7 +567,15 @@ export default function AuthScreen() {
                   </TouchableOpacity>
                 )}
 
-                {!!generalError && <Text style={styles.generalError}>{generalError}</Text>}
+                {!!generalError && (
+                  <Text
+                    style={styles.generalError}
+                    accessibilityRole="alert"
+                    accessibilityLiveRegion="polite"
+                  >
+                    {generalError}
+                  </Text>
+                )}
 
                 <View style={styles.buttonTop}>
                   <PrimaryButton
@@ -533,6 +621,10 @@ export default function AuthScreen() {
                   placeholder="you@example.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  textContentType="emailAddress"
+                  autoComplete="email"
+                  returnKeyType="go"
+                  onSubmitEditing={handleSendResetLink}
                 />
                 {!!resetError && <ErrorDisplay mode="inline" message={resetError} />}
                 <PrimaryButton

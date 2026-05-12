@@ -243,6 +243,9 @@ export function MessageBubble({
       borderBottomLeftRadius: RADII.xs,
       paddingHorizontal: SPACING.sm,
       paddingVertical: SPACING.sm,
+      borderWidth: StyleSheet.hairlineWidth,
+      // eslint-disable-next-line campfire/no-hardcoded-styles
+      borderColor: 'rgba(255,255,255,0.12)',
     },
     othersBody: {
       fontSize: FONT_SIZE.lg,

@@ -81,7 +81,7 @@ export default function TabsLayout() {
         screenOptions={{ headerShown: false }}
       >
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
-        <Tabs.Screen name="squad" options={{ title: 'Squad' }} />
+        <Tabs.Screen name="squad" options={{ title: 'Friends' }} />
         <Tabs.Screen name="plans" options={{ title: 'Explore' }} />
         <Tabs.Screen name="chat" options={{ title: 'Chats' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profile' }} />

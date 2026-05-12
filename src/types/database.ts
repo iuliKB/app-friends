@@ -677,6 +677,33 @@ export type Database = {
           },
         ];
       };
+      chat_preferences: {
+        Row: {
+          user_id: string;
+          chat_type: string;
+          chat_id: string;
+          is_muted: boolean;
+          is_hidden: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          chat_type: string;
+          chat_id: string;
+          is_muted?: boolean;
+          is_hidden?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          chat_type?: string;
+          chat_id?: string;
+          is_muted?: boolean;
+          is_hidden?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       // Phase 2 v1.3 (migration 0009) — effective status view (security_invoker=true).

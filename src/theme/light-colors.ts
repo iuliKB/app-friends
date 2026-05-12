@@ -65,4 +65,13 @@ export const LIGHT = {
     gradientEnd: '#8DFF2F',
     text: '#0E0F11',
   },
+
+  // Auth / Welcome backdrop — warm pale-lime fade on light off-white surface.
+  // Mirrors the dark mode "embers" mood without overwhelming the form contents.
+  authGradient: {
+    colors: ['#F2FBE5', '#FFFFFF', '#F5F6F8'] as readonly [string, string, string],
+    locations: [0, 0.45, 1] as readonly [number, number, number],
+    start: { x: 1, y: 0 },
+    end: { x: 0, y: 0.8 },
+  },
 } as const;

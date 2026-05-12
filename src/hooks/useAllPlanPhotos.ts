@@ -6,6 +6,7 @@ import type { PlanPhotoWithUploader } from '@/types/database';
 export type PlanPhotoGroup = {
   planId: string;
   planTitle: string;
+  planScheduledFor: string | null; // ISO timestamp of the plan, for section header subtitle
   photos: PlanPhotoWithUploader[]; // sorted created_at DESC within group
 };
 
@@ -76,11 +77,11 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
         return;
       }
 
-      // Step 3 — fetch plan titles (separate query — avoids PostgREST join issues, per usePlanPhotos comment pattern)
+      // Step 3 — fetch plan titles + dates (separate query — avoids PostgREST join issues, per usePlanPhotos comment pattern)
       const uniquePlanIds = [...new Set(photoRows.map((r) => r.plan_id as string))];
       const { data: planRows, error: planTitleError } = await supabase
         .from('plans')
-        .select('id, title')
+        .select('id, title, scheduled_for')
         .in('id', uniquePlanIds);
       if (planTitleError) {
         setError(planTitleError.message);
@@ -89,6 +90,9 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
       }
       const planTitleMap = new Map(
         (planRows ?? []).map((p) => [p.id as string, p.title as string])
+      );
+      const planScheduledMap = new Map(
+        (planRows ?? []).map((p) => [p.id as string, (p.scheduled_for as string | null) ?? null])
       );
 
       // Step 4 — fetch uploader profiles (copy from usePlanPhotos.ts lines 50–58)
@@ -146,6 +150,7 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
         .map(([planId, photos]) => ({
           planId,
           planTitle: planTitleMap.get(planId) ?? 'Unknown Plan',
+          planScheduledFor: planScheduledMap.get(planId) ?? null,
           photos, // already sorted DESC from query
         }))
         .sort((a, b) => (b.photos[0]?.createdAt ?? '').localeCompare(a.photos[0]?.createdAt ?? ''));

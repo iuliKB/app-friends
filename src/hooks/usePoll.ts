@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -31,9 +31,10 @@ export function usePoll(
 
   const [pollState, setPollState] = useState<PollState | null>(null);
   const [loading, setLoading] = useState(false);
+  const isVotingRef = useRef(false);
 
-  async function fetchPollData(id: string) {
-    setLoading(true);
+  async function fetchPollData(id: string, showLoading = true) {
+    if (showLoading) setLoading(true);
 
     const { data: pollData } = await supabase
       .from('polls')
@@ -91,11 +92,14 @@ export function usePoll(
     void fetchPollData(pollId);
   }, [pollId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Bridge: re-fetch when a poll_votes Realtime event arrives for this poll
+  // Bridge: re-fetch when a poll_votes Realtime event arrives for this poll.
+  // Skip if a vote mutation is in-flight — the intermediate DELETE event would
+  // overwrite the optimistic state before the INSERT completes.
   useEffect(() => {
     if (!lastPollVoteEvent || !pollId) return;
     if (lastPollVoteEvent.pollId !== pollId) return;
-    void fetchPollData(pollId);
+    if (isVotingRef.current) return;
+    void fetchPollData(pollId, false);
   }, [lastPollVoteEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function unVote(): Promise<{ error: Error | null }> {
@@ -171,30 +175,36 @@ export function usePoll(
       };
     });
 
-    // If changing vote, delete old first
-    if (oldOptionId) {
-      const { error: deleteError } = await supabase
-        .from('poll_votes')
-        .delete()
-        .eq('poll_id', pollId)
-        .eq('user_id', currentUserId);
+    // Guard Realtime refetches during the delete→insert window
+    isVotingRef.current = true;
+    try {
+      // If changing vote, delete old first
+      if (oldOptionId) {
+        const { error: deleteError } = await supabase
+          .from('poll_votes')
+          .delete()
+          .eq('poll_id', pollId)
+          .eq('user_id', currentUserId);
 
-      if (deleteError) {
-        setPollState(preSnapshot);
-        return { error: deleteError };
+        if (deleteError) {
+          setPollState(preSnapshot);
+          return { error: deleteError };
+        }
       }
+
+      const { error: insertError } = await supabase
+        .from('poll_votes')
+        .insert({ poll_id: pollId, option_id: optionId, user_id: currentUserId });
+
+      if (insertError) {
+        setPollState(preSnapshot);
+        return { error: insertError };
+      }
+
+      return { error: null };
+    } finally {
+      isVotingRef.current = false;
     }
-
-    const { error: insertError } = await supabase
-      .from('poll_votes')
-      .insert({ poll_id: pollId, option_id: optionId, user_id: currentUserId });
-
-    if (insertError) {
-      setPollState(preSnapshot);
-      return { error: insertError };
-    }
-
-    return { error: null };
   }
 
   return { pollState, loading, vote, unVote };

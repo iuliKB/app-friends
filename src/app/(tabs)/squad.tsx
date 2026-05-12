@@ -3,10 +3,10 @@ import {
   Alert,
   Animated,
   Dimensions,
-  FlatList,
   Pressable,
   RefreshControl,
   ScrollView,
+  SectionList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { SearchBar } from '@/components/common/SearchBar';
 import { CompactFriendRow } from '@/components/squad/CompactFriendRow';
 import { FriendActionSheet } from '@/components/friends/FriendActionSheet';
 import { BentoGrid } from '@/components/squad/bento/BentoGrid';
@@ -28,10 +29,26 @@ import { useStreakData } from '@/hooks/useStreakData';
 import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
+import { computeHeartbeatState } from '@/lib/heartbeat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const TABS = ['Squad', 'Memories', 'Activity'] as const;
+const TABS = ['Friends', 'Memories', 'Activity'] as const;
+
+type FriendBucket = 'free' | 'maybe' | 'busy' | 'inactive';
+
+const BUCKET_ORDER: ReadonlyArray<{ key: FriendBucket; title: string }> = [
+  { key: 'free', title: 'Free' },
+  { key: 'maybe', title: 'Maybe' },
+  { key: 'busy', title: 'Busy' },
+  { key: 'inactive', title: 'Inactive' },
+];
+
+function getFriendBucket(friend: FriendWithStatus): FriendBucket {
+  const state = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
+  if (state === 'dead') return 'inactive';
+  return friend.status;
+}
 
 export default function SquadScreen() {
   const { colors } = useTheme();
@@ -66,6 +83,37 @@ export default function SquadScreen() {
   const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [loadingDM, setLoadingDM] = useState(false);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Group friends into Free / Maybe / Busy / Inactive sections, filtered by search
+  const friendSections = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = q
+      ? friends.filter(
+          (f) =>
+            f.display_name.toLowerCase().includes(q) ||
+            f.username.toLowerCase().includes(q)
+        )
+      : friends;
+
+    const buckets: Record<FriendBucket, FriendWithStatus[]> = {
+      free: [],
+      maybe: [],
+      busy: [],
+      inactive: [],
+    };
+    for (const f of filtered) {
+      buckets[getFriendBucket(f)].push(f);
+    }
+
+    return BUCKET_ORDER.map(({ key, title }) => ({
+      key,
+      title,
+      data: buckets[key],
+    })).filter((s) => s.data.length > 0);
+  }, [friends, searchQuery]);
 
   useEffect(() => {
     fetchFriends();
@@ -239,6 +287,27 @@ export default function SquadScreen() {
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
         },
+        sectionHeader: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.lg,
+          paddingBottom: SPACING.xs,
+          backgroundColor: colors.surface.base,
+          gap: SPACING.xs,
+        },
+        sectionHeaderText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.secondary,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5, // eslint-disable-line campfire/no-hardcoded-styles
+        },
+        sectionHeaderCount: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
 
         // Activity tab
         activityContent: {
@@ -265,7 +334,7 @@ export default function SquadScreen() {
     <View style={[styles.container, { paddingTop: insets.top + SPACING.sm }]}>
       <View style={styles.headerContainer}>
         <ScreenHeader
-          title="Squad"
+          title="Friends"
           rightAction={
             <TouchableOpacity
               onPress={() => router.push('/friends/add')}
@@ -315,10 +384,15 @@ export default function SquadScreen() {
         }}
         style={styles.pager}
       >
-        {/* ── Page 0: Squad tab ── */}
+        {/* ── Page 0: Friends tab ── */}
         <View style={styles.page}>
-          <FlatList<FriendWithStatus>
-            data={friends}
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search friends"
+          />
+          <SectionList<FriendWithStatus, { key: FriendBucket; title: string }>
+            sections={friendSections}
             keyExtractor={(item) => item.friend_id}
             renderItem={({ item }) => (
               <CompactFriendRow
@@ -329,7 +403,14 @@ export default function SquadScreen() {
                 }}
               />
             )}
+            renderSectionHeader={({ section }) => (
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionHeaderText}>{section.title}</Text>
+                <Text style={styles.sectionHeaderCount}>· {section.data.length}</Text>
+              </View>
+            )}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
+            stickySectionHeadersEnabled={false}
             ListHeaderComponent={
               pendingCount > 0 ? (
                 <TouchableOpacity
@@ -350,7 +431,11 @@ export default function SquadScreen() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <Ionicons name="people-outline" size={48} color={colors.border} />
-                <Text style={styles.emptyText}>No friends yet</Text>
+                <Text style={styles.emptyText}>
+                  {friends.length === 0
+                    ? 'No friends yet'
+                    : `No friends match “${searchQuery.trim()}”`}
+                </Text>
               </View>
             }
             contentContainerStyle={styles.listContent}

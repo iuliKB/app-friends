@@ -25,16 +25,16 @@ export function AuthTabSwitcher({ activeTab, onTabChange }: AuthTabSwitcherProps
       borderRadius: RADII.md,
     },
     activeTab: {
-      backgroundColor: colors.border,
+      backgroundColor: colors.interactive.accent,
     },
     tabText: {
       fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
+      fontFamily: FONT_FAMILY.body.semibold,
       color: colors.text.secondary,
     },
     activeTabText: {
       fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
+      color: colors.surface.base,
     },
   }), [colors]);
 
@@ -44,6 +44,9 @@ export function AuthTabSwitcher({ activeTab, onTabChange }: AuthTabSwitcherProps
         style={[styles.tab, activeTab === 'login' && styles.activeTab]}
         onPress={() => onTabChange('login')}
         activeOpacity={0.7}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: activeTab === 'login' }}
+        accessibilityLabel="Login tab"
       >
         <Text style={[styles.tabText, activeTab === 'login' && styles.activeTabText]}>Login</Text>
       </TouchableOpacity>
@@ -51,6 +54,9 @@ export function AuthTabSwitcher({ activeTab, onTabChange }: AuthTabSwitcherProps
         style={[styles.tab, activeTab === 'signup' && styles.activeTab]}
         onPress={() => onTabChange('signup')}
         activeOpacity={0.7}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: activeTab === 'signup' }}
+        accessibilityLabel="Sign up tab"
       >
         <Text style={[styles.tabText, activeTab === 'signup' && styles.activeTabText]}>
           Sign Up

@@ -1,13 +1,7 @@
 /**
  * EventCard Phase 29 test scaffold — HOME-08.
- * Tests verify: card dimensions (240×160), date pill presence.
+ * Tests verify: hero card dimensions (300×220), relative-time pill presence.
  * Run: npx jest --testPathPatterns="EventCard.phase29" --no-coverage
- *
- * RED baseline (before Plan 04):
- *   - "card has width 240" FAILS (card is still 200×140)
- *   - "renders a date pill element" FAILS (testID="date-pill" not yet added)
- * GREEN baseline (passes now):
- *   - "renders plan title" PASSES (title rendering is already functional)
  */
 
 import React from 'react';
@@ -25,6 +19,14 @@ jest.mock('expo-image', () => ({
 
 jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
+}));
+
+jest.mock('expo-blur', () => ({
+  BlurView: 'BlurView',
+}));
+
+jest.mock('expo-linear-gradient', () => ({
+  LinearGradient: 'LinearGradient',
 }));
 
 jest.mock('@/components/plans/AvatarStack', () => ({
@@ -64,8 +66,6 @@ describe('EventCard Phase 29 (HOME-08)', () => {
 
   it('card has width 240', () => {
     const { queryAllByTestId } = renderCard();
-    // Requires testID="event-card" and width:240 added in Plan 04.
-    // FAILS before Plan 04 — testID is not yet present on the card.
     const cards = queryAllByTestId('event-card');
     expect(cards).toHaveLength(1);
     const cardStyle = cards[0]?.props?.style;
@@ -75,8 +75,6 @@ describe('EventCard Phase 29 (HOME-08)', () => {
 
   it('renders a date pill element', () => {
     const { queryAllByTestId } = renderCard();
-    // Requires testID="date-pill" added in Plan 04.
-    // FAILS before Plan 04 — date pill testID is not yet present.
     expect(queryAllByTestId('date-pill').length).toBeGreaterThan(0);
   });
 });
