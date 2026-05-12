@@ -44,3 +44,22 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Claude Code local state (worktrees, settings, skills cache)
+.claude/
+
+# Playwright / E2E test outputs
+playwright-report/
+test-results/
+playwright.config.ts
+
+# Local design audit & reference material (not for remote)
+DESIGN-BRIEF.md
+UX-AUDIT.md
+ui-ux-audit.md
+UI-AUDIT.md
+design-system/
+IdeasScreen/
+
+# Local image scratch
+assets/images/temp.png
