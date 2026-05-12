@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: executing
-stopped_at: Completed 29.1-07-PLAN.md (Chat to-do roundtrip)
-last_updated: "2026-05-12T03:07:03.516Z"
+status: verifying
+stopped_at: Completed 29.1-08-PLAN.md (Home widgets + ROADMAP D-21) — Phase 29.1 COMPLETE
+last_updated: "2026-05-12T03:18:29.848Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 11
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 13
-  completed_plans: 12
-  percent: 92
+  completed_plans: 13
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 
 Phase: 29.1 (habits-to-do-features) — EXECUTING
 Plan: 8 of 8
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-12
 
 ## Phase Structure
@@ -96,6 +96,9 @@ Requirements covered: 0 / 18
 - [Phase 29.1-07]: ChatTodoBubble owns internal expand state (leaf in FlatList) while ChatTodoListRow uses controlled-prop (Plan 06) — different placements warrant different patterns
 - [Phase 29.1-07]: Lazy-fetch of chat_todo_list + items lives in ChatRoomScreen (per-message cache + in-flight Set) — keeps useChatRoom untouched and Plan 03's setState-snapshot latent bug isolated
 - [Phase 29.1-07]: MessageBubble render-branch order: isSystem -> isTodo -> isPoll -> own/others; long-press bails on isSystem and isTodo before any scale animation fires (Pitfall 9 + 10)
+- [Phase 29.1-08]: TileShell + EyebrowPill factored from YourZoneSection.tsx into HomeTilePrimitives.tsx as shared neon-green Home primitives — both YourZoneSection and the new Habits/To-Dos home widgets consume the same primitives (Pitfall 7 mitigation, no copy-paste drift)
+- [Phase 29.1-08]: Home widgets use neon-green accent only — Add chip on HomeTodosTile uses the same rgba(185,255,59,...) palette as EyebrowPill, NOT TILE_ACCENTS.todos violet (Pitfall 7 visual-language separation enforced via grep-absence acceptance criteria)
+- [Phase 29.1-08]: ROADMAP Phase 30 scope reduced to SQUAD-06 only (Friends list polish) per D-21 — Bento tile redesign originally assigned to SQUAD-05/07/08 was delivered by Phase 29.1's Activity-tab Bento grid (HabitsTile + TodosTile + rearranged 3x2 layout)
 
 ### Roadmap Evolution
 
@@ -115,5 +118,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-12T03:07:03.512Z
-Stopped at: Completed 29.1-07-PLAN.md (Chat to-do roundtrip)
+Last session: 2026-05-12T03:18:29.845Z
+Stopped at: Completed 29.1-08-PLAN.md (Home widgets + ROADMAP D-21) — Phase 29.1 COMPLETE

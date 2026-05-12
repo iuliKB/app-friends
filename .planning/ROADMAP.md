@@ -246,7 +246,7 @@ Plans:
 **Goal:** Two new social features (Habits + To-Dos) integrated end-to-end across schema → Bento tiles in Squad → Activity → full-screen list/detail routes → chat attachment with two-step picker → system message roundtrip → home widgets. Wires up the existing chat "To-Do List" attachment stub and adds idempotent group-habit check-ins with per-user Realtime fan-out.
 **Requirements**: Uses inline decisions D-01..D-21 (see 29.1-CONTEXT.md) — no REQ-IDs
 **Depends on:** Phase 29
-**Plans:** 7/8 plans executed
+**Plans:** 8/8 plans complete
 
 Plans:
 - [x] 29.1-01-PLAN.md — Migration 0024 (6 tables + 2 helpers + 8 RPCs + RLS) + [BLOCKING] supabase db push
@@ -256,7 +256,7 @@ Plans:
 - [x] 29.1-05-PLAN.md — Habits feature surfaces: /squad/habits/* routes + 5 components (HabitRow, HabitCadencePicker, HabitMemberStrip, HabitCheckinHistory, HabitInvitationRow)
 - [x] 29.1-06-PLAN.md — To-Dos feature surfaces: /squad/todos/* routes + 3 components (TodoRow, ChatTodoListRow, TodoQuickAdd)
 - [x] 29.1-07-PLAN.md — Chat integration: ChatTodoPickerSheet + ChatTodoBubble + SystemMessageRow + MessageBubble render branches + ChatRoomScreen wire-up
-- [ ] 29.1-08-PLAN.md — Home widgets: HomeHabitsTile + HomeTodosTile + HomeHabitsTodosRow + TileShell/EyebrowPill refactor + ROADMAP Phase 30 D-21 supersession note
+- [x] 29.1-08-PLAN.md — Home widgets: HomeHabitsTile + HomeTodosTile + HomeHabitsTodosRow + TileShell/EyebrowPill refactor + ROADMAP Phase 30 D-21 supersession note
 
 ### Phase 30: Squad Screen Overhaul
 **Goal**: The Friends list (CompactFriendRow) feels polished and native — avatars, status freshness indicators, and consistent spacing that matches the design system established across the app.
@@ -327,6 +327,7 @@ Plans:
 | 27. Plans & Squad Polish | v1.7 | 5/5 | Complete | 2026-05-05 |
 | 28. Branding | v1.7 | 1/1 | Complete | 2026-05-05 |
 | 29. Home Screen Overhaul | v1.8 | 5/5 | Complete    | 2026-05-06 |
+| 29.1. Habits & To-Do Features | v1.8 | 8/8 | Complete    | 2026-05-12 |
 | 30. Squad Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 31. Explore Screen Overhaul | v1.8 | 0/? | Not started | - |
 | 32. Auth Screen Redesign | v1.8 | 0/? | Not started | - |
@@ -334,4 +335,4 @@ Plans:
 
 ---
 
-*Roadmap updated: 2026-05-06 — v1.8 roadmap created (Phases 29-33, 18 requirements mapped)*
+*Roadmap updated: 2026-05-12 — Phase 29.1 (Habits & To-Dos) complete (8/8 plans); Phase 30 scope reduced to SQUAD-06 per D-21*
