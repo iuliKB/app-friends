@@ -36,6 +36,10 @@ export function useHabits(): UseHabitsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const channelRef = useRef<ChannelHandle | null>(null);
+  // habitsRef mirrors the latest committed habits[] so toggleToday can
+  // synchronously read a pre-snapshot for revert without relying on
+  // setState-callback timing (Pitfall 3 stale-closure guard).
+  const habitsRef = useRef<HabitOverviewRow[]>([]);
 
   const refetch = useCallback(async () => {
     if (!userId) {
@@ -51,9 +55,12 @@ export function useHabits(): UseHabitsResult {
     if (rpcErr) {
       console.warn('get_habits_overview failed', rpcErr);
       setError(rpcErr.message);
+      habitsRef.current = [];
       setHabits([]);
     } else {
-      setHabits(((data ?? []) as unknown) as HabitOverviewRow[]);
+      const next = ((data ?? []) as unknown) as HabitOverviewRow[];
+      habitsRef.current = next;
+      setHabits(next);
     }
     setLoading(false);
   }, [userId]);
@@ -96,43 +103,44 @@ export function useHabits(): UseHabitsResult {
   const toggleToday = useCallback(
     async (habitId: string): Promise<{ error: string | null }> => {
       // Snapshot+revert pattern (Pitfall 3, Pattern 6).
-      // Capture from latest state INSIDE the updater so we never read a stale
-      // closure variable. The first setHabits call is a no-op write that
-      // exists only to grab the snapshot from React's latest committed state.
-      let preSnapshot: HabitOverviewRow | null = null;
-      setHabits((prev) => {
-        preSnapshot = prev.find((h) => h.habit_id === habitId) ?? null;
-        return prev;
-      });
+      // We read from habitsRef rather than relying on a setHabits updater
+      // capture because React 18 may defer functional setState callbacks
+      // past the next statement, leaving the snapshot null at the moment we
+      // need it. habitsRef mirrors the latest committed habits[] (updated
+      // on every refetch + every optimistic mutation below) so it always
+      // reflects the latest state.
+      const preSnapshot =
+        habitsRef.current.find((h) => h.habit_id === habitId) ?? null;
       if (!preSnapshot) return { error: 'habit-not-found' };
 
       // Optimistic flip — toggle did_me_check_in_today and bump/decrement
       // completed_today so the row's "X/Y done today" badge updates without
       // waiting for the server roundtrip.
-      setHabits((prev) =>
-        prev.map((h) => {
-          if (h.habit_id !== habitId) return h;
-          const next = !h.did_me_check_in_today;
-          return {
-            ...h,
-            did_me_check_in_today: next,
-            completed_today: next
-              ? h.completed_today + 1
-              : Math.max(0, h.completed_today - 1),
-          };
-        })
-      );
+      const optimistic = habitsRef.current.map((h) => {
+        if (h.habit_id !== habitId) return h;
+        const next = !h.did_me_check_in_today;
+        return {
+          ...h,
+          did_me_check_in_today: next,
+          completed_today: next
+            ? h.completed_today + 1
+            : Math.max(0, h.completed_today - 1),
+        };
+      });
+      habitsRef.current = optimistic;
+      setHabits(optimistic);
 
       const { error: rpcErr } = await supabase.rpc('toggle_habit_today_checkin', {
         p_habit_id: habitId,
         p_date_local: todayLocal(),
       });
       if (rpcErr) {
-        // Revert to snapshot — replace the row with the pre-toggle state.
-        const snap = preSnapshot;
-        setHabits((prev) =>
-          prev.map((h) => (h.habit_id === habitId && snap ? snap : h))
+        // Revert: replace the row with the pre-toggle state.
+        const reverted = habitsRef.current.map((h) =>
+          h.habit_id === habitId ? preSnapshot : h
         );
+        habitsRef.current = reverted;
+        setHabits(reverted);
         return { error: rpcErr.message };
       }
       return { error: null };
