@@ -49,11 +49,7 @@ export function SystemMessageRow({ body }: SystemMessageRowProps) {
   );
 
   return (
-    <View
-      style={styles.container}
-      accessibilityRole="text"
-      accessibilityLabel={`System: ${body}`}
-    >
+    <View style={styles.container} accessibilityRole="text" accessibilityLabel={`System: ${body}`}>
       <View style={styles.inner}>
         <Ionicons name="checkmark" size={12} color={colors.interactive.accent} />
         <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">

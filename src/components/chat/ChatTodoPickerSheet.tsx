@@ -216,9 +216,7 @@ export function ChatTodoPickerSheet({
           paddingHorizontal: SPACING.lg,
         },
         dragHandle: {
-          // eslint-disable-next-line campfire/no-hardcoded-styles
           width: 40,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
           height: 4,
           borderRadius: RADII.xs,
           backgroundColor: colors.border,
@@ -543,20 +541,24 @@ export function ChatTodoPickerSheet({
               <Ionicons name="add" size={22} color={colors.interactive.accent} />
             </TouchableOpacity>
           </View>
-          {listItems.length < 2 && (
-            <Text style={styles.helper}>Tap + to add (min 2)</Text>
-          )}
+          {listItems.length < 2 && <Text style={styles.helper}>Tap + to add (min 2)</Text>}
         </>
       )}
 
-      <Text style={styles.fieldLabel}>
-        {isSingle ? 'Assign to' : 'Assign whole list to'}
-      </Text>
+      <Text style={styles.fieldLabel}>{isSingle ? 'Assign to' : 'Assign whole list to'}</Text>
       <Pressable
         onPress={() => setAssigneePickerOpen(true)}
-        style={({ pressed }) => [styles.row, { marginBottom: SPACING.md }, pressed && styles.optionPressed]}
+        style={({ pressed }) => [
+          styles.row,
+          { marginBottom: SPACING.md },
+          pressed && styles.optionPressed,
+        ]}
         accessibilityRole="button"
-        accessibilityLabel={selectedAssignee ? `Assigned to ${selectedAssignee.display_name}. Tap to change.` : 'Pick assignee'}
+        accessibilityLabel={
+          selectedAssignee
+            ? `Assigned to ${selectedAssignee.display_name}. Tap to change.`
+            : 'Pick assignee'
+        }
       >
         <View style={styles.rowButton}>
           {selectedAssignee ? (

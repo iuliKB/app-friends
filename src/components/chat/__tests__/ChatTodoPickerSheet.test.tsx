@@ -24,9 +24,7 @@ const stubMembers: ChatTodoPickerMember[] = [
   { user_id: 'u2', display_name: 'Bob', avatar_url: null },
 ];
 
-function renderSheet(
-  props: Partial<React.ComponentProps<typeof ChatTodoPickerSheet>> = {}
-) {
+function renderSheet(props: Partial<React.ComponentProps<typeof ChatTodoPickerSheet>> = {}) {
   return render(
     <ThemeProvider>
       <ChatTodoPickerSheet

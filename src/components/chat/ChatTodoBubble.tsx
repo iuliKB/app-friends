@@ -282,10 +282,7 @@ export function ChatTodoBubble({
         >
           <View style={styles.singleRow}>
             <View style={styles.textColumn}>
-              <Text
-                style={[styles.title, completed && styles.titleCompleted]}
-                numberOfLines={2}
-              >
+              <Text style={[styles.title, completed && styles.titleCompleted]} numberOfLines={2}>
                 {list.title}
               </Text>
               <Text style={styles.subline} numberOfLines={1}>
@@ -351,11 +348,7 @@ export function ChatTodoBubble({
               return (
                 <View key={item.id} style={styles.itemRow}>
                   <Text
-                    style={[
-                      styles.title,
-                      { flex: 1 },
-                      completed && styles.titleCompleted,
-                    ]}
+                    style={[styles.title, { flex: 1 }, completed && styles.titleCompleted]}
                     numberOfLines={2}
                   >
                     {item.title}

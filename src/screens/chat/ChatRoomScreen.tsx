@@ -15,12 +15,17 @@ import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { ImageViewerModal } from '@/components/chat/ImageViewerModal';
 import { PollCreationSheet } from '@/components/chat/PollCreationSheet';
+import { ChatTodoPickerSheet } from '@/components/chat/ChatTodoPickerSheet';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRouter } from 'expo-router';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
+import { useChatTodos } from '@/hooks/useChatTodos';
+import { useGroupMembers } from '@/hooks/useGroupMembers';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { supabase } from '@/lib/supabase';
+import type { ChatTodoItem, ChatTodoList } from '@/types/todos';
 import {
   MessageBubble,
   formatTimeSeparator,
@@ -87,6 +92,22 @@ export function ChatRoomScreen({
   // Phase 17: poll creation sheet
   const [showPollCreationSheet, setShowPollCreationSheet] = useState(false);
 
+  // Phase 29.1 Plan 07 — chat to-do integration:
+  //   • Picker sheet visibility (replaces the previous placeholder alert).
+  //   • useChatTodos exposes sendChatTodo + completeChatTodo (RPC wrappers).
+  //   • useGroupMembers loads the group's members for the assignee picker.
+  //   • chatTodoData is a per-message_id cache of resolved
+  //     {list, items, assigneeName} for `message_type === 'todo'` rows.
+  const [showChatTodoPickerSheet, setShowChatTodoPickerSheet] = useState(false);
+  const { sendChatTodo, completeChatTodo } = useChatTodos(groupChannelId ?? '');
+  const { members: chatMembers } = useGroupMembers(groupChannelId ?? null);
+  const [chatTodoData, setChatTodoData] = useState<
+    Record<string, { list: ChatTodoList | null; items: ChatTodoItem[]; assigneeName: string }>
+  >({});
+  // Track in-flight lazy loads so we don't fire duplicate fetches across
+  // renders for the same message_id.
+  const todoFetchInFlightRef = useRef<Set<string>>(new Set());
+
   // Phase 14: toast for out-of-window original
   const toastAnim = useRef(new Animated.Value(0)).current;
   const [toastVisible, setToastVisible] = useState(false);
@@ -94,9 +115,7 @@ export function ChatRoomScreen({
 
   useEffect(() => {
     if (!groupChannelId || !friendName) return;
-    const title = birthdayPersonId
-      ? friendName.replace(/'s birthday$/i, '').trim()
-      : friendName;
+    const title = birthdayPersonId ? friendName.replace(/'s birthday$/i, '').trim() : friendName;
     navigation.setOptions({
       headerTitle: () => (
         <TouchableOpacity onPress={() => setParticipantsVisible(true)} activeOpacity={0.7}>
@@ -146,9 +165,113 @@ export function ChatRoomScreen({
       router.push(url as never);
     } else if (action === 'poll') {
       setShowPollCreationSheet(true);
-    } else {
-      Alert.alert('Coming Soon', 'This feature is on the way!', [{ text: 'OK' }]);
+    } else if (action === 'todo') {
+      // Phase 29.1 Plan 07 — D-09: open the two-step picker (group chats only;
+      // single-DM threads don't show the To-Do attachment action in SendBar).
+      setShowChatTodoPickerSheet(true);
     }
+  }
+
+  // Phase 29.1 Plan 07 — lazy-fetch chat_todo_list + items for any `'todo'`
+  // message rendered in the thread. Maintains a per-message cache so we don't
+  // re-query on every render. The cache is invalidated for a specific message
+  // when its item-set changes (handleCompleteChatTodoItem below).
+  useEffect(() => {
+    const todoMessages = messages.filter((m) => m.message_type === 'todo');
+    todoMessages.forEach((m) => {
+      if (chatTodoData[m.id]) return;
+      if (todoFetchInFlightRef.current.has(m.id)) return;
+      todoFetchInFlightRef.current.add(m.id);
+      // database.ts predates migration 0024 — cast through any until regen.
+      // Same anticipated pattern as the rest of phase 29.1's queries.
+      void (async () => {
+        const { data: listRow } = await (
+          supabase as never as {
+            from: (table: string) => {
+              select: (q: string) => {
+                eq: (
+                  col: string,
+                  value: string
+                ) => {
+                  maybeSingle: () => Promise<{ data: ChatTodoList | null; error: unknown }>;
+                };
+              };
+            };
+          }
+        )
+          .from('chat_todo_lists')
+          .select('*')
+          .eq('message_id', m.id)
+          .maybeSingle();
+        if (!listRow) {
+          // RLS may legitimately filter for non-assignee/non-creator viewers.
+          // Cache as empty so we don't re-poll on every render.
+          setChatTodoData((prev) => ({
+            ...prev,
+            [m.id]: { list: null, items: [], assigneeName: '' },
+          }));
+          todoFetchInFlightRef.current.delete(m.id);
+          return;
+        }
+        // Items + assignee profile in parallel.
+        type ChatTodoItemRow = ChatTodoItem;
+        const [itemsResult, profileResult] = await Promise.all([
+          (
+            supabase as never as {
+              from: (t: string) => {
+                select: (q: string) => {
+                  eq: (
+                    c: string,
+                    v: string
+                  ) => {
+                    order: (
+                      col: string,
+                      opts: { ascending: boolean }
+                    ) => Promise<{ data: ChatTodoItemRow[] | null; error: unknown }>;
+                  };
+                };
+              };
+            }
+          )
+            .from('chat_todo_items')
+            .select('*')
+            .eq('list_id', listRow.id)
+            .order('position', { ascending: true }),
+          supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', listRow.assignee_id)
+            .maybeSingle(),
+        ]);
+        const items = (itemsResult.data ?? []) as ChatTodoItem[];
+        const assigneeName =
+          (profileResult.data as { display_name?: string | null } | null)?.display_name ?? '';
+        setChatTodoData((prev) => ({
+          ...prev,
+          [m.id]: { list: listRow, items, assigneeName },
+        }));
+        todoFetchInFlightRef.current.delete(m.id);
+      })();
+    });
+  }, [messages, chatTodoData]);
+
+  // Wrapper for the chat-to-do bubble checkbox tap. Invokes the RPC then
+  // invalidates the cache entry for any message whose list contains the item
+  // so the bubble re-fetches and reflects the new completed_at.
+  async function handleCompleteChatTodoItem(itemId: string) {
+    const result = await completeChatTodo(itemId);
+    // Find which message holds this item and invalidate its cache slot.
+    for (const [msgId, payload] of Object.entries(chatTodoData)) {
+      if (payload.items.some((it) => it.id === itemId)) {
+        setChatTodoData((prev) => {
+          const next = { ...prev };
+          delete next[msgId];
+          return next;
+        });
+        break;
+      }
+    }
+    return result;
   }
 
   async function handleSend(body: string) {
@@ -241,63 +364,63 @@ export function ChatRoomScreen({
     return next.sender_id !== current.sender_id;
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    emptyContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    emptyText: {
-      fontSize: FONT_SIZE.lg,
-      color: colors.text.secondary,
-    },
-    listContent: {
-      paddingTop: SPACING.lg,
-      paddingBottom: SPACING.sm,
-      paddingHorizontal: SPACING.md,
-    },
-    timeSeparatorWrap: {
-      alignSelf: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.full,
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.xs,
-      marginVertical: SPACING.md,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: colors.border,
-    },
-    timeSeparator: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 11,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-    },
-    toast: {
-      position: 'absolute',
-      bottom: SPACING.xxl,
-      alignSelf: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.pill,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.sm,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    toastText: {
-      fontSize: FONT_SIZE.sm,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.primary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        emptyContainer: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        emptyText: {
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.secondary,
+        },
+        listContent: {
+          paddingTop: SPACING.lg,
+          paddingBottom: SPACING.sm,
+          paddingHorizontal: SPACING.md,
+        },
+        timeSeparatorWrap: {
+          alignSelf: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.md,
+          paddingVertical: SPACING.xs,
+          marginVertical: SPACING.md,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.border,
+        },
+        timeSeparator: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 11,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+        },
+        toast: {
+          position: 'absolute',
+          bottom: SPACING.xxl,
+          alignSelf: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.pill,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.sm,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        toastText: {
+          fontSize: FONT_SIZE.sm,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.primary,
+        },
+      }),
+    [colors]
+  );
 
   if (error) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
-        <ErrorDisplay
-          mode="screen"
-          message="Couldn't load messages."
-          onRetry={refetch}
-        />
+        <ErrorDisplay mode="screen" message="Couldn't load messages." onRetry={refetch} />
       </View>
     );
   }
@@ -316,13 +439,23 @@ export function ChatRoomScreen({
           birthdayPersonName={friendName?.replace(/'s birthday$/, '')}
           onStartGiftPoll={(question, options) => {
             sendPoll(question, options).then(({ error }) => {
-              if (error) Alert.alert('Error', 'Could not create the gift poll. Please try again.', [{ text: 'OK' }]);
+              if (error)
+                Alert.alert('Error', 'Could not create the gift poll. Please try again.', [
+                  { text: 'OK' },
+                ]);
             });
           }}
         />
       ) : null}
       {loading && messages.length === 0 ? (
-        <View style={{ flex: 1, paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, gap: SPACING.md }}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: SPACING.lg,
+            paddingTop: SPACING.lg,
+            gap: SPACING.md,
+          }}
+        >
           {Array.from({ length: 5 }).map((_, i) => (
             <MessageSkeletonRow key={i} align={i % 3 === 0 ? 'right' : 'left'} />
           ))}
@@ -369,6 +502,10 @@ export function ChatRoomScreen({
                   currentUserId={currentUserId}
                   lastPollVoteEvent={lastPollVoteEvent}
                   onRetry={(tempId, body) => void retryMessage(tempId, body)}
+                  chatTodoList={chatTodoData[item.id]?.list ?? null}
+                  chatTodoItems={chatTodoData[item.id]?.items ?? []}
+                  chatTodoAssigneeName={chatTodoData[item.id]?.assigneeName ?? ''}
+                  onCompleteChatTodoItem={handleCompleteChatTodoItem}
                 />
               </View>
             );
@@ -409,10 +546,30 @@ export function ChatRoomScreen({
         onDismiss={() => setShowPollCreationSheet(false)}
         onSend={(question, options) => {
           sendPoll(question, options).then(({ error }) => {
-            if (error) Alert.alert('Error', 'Poll could not be sent. Please try again.', [{ text: 'OK' }]);
+            if (error)
+              Alert.alert('Error', 'Poll could not be sent. Please try again.', [{ text: 'OK' }]);
           });
         }}
       />
+      {groupChannelId ? (
+        <ChatTodoPickerSheet
+          visible={showChatTodoPickerSheet}
+          onDismiss={() => setShowChatTodoPickerSheet(false)}
+          groupChannelId={groupChannelId}
+          members={chatMembers}
+          currentUserId={currentUserId}
+          onSend={async (args) => {
+            const result = await sendChatTodo(args);
+            if (!result.error) {
+              // sendChatTodo writes the parent 'todo' message via the RPC; the
+              // existing useChatRoom realtime subscription surfaces it, then the
+              // lazy-fetch effect above resolves the list + items for the bubble.
+              void refetch();
+            }
+            return result;
+          }}
+        />
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
@@ -420,7 +577,13 @@ export function ChatRoomScreen({
 function MessageSkeletonRow({ align }: { align: 'left' | 'right' }) {
   const isRight = align === 'right';
   return (
-    <View style={{ flexDirection: 'row', justifyContent: isRight ? 'flex-end' : 'flex-start', gap: SPACING.sm }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: isRight ? 'flex-end' : 'flex-start',
+        gap: SPACING.sm,
+      }}
+    >
       {!isRight && <SkeletonPulse width={32} height={32} />}
       <View style={{ gap: SPACING.xs, alignItems: isRight ? 'flex-end' : 'flex-start' }}>
         <SkeletonPulse width={isRight ? 160 : 200} height={36} />
