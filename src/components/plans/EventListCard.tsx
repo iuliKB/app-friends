@@ -126,7 +126,8 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
           <EventArtwork
             plan={plan}
             height={ART_SIZE}
-            showRelativePill={false}
+            showDateBadge={false}
+            showRelativePill={true}
             monogramSize={42}
           />
         </View>
