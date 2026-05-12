@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 30-01-PLAN.md — useNavigationStore zustand slice (TDD red→green, 4/4 tests)
-last_updated: "2026-05-12T23:47:05.115Z"
+stopped_at: Completed 30-02-PLAN.md — openChat helper (TDD red→green, 10/10 tests)
+last_updated: "2026-05-12T23:52:40.240Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 20
-  completed_plans: 14
-  percent: 70
+  completed_plans: 15
+  percent: 75
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 30 (unify-navigation-source-of-truth-and-chat-entry-handlers) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -105,6 +105,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 29.1-08, historical]: ROADMAP Phase 30 scope had been reduced to SQUAD-06 only (Friends list polish) per D-21 — the Bento tile redesign originally assigned to SQUAD-05/07/08 was delivered by Phase 29.1's Activity-tab Bento grid (HabitsTile + TodosTile + rearranged 3x2 layout); Phase 30 was then removed entirely on 2026-05-13
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-01: useNavigationStore uses create<T>((set)=>...) non-curried form with zero middleware — matches all 5 existing stores; surface NOT persisted, defaults to 'tabs' on every cold launch
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-01: NavigationSurface union order locked to ('tabs' | 'chat' | 'plan' | 'modal' | 'auth') — required by Plan 04 CustomTabBar refactor for surface-equality checks
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-02: openChat helper accepts router as first arg (not via useRouter hook) — required by notification-dispatcher callsite in _layout.tsx which runs outside the React render tree; matches src/lib/action-sheet.ts top-level-function convention
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-02: Alert.alert('Error', "Couldn't open chat. Try again.") inlined as a literal (not via constants) — required by plan AC7's exact-string grep gate; verbatim copy already used by 7 of 8 existing inline DM blocks so migration is visually a no-op
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-02: create_birthday_group RPC stays at callsite (squad/birthday/[id].tsx) — openChat only owns the post-creation push because group-creation has a side-effect requirement (invalidateChatList) that does not belong in a generic chat-entry helper
 
 ### Roadmap Evolution
 
@@ -126,5 +129,5 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 
 ## Session Continuity
 
-Last session: 2026-05-12T23:47:05.111Z
-Stopped at: Completed 30-01-PLAN.md — useNavigationStore zustand slice (TDD red→green, 4/4 tests)
+Last session: 2026-05-12T23:52:40.236Z
+Stopped at: Completed 30-02-PLAN.md — openChat helper (TDD red→green, 10/10 tests)
