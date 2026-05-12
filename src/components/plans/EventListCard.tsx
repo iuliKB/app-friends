@@ -144,9 +144,9 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
 
           {labels ? (
             <View style={styles.metaRow}>
-              <Ionicons name="time-outline" size={14} color={colors.text.secondary} />
+              <Ionicons name="calendar-outline" size={14} color={colors.text.secondary} />
               <Text style={styles.metaText} numberOfLines={1}>
-                {labels.relative} {'·'} {labels.time}
+                {labels.date} {'·'} {labels.time}
               </Text>
             </View>
           ) : null}
