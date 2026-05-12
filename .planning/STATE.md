@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 30-02-PLAN.md — openChat helper (TDD red→green, 10/10 tests)
-last_updated: "2026-05-12T23:52:40.240Z"
+stopped_at: Completed 30-03-PLAN.md — /chat/room route hoisted to root Stack level
+last_updated: "2026-05-12T23:56:26.418Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 20
-  completed_plans: 15
-  percent: 75
+  completed_plans: 16
+  percent: 80
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 30 (unify-navigation-source-of-truth-and-chat-entry-handlers) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -108,6 +108,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-02: openChat helper accepts router as first arg (not via useRouter hook) — required by notification-dispatcher callsite in _layout.tsx which runs outside the React render tree; matches src/lib/action-sheet.ts top-level-function convention
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-02: Alert.alert('Error', "Couldn't open chat. Try again.") inlined as a literal (not via constants) — required by plan AC7's exact-string grep gate; verbatim copy already used by 7 of 8 existing inline DM blocks so migration is visually a no-op
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-02: create_birthday_group RPC stays at callsite (squad/birthday/[id].tsx) — openChat only owns the post-creation push because group-creation has a side-effect requirement (invalidateChatList) that does not belong in a generic chat-entry helper
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-03: Hoist /chat/room route from src/app/(tabs)/chat/room.tsx to src/app/chat/room.tsx — eliminates dual-mount risk by putting ChatRoomScreen at root Stack level structurally; URL /chat/room?... resolves identically so zero callsite changes needed
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-03: src/app/chat/_layout.tsx leaves default headerShown intact (no headerShown:false) so chat/room.tsx navigation.setOptions({title}) renders the per-route title via the Stack header chrome; mirrors plans/_layout.tsx exactly except component name
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-03: Root-level <Stack.Screen name="chat" options={{ headerShown: false }} /> placed inside <Stack.Protected guard={!!session && !needsProfileSetup}> alongside plans — chat needs auth + complete profile; no presentation:'modal' because chat is a regular push
 
 ### Roadmap Evolution
 
@@ -129,5 +132,5 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 
 ## Session Continuity
 
-Last session: 2026-05-12T23:52:40.236Z
-Stopped at: Completed 30-02-PLAN.md — openChat helper (TDD red→green, 10/10 tests)
+Last session: 2026-05-12T23:56:26.414Z
+Stopped at: Completed 30-03-PLAN.md — /chat/room route hoisted to root Stack level
