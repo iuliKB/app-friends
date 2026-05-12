@@ -89,7 +89,7 @@
 **Plans:** 7 plans
 
 Plans:
-- [ ] 30-01-PLAN.md — Create `useNavigationStore` zustand slice (Wave 1)
+- [x] 30-01-PLAN.md — Create `useNavigationStore` zustand slice (Wave 1)
 - [ ] 30-02-PLAN.md — Create `openChat` helper consolidating 13 callsites + 8 duplicate DM blocks (Wave 1)
 - [ ] 30-03-PLAN.md — Hoist `chat/room` to root Stack + register `<Stack.Screen name="chat" />` in root `_layout.tsx` (Wave 1)
 - [ ] 30-04-PLAN.md — Refactor `CustomTabBar` to consume `useNavigationStore` + add `useFocusEffect` writer in `ChatRoomScreen` (Wave 2, depends on 01 + 03)
