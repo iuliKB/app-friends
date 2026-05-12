@@ -4,8 +4,8 @@ milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
 stopped_at: Phase 29.1 UI-SPEC approved
-last_updated: "2026-05-12T01:48:39.175Z"
-last_activity: 2026-05-12 -- Phase 29.1 planning complete
+last_updated: "2026-05-12T01:53:23.228Z"
+last_activity: 2026-05-12 -- Phase 29.1 execution started
 progress:
   total_phases: 11
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 29 — home-screen-overhaul
+**Current focus:** Phase 29.1 — habits-to-do-features
 
 ## Current Position
 
-Phase: 30
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-12 -- Phase 29.1 planning complete
+Phase: 29.1 (habits-to-do-features) — EXECUTING
+Plan: 1 of 8
+Status: Executing Phase 29.1
+Last activity: 2026-05-12 -- Phase 29.1 execution started
 
 ## Phase Structure
 
