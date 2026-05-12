@@ -19,7 +19,7 @@ import type { PlanWithMembers } from '@/types/plans';
 // artwork on top with date badge + relative pill, solid info panel below
 // with eyebrow + title + meta + avatar stack.
 
-const HERO_IMAGE_HEIGHT = 144;
+const HERO_IMAGE_HEIGHT = 120;
 
 interface NextEventHeroProps {
   plan: PlanWithMembers;
@@ -144,7 +144,12 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
       accessibilityLabel={a11yLabel}
     >
       <Animated.View style={[styles.cardInner, { transform: [{ scale: cardScaleAnim }] }]}>
-        <EventArtwork plan={plan} height={HERO_IMAGE_HEIGHT} monogramSize={80} />
+        <EventArtwork
+          plan={plan}
+          height={HERO_IMAGE_HEIGHT}
+          monogramSize={64}
+          showDateBadge={false}
+        />
 
         <View style={styles.infoPanel}>
           <Text style={styles.eyebrow}>Next event</Text>
