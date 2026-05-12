@@ -129,7 +129,7 @@
 ### v1.8 Deep UI Refinement & Screen Overhaul
 
 - [x] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max (completed 2026-05-06)
-- [ ] **Phase 30: Squad Screen Overhaul** - Polish Squad Dashboard cards (Streak, Birthday, IOU) and Friends list to feel native and information-dense without overwhelming
+- [ ] **Phase 30: Squad Screen Overhaul** - Friends list (CompactFriendRow) polish only — the Bento tile redesign (Streak / Birthday / IOU cards) is superseded by Phase 29.1 (D-21)
 - [ ] **Phase 31: Explore Screen Overhaul** - 3-state bottom sheet, theme fix for all three map components, reset-to-location chip, and plan card polish
 - [ ] **Phase 32: Auth Screen Redesign** - Fix the always-dark LinearGradient bug, extract gradient tokens, and add specific login error messaging
 - [ ] **Phase 33: Welcome / Onboarding Flow** - Brand-new 3-screen slide onboarding flow using react-native-pager-view, gated by AsyncStorage key, implemented as full-screen modal overlay
@@ -259,14 +259,12 @@ Plans:
 - [ ] 29.1-08-PLAN.md — Home widgets: HomeHabitsTile + HomeTodosTile + HomeHabitsTodosRow + TileShell/EyebrowPill refactor + ROADMAP Phase 30 D-21 supersession note
 
 ### Phase 30: Squad Screen Overhaul
-**Goal**: Squad Dashboard cards and Friends list are information-dense but not cluttered — each card surfaces one hero metric with a clear action, and the friends list feels polished and native
+**Goal**: The Friends list (CompactFriendRow) feels polished and native — avatars, status freshness indicators, and consistent spacing that matches the design system established across the app.
 **Depends on**: Phase 29
-**Requirements**: SQUAD-05, SQUAD-06, SQUAD-07, SQUAD-08
+**Requirements**: SQUAD-06
+**Note**: Bento tile redesign (originally SQUAD-05, SQUAD-07, SQUAD-08) was superseded by Phase 29.1 (Habits & To-Dos) per D-21. Phase 29.1 shipped the Squad → Activity Bento grid with HabitsTile, TodosTile, and the rearranged Streak/Birthday/IOU tile pairing in a 3×2 layout — covering the original SQUAD-05 hero-metric, SQUAD-07 Birthday + IOU card layout, and SQUAD-08 Streak card polish requirements. Phase 30 now focuses on Friends list polish only.
 **Success Criteria** (what must be TRUE):
-  1. Each Squad Dashboard card (Streak, Birthday, IOU) shows exactly one primary metric and one tappable CTA — no secondary statistics visible on the card surface
-  2. The Friends list (CompactFriendRow) has polished avatar display with a visible status freshness indicator and consistent spacing that matches the app's design system
-  3. The Birthday card shows a clear days-until-birthday countdown and the IOU card shows net balance with a directional indicator (owe vs. owed) — readable at a glance without tapping in
-  4. The Streak card has a visually prominent streak count with positive-only framing and a clear progress indicator — no anxiety-inducing visuals
+  1. The Friends list (CompactFriendRow) has polished avatar display with a visible status freshness indicator and consistent spacing that matches the app's design system
 **Plans**: TBD
 **UI hint**: yes
 

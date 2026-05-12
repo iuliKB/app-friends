@@ -23,8 +23,11 @@ import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
 import { UpcomingEventsSection } from '@/components/home/UpcomingEventsSection';
 import { MemoriesSection } from '@/components/home/MemoriesSection';
 import { YourZoneSection } from '@/components/home/YourZoneSection';
+import { HomeHabitsTodosRow } from '@/components/home/HomeHabitsTodosRow';
 import { HomeTopBar } from '@/components/home/HomeTopBar';
 import { FriendsSectionHeader } from '@/components/home/FriendsSectionHeader';
+import { useHabits } from '@/hooks/useHabits';
+import { useTodos } from '@/hooks/useTodos';
 
 // Heights for the radar / cards crossfade container — close to parity with
 // the radar (260px), so the parent height barely shifts between modes.
@@ -57,6 +60,8 @@ export function HomeScreen() {
   const { loading: plansLoading } = usePlans();
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
+  const habits = useHabits();
+  const todos = useTodos();
 
   // OVR-06: 60s tick to force heartbeat re-evaluation across own + friend rows
   // without a refetch.
@@ -263,6 +268,9 @@ export function HomeScreen() {
 
         {/* "Your circle" — Streak (left) + Birthdays / IOUs stacked (right) */}
         <YourZoneSection iouSummary={iouSummary} birthdays={birthdays} />
+
+        {/* Phase 29.1 D-19 — Habits + To-Dos home widgets below YourZoneSection */}
+        <HomeHabitsTodosRow habits={habits} todos={todos} />
       </ScrollView>
 
       <StatusPickerSheet visible={sheetVisible} onClose={() => setSheetVisible(false)} />
