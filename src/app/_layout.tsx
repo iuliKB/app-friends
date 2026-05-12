@@ -229,6 +229,7 @@ function RootLayoutStack({
           options={{ presentation: 'modal', headerShown: false }}
         />
         <Stack.Screen name="plans" options={{ headerShown: false }} />
+        <Stack.Screen name="chat" options={{ headerShown: false }} />
       </Stack.Protected>
       <Stack.Protected guard={!!session && needsProfileSetup}>
         <Stack.Screen name="profile-setup" />
