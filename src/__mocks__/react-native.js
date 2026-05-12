@@ -11,10 +11,16 @@ function AnimatedValue(v) {
   this._value = v;
   this._listeners = [];
 }
-AnimatedValue.prototype.setValue = function(v) { this._value = v; };
-AnimatedValue.prototype.addListener = function(cb) { return '0'; };
-AnimatedValue.prototype.removeListener = function() {};
-AnimatedValue.prototype.interpolate = function(config) { return new AnimatedValue(0); };
+AnimatedValue.prototype.setValue = function (v) {
+  this._value = v;
+};
+AnimatedValue.prototype.addListener = function (cb) {
+  return '0';
+};
+AnimatedValue.prototype.removeListener = function () {};
+AnimatedValue.prototype.interpolate = function (config) {
+  return new AnimatedValue(0);
+};
 
 const Animated = {
   Value: AnimatedValue,
@@ -56,17 +62,24 @@ const TouchableOpacity = ({ children, onPress, ...props }) =>
   React.createElement('TouchableOpacity', { ...props, onClick: onPress }, children);
 const Pressable = ({ children, onPress, onPressIn, onPressOut, style, ...props }) => {
   const resolvedStyle = typeof style === 'function' ? style({ pressed: false }) : style;
-  return React.createElement('Pressable', { ...props, style: resolvedStyle, onClick: onPress }, children);
+  return React.createElement(
+    'Pressable',
+    { ...props, style: resolvedStyle, onClick: onPress },
+    children
+  );
 };
 const ActivityIndicator = (props) => React.createElement('ActivityIndicator', props);
 const TextInput = (props) => React.createElement('TextInput', props);
 const FlatList = ({ data, renderItem, keyExtractor, ...props }) =>
-  React.createElement('FlatList', props,
+  React.createElement(
+    'FlatList',
+    props,
     (data || []).map((item, i) => renderItem({ item, index: i }))
   );
 const ScrollView = ({ children, ...props }) => React.createElement('ScrollView', props, children);
 const Image = (props) => React.createElement('Image', props);
-const SafeAreaView = ({ children, ...props }) => React.createElement('SafeAreaView', props, children);
+const SafeAreaView = ({ children, ...props }) =>
+  React.createElement('SafeAreaView', props, children);
 const Modal = ({ children, visible, ...props }) =>
   visible !== false ? React.createElement('Modal', props, children) : null;
 const RefreshControl = (props) => React.createElement('RefreshControl', props);
@@ -91,6 +104,41 @@ const Keyboard = {
 const Vibration = { vibrate: jest.fn(), cancel: jest.fn() };
 const Share = { share: jest.fn(() => Promise.resolve()) };
 const Clipboard = { setString: jest.fn(), getString: jest.fn(() => Promise.resolve('')) };
+
+// LayoutAnimation — used by ChatTodoListRow (Phase 29.1 Plan 06) and any
+// component that animates section/row reflow. configureNext is a no-op in the
+// jest Node env (no native bridge); we only need the API surface to exist.
+const LayoutAnimation = {
+  configureNext: jest.fn(),
+  create: jest.fn((duration, type, property) => ({ duration, type, property })),
+  Presets: {
+    easeInEaseOut: { duration: 300 },
+    linear: { duration: 500 },
+    spring: { duration: 700 },
+  },
+  Types: {
+    spring: 'spring',
+    linear: 'linear',
+    easeInEaseOut: 'easeInEaseOut',
+    easeIn: 'easeIn',
+    easeOut: 'easeOut',
+    keyboard: 'keyboard',
+  },
+  Properties: {
+    opacity: 'opacity',
+    scaleX: 'scaleX',
+    scaleY: 'scaleY',
+    scaleXY: 'scaleXY',
+  },
+};
+
+// UIManager — used to opt into Android LayoutAnimation in ChatTodoListRow.
+const UIManager = {
+  setLayoutAnimationEnabledExperimental: jest.fn(),
+  measure: jest.fn(),
+  measureInWindow: jest.fn(),
+  measureLayout: jest.fn(),
+};
 
 const useRef = React.useRef;
 const useState = React.useState;
@@ -131,6 +179,8 @@ module.exports = {
   // Re-export React hooks so files that import from react-native directly still work
   AppState: { currentState: 'active', addEventListener: jest.fn(() => ({ remove: jest.fn() })) },
   StatusBar: { setBarStyle: jest.fn() },
+  LayoutAnimation,
+  UIManager,
   NativeModules: {},
   NativeEventEmitter: jest.fn().mockImplementation(() => ({
     addListener: jest.fn(() => ({ remove: jest.fn() })),
