@@ -214,6 +214,11 @@ Known technical considerations:
 | GalleryViewerModal `useMemo([colors])` for StyleSheet (v1.6 Phase 22) | Theme-reactive styles recompute on dark/light switch; all existing image-viewer components use same pattern | ✓ Good |
 | chunkPhotos pre-chunks into rows of 3 before SectionList (v1.6 Phase 23) | SectionList has no numColumns prop — pre-chunking into row arrays is the only way to achieve a grid layout | ✓ Good |
 | MemoriesRedirect replaces Squad tab Memories stub (v1.6 Phase 23) | Eliminates duplicate gallery implementation; both Squad and Home entry points route to canonical /memories screen | ✓ Good |
+| `messages.message_type` CHECK widened to admit `'system'` + `'todo'` (v1.8 Phase 29.1) | System messages (chat to-do completed) and chat to-do bubbles need a discriminated message type; INSERT policy whitelists client types so RPC-only variants stay server-side | ✓ Good |
+| Ref-mirrored snapshot for optimistic hook revert (v1.8 Phase 29.1) | setState-callback snapshot capture is unreliable in React 18 batching; useRef mirror is synchronous and deterministic. Latent bug flagged in pre-existing `useChatRoom.addReaction` | ✓ Good |
+| Single per-user Realtime channel for habit check-ins (v1.8 Phase 29.1) | Per-habit channels would exceed Realtime connection budget; one `user-${userId}-checkins` channel with caller filter, co-members refetch on focus | ✓ Good |
+| Home widgets neon-green only, NOT Bento cyan/violet (v1.8 Phase 29.1 Pitfall 7) | Two distinct surfaces (Home vs Squad/Activity) need different visual identity; sharing the Bento palette on Home contaminates the calmer Home aesthetic | ✓ Good |
+| Two-step single-Modal picker for chat to-do sheet (v1.8 Phase 29.1) | Stacked Modals break KeyboardAvoidingView on iOS; internal step state + back-arrow keeps one modal mounted | ✓ Good |
 
 ---
-*Last updated: 2026-05-07 — Phase 29 complete (Home Screen Overhaul: DEAD bubble, EmptyState, EventCard resize, loading skeleton)*
+*Last updated: 2026-05-12 — Phase 29.1 complete (Habits & To-Dos: schema → Bento tiles → routes → chat roundtrip → home widgets). 6 hardware-gate items queued for v1.3 Hardware Verification Gate. Next: Phase 30 — Squad Screen Overhaul (scope reduced to SQUAD-06 per D-21; SQUAD-05/07/08 superseded by 29.1)*
