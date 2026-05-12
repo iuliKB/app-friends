@@ -31,6 +31,18 @@ jest.mock('expo-clipboard', () => ({
   setStringAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
+// MessageBubble imports ReactionsSheet which imports @/lib/supabase. The
+// supabase module throws in jest because EXPO_PUBLIC_SUPABASE_* env vars
+// aren't set. Stub it so the import chain resolves.
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn(),
+    rpc: jest.fn(),
+    channel: jest.fn(() => ({ on: jest.fn().mockReturnThis(), subscribe: jest.fn() })),
+    removeChannel: jest.fn(),
+  },
+}));
+
 const baseSystemMessage: MessageWithProfile = {
   id: 'm1',
   plan_id: null,

@@ -84,6 +84,20 @@ const Modal = ({ children, visible, ...props }) =>
   visible !== false ? React.createElement('Modal', props, children) : null;
 const RefreshControl = (props) => React.createElement('RefreshControl', props);
 const Alert = { alert: jest.fn() };
+// KeyboardAvoidingView — used by sheets that adjust for the iOS keyboard
+// (PollCreationSheet, ChatTodoPickerSheet). In the jest Node env there is no
+// keyboard, so the component just passes children through.
+const KeyboardAvoidingView = ({ children, ...props }) =>
+  React.createElement('KeyboardAvoidingView', props, children);
+// TouchableWithoutFeedback — used by modal backdrops. The mock exposes onPress
+// via the `onClick` prop name (matching TouchableOpacity) so fireEvent.press
+// works against backdrops in tests.
+const TouchableWithoutFeedback = ({ children, onPress, ...props }) =>
+  React.createElement(
+    'TouchableWithoutFeedback',
+    { ...props, onClick: onPress },
+    children
+  );
 
 const useColorScheme = jest.fn(() => 'light');
 const useWindowDimensions = jest.fn(() => ({ width: 375, height: 812, scale: 2, fontScale: 1 }));
@@ -161,6 +175,8 @@ module.exports = {
   Image,
   SafeAreaView,
   Modal,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
   RefreshControl,
   Alert,
   Dimensions,
