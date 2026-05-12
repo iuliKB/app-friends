@@ -35,10 +35,6 @@ export interface HabitCheckin {
 /**
  * Overview row returned by get_habits_overview(p_date_local) RPC.
  * One row per habit the caller is an accepted member of.
- *
- * Note: `accepted_total` is also returned by the live RPC (migration 0024) but
- * is omitted from this contract until a hook needs it — TypeScript tolerates
- * the extra runtime field. Add it here when Plan 03 requires it.
  */
 export interface HabitOverviewRow {
   habit_id: string;
@@ -46,7 +42,8 @@ export interface HabitOverviewRow {
   cadence: HabitCadence;
   weekly_target: number | null;
   is_solo: boolean;                       // true when accepted_total === 1 (only the caller)
-  members_total: number;                  // total membership rows (includes pending)
+  members_total: number;                  // total membership rows (includes pending invitees)
+  accepted_total: number;                 // members with accepted_at IS NOT NULL — `members_total - accepted_total` = pending invites
   completed_today: number;                // count of habit_checkins for p_date_local across all accepted members
   did_me_check_in_today: boolean;         // whether caller has a checkin row for today
   last_checkin_date_local: string | null; // caller's most recent checkin date ('YYYY-MM-DD' or null) — drives OQ4 "about to break" rule (B2)

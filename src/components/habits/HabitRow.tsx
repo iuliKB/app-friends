@@ -100,10 +100,12 @@ export function HabitRow({ habit, onToggle, onPress }: HabitRowProps) {
     [colors]
   );
 
-  const isSolo = habit.is_solo;
   const cadenceLabel = formatCadence(habit);
+  const pendingCount = Math.max(0, habit.members_total - habit.accepted_total);
+  const isTrulySolo = habit.members_total === 1;
+  const hasPending = !isTrulySolo && pendingCount > 0;
 
-  const chipStyle = isSolo
+  const chipStyle = isTrulySolo
     ? {
         borderColor: colors.text.secondary,
         backgroundColor: colors.surface.overlay,
@@ -113,8 +115,12 @@ export function HabitRow({ habit, onToggle, onPress }: HabitRowProps) {
         backgroundColor: colors.interactive.accent + ACCENT_FILL,
       };
 
-  const chipTextColor = isSolo ? colors.text.secondary : colors.interactive.accent;
-  const chipLabel = isSolo ? 'Solo' : `Group · ${habit.members_total}`;
+  const chipTextColor = isTrulySolo ? colors.text.secondary : colors.interactive.accent;
+  const chipLabel = isTrulySolo
+    ? 'Solo'
+    : hasPending
+      ? `Invited · ${pendingCount} pending`
+      : `Group · ${habit.accepted_total}`;
 
   const done = habit.did_me_check_in_today;
   const checkboxStyle = done
