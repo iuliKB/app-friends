@@ -69,18 +69,27 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
         },
         infoPanel: {
           paddingHorizontal: SPACING.lg,
-          paddingTop: SPACING.xs,
+          paddingTop: SPACING.sm,
           paddingBottom: SPACING.sm,
           gap: SPACING.xs,
           backgroundColor: colors.interactive.accent,
         },
-        eyebrow: {
+        nextEventChip: {
+          position: 'absolute',
+          top: SPACING.sm,
+          left: SPACING.sm,
+          paddingVertical: SPACING.xs,
+          paddingHorizontal: SPACING.sm,
+          borderRadius: RADII.full,
+          backgroundColor: colors.interactive.accent,
+        },
+        nextEventChipText: {
           fontSize: FONT_SIZE.xs,
           fontFamily: FONT_FAMILY.body.semibold,
           color: colors.surface.base,
-          opacity: 0.7,
           letterSpacing: 1.0,
           textTransform: 'uppercase',
+          lineHeight: FONT_SIZE.xs * 1.1,
         },
         title: {
           fontSize: FONT_SIZE.xl,
@@ -156,8 +165,11 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
           showDateBadge={false}
         />
 
+        <View style={styles.nextEventChip}>
+          <Text style={styles.nextEventChipText}>Next event</Text>
+        </View>
+
         <View style={styles.infoPanel}>
-          <Text style={styles.eyebrow}>Next event</Text>
           <Text style={styles.title} numberOfLines={2}>
             {plan.title}
           </Text>
