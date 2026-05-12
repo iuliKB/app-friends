@@ -6,25 +6,32 @@ import { IOUTile } from './IOUTile';
 import { GoalsTile } from './GoalsTile';
 import { BirthdayTile } from './BirthdayTile';
 import { StreakTile } from './StreakTile';
+import { HabitsTile } from './HabitsTile';
+import { TodosTile } from './TodosTile';
 import { selectSpotlight } from '@/hooks/useSpotlight';
 import type { IOUSummaryData } from '@/hooks/useIOUSummary';
 import type { StreakData } from '@/hooks/useStreakData';
 import type { UpcomingBirthdaysData } from '@/hooks/useUpcomingBirthdays';
+import type { UseHabitsResult } from '@/hooks/useHabits';
+import type { UseTodosResult } from '@/hooks/useTodos';
 
 interface BentoGridProps {
   iou: IOUSummaryData;
   streak: StreakData;
   birthdays: UpcomingBirthdaysData;
+  habits: UseHabitsResult;
+  todos: UseTodosResult;
 }
 
-const ROWS = 3; // spotlight + 2 grid rows
+const ROWS = 4; // spotlight + 3 grid rows (Pitfall 6 — Phase 29.1 6-tile grid)
 
-export function BentoGrid({ iou, streak, birthdays }: BentoGridProps) {
+export function BentoGrid({ iou, streak, birthdays, habits, todos }: BentoGridProps) {
   const spotlight = useMemo(
-    () => selectSpotlight({ iou, streak, birthdays }),
-    [iou, streak, birthdays]
+    () => selectSpotlight({ iou, streak, birthdays, habits, todos }),
+    [iou, streak, birthdays, habits, todos]
   );
-  const spotlightLoading = iou.loading || streak.loading || birthdays.loading;
+  const spotlightLoading =
+    iou.loading || streak.loading || birthdays.loading || habits.loading || todos.loading;
 
   const rowAnims = useRef(Array.from({ length: ROWS }, () => new Animated.Value(0))).current;
   const hasAnimated = useRef(false);
@@ -69,12 +76,17 @@ export function BentoGrid({ iou, streak, birthdays }: BentoGridProps) {
 
       <Animated.View style={[styles.row, animStyle(1)]}>
         <IOUTile summary={iou} />
-        <GoalsTile />
+        <HabitsTile habits={habits} />
       </Animated.View>
 
       <Animated.View style={[styles.row, animStyle(2)]}>
         <BirthdayTile birthdays={birthdays} />
+        <TodosTile todos={todos} />
+      </Animated.View>
+
+      <Animated.View style={[styles.row, animStyle(3)]}>
         <StreakTile streak={streak} />
+        <GoalsTile />
       </Animated.View>
     </View>
   );

@@ -28,6 +28,8 @@ import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useStreakData } from '@/hooks/useStreakData';
 import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
+import { useHabits } from '@/hooks/useHabits';
+import { useTodos } from '@/hooks/useTodos';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
@@ -78,6 +80,8 @@ export default function SquadScreen() {
   const streak = useStreakData();
   const iouSummary = useIOUSummary();
   const birthdays = useUpcomingBirthdays();
+  const habits = useHabits();
+  const todos = useTodos();
 
   // Action sheet state
   const [selectedFriend, setSelectedFriend] = useState<FriendWithStatus | null>(null);
@@ -162,7 +166,13 @@ export default function SquadScreen() {
 
   async function handleRefreshActivity() {
     setRefreshingActivity(true);
-    await Promise.all([streak.refetch(), iouSummary.refetch(), birthdays.refetch()]);
+    await Promise.all([
+      streak.refetch(),
+      iouSummary.refetch(),
+      birthdays.refetch(),
+      habits.refetch(),
+      todos.refetch(),
+    ]);
     setRefreshingActivity(false);
   }
 
@@ -470,7 +480,13 @@ export default function SquadScreen() {
               />
             }
           >
-            <BentoGrid iou={iouSummary} streak={streak} birthdays={birthdays} />
+            <BentoGrid
+              iou={iouSummary}
+              streak={streak}
+              birthdays={birthdays}
+              habits={habits}
+              todos={todos}
+            />
           </ScrollView>
         </View>
       </Animated.ScrollView>
