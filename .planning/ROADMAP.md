@@ -130,7 +130,6 @@
 
 - [x] **Phase 29: Home Screen Overhaul** - Ground-up visual redesign of radar bubbles, card stack, status display, and events section using /ui-ux-pro-max (completed 2026-05-06)
 - [x] **Phase 30: Squad Screen Overhaul** - Friends list (CompactFriendRow) polish only — the Bento tile redesign (Streak / Birthday / IOU cards) is superseded by Phase 29.1 (D-21) (completed 2026-05-12)
-- [ ] **Phase 31: Explore Screen Overhaul** - 3-state bottom sheet, theme fix for all three map components, reset-to-location chip, and plan card polish
 
 ## Phase Details
 
@@ -263,17 +262,5 @@ Plans:
 **Note**: Bento tile redesign (originally SQUAD-05, SQUAD-07, SQUAD-08) was superseded by Phase 29.1 (Habits & To-Dos) per D-21. Phase 29.1 shipped the Squad → Activity Bento grid with HabitsTile, TodosTile, and the rearranged Streak/Birthday/IOU tile pairing in a 3×2 layout — covering the original SQUAD-05 hero-metric, SQUAD-07 Birthday + IOU card layout, and SQUAD-08 Streak card polish requirements. Phase 30 now focuses on Friends list polish only.
 **Success Criteria** (what must be TRUE):
   1. The Friends list (CompactFriendRow) has polished avatar display with a visible status freshness indicator and consistent spacing that matches the app's design system
-**Plans**: TBD
-**UI hint**: yes
-
-### Phase 31: Explore Screen Overhaul
-**Goal**: Explore map has an interactive 3-state bottom sheet, respects light/dark theme on all three map surfaces, and has a reset-to-location action — map and plan list feel complete and polished
-**Depends on**: Phase 29
-**Requirements**: EXPLORE-01, EXPLORE-02, EXPLORE-03, EXPLORE-04
-**Success Criteria** (what must be TRUE):
-  1. The Explore map bottom sheet has three distinct states — Peek (compact plan count), Half (scrollable list), Full (full list with map minimized) — and tapping a map pin shows an inline plan preview without leaving the map
-  2. The Explore map, Plan Dashboard map tile, and Location Picker all switch between light and dark map styles when the OS theme changes — no component is stuck in dark mode
-  3. A "Reset to my location" chip re-centers the map on the user's current GPS position when tapped
-  4. The Explore plan list has consistent card layout with improved loading skeleton and a contextual empty state — loading and empty conditions both look intentional
 **Plans**: TBD
 **UI hint**: yes
