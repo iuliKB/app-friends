@@ -132,7 +132,6 @@
 - [x] **Phase 30: Squad Screen Overhaul** - Friends list (CompactFriendRow) polish only — the Bento tile redesign (Streak / Birthday / IOU cards) is superseded by Phase 29.1 (D-21) (completed 2026-05-12)
 - [ ] **Phase 31: Explore Screen Overhaul** - 3-state bottom sheet, theme fix for all three map components, reset-to-location chip, and plan card polish
 - [ ] **Phase 32: Auth Screen Redesign** - Fix the always-dark LinearGradient bug, extract gradient tokens, and add specific login error messaging
-- [ ] **Phase 33: Welcome / Onboarding Flow** - Brand-new 3-screen slide onboarding flow using react-native-pager-view, gated by AsyncStorage key, implemented as full-screen modal overlay
 
 ## Phase Details
 
@@ -291,48 +290,3 @@ Plans:
   4. Gradient values are defined in `src/theme/gradients.ts` and imported by AuthScreen — no raw hex color arrays in the component file
 **Plans**: TBD
 **UI hint**: yes
-
-### Phase 33: Welcome / Onboarding Flow
-**Goal**: New users see a branded 3-screen slide onboarding flow before reaching the main app — existing users never see it, and the flow cannot be accidentally triggered by iOS swipe-back
-**Depends on**: Phase 32
-**Requirements**: ONBOARD-01, ONBOARD-02, ONBOARD-03, ONBOARD-04
-**Success Criteria** (what must be TRUE):
-  1. A user launching the app for the first time (no `@campfire/welcome_complete` key) sees a full-screen 3-slide onboarding flow powered by react-native-pager-view before reaching any tab screen
-  2. Every Welcome slide has a visible Skip button that routes immediately to the main app — not the next slide
-  3. Completing the final slide routes to Squad → Friends tab if the user has zero friends, or to Home tab if they have at least one friend
-  4. A returning user (key present) never sees the Welcome flow — app opens directly to the main tab layout
-  5. The iOS swipe-back gesture is disabled on the Welcome screen — users cannot accidentally dismiss it mid-onboarding
-**Plans**: TBD
-**UI hint**: yes
-
-## Progress
-
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 12. Schema Foundation | v1.5 | 2/2 | Complete | 2026-04-20 |
-| 13. Profile Rework + Friend Profile | v1.5 | 3/3 | Complete | 2026-04-20 |
-| 14. Reply Threading | v1.5 | 4/4 | Complete | 2026-04-20 |
-| 15. Message Reactions | v1.5 | 4/4 | Complete | 2026-04-21 |
-| 16. Media Sharing | v1.5 | 4/4 | Complete | 2026-04-21 |
-| 17. Polls | v1.5 | 4/4 | Complete | 2026-04-21 |
-| 18. Theme Foundation | v1.6 | 3/3 | Complete | 2026-04-28 |
-| 19. Theme Migration | v1.6 | 3/3 | Complete | 2026-04-29 |
-| 20. Map Feature | v1.6 | 6/6 | Complete | 2026-04-29 |
-| 21. Gallery Foundation | v1.6 | 3/3 | Complete | 2026-04-30 |
-| 22. Gallery UI | v1.6 | 3/3 | Complete | 2026-04-30 |
-| 23. Memories Gallery | v1.6 | 4/4 | Complete | 2026-05-04 |
-| 24. Polish Foundation | v1.7 | 2/2 | Complete | 2026-05-05 |
-| 25. Auth, Onboarding & Errors | v1.7 | 5/5 | Complete | 2026-05-05 |
-| 26. Home & Chat Polish | v1.7 | 6/6 | Complete | 2026-05-05 |
-| 27. Plans & Squad Polish | v1.7 | 5/5 | Complete | 2026-05-05 |
-| 28. Branding | v1.7 | 1/1 | Complete | 2026-05-05 |
-| 29. Home Screen Overhaul | v1.8 | 5/5 | Complete    | 2026-05-06 |
-| 29.1. Habits & To-Do Features | v1.8 | 8/8 | Complete    | 2026-05-12 |
-| 30. Squad Screen Overhaul | v1.8 | 0/? | Not started | - |
-| 31. Explore Screen Overhaul | v1.8 | 0/? | Not started | - |
-| 32. Auth Screen Redesign | v1.8 | 0/? | Not started | - |
-| 33. Welcome / Onboarding Flow | v1.8 | 0/? | Not started | - |
-
----
-
-*Roadmap updated: 2026-05-12 — Phase 29.1 (Habits & To-Dos) complete (8/8 plans); Phase 30 scope reduced to SQUAD-06 per D-21*
