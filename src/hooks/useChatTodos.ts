@@ -4,19 +4,20 @@
 // roundtrip from `complete_chat_todo`) arrive via `useChatRoom`'s existing
 // per-channel Realtime subscription.
 //
-// - `sendChatTodo(...)`: invokes `create_chat_todo_list` RPC with the
-//   single-item shape (D-09, is_list=false, items length 1) or the list
-//   shape (D-13, is_list=true, items length 1-30).
-// - `completeChatTodo(itemId)`: invokes `complete_chat_todo` RPC; returns
-//   the system message id surfaced by the RPC so callers can correlate.
-//
-// Errors are silent: return null id + error message string.
+// Phase 29.1 follow-up (0026): scope is a union of group_channel / plan / dm
+// to cover birthday chats, plan chats, and DMs uniformly. The RPC takes all
+// three scope params and validates that exactly one is non-null.
 
 import { useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 
+export type ChatScope =
+  | { kind: 'group'; groupChannelId: string }
+  | { kind: 'plan'; planId: string }
+  | { kind: 'dm'; dmChannelId: string };
+
 export interface SendChatTodoArgs {
-  groupChannelId: string;
+  scope: ChatScope;
   assigneeId: string;
   title: string;
   isList: boolean; // false → D-09 single-item; true → D-13 list flavor
@@ -32,12 +33,7 @@ export interface UseChatTodosResult {
   ) => Promise<{ messageId: string | null; error: string | null }>;
 }
 
-/**
- * @param _groupChannelId  Reserved for future per-channel Realtime
- *   subscriptions; v1 relies on useChatRoom's existing channel subscription
- *   to surface the system-message roundtrip from `complete_chat_todo`.
- */
-export function useChatTodos(_groupChannelId: string): UseChatTodosResult {
+export function useChatTodos(): UseChatTodosResult {
   const sendChatTodo = useCallback(
     async (
       args: SendChatTodoArgs
@@ -45,7 +41,9 @@ export function useChatTodos(_groupChannelId: string): UseChatTodosResult {
       const { data, error: rpcErr } = await supabase.rpc(
         'create_chat_todo_list',
         {
-          p_group_channel_id: args.groupChannelId,
+          p_group_channel_id: args.scope.kind === 'group' ? args.scope.groupChannelId : null,
+          p_plan_id: args.scope.kind === 'plan' ? args.scope.planId : null,
+          p_dm_channel_id: args.scope.kind === 'dm' ? args.scope.dmChannelId : null,
           p_assignee_id: args.assigneeId,
           p_title: args.title,
           p_is_list: args.isList,

@@ -30,7 +30,7 @@ function renderSheet(props: Partial<React.ComponentProps<typeof ChatTodoPickerSh
       <ChatTodoPickerSheet
         visible={true}
         onDismiss={jest.fn()}
-        groupChannelId="gc1"
+        scope={{ kind: 'group', groupChannelId: 'gc1' }}
         members={stubMembers}
         currentUserId="u-self"
         onSend={jest.fn().mockResolvedValue({ listId: null, error: null })}

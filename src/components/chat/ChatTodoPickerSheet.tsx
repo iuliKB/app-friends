@@ -31,8 +31,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
+import type { ChatScope } from '@/hooks/useChatTodos';
 
 export interface ChatTodoPickerMember {
   user_id: string;
@@ -41,7 +43,7 @@ export interface ChatTodoPickerMember {
 }
 
 export interface ChatTodoPickerSendArgs {
-  groupChannelId: string;
+  scope: ChatScope;
   assigneeId: string;
   title: string;
   isList: boolean;
@@ -51,7 +53,7 @@ export interface ChatTodoPickerSendArgs {
 interface ChatTodoPickerSheetProps {
   visible: boolean;
   onDismiss: () => void;
-  groupChannelId: string;
+  scope: ChatScope;
   members: ChatTodoPickerMember[];
   currentUserId: string;
   onSend: (
@@ -73,7 +75,7 @@ function toLocalDateString(date: Date): string {
 export function ChatTodoPickerSheet({
   visible,
   onDismiss,
-  groupChannelId,
+  scope,
   members,
   currentUserId,
   onSend,
@@ -92,6 +94,7 @@ export function ChatTodoPickerSheet({
   const [pending, setPending] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [assigneePickerOpen, setAssigneePickerOpen] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   function resetState() {
     setStep(1);
@@ -104,6 +107,16 @@ export function ChatTodoPickerSheet({
     setPending(false);
     setErrorText(null);
     setAssigneePickerOpen(false);
+    setShowDatePicker(false);
+  }
+
+  function handleDateChange(_event: DateTimePickerEvent, selectedDate?: Date) {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      setDueDate(selectedDate);
+    }
   }
 
   function openAnim() {
@@ -169,7 +182,7 @@ export function ChatTodoPickerSheet({
     const args: ChatTodoPickerSendArgs =
       kind === 'single'
         ? {
-            groupChannelId,
+            scope,
             assigneeId,
             title: trimmedTitle,
             isList: false,
@@ -181,7 +194,7 @@ export function ChatTodoPickerSheet({
             ],
           }
         : {
-            groupChannelId,
+            scope,
             assigneeId,
             title: trimmedTitle,
             isList: true,
@@ -472,7 +485,12 @@ export function ChatTodoPickerSheet({
         <>
           <Text style={styles.fieldLabel}>Due date</Text>
           <View style={styles.row}>
-            <View style={styles.rowButton}>
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={() => setShowDatePicker(true)}
+              accessibilityRole="button"
+              accessibilityLabel={dueDate ? 'Change due date' : 'Pick a due date'}
+            >
               <Text style={[styles.rowLabel, !dueDate && styles.rowLabelMuted]}>
                 {dueDate
                   ? dueDate.toLocaleDateString(undefined, {
@@ -482,7 +500,7 @@ export function ChatTodoPickerSheet({
                     })
                   : 'No due date'}
               </Text>
-            </View>
+            </TouchableOpacity>
             {dueDate ? (
               <TouchableOpacity
                 onPress={() => setDueDate(null)}
@@ -493,14 +511,24 @@ export function ChatTodoPickerSheet({
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                onPress={() => setDueDate(new Date(Date.now() + 86_400_000))}
-                accessibilityLabel="Set due date to tomorrow"
+                onPress={() => setShowDatePicker(true)}
+                accessibilityLabel="Pick a due date"
                 style={styles.itemRemoveButton}
               >
                 <Ionicons name="calendar-outline" size={20} color={colors.interactive.accent} />
               </TouchableOpacity>
             )}
           </View>
+          {showDatePicker && (
+            <DateTimePicker
+              value={dueDate ?? new Date()}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleDateChange}
+              minimumDate={new Date()}
+              themeVariant="dark"
+            />
+          )}
         </>
       )}
 

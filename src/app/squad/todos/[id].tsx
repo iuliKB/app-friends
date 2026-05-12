@@ -130,10 +130,15 @@ export default function TodoDetailScreen() {
       return;
     }
 
-    // 2. Fall back to chat_todo_items + parent list + group channel name.
+    // 2. Fall back to chat_todo_items + parent list. Resolve chat_name per
+    //    scope (0026): group_channels.name, plans.title, or DM peer's name.
+    //    PostgREST can't embed group_channels for plan/dm rows, so fetch the
+    //    list scope columns and resolve the name in a follow-up query.
     const { data: chatData, error: chatErr } = await (supabase as any)
       .from('chat_todo_items')
-      .select('*, chat_todo_lists!inner(*, group_channels!inner(name))')
+      .select(
+        '*, chat_todo_lists!inner(group_channel_id, plan_id, dm_channel_id)'
+      )
       .eq('id', todoId)
       .maybeSingle();
 
@@ -155,9 +160,50 @@ export default function TodoDetailScreen() {
       due_date: string | null;
       completed_at: string | null;
       chat_todo_lists?: {
-        group_channels?: { name?: string | null } | null;
+        group_channel_id: string | null;
+        plan_id: string | null;
+        dm_channel_id: string | null;
       } | null;
     };
+
+    let chatName = 'a chat';
+    const parent = c.chat_todo_lists;
+    if (parent?.group_channel_id) {
+      const { data: gcRow } = await supabase
+        .from('group_channels')
+        .select('name')
+        .eq('id', parent.group_channel_id)
+        .maybeSingle();
+      const gcName = (gcRow as { name?: string | null } | null)?.name;
+      if (gcName) chatName = gcName;
+    } else if (parent?.plan_id) {
+      const { data: planRow } = await supabase
+        .from('plans')
+        .select('title')
+        .eq('id', parent.plan_id)
+        .maybeSingle();
+      const planTitle = (planRow as { title?: string | null } | null)?.title;
+      if (planTitle) chatName = planTitle;
+    } else if (parent?.dm_channel_id) {
+      const callerId = (await supabase.auth.getUser()).data.user?.id ?? '';
+      const { data: dmRow } = await supabase
+        .from('dm_channels')
+        .select('user_a, user_b')
+        .eq('id', parent.dm_channel_id)
+        .maybeSingle();
+      const dm = dmRow as { user_a: string; user_b: string } | null;
+      const peerId = dm ? (dm.user_a === callerId ? dm.user_b : dm.user_a) : null;
+      if (peerId) {
+        const { data: peerProfile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', peerId)
+          .maybeSingle();
+        const peerName = (peerProfile as { display_name?: string | null } | null)?.display_name;
+        if (peerName) chatName = peerName;
+      }
+    }
+
     setDetail({
       flavor: 'chat',
       id: c.id,
@@ -165,7 +211,7 @@ export default function TodoDetailScreen() {
       title: c.title,
       due_date: c.due_date,
       completed_at: c.completed_at,
-      chat_name: c.chat_todo_lists?.group_channels?.name ?? 'a chat',
+      chat_name: chatName,
     });
     setLoading(false);
   }, [todoId]);

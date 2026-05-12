@@ -42,12 +42,12 @@ describe('useChatTodos', () => {
     (supabase.rpc as jest.Mock).mockReset();
   });
 
-  it('sendChatTodo invokes create_chat_todo_list with is_list=false for the single-item flavor (D-09)', async () => {
+  it('sendChatTodo invokes RPC with group scope (D-09 single-item flavor)', async () => {
     (supabase.rpc as jest.Mock).mockResolvedValueOnce({ data: 'list-id-123', error: null });
-    const { result } = renderHook(() => useChatTodos('gc1'));
+    const { result } = renderHook(() => useChatTodos());
     await act(async () => {
       await result.current.sendChatTodo({
-        groupChannelId: 'gc1',
+        scope: { kind: 'group', groupChannelId: 'gc1' },
         assigneeId: 'u-other',
         title: 'Buy bread',
         isList: false,
@@ -58,6 +58,8 @@ describe('useChatTodos', () => {
       'create_chat_todo_list',
       expect.objectContaining({
         p_group_channel_id: 'gc1',
+        p_plan_id: null,
+        p_dm_channel_id: null,
         p_assignee_id: 'u-other',
         p_title: 'Buy bread',
         p_is_list: false,
@@ -65,14 +67,14 @@ describe('useChatTodos', () => {
     );
   });
 
-  it('sendChatTodo invokes RPC with is_list=true + items array for the list flavor (D-13)', async () => {
-    (supabase.rpc as jest.Mock).mockResolvedValueOnce({ data: 'list-id-456', error: null });
-    const { result } = renderHook(() => useChatTodos('gc1'));
+  it('sendChatTodo invokes RPC with plan scope (plan chat)', async () => {
+    (supabase.rpc as jest.Mock).mockResolvedValueOnce({ data: 'list-id-plan', error: null });
+    const { result } = renderHook(() => useChatTodos());
     await act(async () => {
       await result.current.sendChatTodo({
-        groupChannelId: 'gc1',
+        scope: { kind: 'plan', planId: 'plan-7' },
         assigneeId: 'u-other',
-        title: 'Trip prep',
+        title: 'Plan prep',
         isList: true,
         items: [
           { title: 'Pack', due_date: null },
@@ -83,6 +85,9 @@ describe('useChatTodos', () => {
     expect(supabase.rpc).toHaveBeenCalledWith(
       'create_chat_todo_list',
       expect.objectContaining({
+        p_group_channel_id: null,
+        p_plan_id: 'plan-7',
+        p_dm_channel_id: null,
         p_is_list: true,
         p_items: expect.arrayContaining([
           expect.objectContaining({ title: 'Pack' }),
@@ -92,9 +97,32 @@ describe('useChatTodos', () => {
     );
   });
 
+  it('sendChatTodo invokes RPC with dm scope (1:1 DM)', async () => {
+    (supabase.rpc as jest.Mock).mockResolvedValueOnce({ data: 'list-id-dm', error: null });
+    const { result } = renderHook(() => useChatTodos());
+    await act(async () => {
+      await result.current.sendChatTodo({
+        scope: { kind: 'dm', dmChannelId: 'dm-9' },
+        assigneeId: 'u-peer',
+        title: 'Send doc',
+        isList: false,
+        items: [{ title: 'Send doc', due_date: null }],
+      });
+    });
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'create_chat_todo_list',
+      expect.objectContaining({
+        p_group_channel_id: null,
+        p_plan_id: null,
+        p_dm_channel_id: 'dm-9',
+        p_is_list: false,
+      })
+    );
+  });
+
   it('completeChatTodo invokes complete_chat_todo RPC and returns the system message id', async () => {
     (supabase.rpc as jest.Mock).mockResolvedValueOnce({ data: 'msg-789', error: null });
-    const { result } = renderHook(() => useChatTodos('gc1'));
+    const { result } = renderHook(() => useChatTodos());
     let returned: { messageId: string | null; error: string | null } | undefined;
     await act(async () => {
       returned = await result.current.completeChatTodo('item-1');
@@ -109,7 +137,7 @@ describe('useChatTodos', () => {
       data: null,
       error: { message: 'item not found' },
     });
-    const { result } = renderHook(() => useChatTodos('gc1'));
+    const { result } = renderHook(() => useChatTodos());
     let returned: { messageId: string | null; error: string | null } | undefined;
     await act(async () => {
       returned = await result.current.completeChatTodo('item-1');

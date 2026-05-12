@@ -22,7 +22,8 @@ import { useNavigation, useRouter } from 'expo-router';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
 import { useChatTodos } from '@/hooks/useChatTodos';
-import { useGroupMembers } from '@/hooks/useGroupMembers';
+import { useChatMembers } from '@/hooks/useChatMembers';
+import type { ChatScope } from '@/hooks/useChatTodos';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import type { ChatTodoItem, ChatTodoList } from '@/types/todos';
@@ -92,15 +93,21 @@ export function ChatRoomScreen({
   // Phase 17: poll creation sheet
   const [showPollCreationSheet, setShowPollCreationSheet] = useState(false);
 
-  // Phase 29.1 Plan 07 — chat to-do integration:
-  //   • Picker sheet visibility (replaces the previous placeholder alert).
-  //   • useChatTodos exposes sendChatTodo + completeChatTodo (RPC wrappers).
-  //   • useGroupMembers loads the group's members for the assignee picker.
+  // Phase 29.1 Plan 07 — chat to-do integration (multi-scope as of 0026):
+  //   • Picker sheet works in group chats, plan chats, and DMs.
+  //   • chatScope is the active chat scope, derived from the three id props.
+  //   • useChatMembers loads members for the assignee picker.
   //   • chatTodoData is a per-message_id cache of resolved
   //     {list, items, assigneeName} for `message_type === 'todo'` rows.
+  const chatScope: ChatScope | null = useMemo(() => {
+    if (groupChannelId) return { kind: 'group', groupChannelId };
+    if (planId) return { kind: 'plan', planId };
+    if (dmChannelId) return { kind: 'dm', dmChannelId };
+    return null;
+  }, [groupChannelId, planId, dmChannelId]);
   const [showChatTodoPickerSheet, setShowChatTodoPickerSheet] = useState(false);
-  const { sendChatTodo, completeChatTodo } = useChatTodos(groupChannelId ?? '');
-  const { members: chatMembers } = useGroupMembers(groupChannelId ?? null);
+  const { sendChatTodo, completeChatTodo } = useChatTodos();
+  const { members: chatMembers } = useChatMembers(chatScope);
   const [chatTodoData, setChatTodoData] = useState<
     Record<string, { list: ChatTodoList | null; items: ChatTodoItem[]; assigneeName: string }>
   >({});
@@ -166,8 +173,7 @@ export function ChatRoomScreen({
     } else if (action === 'poll') {
       setShowPollCreationSheet(true);
     } else if (action === 'todo') {
-      // Phase 29.1 Plan 07 — D-09: open the two-step picker (group chats only;
-      // single-DM threads don't show the To-Do attachment action in SendBar).
+      // Two-step picker (works in group, plan, and DM chats as of 0026).
       setShowChatTodoPickerSheet(true);
     }
   }
@@ -551,11 +557,11 @@ export function ChatRoomScreen({
           });
         }}
       />
-      {groupChannelId ? (
+      {chatScope ? (
         <ChatTodoPickerSheet
           visible={showChatTodoPickerSheet}
           onDismiss={() => setShowChatTodoPickerSheet(false)}
-          groupChannelId={groupChannelId}
+          scope={chatScope}
           members={chatMembers}
           currentUserId={currentUserId}
           onSend={async (args) => {
