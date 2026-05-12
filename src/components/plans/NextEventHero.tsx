@@ -72,18 +72,20 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
           paddingTop: SPACING.sm,
           paddingBottom: SPACING.md,
           gap: SPACING.xs,
+          backgroundColor: colors.interactive.accent,
         },
         eyebrow: {
           fontSize: FONT_SIZE.xs,
           fontFamily: FONT_FAMILY.body.semibold,
-          color: colors.interactive.accent,
+          color: colors.surface.base,
+          opacity: 0.7,
           letterSpacing: 1.0,
           textTransform: 'uppercase',
         },
         title: {
           fontSize: FONT_SIZE.xl,
           fontFamily: FONT_FAMILY.display.semibold,
-          color: colors.text.primary,
+          color: colors.surface.base,
           lineHeight: FONT_SIZE.xl * 1.2,
         },
         metaRow: {
@@ -101,13 +103,15 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
         metaText: {
           fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.medium,
-          color: colors.text.secondary,
+          color: colors.surface.base,
+          opacity: 0.85,
           flexShrink: 1,
         },
         divider: {
           width: 1,
           height: 12,
-          backgroundColor: colors.border,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(14,15,17,0.25)',
         },
         avatarRow: {
           marginTop: SPACING.sm,
@@ -118,7 +122,8 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
         goingText: {
           fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.semibold,
-          color: colors.text.secondary,
+          color: colors.surface.base,
+          opacity: 0.85,
         },
       }),
     [colors, isDark]
@@ -161,7 +166,7 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
             <View style={styles.metaRow}>
               {labels ? (
                 <View style={styles.metaItem}>
-                  <Ionicons name="time-outline" size={14} color={colors.text.secondary} />
+                  <Ionicons name="time-outline" size={14} color={colors.surface.base} />
                   <Text style={styles.metaText} numberOfLines={1}>
                     {labels.date} {'·'} {labels.time}
                   </Text>
@@ -170,7 +175,7 @@ export function NextEventHero({ plan, onPress }: NextEventHeroProps) {
               {labels && plan.location ? <View style={styles.divider} /> : null}
               {plan.location ? (
                 <View style={[styles.metaItem, { flexShrink: 1 }]}>
-                  <Ionicons name="location-outline" size={14} color={colors.text.secondary} />
+                  <Ionicons name="location-outline" size={14} color={colors.surface.base} />
                   <Text style={styles.metaText} numberOfLines={1}>
                     {plan.location}
                   </Text>
