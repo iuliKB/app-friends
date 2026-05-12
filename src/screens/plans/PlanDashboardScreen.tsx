@@ -131,9 +131,34 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
           bottom: 0,
           paddingHorizontal: SPACING.lg,
           paddingTop: SPACING.md,
-          backgroundColor: colors.surface.base,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
+          alignItems: 'center',
+          backgroundColor: 'transparent',
+        },
+        stickyChatPill: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.sm,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          height: 52,
+          paddingHorizontal: SPACING.xl,
+          borderRadius: RADII.full,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(185,255,59,0.92)',
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          shadowColor: '#000',
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          shadowOpacity: 0.35,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          shadowRadius: 16,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          shadowOffset: { width: 0, height: 6 },
+          elevation: 8,
+        },
+        stickyChatPillText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.surface.base,
         },
         centered: {
           flex: 1,
@@ -987,12 +1012,21 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
         }
       />
 
-      {/* 6) Sticky Open Chat — fixed at bottom, scrolls under */}
-      <View style={[styles.stickyChatBar, { paddingBottom: insets.bottom || SPACING.md }]}>
-        <PrimaryButton
-          title="Open Chat"
+      {/* 6) Sticky Open Chat — floating translucent pill, no container */}
+      <View
+        style={[styles.stickyChatBar, { paddingBottom: insets.bottom || SPACING.md }]}
+        pointerEvents="box-none"
+      >
+        <TouchableOpacity
+          style={styles.stickyChatPill}
           onPress={() => router.push(`/chat/room?plan_id=${planId}` as never)}
-        />
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Open chat"
+        >
+          <Ionicons name="chatbubble-outline" size={20} color={colors.surface.base} />
+          <Text style={styles.stickyChatPillText}>Open Chat</Text>
+        </TouchableOpacity>
       </View>
       {/* GalleryViewerModal — rendered outside FlatList to avoid nesting issues */}
       <GalleryViewerModal
