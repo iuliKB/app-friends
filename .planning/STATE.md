@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 29.1-04-PLAN.md (Bento tile integration)
-last_updated: "2026-05-12T02:26:42.702Z"
+stopped_at: Completed 29.1-05-PLAN.md (Squad habits screens)
+last_updated: "2026-05-12T02:36:58.145Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 13
-  completed_plans: 9
-  percent: 69
+  completed_plans: 10
+  percent: 77
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 29.1 (habits-to-do-features) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -86,6 +86,9 @@ Requirements covered: 0 / 18
 - [Phase 29.1-04]: TodosTile accent flips on overdueCount > 0 only (not total > 0) — violet stays for due-today-only state; destructive only when truly overdue
 - [Phase 29.1-04]: reanimated jest mock extended with useReducedMotion + default.View host strings (Rule 3 deviation) — required for any Bento-component test rendering through BentoCard
 - [Phase 29.1-04]: BentoGrid row arrangement: Row 1=IOU+Habits, Row 2=Birthdays+ToDos, Row 3=Streak+Goals (Squad Challenges placeholder D-15 preserved) — matches UI-SPEC §Component Inventory exactly
+- [Phase 29.1-05]: Habit detail screen calls supabase.rpc('toggle_habit_today_checkin') directly instead of mounting useHabits() — avoids re-fetching the whole habit list per toggle; useHabitDetail.refetch() already covers the local data needs
+- [Phase 29.1-05]: Pending habit invitations rendered as FlatList ListHeaderComponent (not SectionList) — different row shapes (HabitInvitationRow card vs HabitRow row) and asymmetric empty states don't fit SectionList; ListHeaderComponent drops cleanly when no invites
+- [Phase 29.1-05]: (supabase as any) cast applied at 3 RPC + 2 table-query sites for create_habit/toggle_habit_today_checkin/habits/habit_members — same untyped-RPC pattern as useChatRoom.ts:612 + useHabitDetail.ts; database.ts regeneration deferred until migration 0024 deploys remotely (still local-only per Plan 01 SUMMARY)
 
 ### Roadmap Evolution
 
@@ -105,5 +108,5 @@ Requirements covered: 0 / 18
 
 ## Session Continuity
 
-Last session: 2026-05-12T02:26:42.699Z
-Stopped at: Completed 29.1-04-PLAN.md (Bento tile integration)
+Last session: 2026-05-12T02:36:58.141Z
+Stopped at: Completed 29.1-05-PLAN.md (Squad habits screens)
