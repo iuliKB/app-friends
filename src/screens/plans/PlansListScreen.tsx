@@ -17,7 +17,8 @@ import { usePlans } from '@/hooks/usePlans';
 import { PlanCardSkeleton } from '@/components/plans/PlanCardSkeleton';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useInvitations, PlanInvitation } from '@/hooks/useInvitations';
-import { PlanCard } from '@/components/plans/PlanCard';
+import { NextEventHero } from '@/components/plans/NextEventHero';
+import { EventListCard } from '@/components/plans/EventListCard';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FAB } from '@/components/common/FAB';
@@ -64,188 +65,201 @@ export function PlansListScreen() {
       Alert.alert('Error', "Couldn't decline invitation. Try again.");
       return;
     }
-    await fetchPlans();  // keep plans list consistent with invitation state
+    await fetchPlans(); // keep plans list consistent with invitation state
     if (invitations.length <= 1) setModalVisible(false);
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    root: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    listContent: {
-      paddingHorizontal: SPACING.lg,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingBottom: 100, // no exact token — intentional large FAB clearance
-    },
-    errorText: {
-      fontSize: FONT_SIZE.lg,
-      color: colors.text.secondary,
-      paddingHorizontal: 0,
-      paddingTop: SPACING.sm,
-    },
-    separator: {
-      height: SPACING.md,
-    },
-    // Invite banner
-    inviteBanner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      paddingHorizontal: SPACING.lg,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingVertical: 14, // no exact token — between md(12) and lg(16)
-      marginBottom: SPACING.lg,
-    },
-    inviteBannerLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-    },
-    inviteBannerText: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-    },
-    // Modal
-    modalRoot: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xl,
-      paddingBottom: SPACING.lg,
-    },
-    modalTitle: {
-      fontSize: FONT_SIZE.xxl,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-    },
-    modalList: {
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.xxl,
-    },
-    noInvitesText: {
-      fontSize: FONT_SIZE.lg,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      paddingTop: SPACING.xxl,
-    },
-    // Invite card
-    inviteCard: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      padding: SPACING.lg,
-      gap: SPACING.sm,
-    },
-    inviteCreatorRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      gap: 10, // no exact token — between sm(8) and md(12)
-      marginBottom: SPACING.xs,
-    },
-    inviteCreatorLabel: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-      flex: 1,
-    },
-    inviteCreatorName: {
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-    },
-    inviteTitle: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 18, // no exact token — between lg(16) and xl(20)
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-    },
-    inviteTime: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.secondary,
-    },
-    inviteLocation: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-    },
-    alsoInvitedRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-      marginTop: SPACING.xs,
-    },
-    alsoAvatars: {
-      flexDirection: 'row',
-    },
-    alsoAvatarWrapper: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginRight: -6, // no exact token — negative overlap for avatar stack
-    },
-    alsoInvitedText: {
-      fontSize: FONT_SIZE.sm,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-      flex: 1,
-      marginLeft: SPACING.sm,
-    },
-    inviteActions: {
-      flexDirection: 'row',
-      gap: SPACING.md,
-      marginTop: SPACING.sm,
-    },
-    acceptBtn: {
-      flex: 1,
-      height: 40,
-      borderRadius: RADII.md,
-      backgroundColor: colors.status.free,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    acceptBtnText: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.surface.base,
-    },
-    declineBtn: {
-      flex: 1,
-      height: 40,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    declineBtnText: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.secondary,
-    },
-    // View mode toggle
-    viewToggle: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-    toggleButton: {
-      width: 36,
-      height: 36,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: RADII.md,
-    },
-    toggleButtonActive: {
-      // D-15 UI-SPEC: 15% opacity accent background on active button
-      backgroundColor: 'rgba(185, 255, 59, 0.15)',
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        root: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        listContent: {
+          paddingHorizontal: SPACING.lg,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          paddingBottom: 100, // no exact token — intentional large FAB clearance
+        },
+        errorText: {
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.secondary,
+          paddingHorizontal: 0,
+          paddingTop: SPACING.sm,
+        },
+        separator: {
+          height: SPACING.md,
+        },
+        sectionLabel: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.secondary,
+          textTransform: 'uppercase',
+          letterSpacing: 0.8,
+          marginTop: SPACING.lg,
+          marginBottom: SPACING.md,
+        },
+        // Invite banner
+        inviteBanner: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          paddingHorizontal: SPACING.lg,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          paddingVertical: 14, // no exact token — between md(12) and lg(16)
+          marginBottom: SPACING.lg,
+        },
+        inviteBannerLeft: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+        },
+        inviteBannerText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+        },
+        // Modal
+        modalRoot: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        modalHeader: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.xl,
+          paddingBottom: SPACING.lg,
+        },
+        modalTitle: {
+          fontSize: FONT_SIZE.xxl,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+        },
+        modalList: {
+          paddingHorizontal: SPACING.lg,
+          paddingBottom: SPACING.xxl,
+        },
+        noInvitesText: {
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          paddingTop: SPACING.xxl,
+        },
+        // Invite card
+        inviteCard: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          padding: SPACING.lg,
+          gap: SPACING.sm,
+        },
+        inviteCreatorRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          gap: 10, // no exact token — between sm(8) and md(12)
+          marginBottom: SPACING.xs,
+        },
+        inviteCreatorLabel: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+          flex: 1,
+        },
+        inviteCreatorName: {
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+        },
+        inviteTitle: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 18, // no exact token — between lg(16) and xl(20)
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+        },
+        inviteTime: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.secondary,
+        },
+        inviteLocation: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+        },
+        alsoInvitedRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          marginTop: SPACING.xs,
+        },
+        alsoAvatars: {
+          flexDirection: 'row',
+        },
+        alsoAvatarWrapper: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          marginRight: -6, // no exact token — negative overlap for avatar stack
+        },
+        alsoInvitedText: {
+          fontSize: FONT_SIZE.sm,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+          flex: 1,
+          marginLeft: SPACING.sm,
+        },
+        inviteActions: {
+          flexDirection: 'row',
+          gap: SPACING.md,
+          marginTop: SPACING.sm,
+        },
+        acceptBtn: {
+          flex: 1,
+          height: 40,
+          borderRadius: RADII.md,
+          backgroundColor: colors.status.free,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        acceptBtnText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.surface.base,
+        },
+        declineBtn: {
+          flex: 1,
+          height: 40,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        declineBtnText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.secondary,
+        },
+        // View mode toggle
+        viewToggle: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 4,
+        },
+        toggleButton: {
+          width: 36,
+          height: 36,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: RADII.md,
+        },
+        toggleButtonActive: {
+          // D-15 UI-SPEC: 15% opacity accent background on active button
+          backgroundColor: 'rgba(185, 255, 59, 0.15)',
+        },
+      }),
+    [colors]
+  );
 
   function renderInvitation({ item }: { item: PlanInvitation }) {
     const otherNames = item.other_members.map((m) => m.display_name);
@@ -273,9 +287,7 @@ export function PlansListScreen() {
         {item.scheduled_for ? (
           <Text style={styles.inviteTime}>{formatInviteTime(item.scheduled_for)}</Text>
         ) : null}
-        {item.location ? (
-          <Text style={styles.inviteLocation}>{item.location}</Text>
-        ) : null}
+        {item.location ? <Text style={styles.inviteLocation}>{item.location}</Text> : null}
 
         {/* Other invited members */}
         {alsoInvited ? (
@@ -315,11 +327,7 @@ export function PlansListScreen() {
   if (error) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
-        <ErrorDisplay
-          mode="screen"
-          message="Couldn't load plans."
-          onRetry={fetchPlans}
-        />
+        <ErrorDisplay mode="screen" message="Couldn't load plans." onRetry={fetchPlans} />
       </View>
     );
   }
@@ -330,15 +338,9 @@ export function PlansListScreen() {
         <ScreenHeader
           title="Your Plans"
           rightAction={
-            <View
-              style={styles.viewToggle}
-              accessibilityRole="radiogroup"
-            >
+            <View style={styles.viewToggle} accessibilityRole="radiogroup">
               <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  viewMode === 'list' && styles.toggleButtonActive,
-                ]}
+                style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
                 onPress={() => setViewMode('list')}
                 hitSlop={8}
                 accessibilityLabel="List view"
@@ -351,10 +353,7 @@ export function PlansListScreen() {
                 />
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  viewMode === 'map' && styles.toggleButtonActive,
-                ]}
+                style={[styles.toggleButton, viewMode === 'map' && styles.toggleButtonActive]}
                 onPress={() => setViewMode('map')}
                 hitSlop={8}
                 accessibilityLabel="Map view"
@@ -379,63 +378,81 @@ export function PlansListScreen() {
           ))}
         </View>
       ) : (
-      <FlatList<PlanWithMembers>
-        data={plans}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <PlanCard plan={item} onPress={() => router.push(`/plans/${item.id}` as never)} />
-        )}
-        ListHeaderComponent={
-          <View style={{ paddingHorizontal: SPACING.lg }}>
-            {inviteCount > 0 && (
-              <TouchableOpacity
-                style={styles.inviteBanner}
-                onPress={() => setModalVisible(true)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.inviteBannerLeft}>
-                  <Ionicons name="mail-outline" size={20} color={colors.interactive.accent} />
-                  <Text style={styles.inviteBannerText}>
-                    {inviteCount === 1
-                      ? 'You have 1 invitation'
-                      : `You have ${inviteCount} invitations`}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-        }
-        ListEmptyComponent={
-          error ? (
-            <Text style={styles.errorText}>{error ?? "Couldn't load plans. Pull down to try again."}</Text>
-          ) : (
-            <EmptyState
-              icon="calendar-outline"
-              iconType="ionicons"
-              heading="No plans yet"
-              body="Tap the + button to create a quick plan and invite your free friends."
+        <FlatList<PlanWithMembers>
+          data={plans.slice(1)}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <EventListCard plan={item} onPress={() => router.push(`/plans/${item.id}` as never)} />
+          )}
+          ListHeaderComponent={
+            <View style={{ paddingHorizontal: SPACING.lg }}>
+              {inviteCount > 0 && (
+                <TouchableOpacity
+                  style={styles.inviteBanner}
+                  onPress={() => setModalVisible(true)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.inviteBannerLeft}>
+                    <Ionicons name="mail-outline" size={20} color={colors.interactive.accent} />
+                    <Text style={styles.inviteBannerText}>
+                      {inviteCount === 1
+                        ? 'You have 1 invitation'
+                        : `You have ${inviteCount} invitations`}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
+                </TouchableOpacity>
+              )}
+              {plans[0]
+                ? (() => {
+                    const nextPlan = plans[0];
+                    return (
+                      <View style={{ marginBottom: SPACING.md }}>
+                        <NextEventHero
+                          plan={nextPlan}
+                          onPress={() => router.push(`/plans/${nextPlan.id}` as never)}
+                        />
+                      </View>
+                    );
+                  })()
+                : null}
+              {plans.length > 1 ? <Text style={styles.sectionLabel}>Upcoming</Text> : null}
+            </View>
+          }
+          ListEmptyComponent={
+            error ? (
+              <Text style={styles.errorText}>
+                {error ?? "Couldn't load plans. Pull down to try again."}
+              </Text>
+            ) : (
+              <EmptyState
+                icon="calendar-outline"
+                iconType="ionicons"
+                heading="No plans yet"
+                body="Tap the + button to create a quick plan and invite your free friends."
+              />
+            )
+          }
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.interactive.accent}
             />
-          )
-        }
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.interactive.accent}
-          />
-        }
-      />
+          }
+        />
       )}
 
-      <FAB
-        icon={<Ionicons name="add" size={24} color={colors.surface.base} />}
-        onPress={() => router.push('/plan-create')}
-        accessibilityLabel="Create a new plan"
-        extraBottom={TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_GAP}
-      />
+      {viewMode === 'list' ? (
+        <FAB
+          icon={<Ionicons name="add" size={24} color={colors.surface.base} />}
+          onPress={() => router.push('/plan-create')}
+          accessibilityLabel="Create a new plan"
+          extraBottom={TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_GAP}
+        />
+      ) : null}
 
       {/* Invitations Modal */}
       <Modal
