@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 33-05-PLAN.md
-last_updated: "2026-05-13T19:54:12.513Z"
+stopped_at: Completed 33-02-PLAN.md
+last_updated: "2026-05-13T20:01:49.089Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 39
-  completed_plans: 36
-  percent: 92
+  completed_plans: 37
+  percent: 95
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 33 (friend-profile-redesign) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Plans: 4 of 4 complete
 Status: Ready to execute
 Last activity: 2026-05-13
@@ -181,6 +181,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 33-friend-profile-redesign]: Phase 33-04: BioRow lineHeight:24 uses eslint-disable comment — UI-SPEC §Typography explicitly specifies 24px, no line-height token exists
 - [Phase 33-friend-profile-redesign]: Phase 33-05: ActionIconButton animates only the circle (not the label) during press-spring — label stays static per plan spec
 - [Phase 33-friend-profile-redesign]: Phase 33-05: QuickActionsRow is pure layout — isMuted/muteDisabled/messageDisabled are screen-owned props; no state, no data fetching in this component
+- [Phase 33-friend-profile-redesign]: queryKeys.friends.detail(friendId) reused as useFriendProfile cache slot (no new friends.profile key) per PATTERNS corrections row 3
+- [Phase 33-friend-profile-redesign]: useFriendProfile reads home.friends cache slice opportunistically; no new realtime subscription (D-15); deep-link cold path uses direct effective_status SELECT
+- [Phase 33-friend-profile-redesign]: useFriendMutuals mutualFriendsCount warm-only (0 on cold caches); acceptable per RESEARCH §3; screen tree mounts useFriends/useFriendsOfFriend to hydrate
 
 ### Roadmap Evolution
 
@@ -224,8 +227,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 33-friend-profile-redesign P03 | 3min | 3 tasks | 3 files |
 | Phase 33-friend-profile-redesign P04 | 212 | 4 tasks | 4 files |
 | Phase 33-friend-profile-redesign P05 | 2 | 2 tasks | 2 files |
+| Phase 33-friend-profile-redesign P02 | 12 | 3 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T19:54:12.509Z
-Stopped at: Completed 33-05-PLAN.md
+Last session: 2026-05-13T20:01:49.085Z
+Stopped at: Completed 33-02-PLAN.md
