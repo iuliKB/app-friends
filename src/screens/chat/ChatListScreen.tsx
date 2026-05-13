@@ -3,14 +3,15 @@ import { Alert, RefreshControl, SectionList, StyleSheet, Text, View } from 'reac
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { openChat } from '@/lib/openChat';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { queryKeys } from '@/lib/queryKeys';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { useChatList } from '@/hooks/useChatList';
-import { useChatStore } from '@/stores/useChatStore';
 import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { ChatListRow } from '@/components/chat/ChatListRow';
 import { ChatSearchBar } from '@/components/chat/ChatSearchBar';
@@ -27,8 +28,17 @@ export function ChatListScreen() {
   const insets = useSafeAreaInsets();
   const bottomSpacing = useTabBarSpacing();
   const session = useAuthStore((s) => s.session);
+  const userId = session?.user?.id ?? '';
   const { chatList, loading, error, refreshing, handleRefresh } = useChatList();
-  const { setChatList } = useChatStore();
+  const queryClient = useQueryClient();
+  // Phase 31 Plan 08 — optimistic mutations write directly into the TanStack
+  // Query cache (queryKeys.chat.list(userId)). Pre-migration this went through
+  // useChatStore.setChatList; the store is stripped in Wave 8.
+  function updateChatList(updater: (items: ChatListItem[]) => ChatListItem[]) {
+    queryClient.setQueryData<ChatListItem[]>(queryKeys.chat.list(userId), (old) =>
+      updater(old ?? []),
+    );
+  }
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ChatTab>('all');
 
@@ -76,8 +86,8 @@ export function ChatListScreen() {
           // Write to AsyncStorage first — local source of truth so refresh
           // can't race against the async Supabase upsert and restore the item.
           await AsyncStorage.setItem(`chat:hidden:${item.id}`, '1');
-          // Optimistic remove
-          setChatList(chatList.filter((c) => c.id !== item.id));
+          // Optimistic remove via cache write
+          updateChatList((items) => items.filter((c) => c.id !== item.id));
 
           if (item.type === 'group') {
             await supabase
@@ -101,9 +111,11 @@ export function ChatListScreen() {
     if (!userId) return;
 
     await AsyncStorage.setItem(`chat:muted:${item.id}`, '1');
-    setChatList(chatList.map((c) =>
-      c.id === item.id ? { ...c, isMuted: true, hasUnread: false, unreadCount: 0 } : c,
-    ));
+    updateChatList((items) =>
+      items.map((c) =>
+        c.id === item.id ? { ...c, isMuted: true, hasUnread: false, unreadCount: 0 } : c,
+      ),
+    );
 
     await supabase.from('chat_preferences').upsert(
       { user_id: userId, chat_type: item.type, chat_id: item.id, is_muted: true, updated_at: new Date().toISOString() },
@@ -113,8 +125,8 @@ export function ChatListScreen() {
 
   function handleMarkRead(item: ChatListItem) {
     AsyncStorage.setItem(`chat:last_read:${item.id}`, new Date().toISOString());
-    setChatList(
-      chatList.map((c) =>
+    updateChatList((items) =>
+      items.map((c) =>
         c.id === item.id ? { ...c, hasUnread: false, unreadCount: 0 } : c,
       ),
     );

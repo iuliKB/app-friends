@@ -1,12 +1,19 @@
-import { useCallback, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+// Phase 31 Plan 08 — useChatList migrated to TanStack Query.
+//
+// Cache key: queryKeys.chat.list(userId).
+// staleTime: 30s (overrides the 60s global default — chat list changes more often than
+// most surfaces, especially when a friend opens a new DM with you).
+//
+// Per-chat preference AsyncStorage keys (chat:last_read:*, chat:hidden:*, chat:muted:*,
+// chat:rooms:cache) are UNTOUCHED — those are UI preferences, not server cache.
+// useChatStore server-data fields are removed in the same commit.
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useChatStore } from '@/stores/useChatStore';
+import { queryKeys } from '@/lib/queryKeys';
 import type { ChatListItem } from '@/types/chat';
-
-const CACHE_TTL_MS = 30_000; // 30 seconds
 
 type MsgEntry = { body: string; created_at: string; sender_id: string };
 
@@ -26,303 +33,278 @@ async function getUnreadInfo(
   return { hasUnread: true, unreadCount };
 }
 
-export function useChatList(): {
+async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
+  // Step A — Get the user's plan IDs
+  const { data: memberRows } = await supabase
+    .from('plan_members')
+    .select('plan_id')
+    .eq('user_id', currentUserId);
+  const memberPlanIds = (memberRows ?? []).map((r) => r.plan_id as string);
+
+  // Step B — Get the user's DM channel IDs + other user info
+  const { data: dmRows } = await supabase
+    .from('dm_channels')
+    .select('id, user_a, user_b')
+    .or(`user_a.eq.${currentUserId},user_b.eq.${currentUserId}`);
+  const dmChannels = (dmRows ?? []).map((r) => ({
+    id: r.id as string,
+    otherUserId: (r.user_a === currentUserId ? r.user_b : r.user_a) as string,
+  }));
+
+  // Step C — Fetch all messages per plan chat (sorted desc; [0] = latest)
+  const planMsgsMap = new Map<string, MsgEntry[]>();
+  if (memberPlanIds.length > 0) {
+    const { data: planMsgs } = await supabase
+      .from('messages')
+      .select('plan_id, body, created_at, sender_id')
+      .not('plan_id', 'is', null)
+      .in('plan_id', memberPlanIds)
+      .order('created_at', { ascending: false });
+
+    for (const msg of planMsgs ?? []) {
+      const pid = msg.plan_id as string;
+      if (!planMsgsMap.has(pid)) planMsgsMap.set(pid, []);
+      planMsgsMap.get(pid)!.push({
+        body: msg.body as string,
+        created_at: msg.created_at as string,
+        sender_id: msg.sender_id as string,
+      });
+    }
+  }
+
+  // Step D — Fetch all messages per DM channel (sorted desc; [0] = latest)
+  const dmMsgsMap = new Map<string, MsgEntry[]>();
+  if (dmChannels.length > 0) {
+    const dmIds = dmChannels.map((d) => d.id);
+    const { data: dmMsgs } = await supabase
+      .from('messages')
+      .select('dm_channel_id, body, created_at, sender_id')
+      .not('dm_channel_id', 'is', null)
+      .in('dm_channel_id', dmIds)
+      .order('created_at', { ascending: false });
+
+    for (const msg of dmMsgs ?? []) {
+      const cid = msg.dm_channel_id as string;
+      if (!dmMsgsMap.has(cid)) dmMsgsMap.set(cid, []);
+      dmMsgsMap.get(cid)!.push({
+        body: msg.body as string,
+        created_at: msg.created_at as string,
+        sender_id: msg.sender_id as string,
+      });
+    }
+  }
+
+  // Step E — Fetch plan titles for plan chats with messages
+  const planIdsWithMessages = [...planMsgsMap.keys()];
+  const planTitleMap = new Map<string, string>();
+  if (planIdsWithMessages.length > 0) {
+    const { data: plans } = await supabase
+      .from('plans')
+      .select('id, title')
+      .in('id', planIdsWithMessages);
+
+    for (const plan of plans ?? []) {
+      planTitleMap.set(plan.id as string, plan.title as string);
+    }
+  }
+
+  // Step F — Fetch profiles for DM other users with messages
+  const otherUserIds = dmChannels.filter((d) => dmMsgsMap.has(d.id)).map((d) => d.otherUserId);
+  const profileMap = new Map<string, { display_name: string; avatar_url: string | null }>();
+  if (otherUserIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url')
+      .in('id', otherUserIds);
+
+    for (const profile of profiles ?? []) {
+      profileMap.set(profile.id as string, {
+        display_name: profile.display_name as string,
+        avatar_url: profile.avatar_url as string | null,
+      });
+    }
+  }
+
+  // Step E2 — Get the user's group channel IDs + names
+  const { data: groupMemberRows } = await supabase
+    .from('group_channel_members')
+    .select('group_channel_id')
+    .eq('user_id', currentUserId);
+  const groupChannelIds = (groupMemberRows ?? []).map((r) => r.group_channel_id as string);
+
+  const groupNameMap = new Map<string, string>();
+  const groupBirthdayPersonMap = new Map<string, string | null>();
+  if (groupChannelIds.length > 0) {
+    const { data: groupRows } = await supabase
+      .from('group_channels')
+      .select('id, name, birthday_person_id')
+      .in('id', groupChannelIds);
+    for (const g of groupRows ?? []) {
+      groupNameMap.set(g.id as string, g.name as string);
+      groupBirthdayPersonMap.set(g.id as string, (g.birthday_person_id as string | null) ?? null);
+    }
+  }
+
+  // Step F2 — Fetch all messages per group channel (sorted desc; [0] = latest)
+  const groupMsgsMap = new Map<string, MsgEntry[]>();
+  if (groupChannelIds.length > 0) {
+    const { data: groupMsgs } = await supabase
+      .from('messages')
+      .select('group_channel_id, body, created_at, sender_id')
+      .not('group_channel_id', 'is', null)
+      .in('group_channel_id', groupChannelIds)
+      .order('created_at', { ascending: false });
+
+    for (const msg of groupMsgs ?? []) {
+      const cid = msg.group_channel_id as string;
+      if (!groupMsgsMap.has(cid)) groupMsgsMap.set(cid, []);
+      groupMsgsMap.get(cid)!.push({
+        body: msg.body as string,
+        created_at: msg.created_at as string,
+        sender_id: msg.sender_id as string,
+      });
+    }
+  }
+
+  // Step H — Build ChatListItem[]
+  const items: ChatListItem[] = [];
+
+  // Plan chat items
+  for (const [planId, msgs] of planMsgsMap.entries()) {
+    const title = planTitleMap.get(planId);
+    if (!title) continue;
+    const latest = msgs[0];
+    if (!latest) continue;
+    const { hasUnread, unreadCount } = await getUnreadInfo(planId, msgs, currentUserId);
+    items.push({
+      id: planId,
+      type: 'plan',
+      title,
+      avatarUrl: null,
+      lastMessage: latest.body,
+      lastMessageAt: latest.created_at,
+      hasUnread,
+      unreadCount,
+      isMuted: false,
+    });
+  }
+
+  // DM chat items
+  for (const channel of dmChannels) {
+    const msgs = dmMsgsMap.get(channel.id);
+    if (!msgs || msgs.length === 0) continue;
+    const profile = profileMap.get(channel.otherUserId);
+    if (!profile) continue;
+    const latest = msgs[0];
+    if (!latest) continue;
+    const { hasUnread, unreadCount } = await getUnreadInfo(channel.id, msgs, currentUserId);
+    items.push({
+      id: channel.id,
+      type: 'dm',
+      title: profile.display_name,
+      avatarUrl: profile.avatar_url,
+      lastMessage: latest.body,
+      lastMessageAt: latest.created_at,
+      hasUnread,
+      unreadCount,
+      isMuted: false,
+    });
+  }
+
+  // Group chat items (show even without messages so newly created chats appear)
+  for (const channelId of groupChannelIds) {
+    const name = groupNameMap.get(channelId);
+    if (!name) continue;
+    const msgs = groupMsgsMap.get(channelId) ?? [];
+    const latest = msgs[0];
+    const { hasUnread, unreadCount } = await getUnreadInfo(channelId, msgs, currentUserId);
+    items.push({
+      id: channelId,
+      type: 'group',
+      title: name,
+      avatarUrl: null,
+      lastMessage: latest?.body ?? 'No messages yet',
+      lastMessageAt: latest?.created_at ?? new Date(0).toISOString(),
+      hasUnread,
+      unreadCount,
+      isMuted: false,
+      birthdayPersonId: groupBirthdayPersonMap.get(channelId) ?? null,
+    });
+  }
+
+  // Sort by lastMessageAt descending
+  items.sort((a, b) => (a.lastMessageAt > b.lastMessageAt ? -1 : 1));
+
+  // Step I — Fetch chat_preferences and apply mute/hide
+  const { data: prefRows } = await supabase
+    .from('chat_preferences')
+    .select('chat_type, chat_id, is_muted, is_hidden')
+    .eq('user_id', currentUserId);
+
+  const prefMap = new Map<string, { is_muted: boolean; is_hidden: boolean }>();
+  for (const p of prefRows ?? []) {
+    prefMap.set(`${p.chat_type}:${p.chat_id}`, {
+      is_muted: p.is_muted as boolean,
+      is_hidden: p.is_hidden as boolean,
+    });
+  }
+
+  // Also check AsyncStorage for locally-hidden/muted chats (guards against race
+  // conditions where the user refreshes before the Supabase upsert completes).
+  const [hiddenChecks, mutedChecks] = await Promise.all([
+    Promise.all(items.map((item) => AsyncStorage.getItem(`chat:hidden:${item.id}`))),
+    Promise.all(items.map((item) => AsyncStorage.getItem(`chat:muted:${item.id}`))),
+  ]);
+
+  const finalItems: ChatListItem[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]!;
+    const pref = prefMap.get(`${item.type}:${item.id}`);
+    if (pref?.is_hidden || hiddenChecks[i]) continue;
+    const isMuted = !!(pref?.is_muted || mutedChecks[i]);
+    if (isMuted) {
+      finalItems.push({ ...item, isMuted: true, hasUnread: false, unreadCount: 0 });
+    } else {
+      finalItems.push(item);
+    }
+  }
+
+  return finalItems;
+}
+
+export interface UseChatListResult {
   chatList: ChatListItem[];
   loading: boolean;
   error: string | null;
   refreshing: boolean;
   handleRefresh: () => Promise<void>;
-} {
+  refetch: () => Promise<unknown>;
+}
+
+export function useChatList(): UseChatListResult {
   const session = useAuthStore((s) => s.session);
-  const { chatList, lastFetchedAt, setChatList } = useChatStore();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const userId = session?.user?.id ?? null;
 
-  async function fetchChatList(): Promise<void> {
-    if (!session?.user) return;
+  const query = useQuery({
+    queryKey: queryKeys.chat.list(userId ?? ''),
+    queryFn: async (): Promise<ChatListItem[]> => {
+      if (!userId) return [];
+      return fetchChatList(userId);
+    },
+    enabled: !!userId,
+    // Chat list changes more often than most surfaces (e.g. when a friend opens
+    // a new DM). 30s replaces the pre-migration hand-rolled TTL constant.
+    staleTime: 30_000,
+  });
 
-    setError(null);
-
-    // Step A — Get the user's plan IDs
-    const { data: memberRows } = await supabase
-      .from('plan_members')
-      .select('plan_id')
-      .eq('user_id', session.user.id);
-    const memberPlanIds = (memberRows ?? []).map((r) => r.plan_id as string);
-
-    // Step B — Get the user's DM channel IDs + other user info
-    const { data: dmRows } = await supabase
-      .from('dm_channels')
-      .select('id, user_a, user_b')
-      .or(`user_a.eq.${session.user.id},user_b.eq.${session.user.id}`);
-    const dmChannels = (dmRows ?? []).map((r) => ({
-      id: r.id as string,
-      otherUserId: (r.user_a === session.user.id ? r.user_b : r.user_a) as string,
-    }));
-
-    // Step C — Fetch all messages per plan chat (sorted desc; [0] = latest)
-    const planMsgsMap = new Map<string, MsgEntry[]>();
-    if (memberPlanIds.length > 0) {
-      const { data: planMsgs } = await supabase
-        .from('messages')
-        .select('plan_id, body, created_at, sender_id')
-        .not('plan_id', 'is', null)
-        .in('plan_id', memberPlanIds)
-        .order('created_at', { ascending: false });
-
-      for (const msg of planMsgs ?? []) {
-        const pid = msg.plan_id as string;
-        if (!planMsgsMap.has(pid)) planMsgsMap.set(pid, []);
-        planMsgsMap.get(pid)!.push({
-          body: msg.body as string,
-          created_at: msg.created_at as string,
-          sender_id: msg.sender_id as string,
-        });
-      }
-    }
-
-    // Step D — Fetch all messages per DM channel (sorted desc; [0] = latest)
-    const dmMsgsMap = new Map<string, MsgEntry[]>();
-    if (dmChannels.length > 0) {
-      const dmIds = dmChannels.map((d) => d.id);
-      const { data: dmMsgs } = await supabase
-        .from('messages')
-        .select('dm_channel_id, body, created_at, sender_id')
-        .not('dm_channel_id', 'is', null)
-        .in('dm_channel_id', dmIds)
-        .order('created_at', { ascending: false });
-
-      for (const msg of dmMsgs ?? []) {
-        const cid = msg.dm_channel_id as string;
-        if (!dmMsgsMap.has(cid)) dmMsgsMap.set(cid, []);
-        dmMsgsMap.get(cid)!.push({
-          body: msg.body as string,
-          created_at: msg.created_at as string,
-          sender_id: msg.sender_id as string,
-        });
-      }
-    }
-
-    // Step E — Fetch plan titles for plan chats with messages
-    const planIdsWithMessages = [...planMsgsMap.keys()];
-    const planTitleMap = new Map<string, string>();
-    if (planIdsWithMessages.length > 0) {
-      const { data: plans } = await supabase
-        .from('plans')
-        .select('id, title')
-        .in('id', planIdsWithMessages);
-
-      for (const plan of plans ?? []) {
-        planTitleMap.set(plan.id as string, plan.title as string);
-      }
-    }
-
-    // Step F — Fetch profiles for DM other users with messages
-    const otherUserIds = dmChannels.filter((d) => dmMsgsMap.has(d.id)).map((d) => d.otherUserId);
-    const profileMap = new Map<string, { display_name: string; avatar_url: string | null }>();
-    if (otherUserIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, display_name, avatar_url')
-        .in('id', otherUserIds);
-
-      for (const profile of profiles ?? []) {
-        profileMap.set(profile.id as string, {
-          display_name: profile.display_name as string,
-          avatar_url: profile.avatar_url as string | null,
-        });
-      }
-    }
-
-    // Step E2 — Get the user's group channel IDs + names
-    const { data: groupMemberRows } = await supabase
-      .from('group_channel_members')
-      .select('group_channel_id')
-      .eq('user_id', session.user.id);
-    const groupChannelIds = (groupMemberRows ?? []).map((r) => r.group_channel_id as string);
-
-    const groupNameMap = new Map<string, string>();
-    const groupBirthdayPersonMap = new Map<string, string | null>();
-    if (groupChannelIds.length > 0) {
-      const { data: groupRows } = await supabase
-        .from('group_channels')
-        .select('id, name, birthday_person_id')
-        .in('id', groupChannelIds);
-      for (const g of groupRows ?? []) {
-        groupNameMap.set(g.id as string, g.name as string);
-        groupBirthdayPersonMap.set(g.id as string, (g.birthday_person_id as string | null) ?? null);
-      }
-    }
-
-    // Step F2 — Fetch all messages per group channel (sorted desc; [0] = latest)
-    const groupMsgsMap = new Map<string, MsgEntry[]>();
-    if (groupChannelIds.length > 0) {
-      const { data: groupMsgs } = await supabase
-        .from('messages')
-        .select('group_channel_id, body, created_at, sender_id')
-        .not('group_channel_id', 'is', null)
-        .in('group_channel_id', groupChannelIds)
-        .order('created_at', { ascending: false });
-
-      for (const msg of groupMsgs ?? []) {
-        const cid = msg.group_channel_id as string;
-        if (!groupMsgsMap.has(cid)) groupMsgsMap.set(cid, []);
-        groupMsgsMap.get(cid)!.push({
-          body: msg.body as string,
-          created_at: msg.created_at as string,
-          sender_id: msg.sender_id as string,
-        });
-      }
-    }
-
-    // Step H — Build ChatListItem[]
-    const items: ChatListItem[] = [];
-    const currentUserId = session.user.id;
-
-    // Plan chat items
-    for (const [planId, msgs] of planMsgsMap.entries()) {
-      const title = planTitleMap.get(planId);
-      if (!title) continue;
-      const latest = msgs[0];
-      if (!latest) continue;
-      const { hasUnread, unreadCount } = await getUnreadInfo(planId, msgs, currentUserId);
-      items.push({
-        id: planId,
-        type: 'plan',
-        title,
-        avatarUrl: null,
-        lastMessage: latest.body,
-        lastMessageAt: latest.created_at,
-        hasUnread,
-        unreadCount,
-        isMuted: false,
-      });
-    }
-
-    // DM chat items
-    for (const channel of dmChannels) {
-      const msgs = dmMsgsMap.get(channel.id);
-      if (!msgs || msgs.length === 0) continue;
-      const profile = profileMap.get(channel.otherUserId);
-      if (!profile) continue;
-      const latest = msgs[0];
-      if (!latest) continue;
-      const { hasUnread, unreadCount } = await getUnreadInfo(channel.id, msgs, currentUserId);
-      items.push({
-        id: channel.id,
-        type: 'dm',
-        title: profile.display_name,
-        avatarUrl: profile.avatar_url,
-        lastMessage: latest.body,
-        lastMessageAt: latest.created_at,
-        hasUnread,
-        unreadCount,
-        isMuted: false,
-      });
-    }
-
-    // Group chat items (show even without messages so newly created chats appear)
-    for (const channelId of groupChannelIds) {
-      const name = groupNameMap.get(channelId);
-      if (!name) continue;
-      const msgs = groupMsgsMap.get(channelId) ?? [];
-      const latest = msgs[0];
-      const { hasUnread, unreadCount } = await getUnreadInfo(channelId, msgs, currentUserId);
-      items.push({
-        id: channelId,
-        type: 'group',
-        title: name,
-        avatarUrl: null,
-        lastMessage: latest?.body ?? 'No messages yet',
-        lastMessageAt: latest?.created_at ?? new Date(0).toISOString(),
-        hasUnread,
-        unreadCount,
-        isMuted: false,
-        birthdayPersonId: groupBirthdayPersonMap.get(channelId) ?? null,
-      });
-    }
-
-    // Sort by lastMessageAt descending
-    items.sort((a, b) => (a.lastMessageAt > b.lastMessageAt ? -1 : 1));
-
-    // Step I — Fetch chat_preferences and apply mute/hide
-    const { data: prefRows } = await supabase
-      .from('chat_preferences')
-      .select('chat_type, chat_id, is_muted, is_hidden')
-      .eq('user_id', currentUserId);
-
-    const prefMap = new Map<string, { is_muted: boolean; is_hidden: boolean }>();
-    for (const p of prefRows ?? []) {
-      prefMap.set(`${p.chat_type}:${p.chat_id}`, {
-        is_muted: p.is_muted as boolean,
-        is_hidden: p.is_hidden as boolean,
-      });
-    }
-
-    // Also check AsyncStorage for locally-hidden/muted chats (guards against race
-    // conditions where the user refreshes before the Supabase upsert completes).
-    const [hiddenChecks, mutedChecks] = await Promise.all([
-      Promise.all(items.map((item) => AsyncStorage.getItem(`chat:hidden:${item.id}`))),
-      Promise.all(items.map((item) => AsyncStorage.getItem(`chat:muted:${item.id}`))),
-    ]);
-
-    const finalItems: ChatListItem[] = [];
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]!;
-      const pref = prefMap.get(`${item.type}:${item.id}`);
-      if (pref?.is_hidden || hiddenChecks[i]) continue;
-      const isMuted = !!(pref?.is_muted || mutedChecks[i]);
-      if (isMuted) {
-        finalItems.push({ ...item, isMuted: true, hasUnread: false, unreadCount: 0 });
-      } else {
-        finalItems.push(item);
-      }
-    }
-
-    setChatList(finalItems);
-  }
-
-  const fetch = useCallback(async () => {
-    if (!session?.user) return;
-
-    // Serve from cache if recent enough
-    if (
-      chatList.length > 0 &&
-      lastFetchedAt !== null &&
-      Date.now() - lastFetchedAt < CACHE_TTL_MS
-    ) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await fetchChatList();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load chats');
-    } finally {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetch();
-    }, [fetch])
-  );
-
-  async function handleRefresh(): Promise<void> {
-    if (!session?.user) return;
-    setRefreshing(true);
-    try {
-      await fetchChatList();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load chats');
-    } finally {
-      setRefreshing(false);
-    }
-  }
-
-  return { chatList, loading, error, refreshing, handleRefresh };
+  return {
+    chatList: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refreshing: query.isFetching && !query.isLoading,
+    handleRefresh: async () => {
+      await query.refetch();
+    },
+    refetch: query.refetch,
+  };
 }

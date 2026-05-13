@@ -17,10 +17,12 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { openChat } from '@/lib/openChat';
-import { useChatStore } from '@/stores/useChatStore';
+import { queryKeys } from '@/lib/queryKeys';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { WishListItem } from '@/components/squad/WishListItem';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
@@ -34,7 +36,14 @@ export default function FriendBirthdayPage() {
   const friendId = id ?? '';
   const friendName = name ? decodeURIComponent(name) : 'Friend';
 
-  const invalidateChatList = useChatStore((s) => s.invalidateChatList);
+  // Phase 31 Plan 08 — invalidate the TanStack Query chat list cache instead of
+  // the (now-removed) useChatStore mirror. queryKeys.chat.list(userId) is the
+  // canonical key (see src/hooks/useChatList.ts).
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((s) => s.session?.user?.id) ?? '';
+  function invalidateChatList() {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) });
+  }
   const { items, loading: wishListLoading, error: wishListError, refetch: refetchWishList, toggleClaim } = useFriendWishList(friendId);
   const { friends, loading: friendsLoading, error: friendsError, refetch: refetchFriends } = useFriendsOfFriend(friendId);
 
