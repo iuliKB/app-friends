@@ -2,12 +2,12 @@
 // Used below the radar grid to show friends beyond the top-6 bubble limit.
 
 import React, { useMemo } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme, SPACING } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState } from '@/lib/heartbeat';
-import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 interface OverflowChipProps {
@@ -53,16 +53,11 @@ export function OverflowChip({ friend }: OverflowChipProps) {
   const dotOpacity = heartbeatState === 'fading' ? 0.6 : 1.0;
 
   async function handlePress() {
-    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: friend.friend_id,
+    await openChat(router, {
+      kind: 'dmFriend',
+      friendId: friend.friend_id,
+      friendName: friend.display_name,
     });
-    if (error || !data) {
-      Alert.alert('Error', "Couldn't open chat. Try again.");
-      return;
-    }
-    router.push(
-      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(friend.display_name)}` as never
-    );
   }
 
   return (

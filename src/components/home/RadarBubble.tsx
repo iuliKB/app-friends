@@ -5,14 +5,14 @@
 // reaction's intensity (free = strongest, busy = subtlest).
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Alert, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { showActionSheet } from '@/lib/action-sheet';
-import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 // --- Size map (exported for use in RadarView layout) ---
@@ -290,16 +290,11 @@ export function RadarBubble({
 
   // 8. Tap → DM
   async function handlePress() {
-    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: friend.friend_id,
+    await openChat(router, {
+      kind: 'dmFriend',
+      friendId: friend.friend_id,
+      friendName: friend.display_name,
     });
-    if (error || !data) {
-      Alert.alert('Error', "Couldn't open chat. Try again.");
-      return;
-    }
-    router.push(
-      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(friend.display_name)}` as never
-    );
   }
 
   // 9. Long-press → action sheet

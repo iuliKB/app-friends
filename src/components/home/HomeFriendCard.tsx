@@ -1,11 +1,11 @@
 import React, { useMemo, useRef } from 'react';
-import { Alert, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
 import { formatWindowLabel } from '@/lib/windows';
-import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import { showActionSheet } from '@/lib/action-sheet';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 import type { StatusValue } from '@/types/app';
@@ -110,18 +110,13 @@ export function HomeFriendCard({ friend }: HomeFriendCardProps) {
     statusLabel = segments.join(' · ');
   }
 
-  // Single tap → DM (D-04, D-08). Mirrors src/app/friends/[id].tsx:55-67.
+  // Single tap → DM (D-04, D-08). Delegates to the openChat helper (Phase 30-05).
   async function handlePress() {
-    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: friend.friend_id,
+    await openChat(router, {
+      kind: 'dmFriend',
+      friendId: friend.friend_id,
+      friendName: friend.display_name,
     });
-    if (error || !data) {
-      Alert.alert('Error', "Couldn't open chat. Try again.");
-      return;
-    }
-    router.push(
-      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(friend.display_name)}` as never
-    );
   }
 
   // Long-press → action sheet (D-05). Two actions only — Send DM is intentionally

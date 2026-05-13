@@ -2,7 +2,7 @@
 // Tinder-style swipe logic: left=skip, right=nudge. DM via small icon button.
 
 import React, { useMemo } from 'react';
-import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -15,7 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, SHADOWS } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { computeHeartbeatState, formatDistanceToNow } from '@/lib/heartbeat';
@@ -336,16 +336,11 @@ export function FriendSwipeCard({
 
   async function handleDm() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: friend.friend_id,
+    await openChat(router, {
+      kind: 'dmFriend',
+      friendId: friend.friend_id,
+      friendName: friend.display_name,
     });
-    if (error || !data) {
-      Alert.alert('Error', "Couldn't open chat. Try again.");
-      return;
-    }
-    router.push(
-      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(friend.display_name)}` as never
-    );
   }
 
   const accessibilityLabel = `${friend.display_name}, ${moodLabel}${
