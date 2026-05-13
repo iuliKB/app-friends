@@ -10,7 +10,7 @@
  * Run: npx jest --testPathPatterns="useChatRoom" --no-coverage
  */
 
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -138,5 +138,86 @@ describe('useChatRoom (migrated to TanStack Query)', () => {
     const cached = client.getQueryData(queryKeys.chat.messages('p1'));
     expect(cached).toBeDefined();
     expect(Array.isArray(cached)).toBe(true);
+  });
+});
+
+describe('Phase 32 tiered onSettled — useChatRoom send mutations', () => {
+  beforeEach(() => {
+    mockFrom.mockReset();
+    mockFrom.mockImplementation(() => makeChain([]));
+    mockChatRoomUnsubscribe.mockReset();
+    mockAuxUnsubscribe.mockReset();
+    mock_subscribeChatRoom.mockClear();
+    mock_subscribeChatAux.mockClear();
+  });
+
+  it('sendMessage onSettled invalidates chat.list(userId) and NOT chat.messages', async () => {
+    const { client, wrapper } = createTestQueryClient();
+    const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
+
+    const { result } = renderHook(
+      () =>
+        useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.sendMessage('hello');
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.list('u1'),
+    });
+    // Tier A: messages cache is Realtime-only — should NOT be invalidated.
+    expect(invalidateSpy).not.toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.messages('p1'),
+    });
+  });
+
+  it('sendImage onSettled invalidates BOTH chat.messages(channelId) AND chat.list(userId)', async () => {
+    const { client, wrapper } = createTestQueryClient();
+    const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
+
+    const { result } = renderHook(
+      () =>
+        useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.sendImage('file:///local/path.jpg');
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.messages('p1'),
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.list('u1'),
+    });
+  });
+
+  it('sendPoll onSuccess invalidates BOTH chat.messages(channelId) AND chat.list(userId)', async () => {
+    const { client, wrapper } = createTestQueryClient();
+    const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
+
+    const { result } = renderHook(
+      () =>
+        useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.sendPoll('Pizza?', ['Yes', 'No']);
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.messages('p1'),
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.list('u1'),
+    });
   });
 });
