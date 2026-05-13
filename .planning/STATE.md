@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: verifying
-stopped_at: "Checkpoint 33-06 Task 3: hardware smoke pending"
-last_updated: "2026-05-13T20:35:46.693Z"
+stopped_at: Completed 33-06-PLAN.md — code complete; hardware smoke deferred to milestone gate
+last_updated: "2026-05-13T20:40:00.798Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 11
@@ -188,6 +188,7 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 33-friend-profile-redesign]: friend-not-found keyed on data.friendsSince === null (NOT profile === null) — RLS USING(true) always returns profile row
 - [Phase 33-friend-profile-redesign]: Remove Friend mutation lives inline in screen (not a hook) — mutationShape gate scope is src/hooks/ only; 4 literal strings present defensively
 - [Phase 33-friend-profile-redesign]: reanimated.js mock extended with useAnimatedScrollHandler, interpolate, Extrapolation, __esModule:true — non-breaking for all 54 suites
+- [Phase 33-friend-profile-redesign]: Hardware smoke Task 3 deferred to milestone-end Hardware Verification Gate per project policy (no Apple Developer account until near-publication)
 
 ### Roadmap Evolution
 
@@ -237,5 +238,5 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 
 ## Session Continuity
 
-Last session: 2026-05-13T20:35:46.689Z
-Stopped at: Checkpoint 33-06 Task 3: hardware smoke pending
+Last session: 2026-05-13T20:39:57.335Z
+Stopped at: Completed 33-06-PLAN.md — code complete; hardware smoke deferred to milestone gate
