@@ -110,7 +110,7 @@ Plans:
 - [x] 31-03-PLAN.md — Wave 3 Home aggregates + Todos: migrate useHomeScreen + useTodos + useUpcomingBirthdays + useUpcomingEvents + useInvitationCount + usePendingRequestsCount + useChatTodos; add subscribeHomeStatuses; strip useHomeStore.friends/lastFetchedAt
 - [x] 31-04-PLAN.md — Wave 4 Plans: migrate usePlans (RSVP optimistic + createPlan no-optimistic exemption) + usePlanDetail + usePlanPhotos + useAllPlanPhotos; strip usePlansStore.plans
 - [x] 31-05-PLAN.md — Wave 5 Friends + Expenses: migrate 9 hooks (useFriends + 3 wish-list + 4 expenses + useExpenseCreate); shared cache key with useHomeScreen
-- [ ] 31-06-PLAN.md — Wave 6 Status (hybrid) + Polls + Invitations: migrate useStatus (preserve useStatusStore for outside-React reads) + usePoll (Realtime via subscribePollVotes) + useInvitations; extend authBridge to clear useStatusStore on SIGNED_OUT; useNetworkStatus + useViewPreference intentionally deferred
+- [x] 31-06-PLAN.md — Wave 6 Status (hybrid) + Polls + Invitations: migrate useStatus (preserve useStatusStore for outside-React reads) + usePoll (Realtime via subscribePollVotes) + useInvitations; extend authBridge to clear useStatusStore on SIGNED_OUT; useNetworkStatus + useViewPreference intentionally deferred
 - [ ] 31-07-PLAN.md — Wave 7 Misc: migrate useSpotlight (preserving Phase 29.1 extension) + useStreakData; close out Edge Function audit from Wave 1
 - [ ] 31-08-PLAN.md — Wave 8 Chat + Persistence + Boundary doc: migrate useChatList + useChatRoom + useChatMembers (subscribeChatRoom Hybrid INSERT/UPDATE/DELETE); strip useChatStore.chatList; install + enable PersistQueryClientProvider with selective shouldDehydrateQuery; write src/hooks/README.md boundary doc; final phase smoke gate
 

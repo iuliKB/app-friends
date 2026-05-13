@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 31-05-PLAN.md (Friends + Expenses vertical migrated; Wave 6 unblocked)
-last_updated: "2026-05-13T09:40:19.277Z"
+stopped_at: Completed 31-06-PLAN.md (status + polls + invitations migrated; authBridge fan-out extended; useNetworkStatus + useViewPreference deferred; Wave 7 unblocked)
+last_updated: "2026-05-13T09:53:34.665Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 28
-  completed_plans: 25
-  percent: 89
+  completed_plans: 26
+  percent: 93
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -149,6 +149,10 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-05: useExpenseDetail.settle uses canonical Pattern 5 — optimistic flip of isSettled + derived allSettled; drops the per-row settleLoading state mutation (the optimistic isSettled flip drives the visual); settleLoading field stays in return type as false for consumer compat
 - [Phase 31]: Phase 31-05: useFriendWishList.toggleClaim stays plain async (NOT useMutation) — invalidate-on-success drives the cache without ~30 LOC of Pattern 5 boilerplate; same precedent as usePlanDetail mutators (Wave 4); claim toggles are rare and RLS enforces single-claim-per-item
 - [Phase 31]: Phase 31-05: mutationShape gate now covers 11 files / 14 mutation blocks (was 6/10 at end of Wave 4); 8 exemption markers in use across 6 distinct rationales (side-effect-heavy creates, async file IO, RPC-atomic with no per-list cache key, pre-migration non-optimistic mutations)
+- [Phase 31]: Phase 31-06: useStatus migrated to HYBRID useQuery + useMutation + useStatusStore mirror — fetching moves into cache, store kept alive for _layout.tsx:106-111 notification dispatcher's outside-React read path (load-bearing per research Open Q #3); setMutation onMutate writes BOTH setQueryData AND useStatusStore.getState().setCurrentStatus to keep cache + store in sync during optimistic window
+- [Phase 31]: Phase 31-06: authBridge.attachAuthBridge extended to also clear useStatusStore on SIGNED_OUT — order: queryClient.removeQueries() first, useStatusStore.getState().clear() second; mitigates T-31-19 + covers TSQ-10 expansion; notification-side cleanup (cancelExpiryNotification + cancelMorningPrompt) stays in useStatus.ts as a domain-specific side effect
+- [Phase 31]: Phase 31-06: realtimeBridge gains subscribePollVotes (poll-votes-${pollId} channel; invalidates polls.poll on any event) — replaces pre-migration prop-drilled lastPollVoteEvent; usePoll vote mutation is EXACT analog of useWishListVotes.toggleVote (Wave 5 flip-flag + bump-counter pattern)
+- [Phase 31]: Phase 31-06: useNetworkStatus + useViewPreference intentionally NOT migrated — useNetworkStatus is a 6-LOC NetInfo wrapper that onlineManager covers transparently; useViewPreference is an AsyncStorage-only UI preference (not server state). Both will be documented in the Wave 8 boundary doc as canonical examples of zustand-not-cache
 
 ### Roadmap Evolution
 
@@ -178,8 +182,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31 P03 | 8min | 5 tasks | 12 files |
 | Phase 31 P04 | 7min | 4 tasks | 11 files |
 | Phase 31 P05 | 9min | 6 tasks | 16 files |
+| Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P06 | 8 min | 5 tasks | 10 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T09:40:04.253Z
-Stopped at: Completed 31-05-PLAN.md (Friends + Expenses vertical migrated; Wave 6 unblocked)
+Last session: 2026-05-13T09:53:34.661Z
+Stopped at: Completed 31-06-PLAN.md (status + polls + invitations migrated; authBridge fan-out extended; useNetworkStatus + useViewPreference deferred; Wave 7 unblocked)
