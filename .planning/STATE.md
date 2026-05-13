@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: verifying
-stopped_at: Completed 30-05-PLAN.md — 12 chat-entry callsites migrated to openChat across 10 files; originating bug callsite consolidated end-to-end
-last_updated: "2026-05-13T00:37:08.453Z"
+status: executing
+stopped_at: Completed 31-01-PLAN.md — QueryClient foundation mounted; ref-counted Realtime bridge + auth cache clear + devtools wired; 27 new tests green
+last_updated: "2026-05-13T02:42:51.810Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 3
-  total_plans: 20
-  completed_plans: 20
-  percent: 100
+  total_plans: 28
+  completed_plans: 21
+  percent: 75
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 30 — unify-navigation-source-of-truth-and-chat-entry-handlers
+**Current focus:** Phase 31 — adopt-tanstack-query-for-server-state-caching-and-cross-scre
 
 ## Current Position
 
-Phase: 31
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-05-13 - Completed quick task 260513-5as: Add useTabBarSpacing hook for consistent bottom-nav clearance across tab screens
+Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
+Plan: 2 of 8
+Status: Ready to execute
+Last activity: 2026-05-13
 
 ## Phase Structure
 
@@ -120,6 +120,13 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-05: 10 callsites migrated to openChat — 4 home, 4 routing-handler, 2 sheet/group; 8 duplicate get_or_create_dm_channel blocks collapsed; originating-bug pill (PlanDashboardScreen line 1023) consolidated
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-05: ChatListItem.birthdayPersonId (string|null|undefined) coerced to (string|undefined) via ?? undefined when passing to openChat group variant — preserves prior URLSearchParams truthy-only behavior; Rule 1 auto-fix for new TS error
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-05: squad.tsx handleStartDM locked ordering — try { await openChat(... onLoadingChange: setLoadingDM) } finally { handleCloseSheet() } — preserves in-sheet spinner visibility during the get-or-create-DM RPC
+- [Phase 31]: Phase 31-01: staleTime 60_000 set as global QueryClient default (A6 locked); per-query overrides allowed
+- [Phase 31]: Phase 31-01: Hybrid Realtime strategy locked (A7) — UPDATE → invalidateQueries (avoids missed-field bug), INSERT/DELETE → setQueryData; aggregation RPCs like get_habits_overview always invalidate
+- [Phase 31]: Phase 31-01: QueryClient is a factory not a singleton — _layout.tsx uses useState(() => createQueryClient()) so cache lifetime ties to RootLayout, HMR-safe
+- [Phase 31]: Phase 31-01: authBridge calls removeQueries() (not invalidateQueries) on SIGNED_OUT to avoid 401-refetch storm with expired session
+- [Phase 31]: Phase 31-01: REPLICA IDENTITY FULL audit found 2 tables (messages, statuses) — Waves 6 + 7 can opt into setQueryData on UPDATE; all other tables stay on invalidate-on-UPDATE default
+- [Phase 31]: Phase 31-01: Edge Functions audit found 0 supabase.functions.invoke callsites — no edge-function mutations to model in Waves 3-7
+- [Phase 31]: Phase 31-01: Jest mock vars must be prefixed with mock* to satisfy babel hoisting (Rule 1 auto-fix in realtimeBridge.test.ts + authBridge.test.ts) — convention adopted for all future Phase 31 hook tests
 
 ### Roadmap Evolution
 
@@ -144,8 +151,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
 | 260513-5as | Add useTabBarSpacing hook for consistent bottom-nav clearance across tab screens | 2026-05-13 | 6bc55d8 | Verified | [260513-5as-add-usetabbarspacing-hook-for-consistent](./quick/260513-5as-add-usetabbarspacing-hook-for-consistent/) |
+| Phase 31 P01 | 17min | 9 tasks | 12 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T00:21:10.657Z
-Stopped at: Completed 30-05-PLAN.md — 12 chat-entry callsites migrated to openChat across 10 files; originating bug callsite consolidated end-to-end
+Last session: 2026-05-13T02:42:51.807Z
+Stopped at: Completed 31-01-PLAN.md — QueryClient foundation mounted; ref-counted Realtime bridge + auth cache clear + devtools wired; 27 new tests green
