@@ -40,5 +40,7 @@ export interface ChatListItem {
   hasUnread: boolean;
   unreadCount: number; // messages from others after last_read
   isMuted: boolean;
+  lastMessageKind: MessageType;
+  lastMessageSenderName: string | null; // "You" for own messages, profiles.first_name for others, null only when chat has no messages
   birthdayPersonId?: string | null; // group chats only — whose wish list to show
 }
