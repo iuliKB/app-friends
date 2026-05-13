@@ -81,3 +81,49 @@ export function subscribeHabitCheckins(
 
   return () => releaseSubscription(channelName);
 }
+
+/** Subscribe to statuses changes for the caller's friend set. Returns unsubscribe.
+ * Channel name is scoped by userId (not friendIds) so refCount works across renders
+ * where friendIds changes (a friend being added/removed only invalidates the friends
+ * list itself, not this subscription's cache key).
+ *
+ * effective_status (the read view) is computed from `statuses` + `last_active_at`;
+ * subscribing to `statuses` covers the freshness updates the Home aggregate needs.
+ * Aggregate semantics: any event type INSERT/UPDATE/DELETE invalidates the home
+ * friends key (can't safely splice a view-derived aggregate from a single row).
+ */
+export function subscribeHomeStatuses(
+  queryClient: QueryClient,
+  userId: string,
+  friendIds: string[],
+): Unsubscribe {
+  if (friendIds.length === 0) return () => {};
+
+  const channelName = `home-statuses-${userId}`;
+  const existing = registry.get(channelName);
+  if (existing) {
+    existing.refCount++;
+    return () => releaseSubscription(channelName);
+  }
+
+  const filter = `user_id=in.(${friendIds.join(',')})`;
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'statuses', filter },
+      (_payload) => {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.home.friends(userId) });
+      },
+    )
+    .subscribe();
+
+  registry.set(channelName, {
+    refCount: 1,
+    teardown: () => {
+      void supabase.removeChannel(channel);
+    },
+  });
+
+  return () => releaseSubscription(channelName);
+}

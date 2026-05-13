@@ -3,7 +3,11 @@
  */
 import { QueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
-import { subscribeHabitCheckins, _resetRealtimeBridgeForTests } from '@/lib/realtimeBridge';
+import {
+  subscribeHabitCheckins,
+  subscribeHomeStatuses,
+  _resetRealtimeBridgeForTests,
+} from '@/lib/realtimeBridge';
 
 // Capture payload handler so tests can fire events at it.
 // Variables consumed inside jest.mock() factories MUST be prefixed with `mock`
@@ -76,4 +80,68 @@ describe('realtimeBridge.subscribeHabitCheckins', () => {
       });
     },
   );
+});
+
+describe('realtimeBridge.subscribeHomeStatuses', () => {
+  let qc: QueryClient;
+  let invalidateSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    mockCapturedHandler = null;
+    mockChannel.mockClear();
+    mockOn.mockClear();
+    mockRemoveChannel.mockClear();
+    _resetRealtimeBridgeForTests();
+    qc = new QueryClient();
+    invalidateSpy = jest.spyOn(qc, 'invalidateQueries').mockResolvedValue();
+  });
+
+  it('subscribes to home-statuses-${userId} with an IN-filter for friend ids', () => {
+    subscribeHomeStatuses(qc, 'u1', ['f1', 'f2']);
+    expect(mockChannel).toHaveBeenCalledTimes(1);
+    expect(mockChannel).toHaveBeenCalledWith('home-statuses-u1');
+    expect(mockOn).toHaveBeenCalledWith(
+      'postgres_changes',
+      expect.objectContaining({
+        event: '*',
+        schema: 'public',
+        table: 'statuses',
+        filter: 'user_id=in.(f1,f2)',
+      }),
+      expect.any(Function),
+    );
+  });
+
+  it('dedups two subscriptions to the same userId into ONE supabase.channel call', () => {
+    const u1 = subscribeHomeStatuses(qc, 'u1', ['f1']);
+    const u2 = subscribeHomeStatuses(qc, 'u1', ['f1']);
+    expect(mockChannel).toHaveBeenCalledTimes(1);
+    u1();
+    u2();
+  });
+
+  it('invalidates home.friends on any statuses payload', () => {
+    subscribeHomeStatuses(qc, 'u1', ['f1', 'f2']);
+    expect(mockCapturedHandler).not.toBeNull();
+    mockCapturedHandler!({ eventType: 'UPDATE', new: {}, old: {} });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.home.friends('u1'),
+    });
+  });
+
+  it('opens no channel when friendIds is empty', () => {
+    const unsub = subscribeHomeStatuses(qc, 'u1', []);
+    expect(mockChannel).not.toHaveBeenCalled();
+    // unsubscribe must be a safe no-op
+    expect(() => unsub()).not.toThrow();
+  });
+
+  it('tears down only after all subscribers have unsubscribed', () => {
+    const u1 = subscribeHomeStatuses(qc, 'u1', ['f1']);
+    const u2 = subscribeHomeStatuses(qc, 'u1', ['f1']);
+    u1();
+    expect(mockRemoveChannel).not.toHaveBeenCalled();
+    u2();
+    expect(mockRemoveChannel).toHaveBeenCalledTimes(1);
+  });
 });
