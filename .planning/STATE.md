@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: executing
-stopped_at: Completed 33-07-PLAN.md
-last_updated: "2026-05-13T20:06:34.524Z"
+status: verifying
+stopped_at: "Checkpoint 33-06 Task 3: hardware smoke pending"
+last_updated: "2026-05-13T20:35:46.693Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 11
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 39
-  completed_plans: 38
-  percent: 97
+  completed_plans: 39
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 Phase: 33 (friend-profile-redesign) — EXECUTING
 Plan: 7 of 7
 Plans: 4 of 4 complete
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-13
 
 ## Phase Structure
@@ -185,6 +185,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 33-friend-profile-redesign]: useFriendProfile reads home.friends cache slice opportunistically; no new realtime subscription (D-15); deep-link cold path uses direct effective_status SELECT
 - [Phase 33-friend-profile-redesign]: useFriendMutuals mutualFriendsCount warm-only (0 on cold caches); acceptable per RESEARCH §3; screen tree mounts useFriends/useFriendsOfFriend to hydrate
 - [Phase 33-friend-profile-redesign]: Phase 33-07: bio save fires after display_name+birthday raw write; (supabase as any) cast required on select chain for un-regenerated bio column
+- [Phase 33-friend-profile-redesign]: friend-not-found keyed on data.friendsSince === null (NOT profile === null) — RLS USING(true) always returns profile row
+- [Phase 33-friend-profile-redesign]: Remove Friend mutation lives inline in screen (not a hook) — mutationShape gate scope is src/hooks/ only; 4 literal strings present defensively
+- [Phase 33-friend-profile-redesign]: reanimated.js mock extended with useAnimatedScrollHandler, interpolate, Extrapolation, __esModule:true — non-breaking for all 54 suites
 
 ### Roadmap Evolution
 
@@ -230,8 +233,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 33-friend-profile-redesign P05 | 2 | 2 tasks | 2 files |
 | Phase 33-friend-profile-redesign P02 | 12 | 3 tasks | 4 files |
 | Phase 33-friend-profile-redesign P07 | 3min | 1 tasks | 1 files |
+| Phase 33-friend-profile-redesign P06 | 35min | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T20:06:34.520Z
-Stopped at: Completed 33-07-PLAN.md
+Last session: 2026-05-13T20:35:46.689Z
+Stopped at: Checkpoint 33-06 Task 3: hardware smoke pending
