@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 31-08-PLAN.md (Task 8 manual smoke PASS with deferred chat-list reactivity caveat)
-last_updated: "2026-05-13T13:04:06.297Z"
-last_activity: 2026-05-13 -- Phase 32 execution started
+stopped_at: Completed 32-01-PLAN.md (3/3 tasks; data-layer for last-entry previews ready for Plan 32-02 UI)
+last_updated: "2026-05-13T13:15:22.038Z"
+last_activity: 2026-05-13
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 32
-  completed_plans: 28
-  percent: 88
+  completed_plans: 29
+  percent: 91
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 32
-Last activity: 2026-05-13 -- Phase 32 execution started
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-05-13
 
 ## Phase Structure
 
@@ -159,6 +159,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-07: Edge Function audit closed out as Case A (Wave 1 found 0 supabase.functions.invoke callsites; the phase's edge functions are server-side trigger-driven via outbox pattern, not client-invoked)
 - [Phase 31]: Plan 31-08 closes Phase 31: chat hooks migrated, useChatStore stripped, PersistQueryClientProvider with selective shouldDehydrateQuery, boundary doc written. Manual smoke gate (Task 8) pending dev-client verification.
 - [Phase 31]: shouldDehydrateQuery destructures [root, sub] to exclude 'chat' root + ('plans','photos') + ('plans','allPhotos') only — the whole plans namespace stays persisted (Plan list is needed on cold start).
+- [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Phase 32 Plan 01: first_name derived from display_name (split on first whitespace) — schema lacks dedicated first_name column; documented as Rule 1+3 deviation in SUMMARY
+- [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Phase 32 Plan 01: lastMessageKind + lastMessageSenderName declared REQUIRED on ChatListItem (null is a legitimate value for the no-messages branch) — type-safe representation forces consumer null-checks
+- [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Phase 32 Plan 01: polls table accessed via (supabase as any) cast — generated database.ts does not include polls yet; same pattern as usePoll.ts:61 and Phase 29.1 hooks; regeneration deferred
 
 ### Roadmap Evolution
 
@@ -193,8 +196,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P06 | 8 min | 5 tasks | 10 files |
 | Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P07 | 5 min | 3 tasks | 5 files |
 | Phase 31 P08 | 18min | 8 tasks | 17 files |
+| Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry- P01 | 10min | 3 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T10:28:21.863Z
-Stopped at: Completed 31-08-PLAN.md (Task 8 manual smoke PASS with deferred chat-list reactivity caveat)
+Last session: 2026-05-13T13:15:22.034Z
+Stopped at: Completed 32-01-PLAN.md (3/3 tasks; data-layer for last-entry previews ready for Plan 32-02 UI)
