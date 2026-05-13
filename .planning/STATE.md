@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 31-06-PLAN.md (status + polls + invitations migrated; authBridge fan-out extended; useNetworkStatus + useViewPreference deferred; Wave 7 unblocked)
-last_updated: "2026-05-13T09:53:34.665Z"
+stopped_at: Completed 31-07-PLAN.md (useSpotlight + useStreakData migrated; Edge Function audit closed as Case A; Wave 8 unblocked — last plan in phase)
+last_updated: "2026-05-13T10:04:09.238Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 28
-  completed_plans: 26
-  percent: 93
+  completed_plans: 27
+  percent: 96
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -153,6 +153,10 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-06: authBridge.attachAuthBridge extended to also clear useStatusStore on SIGNED_OUT — order: queryClient.removeQueries() first, useStatusStore.getState().clear() second; mitigates T-31-19 + covers TSQ-10 expansion; notification-side cleanup (cancelExpiryNotification + cancelMorningPrompt) stays in useStatus.ts as a domain-specific side effect
 - [Phase 31]: Phase 31-06: realtimeBridge gains subscribePollVotes (poll-votes-${pollId} channel; invalidates polls.poll on any event) — replaces pre-migration prop-drilled lastPollVoteEvent; usePoll vote mutation is EXACT analog of useWishListVotes.toggleVote (Wave 5 flip-flag + bump-counter pattern)
 - [Phase 31]: Phase 31-06: useNetworkStatus + useViewPreference intentionally NOT migrated — useNetworkStatus is a 6-LOC NetInfo wrapper that onlineManager covers transparently; useViewPreference is an AsyncStorage-only UI preference (not server state). Both will be documented in the Wave 8 boundary doc as canonical examples of zustand-not-cache
+- [Phase 31]: Phase 31-07: useSpotlight uses a dual-export pattern (selectSpotlight selector preserved verbatim + new useSpotlight() hook added alongside) — BentoGrid callsite needs zero edits while future consumers can adopt the hook directly
+- [Phase 31]: Phase 31-07: useSpotlight() hook derives synchronously via useMemo + mirrors into queryKeys.home.spotlight(userId) cache slot via useEffect + setQueryData; useQuery wraps with initialData: derived + staleTime: 0 so the derivation participates in the cache taxonomy without an async fetch
+- [Phase 31]: Phase 31-07: useStreakData cache key in habits namespace (queryKeys.habits.streak) NOT a separate streak namespace — prefix invalidation under queryKeys.habits.all() reaches both overview and streak; Wave 2 useHabits.toggleToday invalidation intentionally NOT broadened (server batches streak end-of-day)
+- [Phase 31]: Phase 31-07: Edge Function audit closed out as Case A (Wave 1 found 0 supabase.functions.invoke callsites; the phase's edge functions are server-side trigger-driven via outbox pattern, not client-invoked)
 
 ### Roadmap Evolution
 
@@ -183,8 +187,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31 P04 | 7min | 4 tasks | 11 files |
 | Phase 31 P05 | 9min | 6 tasks | 16 files |
 | Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P06 | 8 min | 5 tasks | 10 files |
+| Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P07 | 5 min | 3 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T09:53:34.661Z
-Stopped at: Completed 31-06-PLAN.md (status + polls + invitations migrated; authBridge fan-out extended; useNetworkStatus + useViewPreference deferred; Wave 7 unblocked)
+Last session: 2026-05-13T10:04:09.234Z
+Stopped at: Completed 31-07-PLAN.md (useSpotlight + useStreakData migrated; Edge Function audit closed as Case A; Wave 8 unblocked — last plan in phase)
