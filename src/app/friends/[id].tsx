@@ -376,8 +376,10 @@ export default function FriendProfileScreen() {
       // Optimistic flip on the preferences cache slot
       queryClient.setQueryData(queryKeys.chat.preferences(resolvedChannelId), { isMuted: nextMuted });
 
-      // Mute upsert — verbatim from PATTERNS §10 (ChatListScreen.tsx:120-123)
-      await supabase.from('chat_preferences').upsert(
+      // Mute upsert — verbatim from PATTERNS §10 (ChatListScreen.tsx:120-123).
+      // Destructure the error and throw so the surrounding try/catch can roll
+      // back the optimistic cache flip. See REVIEW WR-03.
+      const { error: upsertError } = await supabase.from('chat_preferences').upsert(
         {
           user_id: myId,
           chat_type: 'dm',
@@ -387,6 +389,7 @@ export default function FriendProfileScreen() {
         },
         { onConflict: 'user_id,chat_type,chat_id' },
       );
+      if (upsertError) throw upsertError;
 
       void queryClient.invalidateQueries({ queryKey: queryKeys.chat.preferences(resolvedChannelId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(myId) });
