@@ -11,6 +11,7 @@ import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { useChatList } from '@/hooks/useChatList';
 import { useChatStore } from '@/stores/useChatStore';
+import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { ChatListRow } from '@/components/chat/ChatListRow';
 import { ChatSearchBar } from '@/components/chat/ChatSearchBar';
 import { ChatTabBar, type ChatTab } from '@/components/chat/ChatTabBar';
@@ -24,6 +25,7 @@ export function ChatListScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const bottomSpacing = useTabBarSpacing();
   const session = useAuthStore((s) => s.session);
   const { chatList, loading, error, refreshing, handleRefresh } = useChatList();
   const { setChatList } = useChatStore();
@@ -273,7 +275,11 @@ export function ChatListScreen() {
             tintColor={colors.interactive.accent}
           />
         }
-        contentContainerStyle={sections.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={
+          sections.length === 0
+            ? [styles.emptyList, { paddingBottom: bottomSpacing }]
+            : { paddingBottom: bottomSpacing }
+        }
         style={styles.list}
         ListEmptyComponent={
           <EmptyState
