@@ -82,6 +82,45 @@ export function subscribeHabitCheckins(
   return () => releaseSubscription(channelName);
 }
 
+/** Subscribe to poll_votes changes for `pollId`. Returns unsubscribe.
+ * Channel name is scoped by pollId so subscribing to the same poll from two
+ * mount points shares ONE Supabase channel (refCount).
+ *
+ * Vote aggregation in the poll detail cache is a count over all rows for the
+ * poll — INSERT / UPDATE / DELETE all invalidate the same polls.poll key.
+ */
+export function subscribePollVotes(
+  queryClient: QueryClient,
+  pollId: string,
+): Unsubscribe {
+  const channelName = `poll-votes-${pollId}`;
+  const existing = registry.get(channelName);
+  if (existing) {
+    existing.refCount++;
+    return () => releaseSubscription(channelName);
+  }
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'poll_votes', filter: `poll_id=eq.${pollId}` },
+      (_payload) => {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.polls.poll(pollId) });
+      },
+    )
+    .subscribe();
+
+  registry.set(channelName, {
+    refCount: 1,
+    teardown: () => {
+      void supabase.removeChannel(channel);
+    },
+  });
+
+  return () => releaseSubscription(channelName);
+}
+
 /** Subscribe to statuses changes for the caller's friend set. Returns unsubscribe.
  * Channel name is scoped by userId (not friendIds) so refCount works across renders
  * where friendIds changes (a friend being added/removed only invalidates the friends

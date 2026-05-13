@@ -6,6 +6,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   subscribeHabitCheckins,
   subscribeHomeStatuses,
+  subscribePollVotes,
   _resetRealtimeBridgeForTests,
 } from '@/lib/realtimeBridge';
 
@@ -139,6 +140,67 @@ describe('realtimeBridge.subscribeHomeStatuses', () => {
   it('tears down only after all subscribers have unsubscribed', () => {
     const u1 = subscribeHomeStatuses(qc, 'u1', ['f1']);
     const u2 = subscribeHomeStatuses(qc, 'u1', ['f1']);
+    u1();
+    expect(mockRemoveChannel).not.toHaveBeenCalled();
+    u2();
+    expect(mockRemoveChannel).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('realtimeBridge.subscribePollVotes', () => {
+  let qc: QueryClient;
+  let invalidateSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    mockCapturedHandler = null;
+    // Reset first so any leftover teardown calls drain BEFORE we clear counters.
+    _resetRealtimeBridgeForTests();
+    mockChannel.mockClear();
+    mockOn.mockClear();
+    mockRemoveChannel.mockClear();
+    qc = new QueryClient();
+    invalidateSpy = jest.spyOn(qc, 'invalidateQueries').mockResolvedValue();
+  });
+
+  it('subscribes to poll-votes-${pollId} with a poll_id eq filter', () => {
+    subscribePollVotes(qc, 'p1');
+    expect(mockChannel).toHaveBeenCalledTimes(1);
+    expect(mockChannel).toHaveBeenCalledWith('poll-votes-p1');
+    expect(mockOn).toHaveBeenCalledWith(
+      'postgres_changes',
+      expect.objectContaining({
+        event: '*',
+        schema: 'public',
+        table: 'poll_votes',
+        filter: 'poll_id=eq.p1',
+      }),
+      expect.any(Function),
+    );
+  });
+
+  it('dedups two subscriptions to the same pollId into ONE supabase.channel call', () => {
+    const u1 = subscribePollVotes(qc, 'p1');
+    const u2 = subscribePollVotes(qc, 'p1');
+    expect(mockChannel).toHaveBeenCalledTimes(1);
+    u1();
+    u2();
+  });
+
+  it.each(['INSERT', 'UPDATE', 'DELETE'] as const)(
+    'invalidates polls.poll on %s payload',
+    (eventType) => {
+      subscribePollVotes(qc, 'p1');
+      expect(mockCapturedHandler).not.toBeNull();
+      mockCapturedHandler!({ eventType, new: {}, old: {} });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.polls.poll('p1'),
+      });
+    },
+  );
+
+  it('tears down only after all subscribers have unsubscribed', () => {
+    const u1 = subscribePollVotes(qc, 'p1');
+    const u2 = subscribePollVotes(qc, 'p1');
     u1();
     expect(mockRemoveChannel).not.toHaveBeenCalled();
     u2();
