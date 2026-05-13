@@ -16,9 +16,11 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
-import { usePlansStore } from '@/stores/usePlansStore';
+import { queryKeys } from '@/lib/queryKeys';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useFriends } from '@/hooks/useFriends';
 import { supabase } from '@/lib/supabase';
 import { uploadPlanCover } from '@/lib/uploadPlanCover';
@@ -57,6 +59,8 @@ export function PlanCreateModal() {
   const { preselect_friend_id } = useLocalSearchParams<{ preselect_friend_id?: string }>();
   const { createPlan } = usePlans();
   const { fetchFriends } = useFriends();
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((s) => s.session?.user?.id ?? '');
 
   const [title, setTitle] = useState(getDefaultTitle());
   const [scheduledFor, setScheduledFor] = useState(getNextRoundHour());
@@ -154,13 +158,12 @@ export function PlanCreateModal() {
           .from('plans')
           .update({ cover_image_url: publicUrl })
           .eq('id', planId);
-        // Sync store so EventCard shows the image immediately
-        const store = usePlansStore.getState();
-        store.setPlans(
-          store.plans.map((p) =>
-            p.id === planId ? { ...p, cover_image_url: publicUrl } : p
-          )
-        );
+        // Invalidate plan caches so EventCard / list / home all pick up the
+        // new cover URL via TanStack Query (Phase 31 Plan 04 — replaces the
+        // stripped usePlansStore.setPlans server-data mirror).
+        void queryClient.invalidateQueries({ queryKey: queryKeys.plans.list(userId) });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.plans.detail(planId) });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.home.upcomingEvents(userId) });
       }
       setUploadingCover(false);
     }

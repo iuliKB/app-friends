@@ -1,113 +1,113 @@
-import { useCallback, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+// Phase 31 Plan 04 — Migrated to TanStack Query.
+//
+// Public shape (UsePlansResult) verbatim-preserved so callsites don't change:
+//   { plans, loading, error, refreshing, fetchPlans, handleRefresh, createPlan, rsvp }
+//
+// The pre-migration hook drove a 3-step join (plan_members -> plans -> members + profiles)
+// from a useFocusEffect-triggered fetcher. Migrated shape: ONE useQuery wrapping the
+// 3-step join verbatim, plus TWO useMutation blocks:
+//   1. rsvp — canonical Pattern 5 (optimistic flip of own member row); invalidates
+//      queryKeys.plans.list(userId), queryKeys.plans.detail(planId), and
+//      queryKeys.home.upcomingEvents(userId).
+//   2. createPlan — `// @mutationShape: no-optimistic` exemption marker (server-side
+//      side-effect-heavy: inserts plans row + plan_members rows). Invalidates
+//      queryKeys.plans.list(userId) and queryKeys.home.upcomingEvents(userId) on success.
+//
+// usePlansStore.plans + usePlansStore.lastFetchedAt are stripped in the same commit
+// (server-data mirror is replaced by the React Query cache). UI-only field removePlan
+// is preserved as a thin cache splice utility on top of queryKeys.plans.list.
+//
+// Pitfall 10 mitigation: every mutator invalidates queryKeys.home.upcomingEvents(userId)
+// (and rsvp also invalidates queryKeys.plans.detail) so cross-screen reactivity
+// (home Bento Events tile, plan list, plan detail) all stay in sync.
+
+import { useCallback } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { usePlansStore } from '@/stores/usePlansStore';
+import { queryKeys } from '@/lib/queryKeys';
 import type { PlanWithMembers, PlanMember } from '@/types/plans';
 
 interface CreatePlanInput {
   title: string;
   scheduledFor: Date;
-  location: string | null;      // nullable — location always comes with coords (D-07)
-  latitude: number | null;      // Phase 20 MAP-01
-  longitude: number | null;     // Phase 20 MAP-01
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   invitedFriendIds: string[];
-  coverImageUrl?: string; // D-16 optional cover image URL
+  coverImageUrl?: string;
 }
 
-export function usePlans(): {
+export interface UsePlansResult {
   plans: PlanWithMembers[];
   loading: boolean;
   error: string | null;
   refreshing: boolean;
-  fetchPlans: () => Promise<void>;
-  handleRefresh: () => Promise<void>;
-  createPlan: (input: CreatePlanInput) => Promise<{ planId: string | null; error: Error | null }>;
-} {
+  fetchPlans: () => Promise<unknown>;
+  handleRefresh: () => Promise<unknown>;
+  createPlan: (
+    input: CreatePlanInput
+  ) => Promise<{ planId: string | null; error: Error | null }>;
+  rsvp: (
+    planId: string,
+    status: 'going' | 'maybe' | 'out'
+  ) => Promise<{ error: string | null }>;
+}
+
+export function usePlans(): UsePlansResult {
   const session = useAuthStore((s) => s.session);
-  const { plans, setPlans } = usePlansStore();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const userId = session?.user?.id ?? null;
+  const queryClient = useQueryClient();
+  const listKey = queryKeys.plans.list(userId ?? '');
 
-  async function fetchPlans(): Promise<void> {
-    if (!session?.user) return;
+  const query = useQuery({
+    queryKey: listKey,
+    queryFn: async (): Promise<PlanWithMembers[]> => {
+      if (!userId) return [];
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Step 1: get plan_ids the user has accepted (going/maybe only — not invited or out)
+      // Step 1: plan_ids the user has accepted (going/maybe only).
       const { data: memberRows, error: memberError } = await supabase
         .from('plan_members')
         .select('plan_id, rsvp')
-        .eq('user_id', session.user.id)
+        .eq('user_id', userId)
         .in('rsvp', ['going', 'maybe']);
-
-      if (memberError) {
-        setError(`plan_members query: ${memberError.message}`);
-        setLoading(false);
-        return;
-      }
+      if (memberError) throw new Error(`plan_members query: ${memberError.message}`);
 
       const planIds = (memberRows ?? []).map((r) => r.plan_id as string);
+      if (planIds.length === 0) return [];
 
-      if (planIds.length === 0) {
-        setPlans([]);
-        setLoading(false);
-        return;
-      }
-
-      // Step 2: get future plans
+      // Step 2: future plans only.
       const { data: planRows, error: plansError } = await supabase
         .from('plans')
         .select('*')
         .in('id', planIds)
         .or(`scheduled_for.gte.${new Date().toISOString()},scheduled_for.is.null`)
         .order('scheduled_for', { ascending: true, nullsFirst: false });
-
-      if (plansError) {
-        setError(`plans query: ${plansError.message}`);
-        setLoading(false);
-        return;
-      }
+      if (plansError) throw new Error(`plans query: ${plansError.message}`);
 
       const fetchedPlanIds = (planRows ?? []).map((p) => p.id as string);
+      if (fetchedPlanIds.length === 0) return [];
 
-      if (fetchedPlanIds.length === 0) {
-        setPlans([]);
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: get all members for those plans
+      // Step 3: members for those plans.
       const { data: allMembers, error: membersError } = await supabase
         .from('plan_members')
         .select('plan_id, user_id, rsvp, joined_at')
         .in('plan_id', fetchedPlanIds);
+      if (membersError) throw new Error(`members query: ${membersError.message}`);
 
-      if (membersError) {
-        setError(`members query: ${membersError.message}`);
-        setLoading(false);
-        return;
-      }
-
-      // Step 3b: get profiles for all member user_ids
+      // Step 3b: profiles for member user_ids (separate query — PostgREST cannot
+      // embed profiles via the auth.users FK).
       const memberUserIds = [...new Set((allMembers ?? []).map((m) => m.user_id as string))];
-      let profileMap = new Map<string, { id: string; display_name: string; avatar_url: string | null }>();
-
+      let profileMap = new Map<
+        string,
+        { id: string; display_name: string; avatar_url: string | null }
+      >();
       if (memberUserIds.length > 0) {
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, display_name, avatar_url')
           .in('id', memberUserIds);
-
-        if (profilesError) {
-          setError(`profiles query: ${profilesError.message}`);
-          setLoading(false);
-          return;
-        }
-
+        if (profilesError) throw new Error(`profiles query: ${profilesError.message}`);
         profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
       }
 
@@ -115,15 +115,15 @@ export function usePlans(): {
       const membersMap = new Map<string, PlanMember[]>();
       for (const m of allMembers ?? []) {
         const planId = m.plan_id as string;
-        const userId = m.user_id as string;
-        const profile = profileMap.get(userId);
+        const memberUserId = m.user_id as string;
+        const profile = profileMap.get(memberUserId);
         if (!membersMap.has(planId)) membersMap.set(planId, []);
         membersMap.get(planId)!.push({
           plan_id: planId,
-          user_id: userId,
+          user_id: memberUserId,
           rsvp: m.rsvp,
           joined_at: m.joined_at,
-          profiles: profile ?? { id: userId, display_name: 'Unknown', avatar_url: null },
+          profiles: profile ?? { id: memberUserId, display_name: 'Unknown', avatar_url: null },
         } as PlanMember);
       }
 
@@ -143,75 +143,168 @@ export function usePlans(): {
         members: membersMap.get(p.id as string) ?? [],
       }));
 
-      setPlans(result);
-      setLoading(false);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message);
-      setLoading(false);
-    }
-  }
+      return result;
+    },
+    enabled: !!userId,
+  });
 
-  async function createPlan(
-    input: CreatePlanInput
-  ): Promise<{ planId: string | null; error: Error | null }> {
-    if (!session?.user) return { planId: null, error: new Error('Not authenticated') };
+  // rsvp — canonical Pattern 5 mutation (optimistic flip of the caller's own
+  // member row). Updates BOTH queryKeys.plans.list(userId) and
+  // queryKeys.plans.detail(planId) optimistically; rolls back both on error;
+  // invalidates list + detail + home.upcomingEvents on settle.
+  const rsvpMutation = useMutation({
+    mutationFn: async (input: {
+      planId: string;
+      status: 'going' | 'maybe' | 'out';
+    }) => {
+      if (!userId) throw new Error('Not authenticated');
+      const { error } = await supabase
+        .from('plan_members')
+        .update({ rsvp: input.status })
+        .eq('plan_id', input.planId)
+        .eq('user_id', userId);
+      if (error) throw error;
+    },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.plans.list(userId ?? '') });
+      await queryClient.cancelQueries({ queryKey: queryKeys.plans.detail(input.planId) });
+      const previousList = queryClient.getQueryData<PlanWithMembers[]>(
+        queryKeys.plans.list(userId ?? ''),
+      );
+      const previousDetail = queryClient.getQueryData<PlanWithMembers>(
+        queryKeys.plans.detail(input.planId),
+      );
+      // Defensive: only mutate the caller's own member row (T-31-14).
+      queryClient.setQueryData<PlanWithMembers[]>(
+        queryKeys.plans.list(userId ?? ''),
+        (old) =>
+          old?.map((p) =>
+            p.id === input.planId
+              ? {
+                  ...p,
+                  members: p.members.map((m) =>
+                    m.user_id === userId ? { ...m, rsvp: input.status } : m,
+                  ),
+                }
+              : p,
+          ) ?? [],
+      );
+      queryClient.setQueryData<PlanWithMembers | undefined>(
+        queryKeys.plans.detail(input.planId),
+        (old) =>
+          old
+            ? {
+                ...old,
+                members: old.members.map((m) =>
+                  m.user_id === userId ? { ...m, rsvp: input.status } : m,
+                ),
+              }
+            : old,
+      );
+      return { previousList, previousDetail };
+    },
+    onError: (_err, input, ctx) => {
+      if (ctx?.previousList) {
+        queryClient.setQueryData(queryKeys.plans.list(userId ?? ''), ctx.previousList);
+      }
+      if (ctx?.previousDetail) {
+        queryClient.setQueryData(
+          queryKeys.plans.detail(input.planId),
+          ctx.previousDetail,
+        );
+      }
+    },
+    onSettled: (_data, _err, input) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.plans.list(userId ?? '') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.plans.detail(input.planId) });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.home.upcomingEvents(userId ?? ''),
+      });
+    },
+  });
 
-    // Step 1: insert plan row
-    const { data: plan, error: planError } = await supabase
-      .from('plans')
-      .insert({
-        title: input.title,
-        scheduled_for: input.scheduledFor.toISOString(),
-        location: input.location || null,
-        latitude: input.latitude ?? null,    // Phase 20 MAP-01
-        longitude: input.longitude ?? null,  // Phase 20 MAP-01
-        created_by: session.user.id,
-        cover_image_url: input.coverImageUrl ?? null,
-      })
-      .select('id')
-      .single();
+  // createPlan — RPC creates `plans` row + `plan_members` rows server-side.
+  // Side-effect-heavy: skip optimistic write (the new plan_id is unknown until
+  // the server returns). On success invalidate plans.list + home.upcomingEvents.
+  // @mutationShape: no-optimistic
+  const createMutation = useMutation({
+    mutationFn: async (input: CreatePlanInput) => {
+      if (!userId) throw new Error('Not authenticated');
 
-    if (planError) return { planId: null, error: new Error(planError.message) };
+      // Step 1: insert plan row
+      const { data: plan, error: planError } = await supabase
+        .from('plans')
+        .insert({
+          title: input.title,
+          scheduled_for: input.scheduledFor.toISOString(),
+          location: input.location || null,
+          latitude: input.latitude ?? null,
+          longitude: input.longitude ?? null,
+          created_by: userId,
+          cover_image_url: input.coverImageUrl ?? null,
+        })
+        .select('id')
+        .single();
 
-    const planId = plan.id as string;
+      if (planError) throw new Error(planError.message);
+      const planId = plan.id as string;
 
-    // Step 2: insert plan_members rows
-    const memberRows = [
-      { plan_id: planId, user_id: session.user.id, rsvp: 'going' as const },
-      ...input.invitedFriendIds.map((friendId) => ({
-        plan_id: planId,
-        user_id: friendId,
-        rsvp: 'invited' as const,
-      })),
-    ];
+      // Step 2: insert plan_members rows (creator going + invitees as invited)
+      const memberRows = [
+        { plan_id: planId, user_id: userId, rsvp: 'going' as const },
+        ...input.invitedFriendIds.map((friendId) => ({
+          plan_id: planId,
+          user_id: friendId,
+          rsvp: 'invited' as const,
+        })),
+      ];
+      const { error: membersError } = await supabase.from('plan_members').insert(memberRows);
+      if (membersError) {
+        // Plan row was inserted but member rows failed — still return the planId so
+        // the caller can surface a partial-failure error.
+        const err = new Error(membersError.message);
+        (err as Error & { planId?: string }).planId = planId;
+        throw err;
+      }
 
-    const { error: membersError } = await supabase.from('plan_members').insert(memberRows);
+      return { planId };
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.plans.list(userId ?? '') });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.home.upcomingEvents(userId ?? ''),
+      });
+    },
+  });
 
-    if (membersError) return { planId, error: new Error(membersError.message) };
-
-    return { planId, error: null };
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchPlans();
-    }, [session?.user?.id])
-  );
-
-  async function handleRefresh(): Promise<void> {
-    setRefreshing(true);
-    await fetchPlans();
-    setRefreshing(false);
-  }
+  const handleRefresh = useCallback(async () => query.refetch(), [query]);
 
   return {
-    plans,
-    loading,
-    error,
-    refreshing,
-    fetchPlans,
+    plans: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refreshing: query.isFetching && !query.isLoading,
+    fetchPlans: query.refetch,
     handleRefresh,
-    createPlan,
+    createPlan: async (input: CreatePlanInput) => {
+      try {
+        const { planId } = await createMutation.mutateAsync(input);
+        return { planId, error: null };
+      } catch (err) {
+        const partial = (err as Error & { planId?: string }).planId ?? null;
+        return {
+          planId: partial,
+          error: err instanceof Error ? err : new Error('createPlan failed'),
+        };
+      }
+    },
+    rsvp: async (planId: string, status: 'going' | 'maybe' | 'out') => {
+      try {
+        await rsvpMutation.mutateAsync({ planId, status });
+        return { error: null };
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : 'rsvp failed' };
+      }
+    },
   };
 }

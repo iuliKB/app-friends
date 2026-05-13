@@ -1,4 +1,11 @@
-import { usePlansStore } from '@/stores/usePlansStore';
+// Phase 31 Plan 04 — Migrated transitively via usePlans() cache.
+//
+// Previously this hook read `usePlansStore.plans` (a server-data mirror). Wave 4
+// strips that mirror; the data source is now the React Query cache exposed by
+// `usePlans()` (queryKeys.plans.list). This file is a pure client-side filter
+// over the migrated data — NOT a separate useQuery (no separate server call).
+
+import { usePlans } from '@/hooks/usePlans';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { PlanWithMembers } from '@/types/plans';
 
@@ -8,12 +15,13 @@ import type { PlanWithMembers } from '@/types/plans';
  * D-07: future plans only (scheduled_for > now)
  * D-08: capped at 5, sorted by scheduled_for ascending (soonest first)
  *
- * Filters usePlansStore client-side — no additional network round-trip.
- * Returns [] when store is empty (cold launch). UpcomingEventsSection renders
+ * Filters the usePlans() TanStack Query cache client-side — no additional
+ * network round-trip beyond what usePlans already performs.
+ * Returns [] when cache is empty (cold launch). UpcomingEventsSection renders
  * a placeholder card during this window.
  */
 export function useUpcomingEvents(): PlanWithMembers[] {
-  const plans = usePlansStore((s) => s.plans);
+  const { plans } = usePlans();
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id;
 

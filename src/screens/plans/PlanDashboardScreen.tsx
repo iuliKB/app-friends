@@ -19,10 +19,11 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { openInMapsApp, DARK_MAP_STYLE } from '@/lib/maps';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { openChat } from '@/lib/openChat';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { usePlansStore } from '@/stores/usePlansStore';
 import { uploadPlanCover } from '@/lib/uploadPlanCover';
 import { RSVPButtons } from '@/components/plans/RSVPButtons';
 import { MemberList } from '@/components/plans/MemberList';
@@ -53,7 +54,8 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const session = useAuthStore((s) => s.session);
   const { plan, loading, error, refetch, updateRsvp, updatePlanDetails, deletePlan } =
     usePlanDetail(planId);
-  const removePlan = usePlansStore((s) => s.removePlan);
+  const queryClient = useQueryClient();
+  const userId = session?.user?.id ?? '';
 
   // Edit mode state
   const [editing, setEditing] = useState(false);
@@ -544,7 +546,10 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
             Alert.alert('Error', "Couldn't delete the plan. Try again.");
             return;
           }
-          removePlan(planId);
+          // Invalidate plan caches so the list/home re-fetches without the deleted plan.
+          void queryClient.invalidateQueries({ queryKey: queryKeys.plans.list(userId) });
+          void queryClient.invalidateQueries({ queryKey: queryKeys.plans.detail(planId) });
+          void queryClient.invalidateQueries({ queryKey: queryKeys.home.upcomingEvents(userId) });
           router.back();
         },
       },
