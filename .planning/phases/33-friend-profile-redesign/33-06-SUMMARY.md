@@ -58,7 +58,7 @@ key-decisions:
 # Metrics
 duration: ~35min
 completed: 2026-05-13
-tasks_completed: 2 of 3 (Task 3 is hardware checkpoint — awaiting human verification)
+tasks_completed: 2 of 3 (Task 3 hardware smoke deferred to milestone-end Hardware Verification Gate — 2026-05-13)
 files_created: 4
 files_modified: 2
 ---
@@ -217,21 +217,27 @@ useMutation({
 - **Mutual plans onPress** (`src/app/friends/[id].tsx`) — `() => {}` no-op with TODO comment. Route TBD when mutual plans list screen is built
 - **Mutual friends onPress** (`src/app/friends/[id].tsx`) — same as above
 
-## Manual Verification (Task 3 — Hardware Smoke)
+## Hardware Verification — DEFERRED
 
-**Status: AWAITING** — Hardware checkpoint not yet run.
+**Status: DEFERRED to milestone-end Hardware Verification Gate — 2026-05-13**
 
-The following behaviors require real iPhone hardware (Expo dev client or TestFlight):
+**Rationale:** Project policy — no Apple Developer account until near-publication. Per-phase iOS hardware smoke tests accumulate in a single consolidated Hardware Verification Gate at the end of the milestone (established precedent: v1.3 Phase 5 "Hardware Verification Gate"). See persistent project memory `project_hardware_gate_deferral.md`.
 
-1. Header collapse animation — avatar 140pt → 32pt as scrollY 0→160
-2. Blurred-avatar wash cross-fade on image load
-3. Quick actions haptic feedback (light/selection per button)
-4. ImageViewerModal swipe-down dismiss + pinch-to-zoom
-5. Remove Friend optimistic removal + rollback on airplane mode
-6. Friend-not-found inline view (deep-link or removed-while-viewing)
-7. Reduced Motion path — static collapsed header, no haptics
+The following 7 behaviors require real iPhone hardware (Expo dev client or TestFlight) and are deferred:
 
-Record result below once verified on hardware:
+| # | Item | Requirement |
+|---|------|-------------|
+| 1 | Header collapse animation — avatar 140pt→32pt as scrollY 0→160; name/status fades out; Stack nav title fades in; no jank | REQ-FP-04 |
+| 2 | Blurred-avatar wash render — wash visible behind avatar; fades out past WASH_FADE_END (~220px); falls back to solid surface.card color when no avatar | REQ-FP-05 |
+| 3 | Quick actions haptics — Message=light; Mute/Unmute=selection; Photos=light; More=selection; press scale 0.96 spring per button | REQ-FP-06 |
+| 4 | ImageViewerModal — swipe-down dismiss and pinch-to-zoom inside modal | REQ-FP-09 |
+| 5 | Remove Friend rollback under airplane mode — optimistic removal then re-appearance in friends list after DELETE fails | REQ-FP-11 |
+| 6 | Friend-not-found deep-link — "No longer friends" inline view with "Back to friends" CTA | REQ-FP-12 |
+| 7 | Reduced Motion path — static collapsed avatar from start; no scale spring; no haptic on any button | UI-SPEC §Reduced Motion Path |
+
+**When to execute:** At the milestone-end Hardware Verification Gate session together with all other accumulated v1.8 hardware smoke items.
+
+**Record result here once verified:**
 
 ```
 Hardware smoke: [APPROVED/REJECTED] [DATE] by [OPERATOR]
