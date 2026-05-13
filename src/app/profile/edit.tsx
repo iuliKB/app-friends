@@ -20,6 +20,7 @@ import { APP_CONFIG } from '@/constants/config';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useUpdateMyBio } from '@/hooks/useUpdateMyBio';
 
 export default function EditProfileScreen() {
   const { colors } = useTheme();
@@ -37,15 +38,22 @@ export default function EditProfileScreen() {
   const [originalBirthdayDay, setOriginalBirthdayDay] = useState<number | null>(null);
   const [originalBirthdayYear, setOriginalBirthdayYear] = useState<number | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [bio, setBio] = useState('');
+  const [originalBio, setOriginalBio] = useState('');
+
+  const { updateBio, saving: savingBio } = useUpdateMyBio();
 
   useEffect(() => {
     if (!session) return;
-    supabase
+    // (supabase as any) cast — database.ts regen deferred; bio column exists on live DB
+    // (Plan 33-01 migration 0027) but generated types don't include it yet. Same pattern
+    // as Phase 31/32 polls/habits un-codegen'd columns.
+    ;(supabase as any)
       .from('profiles')
-      .select('display_name, avatar_url, birthday_month, birthday_day, birthday_year, username')
+      .select('display_name, avatar_url, birthday_month, birthday_day, birthday_year, username, bio')
       .eq('id', session.user.id)
       .single()
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: any; error: any }) => {
         if (data && !error) {
           setDisplayName(data.display_name ?? '');
           setOriginalDisplayName(data.display_name ?? '');
@@ -56,6 +64,9 @@ export default function EditProfileScreen() {
           setOriginalBirthdayDay(data.birthday_day ?? null);
           setOriginalBirthdayYear(data.birthday_year ?? null);
           setUsername(data.username ?? null);
+          const fetchedBio = data.bio ?? '';
+          setBio(fetchedBio);
+          setOriginalBio(fetchedBio);
         }
         setLoading(false);
       });
@@ -93,6 +104,18 @@ export default function EditProfileScreen() {
       return;
     }
 
+    // Phase 33 — bio save via useUpdateMyBio (Pattern 5). Only fire when changed.
+    if (bio.trim() !== originalBio) {
+      const trimmedBio = bio.trim();
+      const result = await updateBio(trimmedBio.length === 0 ? null : trimmedBio);
+      if (result.error) {
+        Alert.alert('Error', `Couldn't save bio: ${result.error}`);
+        setSaving(false);
+        return; // Do not advance the originalBio snapshot — let user retry
+      }
+      setOriginalBio(trimmedBio);
+    }
+
     router.back();
   }
 
@@ -100,8 +123,9 @@ export default function EditProfileScreen() {
     displayName.trim() !== originalDisplayName ||
     birthdayMonth !== originalBirthdayMonth ||
     birthdayDay !== originalBirthdayDay ||
-    birthdayYear !== originalBirthdayYear;
-  const canSave = displayName.trim().length > 0 && isDirty && !saving;
+    birthdayYear !== originalBirthdayYear ||
+    bio.trim() !== originalBio;
+  const canSave = displayName.trim().length > 0 && isDirty && !saving && !savingBio;
 
   const styles = useMemo(
     () =>
@@ -154,6 +178,11 @@ export default function EditProfileScreen() {
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
+        },
+        bioTextInput: {
+          minHeight: 80,
+          textAlignVertical: 'top', // Android: keep text top-aligned in multiline input
+          paddingTop: SPACING.md,
         },
         inputDisabled: { opacity: 0.5 },
 
@@ -270,13 +299,44 @@ export default function EditProfileScreen() {
               disabled={saving}
             />
           </View>
+
+          <View style={styles.divider} />
+
+          {/* ── Bio ── */}
+          <View style={styles.fieldLabelRow}>
+            <View style={styles.fieldLabelLeft}>
+              <Ionicons name="chatbubble-ellipses-outline" size={12} color={colors.text.secondary} />
+              <Text style={styles.fieldLabel}>Bio</Text>
+            </View>
+            <Text
+              style={[
+                styles.charCountInline,
+                bio.length > 144 && { color: colors.feedback.error },
+              ]}
+            >
+              {bio.length}/160
+            </Text>
+          </View>
+          <TextInput
+            style={[styles.textInput, styles.bioTextInput, (saving || savingBio) && styles.inputDisabled]}
+            value={bio}
+            onChangeText={setBio}
+            placeholder="A short something about you"
+            placeholderTextColor={colors.text.secondary}
+            maxLength={160}
+            multiline
+            numberOfLines={3}
+            editable={!saving && !savingBio}
+            accessibilityLabel="Bio"
+            accessibilityHint="A short something about you, up to 160 characters"
+          />
         </View>
 
         <View style={styles.buttonWrapper}>
           <PrimaryButton
             title="Save Changes"
             onPress={handleSave}
-            loading={saving}
+            loading={saving || savingBio}
             disabled={!canSave}
           />
         </View>
