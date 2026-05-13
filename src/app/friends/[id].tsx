@@ -18,7 +18,7 @@
 //     per RESEARCH §Recommendations §Friend-not-found fallback + Plan 02 SUMMARY.
 
 import { router, Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -296,6 +296,10 @@ export default function FriendProfileScreen() {
   // ── DM channel lazy-resolution for Mute ──
   const [dmChannelId, setDmChannelId] = useState<string | null>(null);
   const [mutingInFlight, setMutingInFlight] = useState(false);
+  // Synchronous re-entry guard — `mutingInFlight` only updates on the next render,
+  // so two rapid taps could both enter handleToggleMute before the disabled prop
+  // applies. The ref blocks the second tap inside the same JS tick. See REVIEW WR-01.
+  const muteInFlightRef = useRef(false);
 
   const { data: mutePrefs } = useChatDmPreferences(dmChannelId);
   const isMuted = mutePrefs?.isMuted ?? false;
@@ -349,7 +353,8 @@ export default function FriendProfileScreen() {
   }
 
   async function handleToggleMute() {
-    if (!myId) return;
+    if (!myId || muteInFlightRef.current) return;
+    muteInFlightRef.current = true;
     setMutingInFlight(true);
     try {
       let channelId = dmChannelId;
@@ -359,7 +364,6 @@ export default function FriendProfileScreen() {
           { other_user_id: friendId },
         );
         if (rpcError || !rpcData) {
-          setMutingInFlight(false);
           return;
         }
         // RPC returns a string channel_id directly (same shape as openChat.ts:102-112)
@@ -387,6 +391,7 @@ export default function FriendProfileScreen() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.chat.preferences(resolvedChannelId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(myId) });
     } finally {
+      muteInFlightRef.current = false;
       setMutingInFlight(false);
     }
   }
