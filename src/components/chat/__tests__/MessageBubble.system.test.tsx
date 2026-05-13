@@ -92,4 +92,13 @@ describe('MessageBubble system render branch', () => {
     const { queryByLabelText } = renderBubble(baseSystemMessage, 'u-sender');
     expect(queryByLabelText(/^System:/)).toBeTruthy();
   });
+
+  // Regression: complete_chat_todo stores the body with a literal "✓ " prefix
+  // and SystemMessageRow also renders an Ionicons "checkmark" glyph — the row
+  // text must strip the literal so the user does not see two check icons.
+  it('strips leading "✓ " from body to avoid duplicate check glyph', () => {
+    const { queryByText } = renderBubble(baseSystemMessage, 'u-self');
+    expect(queryByText('Sam completed Buy bread')).toBeTruthy();
+    expect(queryByText('✓ Sam completed Buy bread')).toBeNull();
+  });
 });

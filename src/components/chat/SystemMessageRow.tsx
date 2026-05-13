@@ -48,12 +48,18 @@ export function SystemMessageRow({ body }: SystemMessageRowProps) {
     [colors]
   );
 
+  // The `complete_chat_todo` RPC stores bodies as `"✓ Sam completed Buy bread"`
+  // (literal U+2713 prefix). The renderer also prepends an Ionicons checkmark
+  // glyph per the design contract — so strip the literal prefix to avoid
+  // showing two check icons.
+  const displayBody = body.replace(/^✓\s+/, '');
+
   return (
     <View style={styles.container} accessibilityRole="text" accessibilityLabel={`System: ${body}`}>
       <View style={styles.inner}>
         <Ionicons name="checkmark" size={12} color={colors.interactive.accent} />
         <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">
-          {body}
+          {displayBody}
         </Text>
       </View>
     </View>
