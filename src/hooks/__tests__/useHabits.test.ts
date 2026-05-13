@@ -1,139 +1,165 @@
 /**
- * useHabits test — Phase 29.1 Plan 03 (Wave 0).
+ * @jest-environment jsdom
  *
- * Asserts behavior, not implementation: fetch on mount via get_habits_overview,
- * optimistic toggle + revert on RPC error (Pitfall 3 stale-closure guard),
- * single per-user Realtime channel (Pitfall 4 budget guard).
+ * useHabits test — Phase 31 Plan 02 (migrated to TanStack Query).
  *
- * Run: npx jest --testPathPatterns="useHabits" --no-coverage
+ * Asserts BEHAVIOR via the cache, not implementation details. Initial fetch via
+ * get_habits_overview, optimistic toggle, TSQ-03 rollback on RPC error,
+ * onSettled invalidation, subscribe-on-mount / unsubscribe-on-unmount.
+ *
+ * Run: npx jest --testPathPatterns="useHabits.test" --no-coverage
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
+import { queryKeys } from '@/lib/queryKeys';
 
-// Mock supabase BEFORE importing the hook so the hook closes over the mock.
-jest.mock('@/lib/supabase', () => {
-  const rpc = jest.fn();
-  const channel = jest.fn(() => {
-    const builder: { on: jest.Mock; subscribe: jest.Mock } = {
-      on: jest.fn(),
-      subscribe: jest.fn(),
-    };
-    builder.on.mockReturnValue(builder);
-    builder.subscribe.mockReturnValue(builder);
-    return builder;
-  });
-  const removeChannel = jest.fn();
-  return { supabase: { rpc, channel, removeChannel } };
-});
+// Supabase mock — chainable rpc that resolves with rows on first call and a
+// configurable next-call result for the mutation. channel/removeChannel are
+// kept so any incidental call (defense in depth) doesn't blow up.
+const mockRpc = jest.fn();
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    rpc: (...args: unknown[]) => mockRpc(...args),
+    channel: jest.fn(),
+    removeChannel: jest.fn(),
+  },
+}));
 
 jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
-    selector({ session: { user: { id: 'u-self' } } }),
+    selector({ session: { user: { id: 'u1' } } }),
 }));
 
-import { supabase } from '@/lib/supabase';
+jest.mock('@/lib/dateLocal', () => ({ todayLocal: () => '2026-05-13' }));
+
+// realtimeBridge mock — capture unsubscribe to assert teardown.
+const mockUnsubscribe = jest.fn();
+const mock_subscribeHabitCheckins = jest.fn(() => mockUnsubscribe);
+jest.mock('@/lib/realtimeBridge', () => ({
+  subscribeHabitCheckins: (...args: unknown[]) => mock_subscribeHabitCheckins(...args),
+  _resetRealtimeBridgeForTests: jest.fn(),
+}));
+
 import { useHabits } from '../useHabits';
 
-describe('useHabits', () => {
+function makeRow(overrides: Partial<{
+  habit_id: string;
+  title: string;
+  cadence: 'daily' | 'weekly' | 'n_per_week';
+  weekly_target: number | null;
+  is_solo: boolean;
+  members_total: number;
+  accepted_total: number;
+  completed_today: number;
+  did_me_check_in_today: boolean;
+  last_checkin_date_local: string | null;
+  current_week_completions: number;
+}> = {}) {
+  return {
+    habit_id: 'h1',
+    title: 'Run',
+    cadence: 'daily' as const,
+    weekly_target: null,
+    is_solo: true,
+    members_total: 1,
+    accepted_total: 1,
+    completed_today: 0,
+    did_me_check_in_today: false,
+    last_checkin_date_local: null,
+    current_week_completions: 0,
+    ...overrides,
+  };
+}
+
+describe('useHabits (migrated to TanStack Query)', () => {
   beforeEach(() => {
-    (supabase.rpc as jest.Mock).mockReset();
-    (supabase.channel as jest.Mock).mockClear();
-    (supabase.removeChannel as jest.Mock).mockClear();
+    mockRpc.mockReset();
+    mockUnsubscribe.mockReset();
+    mock_subscribeHabitCheckins.mockClear();
   });
 
-  it('fetches habits via get_habits_overview on mount with todayLocal date', async () => {
-    (supabase.rpc as jest.Mock).mockResolvedValueOnce({
-      data: [
-        {
-          habit_id: 'h1',
-          title: 'Gym',
-          cadence: 'daily',
-          weekly_target: null,
-          is_solo: false,
-          members_total: 3,
-          completed_today: 2,
-          did_me_check_in_today: false,
-          last_checkin_date_local: null,
-          current_week_completions: 0,
-        },
-      ],
-      error: null,
-    });
-    const { result } = renderHook(() => useHabits());
+  it('initial mount returns loading: true, habits: []', () => {
+    mockRpc.mockReturnValue(Promise.resolve({ data: [], error: null }));
+    const { wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useHabits(), { wrapper });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.habits).toEqual([]);
+  });
+
+  it('returns rows after get_habits_overview resolves', async () => {
+    const rows = [makeRow()];
+    mockRpc.mockResolvedValueOnce({ data: rows, error: null });
+    const { wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useHabits(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(supabase.rpc).toHaveBeenCalledWith(
+    expect(mockRpc).toHaveBeenCalledWith(
       'get_habits_overview',
-      expect.objectContaining({
-        p_date_local: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-      })
+      expect.objectContaining({ p_date_local: '2026-05-13' }),
     );
-    expect(result.current.habits).toHaveLength(1);
-    expect(result.current.habits[0]!.title).toBe('Gym');
+    expect(result.current.habits).toEqual(rows);
   });
 
-  it('optimistic toggleToday flips did_me_check_in_today + reverts on error (D-07, Pitfall 3)', async () => {
-    (supabase.rpc as jest.Mock).mockResolvedValueOnce({
-      data: [
-        {
-          habit_id: 'h1',
-          title: 'Gym',
-          cadence: 'daily',
-          weekly_target: null,
-          is_solo: true,
-          members_total: 1,
-          completed_today: 0,
-          did_me_check_in_today: false,
-          last_checkin_date_local: null,
-          current_week_completions: 0,
-        },
-      ],
-      error: null,
-    });
-    const { result } = renderHook(() => useHabits());
+  it('toggleToday optimistically flips did_me_check_in_today + adjusts completed_today', async () => {
+    const rows = [makeRow({ did_me_check_in_today: false, completed_today: 0 })];
+    mockRpc
+      .mockResolvedValueOnce({ data: rows, error: null }) // initial overview fetch
+      .mockReturnValueOnce(new Promise(() => {})); // toggle hangs so we can read optimistic state
+    const { client, wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useHabits(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Mock the toggle RPC to fail
-    (supabase.rpc as jest.Mock).mockResolvedValueOnce({
-      data: null,
-      error: { message: 'rpc-failed' },
+    await act(async () => {
+      void result.current.toggleToday('h1');
+      // Let onMutate's awaited cancelQueries + setQueryData flush.
+      await Promise.resolve();
+      await Promise.resolve();
     });
+
+    await waitFor(() => {
+      const cached = client.getQueryData(queryKeys.habits.overview('2026-05-13')) as Array<{
+        habit_id: string;
+        did_me_check_in_today: boolean;
+        completed_today: number;
+      }>;
+      expect(cached?.[0]?.did_me_check_in_today).toBe(true);
+      expect(cached?.[0]?.completed_today).toBe(1);
+    });
+  });
+
+  it('rolls back to snapshot on RPC error (TSQ-03)', async () => {
+    const rows = [makeRow({ did_me_check_in_today: false, completed_today: 0 })];
+    mockRpc
+      .mockResolvedValueOnce({ data: rows, error: null })
+      .mockResolvedValueOnce({ data: null, error: new Error('boom') });
+    const { client, wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useHabits(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
       await result.current.toggleToday('h1');
     });
 
-    // After failure, did_me_check_in_today should be back to false (revert)
-    expect(result.current.habits[0]!.did_me_check_in_today).toBe(false);
-    expect(result.current.habits[0]!.completed_today).toBe(0);
+    const cached = client.getQueryData(queryKeys.habits.overview('2026-05-13')) as Array<{
+      habit_id: string;
+      did_me_check_in_today: boolean;
+      completed_today: number;
+    }>;
+    expect(cached?.[0]?.did_me_check_in_today).toBe(false);
+    expect(cached?.[0]?.completed_today).toBe(0);
   });
 
-  it('subscribes to ONE per-user Realtime channel (no per-habit channels) (Pitfall 4)', async () => {
-    (supabase.rpc as jest.Mock).mockResolvedValueOnce({
-      data: [
-        {
-          habit_id: 'h1',
-          title: 'Gym',
-          cadence: 'daily',
-          weekly_target: null,
-          is_solo: true,
-          members_total: 1,
-          completed_today: 0,
-          did_me_check_in_today: false,
-          last_checkin_date_local: null,
-          current_week_completions: 0,
-        },
-      ],
-      error: null,
-    });
-    renderHook(() => useHabits());
-    await waitFor(() =>
-      expect((supabase.channel as jest.Mock).mock.calls.length).toBeGreaterThanOrEqual(1)
+  it('subscribes on mount, unsubscribes on unmount', () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    const { wrapper } = createTestQueryClient();
+    const { unmount } = renderHook(() => useHabits(), { wrapper });
+    expect(mock_subscribeHabitCheckins).toHaveBeenCalledTimes(1);
+    expect(mock_subscribeHabitCheckins).toHaveBeenCalledWith(
+      expect.anything(),
+      'u1',
+      '2026-05-13',
     );
-    const calls = (supabase.channel as jest.Mock).mock.calls.map((c) => c[0] as string);
-    const perHabitChannels = calls.filter((name) => name.startsWith('habit-'));
-    expect(perHabitChannels).toHaveLength(0);
-    // The channel name must include the userId so two devices for two users
-    // don't collide on shared event streams.
-    expect(calls.some((name) => name.includes('u-self'))).toBe(true);
+    unmount();
+    expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
   });
 });
