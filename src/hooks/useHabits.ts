@@ -1,152 +1,99 @@
-// Phase 29.1 Plan 03 — useHabits hook.
-// Wraps the `get_habits_overview(p_date_local)` and `toggle_habit_today_checkin`
-// RPCs from migration 0024 (Plan 01). Returns a reactive list of habits the
-// caller is an accepted member of, plus an optimistic toggle mutator.
-//
-// Patterns:
-//   - Clone shape of `useIOUSummary` (refetch + loading + error tri-state).
-//   - Optimistic snapshot+revert from `useChatRoom.addReaction:670-742`
-//     (capture snapshot INSIDE the updater to avoid stale-closure reads —
-//     Pitfall 3 of RESEARCH.md).
-//   - Single per-user Realtime channel `user-${userId}-checkins` filtered
-//     by `user_id=eq.${userId}` (Pitfall 4 — never per-habit channels).
-//
-// Errors are silent: fall back to empty state, warn to console.
+// Phase 31 Plan 02 — Migrated to TanStack Query.
+// Public shape (UseHabitsResult) is identical to pre-migration so callers don't change.
+// Optimistic snapshot is now carried by TanStack Query's `ctx` from onMutate (no
+// hand-rolled ref mirror needed). (supabase as any) casts at RPC sites stay —
+// database.ts regeneration is deferred (Phase 29.1 decision in STATE.md).
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { todayLocal } from '@/lib/dateLocal';
+import { queryKeys } from '@/lib/queryKeys';
+import { subscribeHabitCheckins } from '@/lib/realtimeBridge';
 import type { HabitOverviewRow } from '@/types/habits';
 
 export interface UseHabitsResult {
   habits: HabitOverviewRow[];
   loading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<unknown>;
   toggleToday: (habitId: string) => Promise<{ error: string | null }>;
 }
-
-type ChannelHandle = ReturnType<typeof supabase.channel>;
 
 export function useHabits(): UseHabitsResult {
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id ?? null;
-  const [habits, setHabits] = useState<HabitOverviewRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const channelRef = useRef<ChannelHandle | null>(null);
-  // habitsRef mirrors the latest committed habits[] so toggleToday can
-  // synchronously read a pre-snapshot for revert without relying on
-  // setState-callback timing (Pitfall 3 stale-closure guard).
-  const habitsRef = useRef<HabitOverviewRow[]>([]);
+  const today = todayLocal();
+  const queryClient = useQueryClient();
 
-  const refetch = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      setHabits([]);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    const { data, error: rpcErr } = await supabase.rpc('get_habits_overview', {
-      p_date_local: todayLocal(),
-    });
-    if (rpcErr) {
-      console.warn('get_habits_overview failed', rpcErr);
-      setError(rpcErr.message);
-      habitsRef.current = [];
-      setHabits([]);
-    } else {
-      const next = ((data ?? []) as unknown) as HabitOverviewRow[];
-      habitsRef.current = next;
-      setHabits(next);
-    }
-    setLoading(false);
-  }, [userId]);
+  const query = useQuery({
+    queryKey: queryKeys.habits.overview(today),
+    queryFn: async (): Promise<HabitOverviewRow[]> => {
+      const { data, error } = await (supabase as any).rpc('get_habits_overview', {
+        p_date_local: today,
+      });
+      if (error) throw error;
+      return ((data ?? []) as unknown) as HabitOverviewRow[];
+    },
+    enabled: !!userId,
+  });
 
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
-
-  // Single per-user Realtime channel (Pitfall 4 — never per-habit).
-  // Filter is `user_id=eq.${userId}` so the channel only fires for the
-  // caller's own check-ins. Co-member updates on group habits are picked up
-  // by the next `refetch()` triggered by screen focus or pull-to-refresh —
-  // a per-group fan-out would blow the free-tier connection budget for any
-  // user belonging to multiple groups.
   useEffect(() => {
     if (!userId) return;
-    if (channelRef.current) {
-      void supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-    const filter = `user_id=eq.${userId}`;
-    channelRef.current = supabase
-      .channel(`user-${userId}-checkins`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'habit_checkins', filter },
-        () => {
-          void refetch();
-        }
-      )
-      .subscribe();
-    return () => {
-      if (channelRef.current) {
-        void supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, [userId, refetch]);
+    return subscribeHabitCheckins(queryClient, userId, today);
+  }, [queryClient, userId, today]);
 
-  const toggleToday = useCallback(
-    async (habitId: string): Promise<{ error: string | null }> => {
-      // Snapshot+revert pattern (Pitfall 3, Pattern 6).
-      // We read from habitsRef rather than relying on a setHabits updater
-      // capture because React 18 may defer functional setState callbacks
-      // past the next statement, leaving the snapshot null at the moment we
-      // need it. habitsRef mirrors the latest committed habits[] (updated
-      // on every refetch + every optimistic mutation below) so it always
-      // reflects the latest state.
-      const preSnapshot =
-        habitsRef.current.find((h) => h.habit_id === habitId) ?? null;
-      if (!preSnapshot) return { error: 'habit-not-found' };
-
-      // Optimistic flip — toggle did_me_check_in_today and bump/decrement
-      // completed_today so the row's "X/Y done today" badge updates without
-      // waiting for the server roundtrip.
-      const optimistic = habitsRef.current.map((h) => {
-        if (h.habit_id !== habitId) return h;
-        const next = !h.did_me_check_in_today;
-        return {
-          ...h,
-          did_me_check_in_today: next,
-          completed_today: next
-            ? h.completed_today + 1
-            : Math.max(0, h.completed_today - 1),
-        };
-      });
-      habitsRef.current = optimistic;
-      setHabits(optimistic);
-
-      const { error: rpcErr } = await supabase.rpc('toggle_habit_today_checkin', {
+  const toggleMutation = useMutation({
+    mutationFn: async (habitId: string) => {
+      const { error } = await (supabase as any).rpc('toggle_habit_today_checkin', {
         p_habit_id: habitId,
-        p_date_local: todayLocal(),
+        p_date_local: today,
       });
-      if (rpcErr) {
-        // Revert: replace the row with the pre-toggle state.
-        const reverted = habitsRef.current.map((h) =>
-          h.habit_id === habitId ? preSnapshot : h
-        );
-        habitsRef.current = reverted;
-        setHabits(reverted);
-        return { error: rpcErr.message };
-      }
-      return { error: null };
+      if (error) throw error;
     },
-    []
-  );
+    onMutate: async (habitId: string) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.overview(today) });
+      const previous = queryClient.getQueryData<HabitOverviewRow[]>(
+        queryKeys.habits.overview(today),
+      );
+      queryClient.setQueryData<HabitOverviewRow[]>(
+        queryKeys.habits.overview(today),
+        (old) =>
+          old?.map((h) => {
+            if (h.habit_id !== habitId) return h;
+            const next = !h.did_me_check_in_today;
+            return {
+              ...h,
+              did_me_check_in_today: next,
+              completed_today: next ? h.completed_today + 1 : Math.max(0, h.completed_today - 1),
+            };
+          }) ?? [],
+      );
+      return { previous };
+    },
+    onError: (_err, _habitId, ctx) => {
+      if (ctx?.previous) {
+        queryClient.setQueryData(queryKeys.habits.overview(today), ctx.previous);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.habits.overview(today) });
+    },
+  });
 
-  return { habits, loading, error, refetch, toggleToday };
+  return {
+    habits: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refetch: query.refetch,
+    toggleToday: async (habitId: string) => {
+      try {
+        await toggleMutation.mutateAsync(habitId);
+        return { error: null };
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : 'toggle failed' };
+      }
+    },
+  };
 }
