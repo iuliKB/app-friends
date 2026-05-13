@@ -35,6 +35,7 @@ export const queryKeys = {
     messages: (channelId: string, opts: { before?: string } = {}) =>
       [...queryKeys.chat.room(channelId), 'messages', opts] as const,
     members: (channelId: string) => [...queryKeys.chat.room(channelId), 'members'] as const,
+    preferences: (channelId: string) => [...queryKeys.chat.all(), 'preferences', channelId] as const,
   },
 
   plans: {
@@ -52,6 +53,8 @@ export const queryKeys = {
     ofFriend: (friendId: string) => [...queryKeys.friends.all(), 'ofFriend', friendId] as const,
     pendingRequests: (userId: string) => [...queryKeys.friends.all(), 'pendingRequests', userId] as const,
     wishList: (userId: string) => [...queryKeys.friends.all(), 'wishList', userId] as const,
+    mutuals: (friendId: string) => [...queryKeys.friends.all(), 'mutuals', friendId] as const,
+    sharedPhotos: (friendId: string) => [...queryKeys.friends.all(), 'sharedPhotos', friendId] as const,
   },
 
   expenses: {
