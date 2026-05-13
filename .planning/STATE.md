@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 31-04-PLAN.md (Plans vertical migrated; Wave 5 unblocked)
-last_updated: "2026-05-13T09:25:46.843Z"
+stopped_at: Completed 31-05-PLAN.md (Friends + Expenses vertical migrated; Wave 6 unblocked)
+last_updated: "2026-05-13T09:40:19.277Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 28
-  completed_plans: 24
-  percent: 86
+  completed_plans: 25
+  percent: 89
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -143,6 +143,12 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-04: useUpcomingEvents migrated transitively — reads usePlans().plans (TanStack Query cache) instead of usePlansStore.plans; no separate useQuery (pure client-side filter on creator-or-going + future + capped at 5)
 - [Phase 31]: Phase 31-04: useAllPlanPhotos.deletePhoto showcases Pattern-5-across-cache-family — optimistically splices both plans.allPhotos(userId) AND plans.photos(planId); rolls back both on error; invalidates the triple (allPhotos+photos+home.all) so Memories+per-plan grid+Home tile stay in sync
 - [Phase 31]: Phase 31-04: mutationShape gate now covers 6 files / 10 mutation blocks (was 3/5); 4 exemption markers in use (useChatTodos x2 + usePlans.createPlan + usePlanPhotos.uploadPhoto) — exemption pattern proven across 3 distinct rationales (side-effect-heavy creates, async file IO, RPC-atomic with no per-list cache key)
+- [Phase 31]: Phase 31-05: useFriends + useHomeScreen now share queryKeys.friends.list(userId) — adding a friend on Friends screen instantly reflects on home Bento; mutations carry @mutationShape: no-optimistic markers (pre-migration was non-optimistic write+refetch); invalidation map fans out to friends.list + friends.pendingRequests + home.pendingRequestCount + home.all
+- [Phase 31]: Phase 31-05: useExpenseCreate form state stays as local useState in the hook (consumer screen reads form fields off hook result); pulling form state out would require a full consumer refactor that the plan explicitly defers — the migration scope is the friends-picker useQuery + submit useMutation
+- [Phase 31]: Phase 31-05: useWishListVotes cache shape uses myVoteItemIds[] (array) not Set<string> — Sets aren't structured-clone-friendly inside React Query's cache; hook reconstructs Set<string> at the return site. Hook signature additively extended with optional birthdayPersonId for per-person wish-list invalidation
+- [Phase 31]: Phase 31-05: useExpenseDetail.settle uses canonical Pattern 5 — optimistic flip of isSettled + derived allSettled; drops the per-row settleLoading state mutation (the optimistic isSettled flip drives the visual); settleLoading field stays in return type as false for consumer compat
+- [Phase 31]: Phase 31-05: useFriendWishList.toggleClaim stays plain async (NOT useMutation) — invalidate-on-success drives the cache without ~30 LOC of Pattern 5 boilerplate; same precedent as usePlanDetail mutators (Wave 4); claim toggles are rare and RLS enforces single-claim-per-item
+- [Phase 31]: Phase 31-05: mutationShape gate now covers 11 files / 14 mutation blocks (was 6/10 at end of Wave 4); 8 exemption markers in use across 6 distinct rationales (side-effect-heavy creates, async file IO, RPC-atomic with no per-list cache key, pre-migration non-optimistic mutations)
 
 ### Roadmap Evolution
 
@@ -171,8 +177,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31 P02 | 6min | 5 tasks | 5 files |
 | Phase 31 P03 | 8min | 5 tasks | 12 files |
 | Phase 31 P04 | 7min | 4 tasks | 11 files |
+| Phase 31 P05 | 9min | 6 tasks | 16 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T09:25:33.457Z
-Stopped at: Completed 31-04-PLAN.md (Plans vertical migrated; Wave 5 unblocked)
+Last session: 2026-05-13T09:40:04.253Z
+Stopped at: Completed 31-05-PLAN.md (Friends + Expenses vertical migrated; Wave 6 unblocked)
