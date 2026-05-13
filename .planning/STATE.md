@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: verifying
+status: executing
 stopped_at: Completed 31-08-PLAN.md (Task 8 manual smoke PASS with deferred chat-list reactivity caveat)
-last_updated: "2026-05-13T11:22:18.334Z"
-last_activity: 2026-05-13
+last_updated: "2026-05-13T13:04:06.297Z"
+last_activity: 2026-05-13 -- Phase 32 execution started
 progress:
-  total_phases: 9
+  total_phases: 10
   completed_phases: 4
-  total_plans: 28
+  total_plans: 32
   completed_plans: 28
-  percent: 100
+  percent: 88
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 31 verification gate
+**Current focus:** Phase 32 — chat-list-reactivity-widget-send-reliability-and-last-entry-
 
 ## Current Position
 
-Phase: 31
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-05-13
+Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 32
+Last activity: 2026-05-13 -- Phase 32 execution started
 
 ## Phase Structure
 
@@ -169,6 +169,7 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - Phase 29.1 inserted after Phase 29: Habits & To-Do Features (URGENT)
 - Phase 30 added 2026-05-13: Unify navigation source-of-truth and chat-entry handlers — fixes bottom-nav-bar visibility leak on `ChatRoomScreen` reached from non-canonical entry points (e.g., Squad → Memories → PlanDashboard → "Open Chat" pill); introduces `useNavigationStore` (zustand), consolidates 12+ `/chat/room` callers behind a single helper, removes legacy `FriendsList` route + dead `RecentMemoriesSection`. Full context in `.planning/phases/30-unify-navigation-source-of-truth-and-chat-entry-handlers/CONTEXT.md`. Origin: two parallel Opus 4.7 research agents confirmed assumption #2 (inconsistent source of truth) and partially confirmed assumption #1 (related duplication exists but not on the chat path).
 - Phase 31 added 2026-05-13: Adopt TanStack Query for server-state caching and cross-screen reactivity — replaces ~35 per-hook `useState + useFocusEffect + supabase` fetch pattern with `useQuery`/`useMutation`; enables cross-screen reactivity, unifies optimistic-update + cache-invalidation patterns. Zustand stays for client/UI state only (auth, navigation surface, UI flags). Incremental migration with habits as pilot vertical. Depends on Phase 30 shipping first (stable routing layer for verification). Full context in `.planning/phases/31-adopt-tanstack-query-for-server-state-caching-and-cross-scre/CONTEXT.md`.
+- Phase 32 added 2026-05-13: Chat list reactivity, widget send reliability, and last-entry previews — fixes three chat-surface gaps left after Phase 31 Wave 8: (1) chat list goes stale after sending any entry until pull-to-refresh; (2) widget bubbles (image/poll/todo) stick in pending state when Realtime echo is missed (most common: image 70% opacity overlay); (3) chat list preview is blank for non-text entries because the query omits `message_type`/`image_url`/`poll_id` and the row has no per-kind formatter. Also adds `realtimeBridge.subscribeChatList(userId, queryClient)` for incoming-message reactivity and amends the Phase-31 empty-`onSettled` contract into a tiered policy (text: invalidate chat.list only; widgets: invalidate both chat.messages + chat.list). Uses Ionicons (`image-outline`, `stats-chart-outline`, `checkbox-outline`) and sender attribution (`"You: "` / `"<FirstName>: "`) across all chat scopes. Out of scope: new `expense` message_type, RPC signature changes for todos, i18n. Origin: three parallel Opus 4.7 research agents confirmed root causes; user-confirmed design decisions captured in `.planning/phases/32-chat-list-reactivity-widget-send-reliability-and-last-entry-/CONTEXT.md`.
 
 ### Pending Todos
 

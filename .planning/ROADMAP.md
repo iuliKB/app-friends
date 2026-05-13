@@ -114,6 +114,19 @@ Plans:
 - [x] 31-07-PLAN.md — Wave 7 Misc: migrate useSpotlight (preserving Phase 29.1 extension) + useStreakData; close out Edge Function audit from Wave 1
 - [x] 31-08-PLAN.md — Wave 8 Chat + Persistence + Boundary doc: migrate useChatList + useChatRoom + useChatMembers (subscribeChatRoom Hybrid INSERT/UPDATE/DELETE); strip useChatStore.chatList; install + enable PersistQueryClientProvider with selective shouldDehydrateQuery; write src/hooks/README.md boundary doc; final phase smoke gate
 
+### Phase 32: Chat list reactivity, widget send reliability, and last-entry previews
+
+**Goal:** Fix three observed chat-surface gaps left after Phase 31 Wave 8: (1) chat list staleness — sending any entry and navigating back to the list doesn't refresh the last-entry row; (2) widget send stickiness — image/poll/todo bubbles sometimes get stuck in a "pending"/"loading" state until the user reopens the chat (most commonly the 70% opacity overlay on images); (3) chat list preview gap — non-text last entries (image / poll / todo / deleted) render blank because the query doesn't select discriminator columns and the row has no per-kind formatter. Also deliver real chat list reactivity for INCOMING messages via a new `realtimeBridge.subscribeChatList(userId, queryClient)` global postgres_changes subscription. Adopt a tiered `onSettled` policy (text: Realtime-only for messages cache + invalidate list; widgets: belt-and-braces — invalidate both caches) and document it in `src/hooks/README.md`. Add sender attribution (`"You: "` for own messages, `"<FirstName>: "` for others) and Ionicons icons (`image-outline`, `stats-chart-outline`, `checkbox-outline`) to the chat list preview. Out of scope: new `expense` message_type, RPC signature changes for todos, i18n scaffolding. Full scope, root-cause evidence, and design decisions: `.planning/phases/32-chat-list-reactivity-widget-send-reliability-and-last-entry-/CONTEXT.md`.
+**Requirements**: TBD (no formal REQ-IDs — must-haves derived from CONTEXT.md Success Criteria)
+**Depends on:** Phase 31
+**Plans:** 4 plans across 2 waves
+
+Plans:
+- [ ] 32-01-PLAN.md — Last-entry preview data layer: extend useChatList SELECTs + join polls.question + compute per-kind preview + sender attribution + ChatListItem type fields (Wave 1)
+- [ ] 32-02-PLAN.md — Last-entry preview UI: refactor ChatListRow preview composition with Ionicon + sender prefix + italic-for-deleted (Wave 2, depends on 32-01)
+- [ ] 32-03-PLAN.md — Chat list reactivity: add realtimeBridge.subscribeChatList global Realtime subscription + mount via useEffect in useChatList (Wave 2, depends on 32-01 due to useChatList.ts overlap)
+- [ ] 32-04-PLAN.md — Send reliability + chat-list invalidation: tiered onSettled policy across sendMessage / sendImage / sendPoll / sendChatTodo / completeChatTodo + ChatRoomScreen await refetch + src/hooks/README.md doc (Wave 1)
+
 ---
 
 <details>
