@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 33-04-PLAN.md
-last_updated: "2026-05-13T19:50:11.730Z"
+stopped_at: Completed 33-05-PLAN.md
+last_updated: "2026-05-13T19:54:12.513Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 39
-  completed_plans: 35
-  percent: 90
+  completed_plans: 36
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 33 (friend-profile-redesign) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Plans: 4 of 4 complete
 Status: Ready to execute
 Last activity: 2026-05-13
@@ -179,6 +179,8 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 33-friend-profile-redesign]: Phase 33-04: getIconPalette detects light/dark via colors.interactive.accent token value — no separate mode argument required
 - [Phase 33-friend-profile-redesign]: Phase 33-04: GroupedInsetSection injects isLast via React.Children.toArray; both ProfileInfoRow and BioRow accept this prop to suppress hairline
 - [Phase 33-friend-profile-redesign]: Phase 33-04: BioRow lineHeight:24 uses eslint-disable comment — UI-SPEC §Typography explicitly specifies 24px, no line-height token exists
+- [Phase 33-friend-profile-redesign]: Phase 33-05: ActionIconButton animates only the circle (not the label) during press-spring — label stays static per plan spec
+- [Phase 33-friend-profile-redesign]: Phase 33-05: QuickActionsRow is pure layout — isMuted/muteDisabled/messageDisabled are screen-owned props; no state, no data fetching in this component
 
 ### Roadmap Evolution
 
@@ -221,8 +223,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 33-friend-profile-redesign P01 | 8 | 4 tasks | 4 files |
 | Phase 33-friend-profile-redesign P03 | 3min | 3 tasks | 3 files |
 | Phase 33-friend-profile-redesign P04 | 212 | 4 tasks | 4 files |
+| Phase 33-friend-profile-redesign P05 | 2 | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T19:50:11.725Z
-Stopped at: Completed 33-04-PLAN.md
+Last session: 2026-05-13T19:54:12.509Z
+Stopped at: Completed 33-05-PLAN.md

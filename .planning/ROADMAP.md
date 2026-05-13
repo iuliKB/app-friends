@@ -139,7 +139,7 @@ Plans:
 - [ ] 33-02-PLAN.md — Data hooks: useFriendProfile (shared status slice + friend-not-found via friendships row) + useFriendMutuals (Wave 2, depends on 01)
 - [x] 33-03-PLAN.md — Header components: AvatarCircle onLoad pass-through + FriendProfileBlurredWash + FriendProfileHeader (Reanimated v4 scroll-driven collapse) (Wave 1)
 - [x] 33-04-PLAN.md — Row primitives: friendIconPalette (8-tone) + GroupedInsetSection + ProfileInfoRow + BioRow (Wave 1)
-- [ ] 33-05-PLAN.md — Quick actions: ActionIconButton (press-spring + haptic + tone) + QuickActionsRow (Wave 1)
+- [x] 33-05-PLAN.md — Quick actions: ActionIconButton (press-spring + haptic + tone) + QuickActionsRow (Wave 1)
 - [ ] 33-06-PLAN.md — Screen rewrite + photos route + useChatDmPreferences + screen test + manual hardware smoke checkpoint (Wave 3, depends on 01+02+03+04+05)
 - [ ] 33-07-PLAN.md — Bio editor on /profile/edit (Wave 2, depends on 01)
 
