@@ -1,8 +1,8 @@
 ---
 phase: 260513-5as-add-usetabbarspacing-hook-for-consistent
 verified: 2026-05-13T00:00:00Z
-status: human_needed
-score: 9/9 must-haves verified (static-code) — pending device-level human check for all 6 originally migrated screens + the ChatListScreen follow-up
+status: passed
+score: 9/9 must-haves verified (static-code) + 2/2 human-verification items confirmed by user 2026-05-13
 overrides_applied: 0
 re_verification:
   previous_status: human_needed
@@ -16,9 +16,13 @@ human_verification:
   - test: "Open the running app on a physical device or simulator, navigate through Home, Plans, Profile, Squad → Friends, Squad → Activity, Squad → Memories. Scroll each list/screen to its end."
     expected: "The last row/content in every tab screen stops above the floating bottom-nav bar with comfortable breathing room (matching Home's existing feel). No content is hidden under the bar. When entering a chat/plan/modal surface, padding shrinks back to just the device safe-area inset."
     why_human: "Visual layout cannot be confirmed programmatically. The numeric formula equivalence is proven by the unit test (134 === 34 + 100), but pixel-level placement on real device chrome and the perceived 'breathing room' need an eye."
+    result: approved
+    approved_on: 2026-05-13
   - test: "Open the Chats tab. Scroll the SectionList to its end with several conversations present. Also force the empty state (e.g. clear or filter to zero matches) and confirm the EmptyState centering still works."
     expected: "The last chat row stops above the floating bottom-nav bar with the same breathing room as Home — no row hidden behind the bar. In the empty state, the EmptyState component remains vertically centered (driven by styles.emptyList.flex: 1) and its content is not clipped by the bar."
     why_human: "Follow-up commit 6bc55d8 added ChatListScreen to the hook's consumer set. Static checks confirm the diff is applied correctly and identically structured to the squad.tsx Friends SectionList, but the chat-tab visual feel was the specific surface the user flagged — needs an eye to confirm parity with Home."
+    result: approved
+    approved_on: 2026-05-13
 ---
 
 # Quick Task 260513-5as: useTabBarSpacing Hook — Verification Report
@@ -26,8 +30,8 @@ human_verification:
 **Task Goal:** Add `useTabBarSpacing` hook for consistent bottom-nav clearance across tab screens. Centralize the formula behind one hook; apply at all tab-screen callsites; preserve home's pixel output exactly (zero visual regression).
 
 **Verified:** 2026-05-13
-**Status:** human_needed (all 8 static-code must-haves PASS; 1 device-level visual confirmation required)
-**Re-verification:** No — initial verification
+**Status:** passed (9/9 static-code must-haves PASS; both human-verification items approved by user 2026-05-13)
+**Re-verification:** Yes — followup commit 6bc55d8 added ChatListScreen; user-approved on 2026-05-13
 
 ## Goal Achievement
 
