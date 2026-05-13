@@ -14,8 +14,8 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { GalleryViewerModal } from '@/components/plans/GalleryViewerModal';
@@ -75,7 +75,7 @@ function chunkIntoRows(photos: PlanPhotoWithUploader[]): MemoryRow[] {
 
 export function MemoriesTabContent() {
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomSpacing = useTabBarSpacing();
   const router = useRouter();
   const session = useAuthStore((s) => s.session);
   const { groups, isLoading, error, refetch, deletePhoto } = useAllPlanPhotos();
@@ -285,7 +285,7 @@ export function MemoriesTabContent() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: SPACING.sm,
-          paddingBottom: insets.bottom + SPACING.lg,
+          paddingBottom: bottomSpacing,
         }}
         refreshControl={
           <RefreshControl

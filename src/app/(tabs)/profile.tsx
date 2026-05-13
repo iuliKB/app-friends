@@ -30,6 +30,7 @@ import {
   unregisterForPushNotifications,
   getNotificationsEnabled,
 } from '@/hooks/usePushNotifications';
+import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { ensureMorningPromptScheduled, cancelMorningPrompt } from '@/lib/morningPrompt';
 import { PrePromptModal } from '@/components/notifications/PrePromptModal';
 
@@ -38,6 +39,7 @@ export default function ProfileScreen() {
   const session = useAuthStore((s) => s.session);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const bottomSpacing = useTabBarSpacing();
   const [loggingOut, setLoggingOut] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -452,7 +454,10 @@ export default function ProfileScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: SPACING.lg }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: SPACING.lg, paddingBottom: bottomSpacing },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Header ── */}

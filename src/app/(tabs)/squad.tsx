@@ -25,6 +25,7 @@ import { BentoGrid } from '@/components/squad/bento/BentoGrid';
 import { MemoriesTabContent } from '@/components/squad/MemoriesTabContent';
 import { useFriends } from '@/hooks/useFriends';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
+import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { useStreakData } from '@/hooks/useStreakData';
 import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
@@ -55,6 +56,7 @@ function getFriendBucket(friend: FriendWithStatus): FriendBucket {
 export default function SquadScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const bottomSpacing = useTabBarSpacing();
   const router = useRouter();
   const { tab } = useLocalSearchParams<{ tab?: string }>();
 
@@ -451,7 +453,7 @@ export default function SquadScreen() {
                 </Text>
               </View>
             }
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={[styles.listContent, { paddingBottom: bottomSpacing }]}
             refreshControl={
               <RefreshControl
                 refreshing={refreshingSquad}
@@ -470,10 +472,7 @@ export default function SquadScreen() {
         {/* ── Page 2: Activity tab ── */}
         <View style={styles.page}>
           <ScrollView
-            contentContainerStyle={[
-              styles.activityContent,
-              { paddingBottom: insets.bottom + SPACING.xxl },
-            ]}
+            contentContainerStyle={[styles.activityContent, { paddingBottom: bottomSpacing }]}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl

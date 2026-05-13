@@ -17,6 +17,7 @@ import { OnboardingHintSheet } from '@/components/onboarding/OnboardingHintSheet
 import { RadarView } from '@/components/home/RadarView';
 import { CardStackView } from '@/components/home/CardStackView';
 import { useViewPreference } from '@/hooks/useViewPreference';
+import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { usePlans } from '@/hooks/usePlans';
 import { useIOUSummary } from '@/hooks/useIOUSummary';
 import { useUpcomingBirthdays } from '@/hooks/useUpcomingBirthdays';
@@ -50,6 +51,7 @@ function formatUntil(expiresAt: string): string {
 export function HomeScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const bottomSpacing = useTabBarSpacing();
   const { friends, loading, error, refreshing, handleRefresh, refetch } = useHomeScreen();
   const router = useRouter();
 
@@ -200,7 +202,7 @@ export function HomeScreen() {
     <>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomSpacing }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

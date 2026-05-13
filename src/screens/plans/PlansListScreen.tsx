@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { usePlans } from '@/hooks/usePlans';
+import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { PlanCardSkeleton } from '@/components/plans/PlanCardSkeleton';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { useInvitations, PlanInvitation } from '@/hooks/useInvitations';
@@ -43,6 +44,7 @@ export function PlansListScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const bottomSpacing = useTabBarSpacing();
   const { plans, loading, error, refreshing, handleRefresh, fetchPlans } = usePlans();
   const { invitations, count: inviteCount, accept, decline } = useInvitations();
   const [modalVisible, setModalVisible] = useState(false);
@@ -78,8 +80,6 @@ export function PlansListScreen() {
         },
         listContent: {
           paddingHorizontal: SPACING.lg,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
-          paddingBottom: 100, // no exact token — intentional large FAB clearance
         },
         errorText: {
           fontSize: FONT_SIZE.lg,
@@ -434,7 +434,7 @@ export function PlansListScreen() {
             )
           }
           ItemSeparatorComponent={() => <View style={styles.separator} />}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: bottomSpacing }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
