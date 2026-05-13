@@ -13,9 +13,49 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ChatListItem } from '@/types/chat';
+import type { ChatListItem, MessageType } from '@/types/chat';
 
-type MsgEntry = { body: string; created_at: string; sender_id: string };
+type MsgEntry = {
+  body: string | null;
+  created_at: string;
+  sender_id: string;
+  message_type: MessageType;
+  image_url: string | null;
+  poll_id: string | null;
+};
+
+function previewForLatest(
+  latest: MsgEntry,
+  pollQuestionMap: Map<string, string>,
+): string {
+  switch (latest.message_type) {
+    case 'image':
+      return 'Photo';
+    case 'poll': {
+      const q = latest.poll_id ? pollQuestionMap.get(latest.poll_id) : null;
+      return q ? `Poll: ${q}` : 'Poll';
+    }
+    case 'todo': {
+      const body = (latest.body ?? '').trim();
+      return body ? `To-do: ${body}` : 'To-do';
+    }
+    case 'deleted':
+      return 'Message deleted';
+    case 'text':
+    case 'system':
+    default:
+      return latest.body ?? '';
+  }
+}
+
+function senderNameForLatest(
+  latest: MsgEntry,
+  currentUserId: string,
+  firstNameMap: Map<string, string | null>,
+): string | null {
+  if (latest.sender_id === currentUserId) return 'You';
+  return firstNameMap.get(latest.sender_id) ?? null;
+}
 
 async function getUnreadInfo(
   chatId: string,
@@ -56,7 +96,7 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
   if (memberPlanIds.length > 0) {
     const { data: planMsgs } = await supabase
       .from('messages')
-      .select('plan_id, body, created_at, sender_id')
+      .select('plan_id, body, created_at, sender_id, message_type, image_url, poll_id')
       .not('plan_id', 'is', null)
       .in('plan_id', memberPlanIds)
       .order('created_at', { ascending: false });
@@ -65,9 +105,12 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
       const pid = msg.plan_id as string;
       if (!planMsgsMap.has(pid)) planMsgsMap.set(pid, []);
       planMsgsMap.get(pid)!.push({
-        body: msg.body as string,
+        body: (msg.body as string | null) ?? null,
         created_at: msg.created_at as string,
         sender_id: msg.sender_id as string,
+        message_type: msg.message_type as MessageType,
+        image_url: (msg.image_url as string | null) ?? null,
+        poll_id: (msg.poll_id as string | null) ?? null,
       });
     }
   }
@@ -78,7 +121,7 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
     const dmIds = dmChannels.map((d) => d.id);
     const { data: dmMsgs } = await supabase
       .from('messages')
-      .select('dm_channel_id, body, created_at, sender_id')
+      .select('dm_channel_id, body, created_at, sender_id, message_type, image_url, poll_id')
       .not('dm_channel_id', 'is', null)
       .in('dm_channel_id', dmIds)
       .order('created_at', { ascending: false });
@@ -87,9 +130,12 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
       const cid = msg.dm_channel_id as string;
       if (!dmMsgsMap.has(cid)) dmMsgsMap.set(cid, []);
       dmMsgsMap.get(cid)!.push({
-        body: msg.body as string,
+        body: (msg.body as string | null) ?? null,
         created_at: msg.created_at as string,
         sender_id: msg.sender_id as string,
+        message_type: msg.message_type as MessageType,
+        image_url: (msg.image_url as string | null) ?? null,
+        poll_id: (msg.poll_id as string | null) ?? null,
       });
     }
   }
@@ -150,7 +196,7 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
   if (groupChannelIds.length > 0) {
     const { data: groupMsgs } = await supabase
       .from('messages')
-      .select('group_channel_id, body, created_at, sender_id')
+      .select('group_channel_id, body, created_at, sender_id, message_type, image_url, poll_id')
       .not('group_channel_id', 'is', null)
       .in('group_channel_id', groupChannelIds)
       .order('created_at', { ascending: false });
@@ -159,10 +205,71 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
       const cid = msg.group_channel_id as string;
       if (!groupMsgsMap.has(cid)) groupMsgsMap.set(cid, []);
       groupMsgsMap.get(cid)!.push({
-        body: msg.body as string,
+        body: (msg.body as string | null) ?? null,
         created_at: msg.created_at as string,
         sender_id: msg.sender_id as string,
+        message_type: msg.message_type as MessageType,
+        image_url: (msg.image_url as string | null) ?? null,
+        poll_id: (msg.poll_id as string | null) ?? null,
       });
+    }
+  }
+
+  // Step F1 — Resolve first-name token for every latest-message sender across all chats.
+  // Schema note: the profiles table has display_name (full name) but no dedicated
+  // first_name column (CONTEXT.md §3 referenced first_name but migrations 0001 + 0017
+  // only ship display_name). To honour CONTEXT.md's "<FirstName>: " UX without a
+  // schema change we batch-fetch display_name and derive the first token client-side.
+  // Empty / whitespace-only display_name falls back to null (same as a missing row).
+  const allSenderIds = new Set<string>();
+  for (const msgs of planMsgsMap.values()) {
+    if (msgs[0]) allSenderIds.add(msgs[0].sender_id);
+  }
+  for (const msgs of dmMsgsMap.values()) {
+    if (msgs[0]) allSenderIds.add(msgs[0].sender_id);
+  }
+  for (const msgs of groupMsgsMap.values()) {
+    if (msgs[0]) allSenderIds.add(msgs[0].sender_id);
+  }
+  allSenderIds.delete(currentUserId); // own messages get "You" in the formatter; no fetch needed
+
+  const firstNameMap = new Map<string, string | null>();
+  if (allSenderIds.size > 0) {
+    const { data: senderProfiles } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', [...allSenderIds]);
+    for (const p of senderProfiles ?? []) {
+      const id = p.id as string;
+      const displayName = (p.display_name as string | null) ?? null;
+      const firstToken = displayName ? displayName.trim().split(/\s+/)[0] ?? '' : '';
+      firstNameMap.set(id, firstToken.length > 0 ? firstToken : null);
+    }
+  }
+
+  // Step F2 — Resolve poll question for chats whose latest message is a poll.
+  const pollIdsForPreview = new Set<string>();
+  function collectLatestPollId(msgs: MsgEntry[] | undefined) {
+    const latest = msgs?.[0];
+    if (latest && latest.message_type === 'poll' && latest.poll_id) {
+      pollIdsForPreview.add(latest.poll_id);
+    }
+  }
+  for (const msgs of planMsgsMap.values()) collectLatestPollId(msgs);
+  for (const msgs of dmMsgsMap.values()) collectLatestPollId(msgs);
+  for (const msgs of groupMsgsMap.values()) collectLatestPollId(msgs);
+
+  const pollQuestionMap = new Map<string, string>();
+  if (pollIdsForPreview.size > 0) {
+    // (supabase as any) cast: the generated Database types in src/types/database.ts
+    // do not yet include the polls table (regeneration deferred — see Phase 29.1
+    // Plan 05 SUMMARY). Same pattern as usePoll.ts uses today.
+    const { data: pollRows } = await (supabase as any)
+      .from('polls')
+      .select('id, question')
+      .in('id', [...pollIdsForPreview]);
+    for (const p of (pollRows ?? []) as Array<{ id: string; question: string }>) {
+      pollQuestionMap.set(p.id, p.question);
     }
   }
 
@@ -181,8 +288,10 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
       type: 'plan',
       title,
       avatarUrl: null,
-      lastMessage: latest.body,
+      lastMessage: previewForLatest(latest, pollQuestionMap),
       lastMessageAt: latest.created_at,
+      lastMessageKind: latest.message_type,
+      lastMessageSenderName: senderNameForLatest(latest, currentUserId, firstNameMap),
       hasUnread,
       unreadCount,
       isMuted: false,
@@ -203,8 +312,10 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
       type: 'dm',
       title: profile.display_name,
       avatarUrl: profile.avatar_url,
-      lastMessage: latest.body,
+      lastMessage: previewForLatest(latest, pollQuestionMap),
       lastMessageAt: latest.created_at,
+      lastMessageKind: latest.message_type,
+      lastMessageSenderName: senderNameForLatest(latest, currentUserId, firstNameMap),
       hasUnread,
       unreadCount,
       isMuted: false,
@@ -223,8 +334,12 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
       type: 'group',
       title: name,
       avatarUrl: null,
-      lastMessage: latest?.body ?? 'No messages yet',
+      lastMessage: latest ? previewForLatest(latest, pollQuestionMap) : 'No messages yet',
       lastMessageAt: latest?.created_at ?? new Date(0).toISOString(),
+      lastMessageKind: (latest?.message_type ?? 'text') as MessageType,
+      lastMessageSenderName: latest
+        ? senderNameForLatest(latest, currentUserId, firstNameMap)
+        : null,
       hasUnread,
       unreadCount,
       isMuted: false,
