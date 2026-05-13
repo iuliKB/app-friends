@@ -102,10 +102,17 @@ Plans:
 **Goal:** Replace the ~35 per-hook `useState + useFocusEffect + supabase` fetch pattern with TanStack Query for all server state. Establishes query-key conventions, optimistic-mutation conventions, and a Supabase Realtime → query-cache integration pattern. Enables cross-screen reactivity (editing data in one screen instantly reflects in others without manual refetch), eliminates wasteful refetch-on-focus, and unifies optimistic-update handling. Zustand remains the home for client/UI state only (auth, navigation surface, UI flags) — explicit boundary documented. Migration is incremental: pilot vertical first (likely habits), then batch by surface (chat, plans, friends, expenses, home aggregates, misc). Depends on Phase 30 shipping first so routing/layout is stable. Full scope and migration plan: `.planning/phases/31-adopt-tanstack-query-for-server-state-caching-and-cross-scre/CONTEXT.md`.
 **Requirements**: TBD
 **Depends on:** Phase 30
-**Plans:** 0 plans
+**Plans:** 8 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 31 to break down)
+- [ ] 31-01-PLAN.md — Wave 1 Foundation: install deps, create queryClient/queryKeys/realtimeBridge/authBridge/useRefreshOnFocus/createTestQueryClient + 3 unit tests + mount QueryClientProvider in _layout.tsx
+- [ ] 31-02-PLAN.md — Wave 2 PILOT: migrate useHabits + useHabitDetail; cross-screen reactivity test (TSQ-01) + mutationShape regression gate (TSQ-08); blocking pilot smoke before Wave 3
+- [ ] 31-03-PLAN.md — Wave 3 Home aggregates + Todos: migrate useHomeScreen + useTodos + useUpcomingBirthdays + useUpcomingEvents + useInvitationCount + usePendingRequestsCount + useChatTodos; add subscribeHomeStatuses; strip useHomeStore.friends/lastFetchedAt
+- [ ] 31-04-PLAN.md — Wave 4 Plans: migrate usePlans (RSVP optimistic + createPlan no-optimistic exemption) + usePlanDetail + usePlanPhotos + useAllPlanPhotos; strip usePlansStore.plans
+- [ ] 31-05-PLAN.md — Wave 5 Friends + Expenses: migrate 9 hooks (useFriends + 3 wish-list + 4 expenses + useExpenseCreate); shared cache key with useHomeScreen
+- [ ] 31-06-PLAN.md — Wave 6 Status (hybrid) + Polls + Invitations: migrate useStatus (preserve useStatusStore for outside-React reads) + usePoll (Realtime via subscribePollVotes) + useInvitations; extend authBridge to clear useStatusStore on SIGNED_OUT; useNetworkStatus + useViewPreference intentionally deferred
+- [ ] 31-07-PLAN.md — Wave 7 Misc: migrate useSpotlight (preserving Phase 29.1 extension) + useStreakData; close out Edge Function audit from Wave 1
+- [ ] 31-08-PLAN.md — Wave 8 Chat + Persistence + Boundary doc: migrate useChatList + useChatRoom + useChatMembers (subscribeChatRoom Hybrid INSERT/UPDATE/DELETE); strip useChatStore.chatList; install + enable PersistQueryClientProvider with selective shouldDehydrateQuery; write src/hooks/README.md boundary doc; final phase smoke gate
 
 ---
 
