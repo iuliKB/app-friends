@@ -1,16 +1,15 @@
+// Phase 31 Plan 03 — server-data mirror fields removed (replaced by useQuery cache).
+// TanStack Query handles staleness; the friends list mirror is gone for good.
+// lastActiveAt is KEPT — UI overlay timing (heartbeat tick stability), NOT server data.
+
 import { create } from 'zustand';
-import type { FriendWithStatus } from '@/hooks/useFriends';
 
 interface HomeState {
-  friends: FriendWithStatus[];
-  lastFetchedAt: number | null;
   lastActiveAt: Record<string, string>;
-  setFriends: (friends: FriendWithStatus[], lastActiveAt: Record<string, string>) => void;
+  setLastActiveAt: (lastActiveAt: Record<string, string>) => void;
 }
 
 export const useHomeStore = create<HomeState>((set) => ({
-  friends: [],
-  lastFetchedAt: null,
   lastActiveAt: {},
-  setFriends: (friends, lastActiveAt) => set({ friends, lastActiveAt, lastFetchedAt: Date.now() }),
+  setLastActiveAt: (lastActiveAt) => set({ lastActiveAt }),
 }));
