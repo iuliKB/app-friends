@@ -102,7 +102,7 @@ Plans:
 **Goal:** Replace the ~35 per-hook `useState + useFocusEffect + supabase` fetch pattern with TanStack Query for all server state. Establishes query-key conventions, optimistic-mutation conventions, and a Supabase Realtime → query-cache integration pattern. Enables cross-screen reactivity (editing data in one screen instantly reflects in others without manual refetch), eliminates wasteful refetch-on-focus, and unifies optimistic-update handling. Zustand remains the home for client/UI state only (auth, navigation surface, UI flags) — explicit boundary documented. Migration is incremental: pilot vertical first (likely habits), then batch by surface (chat, plans, friends, expenses, home aggregates, misc). Depends on Phase 30 shipping first so routing/layout is stable. Full scope and migration plan: `.planning/phases/31-adopt-tanstack-query-for-server-state-caching-and-cross-scre/CONTEXT.md`.
 **Requirements**: TBD
 **Depends on:** Phase 30
-**Plans:** 2/8 plans complete (In Progress)
+**Plans:** 8/8 plans complete
 
 Plans:
 - [x] 31-01-PLAN.md — Wave 1 Foundation: install deps, create queryClient/queryKeys/realtimeBridge/authBridge/useRefreshOnFocus/createTestQueryClient + 3 unit tests + mount QueryClientProvider in _layout.tsx

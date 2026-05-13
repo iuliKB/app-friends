@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: verifying
-stopped_at: Completed 31-08-PLAN.md (Task 8 manual smoke pending)
+stopped_at: Completed 31-08-PLAN.md (Task 8 manual smoke PASS with deferred chat-list reactivity caveat)
 last_updated: "2026-05-13T10:28:21.867Z"
 last_activity: 2026-05-13
 progress:
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Wave 3 (31-03) — Home aggregates + Todos migration
+**Current focus:** Phase 31 verification gate
 
 ## Current Position
 
@@ -177,6 +177,7 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 ### Blockers/Concerns
 
 - EAS build / Apple Dev account still pending for hardware smoke test (carried from v1.7)
+- [Phase 31 follow-up — deferred] Chat-list message-preview reactivity regressed since Wave 8 (`31-08`): after sending a message in any chat and returning to the chats/all tab, the chat list row does NOT update its latest-message-preview text. Likely root cause: `useChatRoom` `sendMessage`/`sendImage` Pattern 5 mutations have an intentionally empty `onSettled` (Realtime INSERT reconciles `chat.messages(channelId)` only), and there is no list-level invalidation or subscription that touches `queryKeys.chat.list(userId)` on cross-room INSERTs. User scoped this to a separate follow-up phase, bundled with pre-existing in-chat widget reactivity gaps (polls, todo lists, wishlist, image attachments — all known issues from before Phase 31). Do NOT fix in Phase 31. See `.planning/phases/31-adopt-tanstack-query-for-server-state-caching-and-cross-scre/31-08-SUMMARY.md` `## Known Caveats` for full hypothesis + likely fix sketches.
 
 ### Quick Tasks Completed
 
@@ -195,4 +196,4 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 ## Session Continuity
 
 Last session: 2026-05-13T10:28:21.863Z
-Stopped at: Completed 31-08-PLAN.md (Task 8 manual smoke pending)
+Stopped at: Completed 31-08-PLAN.md (Task 8 manual smoke PASS with deferred chat-list reactivity caveat)

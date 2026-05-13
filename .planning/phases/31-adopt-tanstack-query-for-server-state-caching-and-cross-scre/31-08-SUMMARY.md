@@ -85,7 +85,7 @@ completed: 2026-05-13
 - **Duration:** ~18 min
 - **Started:** 2026-05-13T10:06:53Z
 - **Ended:** 2026-05-13T10:25:13Z
-- **Tasks completed:** 7 of 8 (Task 8 manual smoke pending — see `## Final Phase Smokes`)
+- **Tasks completed:** 8 of 8 (Task 8 manual smoke PASS with deferred chat-list caveat — see `## Final Phase Smokes` + `## Known Caveats`)
 - **Files created:** 4 (`useChatList.test.ts`, `useChatRoom.test.ts`, `persistQueryClient.test.ts`, `src/hooks/README.md`)
 - **Files modified:** 13 (useChatList.ts, useChatRoom.ts, useChatMembers.ts, useChatStore.ts, realtimeBridge.ts, realtimeBridge.test.ts, queryClient.ts, queryClient.test.ts, _layout.tsx, ChatListScreen.tsx, birthday/[id].tsx, package.json, package-lock.json)
 - **Tests added:** 17 new cases (3 useChatList + 3 useChatRoom + 8 subscribeChatRoom + 3 persistQueryClient = 17 net new; mutationShape walked the 3 new useMutation blocks too)
@@ -215,7 +215,7 @@ Each task committed atomically:
 5. **Task 5: useChatMembers migration** — `3fa9569` (feat)
 6. **Task 6: PersistQueryClientProvider + persistQueryClient.test.ts** — `d277b31` (feat)
 7. **Task 7: src/hooks/README.md boundary doc** — `905d500` (docs)
-8. **Task 8: final phase gate** — pending manual smoke (see below)
+8. **Task 8: final phase gate** — manual smoke PASS 2026-05-13 (no code commit; see `## Final Phase Smokes` + `## Known Caveats`)
 
 **Plan metadata commit:** appended after STATE/ROADMAP updates.
 
@@ -353,9 +353,9 @@ None — every mitigation from the plan's threat register (T-31-24 / T-31-25 / T
 
 ## Final Phase Smokes
 
-**STATUS: PENDING manual verification on dev client (TASK 8 — final phase gate).**
+**STATUS: PASS (with caveat) — manual verification completed on dev client 2026-05-13 by iuliKB (radulin4a@gmail.com).**
 
-The three manual smoke procedures below MUST be run on a dev client and the outcomes recorded here as PASS / FAIL before /gsd-verify-work runs against this phase. Until manual sign-off, this section reads PENDING.
+All three Phase 31 final-gate smokes verified on dev client. Smoke 1 surfaced a known-issue caveat for the chat-list message-preview row reactivity (see `## Known Caveats` below); user has explicitly scoped that to a follow-up phase rather than blocking Phase 31 verification.
 
 ### Smoke 1 — Cross-screen reactivity (TSQ-01, end-to-end)
 
@@ -368,7 +368,12 @@ The three manual smoke procedures below MUST be run on a dev client and the outc
 6. Repeat for a Mine todo: add a todo from Squad → To-Dos; verify TodosTile on Home updates.
 7. Repeat for an expense: settle an IOU from Squad → IOU; verify IOU eyebrow on Home updates.
 
-**Result:** PENDING
+**Result:** PASS (with by-design caveat on TodosTile counter)
+
+**Notes:**
+- Habits cross-screen: PASS — toggling a check-in on the Activity tab updates the HabitsTile numerator on Home with no pull-to-refresh. queryClient.invalidateQueries fan-out from useHabits.toggleToday reaches the Home tile cache key as designed.
+- IOU cross-screen: PASS — settling an IOU on Squad → IOU updates the IOU eyebrow on Home immediately. shared queryKeys.expenses cache key honoured by both surfaces.
+- Todos cross-screen: PARTIAL by design. Adding a Mine todo from Squad → To-Dos correctly updates the underlying `mine` query and the TodosTile re-reads it, but the visible numerator on the Home tile does NOT change because TodosTile (Phase 29.1) counts only `overdue + due-today` items, not total `mine`. Adding a future-dated todo legitimately produces a "0 — all caught up" tile even though the underlying todo list grew by one. User confirmed this is the pre-existing Phase 29.1 design decision (TodosTile is intentionally a "what needs my attention TODAY" surface, not a total-todo counter), not a Phase 31 regression. User defers any possible UX change (e.g., total-mine counter, or stop showing 0 when there are future todos) to a later phase.
 
 ### Smoke 2 — Persistence cold-start (TSQ-04)
 
@@ -380,7 +385,13 @@ The three manual smoke procedures below MUST be run on a dev client and the outc
 5. EXPECTED: Home shows last-known habits + friends + plans + IOU summary IMMEDIATELY (within 1 frame). Chat list shows the last-known list. Chat ROOM messages will show empty (intentional — chat root excluded from persistence).
 6. Disable airplane mode and confirm the cache refreshes within a few seconds (focusManager + onlineManager kicks in).
 
-**Result:** PENDING
+**Result:** PASS
+
+**Notes:**
+- PersistQueryClientProvider restored the persisted slices (habits + friends + plans + IOU + plan list) on cold-launch within 1 frame as expected.
+- Chat list row preview shape was restored from cache but the per-row "latest message preview" did not necessarily reflect the freshest server state — this is the chat-list reactivity caveat documented separately (see `## Known Caveats`), independent of the persistence smoke pass.
+- Chat ROOM messages correctly showed empty until network resolved (intentional — `shouldDehydrateQuery` excludes the `chat` root entirely; chat data is never persisted).
+- Re-enabling network: cache refreshed within ~2-3s via focusManager + onlineManager.
 
 ### Smoke 3 — Sign-out cache clear (TSQ-10)
 
@@ -389,11 +400,39 @@ The three manual smoke procedures below MUST be run on a dev client and the outc
 2. Sign in with a DIFFERENT account.
 3. EXPECTED: At no point during this transition does the previous user's data appear. The HabitsTile / TodosTile / IOU eyebrow start in their loading/empty states, then populate with the NEW user's data only.
 
-**Result:** PENDING
+**Result:** PASS
+
+**Notes:**
+- authBridge.attachAuthBridge fired SIGNED_OUT cleanly. queryClient.removeQueries() flushed the in-memory cache; useStatusStore.clear() ran (Wave 6 extension). No prior-user data appeared at any point during the cross-account transition. New user's Home tiles started in their loading/empty states and populated with fresh data only.
 
 **Acceptable outcomes:**
-- PASS for all three → ready for /gsd-verify-work.
+- PASS for all three → ready for /gsd-verify-work. **(reached)**
 - FAIL any → STOP, file revision against the failing wave's plan.
+
+## Known Caveats
+
+### Chat list preview reactivity regressed since Wave 8 (deferred to follow-up phase)
+
+**Symptom (reported by user during Smoke 1):** After sending a message in any chat (DM or group) and returning to the Chats / All tab, the chat list row for that conversation does NOT update its "latest message preview" text. The chat list still renders the previously-cached preview from before the send. The newest message IS correctly displayed inside the chat room itself; the regression is scoped to the chat-list row preview only.
+
+**Likely root cause (hypotheses, not yet verified):**
+1. `useChatList` migration: the chat list now sources from `useQuery(queryKeys.chat.list(userId))`, but the `sendMessage` / `sendImage` mutations in `useChatRoom` use Pattern 5 with an INTENTIONALLY empty `onSettled` (Realtime INSERT reconciles the in-room cache by id) — there is no explicit invalidation of `queryKeys.chat.list(userId)` on send-success. Pre-Wave-8 useChatStore.chatList was a separate mirror that the inline `supabase.channel(...)` block in `useChatRoom` updated; that ad-hoc cross-update path is gone.
+2. `realtimeBridge.subscribeChatRoom`'s messages-INSERT handler writes into `queryKeys.chat.messages(channelId)` only — it does not also bump `queryKeys.chat.list(userId)`. The chat list's per-row `lastMessage` is computed by the chat-list queryFn (9-step join), not synthesised from `chat.messages` cache.
+3. `realtimeBridge.subscribeChatAux` covers global `message_reactions` + `poll_votes` only — message INSERTs across other rooms in the user's chat list are NOT covered by any list-level subscription in the post-Wave-8 architecture.
+
+The likely fix would be either (a) add an explicit `queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) })` on `sendMessage` / `sendImage` `onSettled` (drops the no-extra-roundtrip property for chat list only — chat list is a cheap top-level join), or (b) add a list-level Realtime subscription (e.g., `subscribeChatListInserts` filtered by the user's plan_members + group_channel_members + dm participants) that touches `queryKeys.chat.list(userId)` on any cross-room INSERT.
+
+**Scope (explicitly user-deferred):** User asked to bundle this caveat with a separate set of pre-existing in-chat widget reactivity gaps they classify as known issues from before Phase 31:
+- Polls in-chat: vote counts do not always re-render until the chat is reopened.
+- Todo lists in-chat: list contents do not always reflect upstream edits without re-entering the chat.
+- Wishlist in-chat: similar staleness for claim / vote signals.
+- Image attachments in-chat: progress / final-render edge cases.
+
+These five items (the new Wave 8 chat-list regression + the four pre-existing in-chat widget gaps) are to be addressed together in a follow-up phase, NOT in Phase 31.
+
+**Action for Phase 31 verifier:** Acknowledge as deferred. Do NOT block /gsd-verify-work on this caveat. The Phase 31 success criteria (TSQ-01..TSQ-10 evidence; mutationShape gate; persistence cold-start; sign-out clear) are all met by the rest of the migration.
+
+**Action item recorded in STATE.md** under Blockers/Concerns so `/gsd-progress` surfaces it as outstanding follow-up work.
 
 ## Phase Wrap-up
 
@@ -408,7 +447,8 @@ This wave closes Phase 31. Across all 8 waves:
 
 ## Outstanding Items for /gsd-verify-work
 
-- **Manual smokes pending** (Task 8 — see above). MUST be marked PASS before /gsd-verify-work runs.
+- **Manual smokes:** PASS (with caveat) recorded above. Ready for /gsd-verify-work.
+- **Deferred follow-up (NOT blocking Phase 31):** Chat-list message-preview reactivity regression (Wave-8 caveat) + 4 pre-existing in-chat widget reactivity gaps (polls / todo lists / wishlist / image attachments). User explicitly scoped these to a separate follow-up phase. Recorded in STATE.md Blockers/Concerns.
 - **No code-level outstanding items** — full jest suite green (243/243), mutationShape gate green (17 files / 21 mutation blocks), all 9 TSQ requirements have evidence.
 
 ## User Setup Required
@@ -420,7 +460,7 @@ None for the code work. **Task 8 requires the developer to run three manual smok
 
 ## Next Phase Readiness
 
-- **Phase 31 is functionally complete** modulo the manual smoke gate. The /gsd-verify-work command can run after Task 8 records PASS for all three smokes.
+- **Phase 31 is functionally complete.** All three manual smokes PASS (with one deferred chat-list reactivity caveat scoped to a follow-up phase). /gsd-verify-work can run.
 - The codebase now has TanStack Query as the canonical server-state layer across every vertical (habits, todos, chat, plans, friends, expenses, polls, status, invitations, spotlight, streak). New features should follow the patterns documented in `src/hooks/README.md`.
 
 ## Self-Check: PASSED
@@ -430,4 +470,4 @@ All 4 created + 13 modified files present on disk; all 8 task commits present in
 ---
 *Phase: 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre*
 *Plan: 08*
-*Completed: 2026-05-13 (automated tasks); manual smoke gate pending sign-off*
+*Completed: 2026-05-13 (automated tasks + manual smoke gate PASS with one deferred chat-list reactivity caveat)*
