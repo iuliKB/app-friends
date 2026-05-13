@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: executing
-stopped_at: Completed 30-07-PLAN.md — legacy /friends index route deleted
-last_updated: "2026-05-13T00:02:28.460Z"
+status: verifying
+stopped_at: Completed 30-04-PLAN.md — CustomTabBar consumer + ChatRoomScreen useFocusEffect writer wired (Phase 30 root-cause bug closed)
+last_updated: "2026-05-13T00:10:59.520Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 20
-  completed_plans: 18
-  percent: 90
+  completed_plans: 19
+  percent: 95
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 
 Phase: 30 (unify-navigation-source-of-truth-and-chat-entry-handlers) — EXECUTING
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-13
 
 ## Phase Structure
@@ -113,6 +113,10 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-03: Root-level <Stack.Screen name="chat" options={{ headerShown: false }} /> placed inside <Stack.Protected guard={!!session && !needsProfileSetup}> alongside plans — chat needs auth + complete profile; no presentation:'modal' because chat is a regular push
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-07: Cleaned up stale FriendsList.tsx JSDoc reference in src/lib/openChat.ts as part of deletion plan — Rule 3 auto-fix preserved the plan's grep-zero acceptance criterion downstream
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-07: src/app/friends/_layout.tsx left untouched — expo-router file-based routing infers Stack.Screen entries from filesystem, so deleting index.tsx leaves layout valid (URL /friends becomes 404, acceptable per CONTEXT.md scope item 5)
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-04: CustomTabBar reads currentSurface via selector form useNavigationStore((s) => s.currentSurface) and returns null when surface !== 'tabs' — future-proofs new full-screen surfaces (plan/modal/auth) without further bar edits
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-04: ChatRoomScreen useFocusEffect writer uses bare useCallback (named import) — React.useCallback form is forbidden per plan's locked import-style rule to match the file's existing hook-import convention
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-04: setSurface selector returns only the stable setter (not currentSurface) — pulling both in the same selector would re-render the heavy chat screen on every other surface push; setSurface in dep array satisfies exhaustive-deps without triggering re-runs
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-04: src/__mocks__/theme.js extended with FONT_WEIGHT + RADII.pill (Rule 3 — required to render ChatRoomScreen in jest); scoped to mock file, zero production-code impact, matches Phase 29.1 Plan 04/06 mock-extension precedent
 
 ### Roadmap Evolution
 
@@ -134,5 +138,5 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 
 ## Session Continuity
 
-Last session: 2026-05-13T00:02:28.457Z
-Stopped at: Completed 30-07-PLAN.md — legacy /friends index route deleted
+Last session: 2026-05-13T00:10:59.517Z
+Stopped at: Completed 30-04-PLAN.md — CustomTabBar consumer + ChatRoomScreen useFocusEffect writer wired (Phase 30 root-cause bug closed)

@@ -92,7 +92,7 @@ Plans:
 - [x] 30-01-PLAN.md — Create `useNavigationStore` zustand slice (Wave 1)
 - [x] 30-02-PLAN.md — Create `openChat` helper consolidating 13 callsites + 8 duplicate DM blocks (Wave 1)
 - [x] 30-03-PLAN.md — Hoist `chat/room` to root Stack + register `<Stack.Screen name="chat" />` in root `_layout.tsx` (Wave 1)
-- [ ] 30-04-PLAN.md — Refactor `CustomTabBar` to consume `useNavigationStore` + add `useFocusEffect` writer in `ChatRoomScreen` (Wave 2, depends on 01 + 03)
+- [x] 30-04-PLAN.md — Refactor `CustomTabBar` to consume `useNavigationStore` + add `useFocusEffect` writer in `ChatRoomScreen` (Wave 2, depends on 01 + 03)
 - [ ] 30-05-PLAN.md — Migrate all 10 callsite files (4 home DM duplicates, 4 routing handlers, 2 sheet handlers) to use `openChat` (Wave 2, depends on 02 + 03 + 07)
 - [x] 30-06-PLAN.md — Delete dead-code `RecentMemoriesSection.tsx` (Wave 1)
 - [x] 30-07-PLAN.md — Delete legacy `/friends` index route + `FriendsList.tsx` (Wave 1)
