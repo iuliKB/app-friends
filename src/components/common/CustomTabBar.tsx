@@ -11,6 +11,7 @@ export const TAB_BAR_BOTTOM_GAP = 12;
 import { useTheme, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useInvitationCount } from '@/hooks/useInvitationCount';
+import { useNavigationStore } from '@/stores/useNavigationStore';
 
 const TAB_LABELS: Record<string, string> = {
   index: 'Home',
@@ -120,13 +121,8 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
     },
   }), [colors, isDark]);
 
-  const focusedRoute = state.routes[state.index];
-  const nestedState = focusedRoute?.state;
-  if (nestedState) {
-    const nestedIndex = nestedState.index ?? 0;
-    const nestedRoute = nestedState.routes[nestedIndex];
-    if (nestedRoute?.name === 'room') return null;
-  }
+  const surface = useNavigationStore((s) => s.currentSurface);
+  if (surface !== 'tabs') return null;
 
   const badges: Record<string, number> = {
     squad: pendingCount,
