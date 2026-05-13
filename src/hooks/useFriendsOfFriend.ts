@@ -1,10 +1,12 @@
-// Phase 11 v1.4 — useFriendsOfFriend (D-14)
-// Calls get_friends_of(target_user_id) SECURITY DEFINER RPC.
-// Direct client-side friendships query fails due to RLS (returns 0 rows).
-// Pitfall 3: filters out current user from results.
-import { useCallback, useEffect, useState } from 'react';
+// Phase 31 Plan 05 — Migrated to TanStack Query.
+// Wraps the public.get_friends_of(p_target_user) SECURITY DEFINER RPC.
+// Public shape preserved verbatim: { friends, loading, error, refetch }.
+// Pitfall 3: filters out the caller from results (belt-and-suspenders; RPC also excludes).
+
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface FriendOfFriend {
   friend_id: string;
@@ -12,41 +14,34 @@ export interface FriendOfFriend {
   avatar_url: string | null;
 }
 
-export function useFriendsOfFriend(targetUserId: string) {
+export interface UseFriendsOfFriendResult {
+  friends: FriendOfFriend[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<unknown>;
+}
+
+export function useFriendsOfFriend(targetUserId: string): UseFriendsOfFriendResult {
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id ?? null;
-  const [friends, setFriends] = useState<FriendOfFriend[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const refetch = useCallback(async () => {
-    if (!userId || !targetUserId) {
-      setLoading(false);
-      setFriends([]);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    const { data, error: rpcErr } = await supabase.rpc('get_friends_of', {
-      p_target_user: targetUserId,
-    });
-    if (rpcErr) {
-      console.warn('get_friends_of failed', rpcErr);
-      setError(rpcErr.message);
-      setFriends([]);
-    } else {
-      // Filter out current user (Pitfall 3 — current user excluded in RPC too, belt-and-suspenders)
-      const filtered = ((data ?? []) as FriendOfFriend[]).filter(
-        (f) => f.friend_id !== userId
-      );
-      setFriends(filtered);
-    }
-    setLoading(false);
-  }, [userId, targetUserId]);
+  const query = useQuery({
+    queryKey: queryKeys.friends.ofFriend(targetUserId),
+    queryFn: async (): Promise<FriendOfFriend[]> => {
+      const { data, error } = await supabase.rpc('get_friends_of', {
+        p_target_user: targetUserId,
+      });
+      if (error) throw error;
+      // Belt-and-suspenders: filter caller out (RPC also excludes — Pitfall 3).
+      return ((data ?? []) as FriendOfFriend[]).filter((f) => f.friend_id !== userId);
+    },
+    enabled: !!userId && !!targetUserId,
+  });
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  return { friends, loading, error, refetch };
+  return {
+    friends: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refetch: query.refetch,
+  };
 }
