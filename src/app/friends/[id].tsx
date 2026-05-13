@@ -12,13 +12,11 @@
 //     per RESEARCH §Risks #1 + UI-SPEC §Reanimated Implementation Notes #2.
 //   - Remove Friend follows canonical Pattern 5: optimistic splice, rollback,
 //     settle-invalidate — satisfies mutationShape gate.
-//   - Mute toggle: lazy-resolve DM channel via get_or_create_dm_channel RPC,
-//     then upsert chat_preferences (PATTERNS §10 verbatim).
 //   - friend-not-found: detected via `data.friendsSince === null` (NOT profile === null)
 //     per RESEARCH §Recommendations §Friend-not-found fallback + Plan 02 SUMMARY.
 
 import { router, Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -48,7 +46,6 @@ import { useFriendProfile } from '@/hooks/useFriendProfile';
 import { useFriendMutuals } from '@/hooks/useFriendMutuals';
 import { useFriendWishList } from '@/hooks/useFriendWishList';
 import { useExpensesWithFriend } from '@/hooks/useExpensesWithFriend';
-import { useChatDmPreferences } from '@/hooks/useChatDmPreferences';
 import { useFriends } from '@/hooks/useFriends';
 import { useFriendsOfFriend } from '@/hooks/useFriendsOfFriend';
 
@@ -293,17 +290,6 @@ export default function FriendProfileScreen() {
   useFriends();
   useFriendsOfFriend(friendId);
 
-  // ── DM channel lazy-resolution for Mute ──
-  const [dmChannelId, setDmChannelId] = useState<string | null>(null);
-  const [mutingInFlight, setMutingInFlight] = useState(false);
-  // Synchronous re-entry guard — `mutingInFlight` only updates on the next render,
-  // so two rapid taps could both enter handleToggleMute before the disabled prop
-  // applies. The ref blocks the second tap inside the same JS tick. See REVIEW WR-01.
-  const muteInFlightRef = useRef(false);
-
-  const { data: mutePrefs } = useChatDmPreferences(dmChannelId);
-  const isMuted = mutePrefs?.isMuted ?? false;
-
   // ── Avatar viewer state ──
   const [avatarViewerOpen, setAvatarViewerOpen] = useState(false);
 
@@ -350,64 +336,6 @@ export default function FriendProfileScreen() {
       friendId,
       friendName: data.profile.display_name,
     });
-  }
-
-  async function handleToggleMute() {
-    if (!myId || muteInFlightRef.current) return;
-    muteInFlightRef.current = true;
-    setMutingInFlight(true);
-    try {
-      let channelId = dmChannelId;
-      if (!channelId) {
-        const { data: rpcData, error: rpcError } = await supabase.rpc(
-          'get_or_create_dm_channel',
-          { other_user_id: friendId },
-        );
-        if (rpcError || !rpcData) {
-          return;
-        }
-        // RPC returns a string channel_id directly (same shape as openChat.ts:102-112)
-        channelId = typeof rpcData === 'string' ? rpcData : String(rpcData);
-        setDmChannelId(channelId);
-      }
-
-      const resolvedChannelId = channelId;
-      const nextMuted = !isMuted;
-      const prefsKey = queryKeys.chat.preferences(resolvedChannelId);
-      // Snapshot the prior cache value so we can roll back on upsert failure.
-      // Pattern 5 contract — matches useUpdateMyBio.ts. See REVIEW WR-02.
-      const prevPrefs = queryClient.getQueryData(prefsKey);
-      // Optimistic flip on the preferences cache slot
-      queryClient.setQueryData(prefsKey, { isMuted: nextMuted });
-
-      try {
-        // Mute upsert — verbatim from PATTERNS §10 (ChatListScreen.tsx:120-123).
-        // Destructure the error and throw so the surrounding try/catch can roll
-        // back the optimistic cache flip. See REVIEW WR-03.
-        const { error: upsertError } = await supabase.from('chat_preferences').upsert(
-          {
-            user_id: myId,
-            chat_type: 'dm',
-            chat_id: resolvedChannelId,
-            is_muted: nextMuted,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id,chat_type,chat_id' },
-        );
-        if (upsertError) throw upsertError;
-      } catch {
-        // Roll back optimistic cache and surface the failure to the user.
-        queryClient.setQueryData(prefsKey, prevPrefs);
-        Alert.alert('Error', "Couldn't update mute setting. Try again.");
-        return;
-      }
-
-      void queryClient.invalidateQueries({ queryKey: prefsKey });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(myId) });
-    } finally {
-      muteInFlightRef.current = false;
-      setMutingInFlight(false);
-    }
   }
 
   function handlePhotos() {
@@ -562,12 +490,9 @@ export default function FriendProfileScreen() {
         {/* Quick Actions Row */}
         <QuickActionsRow
           onMessage={handleMessage}
-          onToggleMute={handleToggleMute}
           onPhotos={handlePhotos}
           onMore={handleMore}
-          isMuted={isMuted}
           friendFirstName={firstName}
-          muteDisabled={mutingInFlight}
           messageDisabled={false}
         />
 
