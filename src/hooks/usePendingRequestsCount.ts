@@ -1,32 +1,32 @@
-import { useCallback, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+// Phase 31 Plan 03 — Migrated to TanStack Query.
+// Public shape preserved: { count, refetch }.
+// staleTime (global 60s default) replaces the pre-migration focus-refetch trigger.
+
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { queryKeys } from '@/lib/queryKeys';
 
-export function usePendingRequestsCount(): { count: number; refetch: () => void } {
-  const session = useAuthStore((s) => s.session);
-  const [count, setCount] = useState(0);
+export function usePendingRequestsCount(): { count: number; refetch: () => Promise<unknown> } {
+  const userId = useAuthStore((s) => s.session?.user?.id) ?? null;
 
-  const refetch = useCallback(async () => {
-    if (!session?.user) {
-      setCount(0);
-      return;
-    }
-    const { count: result } = await supabase
-      .from('friendships')
-      .select('id', { count: 'exact', head: true })
-      .eq('addressee_id', session.user.id)
-      .eq('status', 'pending');
+  const query = useQuery({
+    queryKey: queryKeys.home.pendingRequestCount(userId ?? ''),
+    queryFn: async (): Promise<number> => {
+      if (!userId) return 0;
+      const { count, error } = await supabase
+        .from('friendships')
+        .select('id', { count: 'exact', head: true })
+        .eq('addressee_id', userId)
+        .eq('status', 'pending');
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !!userId,
+  });
 
-    setCount(result ?? 0);
-  }, [session]);
-
-  // Refetch every time the screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      refetch();
-    }, [refetch])
-  );
-
-  return { count, refetch };
+  return {
+    count: query.data ?? 0,
+    refetch: query.refetch,
+  };
 }
