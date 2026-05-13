@@ -55,6 +55,15 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
+// realtimeBridge mock — subscribeChatList is now mounted by useChatList.
+// Return a jest.fn() unsubscribe so the useEffect cleanup is a safe no-op.
+const mockChatListUnsubscribe = jest.fn();
+const mockSubscribeChatList = jest.fn(() => mockChatListUnsubscribe);
+jest.mock('@/lib/realtimeBridge', () => ({
+  subscribeChatList: (...args: unknown[]) => mockSubscribeChatList(...args),
+  _resetRealtimeBridgeForTests: jest.fn(),
+}));
+
 import { useChatList } from '../useChatList';
 
 describe('useChatList (migrated to TanStack Query)', () => {
