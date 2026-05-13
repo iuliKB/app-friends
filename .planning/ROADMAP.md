@@ -135,7 +135,7 @@ Plans:
 **Plans:** 7 plans across 3 waves
 
 Plans:
-- [ ] 33-01-PLAN.md — Foundation: Migration 0027 (bio column) + 3 new queryKeys + useUpdateMyBio hook + [BLOCKING] supabase db push (Wave 1)
+- [x] 33-01-PLAN.md — Foundation: Migration 0027 (bio column) + 3 new queryKeys + useUpdateMyBio hook + [BLOCKING] supabase db push (Wave 1)
 - [ ] 33-02-PLAN.md — Data hooks: useFriendProfile (shared status slice + friend-not-found via friendships row) + useFriendMutuals (Wave 2, depends on 01)
 - [ ] 33-03-PLAN.md — Header components: AvatarCircle onLoad pass-through + FriendProfileBlurredWash + FriendProfileHeader (Reanimated v4 scroll-driven collapse) (Wave 1)
 - [ ] 33-04-PLAN.md — Row primitives: friendIconPalette (8-tone) + GroupedInsetSection + ProfileInfoRow + BioRow (Wave 1)

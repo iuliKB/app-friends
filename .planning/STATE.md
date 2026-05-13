@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Phase 33 UI-SPEC approved
-last_updated: "2026-05-13T19:29:08.559Z"
-last_activity: 2026-05-13 -- Phase 33 planning complete
+stopped_at: Completed 33-01-PLAN.md
+last_updated: "2026-05-13T19:39:43.909Z"
+last_activity: 2026-05-13
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 39
-  completed_plans: 32
-  percent: 82
+  completed_plans: 33
+  percent: 85
 ---
 
 # Project State
@@ -21,14 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 32 complete. Ready to plan next phase.
+**Current focus:** Phase 33 — friend-profile-redesign
 
 ## Current Position
 
-Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — COMPLETE
+Phase: 33 (friend-profile-redesign) — EXECUTING
+Plan: 2 of 7
 Plans: 4 of 4 complete
 Status: Ready to execute
-Last activity: 2026-05-13 -- Phase 33 planning complete
+Last activity: 2026-05-13
 
 ## Phase Structure
 
@@ -169,6 +170,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Plan 32-02: IIFE for icon-name derivation inside JSX; previewWrap View owns flex:1+marginRight; UNSAFE_queryAllByType for no-instance guards; findTextNodeWithChildren helper for mixed-children Text node assertions in RNTL
 - [Phase 32]: subscribeChatList uses global listener (no filter): Supabase Realtime only supports single eq filter; chat list spans 3 scope columns x N memberships — one over-permissive channel + membership-filtered SELECT is cheaper than N per-room subscriptions
 - [Phase 32]: subscribeChatList payload intentionally unused: re-running the canonical RLS-filtered SELECT is simpler and correct; splicing the payload would require a membership check the handler cannot perform
+- [Phase 33-friend-profile-redesign]: Migration 0027 used (not 0025): 0025+0026 already taken; bio column nullable TEXT, no CHECK, no RLS change
+- [Phase 33-friend-profile-redesign]: database.ts regen deferred: (supabase as any) cast at profiles.bio read/write sites, consistent with Phase 31/32 precedent
+- [Phase 33-friend-profile-redesign]: queryKeys.friends.detail(userId) reused as bio cache slot (no new profile key) per PATTERNS corrections row 3
 
 ### Roadmap Evolution
 
@@ -208,8 +212,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 32 P04 | ~6.5min | 5 tasks | 6 files |
 | Phase 32 P02 | 5min | 2 tasks | 2 files |
 | Phase 32 P03 | 3 | 3 tasks | 4 files |
+| Phase 33-friend-profile-redesign P01 | 8 | 4 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T18:44:29.785Z
-Stopped at: Phase 33 UI-SPEC approved
+Last session: 2026-05-13T19:39:43.906Z
+Stopped at: Completed 33-01-PLAN.md
