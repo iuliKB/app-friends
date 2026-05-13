@@ -587,9 +587,10 @@ export default function FriendProfileScreen() {
             }
             onPress={
               mutuals && mutuals.mutualFriendsCount > 0
-                ? () => {
-                    // TODO: navigate to mutual friends list when route exists
-                  }
+                ? () =>
+                    localRouter.push(
+                      `/friends/${friendId}/mutual-friends` as never,
+                    )
                 : undefined
             }
             chevron={!!(mutuals && mutuals.mutualFriendsCount > 0)}
