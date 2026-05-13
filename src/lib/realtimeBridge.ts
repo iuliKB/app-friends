@@ -121,6 +121,60 @@ export function subscribePollVotes(
   return () => releaseSubscription(channelName);
 }
 
+/** Subscribe to messages-table changes globally (no scope filter). Every event
+ * invalidates queryKeys.chat.list(userId). This is the cross-screen reactivity
+ * backbone for the chat list — INCOMING messages from other users surface
+ * within ~Realtime latency; own sends also fire here as a belt-and-braces
+ * backstop to the explicit onSettled invalidates in useChatRoom send mutations
+ * (Phase 32 Plan 04 / CONTEXT.md §4 tiered policy).
+ *
+ * Channel name: `chat-list-${userId}` (dash convention — matches
+ * subscribeHabitCheckins / subscribePollVotes / subscribeHomeStatuses).
+ *
+ * Why global (no filter): Supabase Realtime postgres_changes filters support a
+ * single `=eq.` only, not `IN (list)`. The chat list spans 3 scope columns
+ * (plan_id / dm_channel_id / group_channel_id) AND every group/plan/dm the user
+ * belongs to — that's a Cartesian product that cannot be expressed as a single
+ * filter. ONE over-permissive subscription that invalidates an already-filtered
+ * SELECT is cheaper than N per-room subscriptions. Acceptable Realtime budget
+ * for friend-group apps (3-15 users per chat). See CONTEXT.md §5.
+ */
+export function subscribeChatList(
+  queryClient: QueryClient,
+  userId: string,
+): Unsubscribe {
+  const channelName = `chat-list-${userId}`;
+  const existing = registry.get(channelName);
+  if (existing) {
+    existing.refCount++;
+    return () => releaseSubscription(channelName);
+  }
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'messages' },
+      (_payload) => {
+        // Payload is intentionally unused — the chat-list query is
+        // membership-filtered, so we re-run the canonical SELECT instead of
+        // attempting to splice the payload (which would require a complex
+        // membership check anyway).
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) });
+      },
+    )
+    .subscribe();
+
+  registry.set(channelName, {
+    refCount: 1,
+    teardown: () => {
+      void supabase.removeChannel(channel);
+    },
+  });
+
+  return () => releaseSubscription(channelName);
+}
+
 /** Filter spec for chat-room subscriptions. The `messages` table carries three
  * mutually-exclusive scope columns (plan_id / dm_channel_id / group_channel_id);
  * the caller selects which column equals the channelId via the `column` field. */
