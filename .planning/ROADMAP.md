@@ -86,7 +86,7 @@
 **Goal:** Fix the bottom navigation bar showing on `ChatRoomScreen` when entered from non-canonical paths (e.g., Squad → Memories → PlanDashboard → "Open Chat" pill). Root cause: `CustomTabBar.tsx` keys visibility off navigator topology rather than current surface. Introduce `useNavigationStore` (zustand) as the single source of truth for bar visibility, refactor `CustomTabBar` to consume it, hoist `chat/room` to root Stack so it never mounts inside a tab's nested stack, consolidate the 12+ `/chat/room` callers (and four duplicate "create-DM-and-push" blocks) behind one helper, and remove related legacy/dead code (`FriendsList` legacy route, `RecentMemoriesSection`). Full scope and research findings: `.planning/phases/30-unify-navigation-source-of-truth-and-chat-entry-handlers/CONTEXT.md`.
 **Requirements**: TBD (no formal REQ-IDs — must-haves derived from CONTEXT.md verification anchor)
 **Depends on:** Phase 29
-**Plans:** 7 plans
+**Plans:** 7/7 plans complete
 
 Plans:
 - [x] 30-01-PLAN.md — Create `useNavigationStore` zustand slice (Wave 1)
