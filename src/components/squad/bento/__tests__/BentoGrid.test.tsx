@@ -30,6 +30,28 @@ jest.mock('expo-linear-gradient', () => ({
   LinearGradient: 'LinearGradient',
 }));
 
+// Phase 31 Plan 07 — useSpotlight.ts now transitively imports the migrated
+// source hooks (useHabits → @/lib/supabase). BentoGrid.tsx only uses the
+// pure selectSpotlight() selector, but the import graph still touches
+// supabase at module-load time. Stub it so this component test doesn't
+// require .env.local.
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    rpc: jest.fn(),
+    from: jest.fn(),
+    channel: jest.fn(),
+    removeChannel: jest.fn(),
+    auth: {
+      onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
+    },
+  },
+}));
+
+jest.mock('@/stores/useAuthStore', () => ({
+  useAuthStore: (selector: (s: { session: null }) => unknown) =>
+    selector({ session: null }),
+}));
+
 const stubIOU: IOUSummaryData = {
   rows: [],
   netCents: 0,
