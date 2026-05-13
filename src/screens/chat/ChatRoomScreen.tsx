@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -18,13 +18,14 @@ import { PollCreationSheet } from '@/components/chat/PollCreationSheet';
 import { ChatTodoPickerSheet } from '@/components/chat/ChatTodoPickerSheet';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRouter } from 'expo-router';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { useChatRoom } from '@/hooks/useChatRoom';
 import { useChatTodos } from '@/hooks/useChatTodos';
 import { useChatMembers } from '@/hooks/useChatMembers';
 import type { ChatScope } from '@/hooks/useChatTodos';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useNavigationStore } from '@/stores/useNavigationStore';
 import { supabase } from '@/lib/supabase';
 import type { ChatTodoItem, ChatTodoList } from '@/types/todos';
 import {
@@ -114,6 +115,20 @@ export function ChatRoomScreen({
   // Track in-flight lazy loads so we don't fire duplicate fetches across
   // renders for the same message_id.
   const todoFetchInFlightRef = useRef<Set<string>>(new Set());
+
+  // Phase 30 Plan 04 — Navigation surface writer.
+  // Pushes 'chat' to useNavigationStore on focus so CustomTabBar hides the bar,
+  // restores 'tabs' on blur so the bar returns when the user leaves the chat
+  // by ANY means (back gesture, programmatic pop, app backgrounding then
+  // refocusing a different screen).
+  const setSurface = useNavigationStore((s) => s.setSurface);
+
+  useFocusEffect(
+    useCallback(() => {
+      setSurface('chat');
+      return () => setSurface('tabs');
+    }, [setSurface])
+  );
 
   // Phase 14: toast for out-of-window original
   const toastAnim = useRef(new Animated.Value(0)).current;
