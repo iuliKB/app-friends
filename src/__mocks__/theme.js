@@ -20,7 +20,8 @@ const FONT_FAMILY = {
   body: { regular: 'System', semibold: 'System' },
   display: { regular: 'System', semibold: 'System', bold: 'System' },
 };
-const RADII = { xs: 4, sm: 6, md: 8, lg: 12, xl: 16, xxl: 24, full: 9999 };
+const FONT_WEIGHT = { regular: '400', semibold: '600', bold: '700' };
+const RADII = { xs: 4, sm: 6, md: 8, lg: 12, xl: 16, xxl: 24, pill: 18, full: 9999 };
 const SHADOW = { sm: {}, md: {}, lg: {} };
 const SHADOWS = {
   fab: {},
@@ -45,6 +46,7 @@ module.exports = {
   SPACING,
   FONT_SIZE,
   FONT_FAMILY,
+  FONT_WEIGHT,
   RADII,
   SHADOW,
   SHADOWS,
