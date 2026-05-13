@@ -373,25 +373,36 @@ export default function FriendProfileScreen() {
 
       const resolvedChannelId = channelId;
       const nextMuted = !isMuted;
+      const prefsKey = queryKeys.chat.preferences(resolvedChannelId);
+      // Snapshot the prior cache value so we can roll back on upsert failure.
+      // Pattern 5 contract — matches useUpdateMyBio.ts. See REVIEW WR-02.
+      const prevPrefs = queryClient.getQueryData(prefsKey);
       // Optimistic flip on the preferences cache slot
-      queryClient.setQueryData(queryKeys.chat.preferences(resolvedChannelId), { isMuted: nextMuted });
+      queryClient.setQueryData(prefsKey, { isMuted: nextMuted });
 
-      // Mute upsert — verbatim from PATTERNS §10 (ChatListScreen.tsx:120-123).
-      // Destructure the error and throw so the surrounding try/catch can roll
-      // back the optimistic cache flip. See REVIEW WR-03.
-      const { error: upsertError } = await supabase.from('chat_preferences').upsert(
-        {
-          user_id: myId,
-          chat_type: 'dm',
-          chat_id: resolvedChannelId,
-          is_muted: nextMuted,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,chat_type,chat_id' },
-      );
-      if (upsertError) throw upsertError;
+      try {
+        // Mute upsert — verbatim from PATTERNS §10 (ChatListScreen.tsx:120-123).
+        // Destructure the error and throw so the surrounding try/catch can roll
+        // back the optimistic cache flip. See REVIEW WR-03.
+        const { error: upsertError } = await supabase.from('chat_preferences').upsert(
+          {
+            user_id: myId,
+            chat_type: 'dm',
+            chat_id: resolvedChannelId,
+            is_muted: nextMuted,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,chat_type,chat_id' },
+        );
+        if (upsertError) throw upsertError;
+      } catch {
+        // Roll back optimistic cache and surface the failure to the user.
+        queryClient.setQueryData(prefsKey, prevPrefs);
+        Alert.alert('Error', "Couldn't update mute setting. Try again.");
+        return;
+      }
 
-      void queryClient.invalidateQueries({ queryKey: queryKeys.chat.preferences(resolvedChannelId) });
+      void queryClient.invalidateQueries({ queryKey: prefsKey });
       void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(myId) });
     } finally {
       muteInFlightRef.current = false;
