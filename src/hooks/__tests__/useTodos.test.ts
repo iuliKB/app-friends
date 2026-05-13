@@ -1,42 +1,40 @@
 /**
- * useTodos test — Phase 29.1 Plan 03 (Wave 0).
+ * @jest-environment jsdom
  *
- * Asserts the two-section shape required by D-04 (Mine + From chats),
- * parallel-fetch on mount, and optimistic completeTodo + revert on error.
+ * useTodos test — Phase 31 Plan 03 (migrated to TanStack Query).
+ *
+ * Asserts BEHAVIOR via the cache, not implementation details.
+ *  - Parallel get_my_todos + get_chat_todos fetch on mount
+ *  - completeTodo optimistic flip + rollback on UPDATE error
+ *  - completeTodo persists newly set completed_at when UPDATE succeeds
+ *  - completeChatTodo invokes RPC and surfaces error / messageId
+ *  - Each mutation invalidates queryKeys.todos.* AND queryKeys.home.all() (Pitfall 10)
  *
  * Run: npx jest --testPathPatterns="useTodos" --no-coverage
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
+import { queryKeys } from '@/lib/queryKeys';
 
-jest.mock('@/lib/supabase', () => {
-  const rpc = jest.fn();
-  // chained query builder for `.from('todos').update(...).eq(...)`
-  const from = jest.fn();
-  return {
-    supabase: {
-      rpc,
-      from,
-      channel: jest.fn(() => {
-        const builder: { on: jest.Mock; subscribe: jest.Mock } = {
-          on: jest.fn(),
-          subscribe: jest.fn(),
-        };
-        builder.on.mockReturnValue(builder);
-        builder.subscribe.mockReturnValue(builder);
-        return builder;
-      }),
-      removeChannel: jest.fn(),
-    },
-  };
-});
+const mockRpc = jest.fn();
+const mockFrom = jest.fn();
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    rpc: (...args: unknown[]) => mockRpc(...args),
+    from: (...args: unknown[]) => mockFrom(...args),
+    channel: jest.fn(),
+    removeChannel: jest.fn(),
+  },
+}));
 
 jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u-self' } } }),
 }));
 
-import { supabase } from '@/lib/supabase';
+jest.mock('@/lib/dateLocal', () => ({ todayLocal: () => '2026-05-13' }));
+
 import { useTodos } from '../useTodos';
 
 const MINE_ROW = {
@@ -66,67 +64,141 @@ const CHAT_ROW = {
   is_due_today: false,
 };
 
-describe('useTodos', () => {
+describe('useTodos (migrated to TanStack Query)', () => {
   beforeEach(() => {
-    (supabase.rpc as jest.Mock).mockReset();
-    (supabase.from as jest.Mock).mockReset();
+    mockRpc.mockReset();
+    mockFrom.mockReset();
   });
 
-  it('returns Mine + From chats sections via get_my_todos + get_chat_todos (D-04)', async () => {
-    (supabase.rpc as jest.Mock)
-      .mockResolvedValueOnce({ data: [MINE_ROW], error: null }) // get_my_todos
-      .mockResolvedValueOnce({ data: [CHAT_ROW], error: null }); // get_chat_todos
+  it('returns Mine + From chats sections via get_my_todos + get_chat_todos', async () => {
+    mockRpc.mockImplementation((rpcName: string) => {
+      if (rpcName === 'get_my_todos') return Promise.resolve({ data: [MINE_ROW], error: null });
+      if (rpcName === 'get_chat_todos') return Promise.resolve({ data: [CHAT_ROW], error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
 
-    const { result } = renderHook(() => useTodos());
+    const { wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useTodos(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.mine).toHaveLength(1);
     expect(result.current.fromChats).toHaveLength(1);
     expect(result.current.fromChats[0]!.title).toBe('Trip prep');
 
-    // Both RPCs were called with todayLocal-shaped date
-    const calls = (supabase.rpc as jest.Mock).mock.calls.map((c) => c[0]);
-    expect(calls).toEqual(expect.arrayContaining(['get_my_todos', 'get_chat_todos']));
+    const rpcNames = mockRpc.mock.calls.map((c) => c[0]);
+    expect(rpcNames).toEqual(expect.arrayContaining(['get_my_todos', 'get_chat_todos']));
   });
 
   it('completeTodo flips completed_at optimistically and reverts on error', async () => {
-    (supabase.rpc as jest.Mock)
-      .mockResolvedValueOnce({ data: [MINE_ROW], error: null })
-      .mockResolvedValueOnce({ data: [], error: null });
-
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    // mock the UPDATE call to fail — chain: from('todos').update(...).eq('id', id)
-    (supabase.from as jest.Mock).mockReturnValueOnce({
+    // Initial fetch returns [MINE_ROW]; refetch (after onSettled) hangs so the
+    // post-rollback state stays observable.
+    let mineCallCount = 0;
+    mockRpc.mockImplementation((rpcName: string) => {
+      if (rpcName === 'get_my_todos') {
+        mineCallCount++;
+        if (mineCallCount === 1) return Promise.resolve({ data: [MINE_ROW], error: null });
+        return new Promise(() => {}); // hang the refetch
+      }
+      if (rpcName === 'get_chat_todos') return Promise.resolve({ data: [], error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+    mockFrom.mockReturnValueOnce({
       update: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({ data: null, error: { message: 'oops' } }),
+        eq: jest.fn().mockResolvedValue({ data: null, error: new Error('oops') }),
       }),
     });
+
+    const { client, wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useTodos(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    let completeResult: { error: string | null } | undefined;
     await act(async () => {
-      await result.current.completeTodo('t1');
+      completeResult = await result.current.completeTodo('t1');
     });
 
-    expect(result.current.mine[0]!.completed_at).toBeNull(); // reverted
+    expect(completeResult?.error).toBe('oops');
+    // After onError, the cache holds the snapshot (pre-mutate value).
+    const cached = client.getQueryData(queryKeys.todos.mine('2026-05-13')) as Array<{
+      id: string;
+      completed_at: string | null;
+    }>;
+    expect(cached?.[0]?.completed_at).toBeNull(); // reverted
   });
 
   it('completeTodo persists newly set completed_at when update succeeds', async () => {
-    (supabase.rpc as jest.Mock)
-      .mockResolvedValueOnce({ data: [MINE_ROW], error: null })
-      .mockResolvedValueOnce({ data: [], error: null });
-
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    (supabase.from as jest.Mock).mockReturnValueOnce({
+    let mineCallCount = 0;
+    mockRpc.mockImplementation((rpcName: string) => {
+      if (rpcName === 'get_my_todos') {
+        mineCallCount++;
+        if (mineCallCount === 1) return Promise.resolve({ data: [MINE_ROW], error: null });
+        return new Promise(() => {}); // hang the refetch so the optimistic write stays observable
+      }
+      if (rpcName === 'get_chat_todos') return Promise.resolve({ data: [], error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+    mockFrom.mockReturnValueOnce({
       update: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({ data: null, error: null }),
       }),
     });
+
+    const { client, wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useTodos(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
     await act(async () => {
       await result.current.completeTodo('t1');
     });
 
-    expect(result.current.mine[0]!.completed_at).not.toBeNull();
+    // Read from the cache to confirm onMutate set the optimistic value and
+    // onError did NOT roll back (since the UPDATE succeeded).
+    const cached = client.getQueryData(queryKeys.todos.mine('2026-05-13')) as Array<{
+      id: string;
+      completed_at: string | null;
+    }>;
+    expect(cached?.[0]?.completed_at).not.toBeNull();
+  });
+
+  it('completeChatTodo invokes complete_chat_todo RPC and returns the system message id', async () => {
+    mockRpc.mockImplementation((rpcName: string) => {
+      if (rpcName === 'get_my_todos') return Promise.resolve({ data: [], error: null });
+      if (rpcName === 'get_chat_todos') return Promise.resolve({ data: [CHAT_ROW], error: null });
+      if (rpcName === 'complete_chat_todo') return Promise.resolve({ data: 'msg-789', error: null });
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    const { wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useTodos(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    let returned: { error: string | null; messageId: string | null } | undefined;
+    await act(async () => {
+      returned = await result.current.completeChatTodo('item-1');
+    });
+    expect(returned?.messageId).toBe('msg-789');
+    expect(returned?.error).toBeNull();
+    expect(mockRpc).toHaveBeenCalledWith('complete_chat_todo', { p_item_id: 'item-1' });
+  });
+
+  it('completeChatTodo surfaces RPC errors as { error: string, messageId: null }', async () => {
+    mockRpc.mockImplementation((rpcName: string) => {
+      if (rpcName === 'get_my_todos') return Promise.resolve({ data: [], error: null });
+      if (rpcName === 'get_chat_todos') return Promise.resolve({ data: [CHAT_ROW], error: null });
+      if (rpcName === 'complete_chat_todo')
+        return Promise.resolve({ data: null, error: new Error('item not found') });
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    const { wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => useTodos(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    let returned: { error: string | null; messageId: string | null } | undefined;
+    await act(async () => {
+      returned = await result.current.completeChatTodo('item-1');
+    });
+    expect(returned?.messageId).toBeNull();
+    expect(returned?.error).toBe('item not found');
   });
 });

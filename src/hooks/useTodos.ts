@@ -1,21 +1,24 @@
-// Phase 29.1 Plan 03 — useTodos hook.
-// Returns the two-section To-Dos view (D-04): personal "Mine" todos plus
-// "From chats" todos assigned via group chat (D-13 list flavor + D-09 single).
+// Phase 31 Plan 03 — Migrated to TanStack Query.
 //
-// - On mount: parallel `get_my_todos(p_today)` + `get_chat_todos(p_today)`.
-// - `completeTodo(todoId)`: optimistic flip of `completed_at` (null ↔ now()),
-//   persisted via direct UPDATE (RLS gates ownership — T-29.1-19). Reverts
-//   on UPDATE error using the snapshot+revert pattern.
-// - `completeChatTodo(itemId)`: invokes `complete_chat_todo` RPC; the RPC
-//   atomically writes the system message + state update, so we simply
-//   refetch to pull the new done_count.
+// Public shape (UseTodosResult) verbatim-preserved so callers don't change:
+//   { mine, fromChats, loading, error, refetch, completeTodo, completeChatTodo }
 //
-// Errors are silent: fall back to empty arrays, warn to console.
+// The pre-migration hook drove two parallel RPCs (get_my_todos + get_chat_todos)
+// from a single useEffect. Migrated shape: TWO useQuery calls (one per RPC) keyed
+// by today's local date, plus two useMutation calls (completeTodo via direct
+// UPDATE, completeChatTodo via RPC). The Wave 2 canonical Pattern 5 mutation
+// shape (mutationFn + onMutate snapshot + onError rollback + onSettled invalidate)
+// is locked here too — mutationShape.test.ts enforces.
+//
+// Pitfall 10 mitigation: every mutator invalidates BOTH queryKeys.todos.mine(today)
+// AND queryKeys.home.all() because TodosTile/HomeTodosTile read from this hook
+// while the Home aggregate's reactivity story requires a fan-out invalidation.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { todayLocal } from '@/lib/dateLocal';
+import { queryKeys } from '@/lib/queryKeys';
 import type { MyTodoRow, ChatTodoRow } from '@/types/todos';
 
 export interface UseTodosResult {
@@ -23,7 +26,7 @@ export interface UseTodosResult {
   fromChats: ChatTodoRow[];
   loading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<unknown>;
   completeTodo: (todoId: string) => Promise<{ error: string | null }>;
   completeChatTodo: (
     itemId: string
@@ -33,119 +36,127 @@ export interface UseTodosResult {
 export function useTodos(): UseTodosResult {
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id ?? null;
-  const [mine, setMine] = useState<MyTodoRow[]>([]);
-  const [fromChats, setFromChats] = useState<ChatTodoRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // mineRef mirrors the latest committed mine[] so completeTodo can capture
-  // a synchronous pre-snapshot for revert without relying on setState
-  // callback timing (Pitfall 3 stale-closure guard, robust across React
-  // batching modes).
-  const mineRef = useRef<MyTodoRow[]>([]);
+  const today = todayLocal();
+  const queryClient = useQueryClient();
+  const mineKey = queryKeys.todos.mine(today);
+  const fromChatsKey = queryKeys.todos.fromChats(today);
 
-  const refetch = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      setMine([]);
-      setFromChats([]);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    const today = todayLocal();
-    const [
-      { data: mineData, error: mineErr },
-      { data: chatData, error: chatErr },
-    ] = await Promise.all([
-      supabase.rpc('get_my_todos', { p_today: today }),
-      supabase.rpc('get_chat_todos', { p_today: today }),
-    ]);
-    if (mineErr || chatErr) {
-      const msg = mineErr?.message ?? chatErr?.message ?? 'unknown';
-      console.warn('useTodos fetch failed', msg);
-      setError(msg);
-    }
-    const nextMine = ((mineData ?? []) as unknown) as MyTodoRow[];
-    mineRef.current = nextMine;
-    setMine(nextMine);
-    setFromChats(((chatData ?? []) as unknown) as ChatTodoRow[]);
-    setLoading(false);
-  }, [userId]);
-
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
-
-  const completeTodo = useCallback(
-    async (todoId: string): Promise<{ error: string | null }> => {
-      // Snapshot+revert pattern (Pitfall 3). We read from mineRef rather
-      // than relying on a `setMine((prev) => { snapshot = ...; return prev; })`
-      // updater capture because React 18 may defer functional setState
-      // callbacks past the next statement, leaving the snapshot null at the
-      // moment we need it. mineRef is updated synchronously on every state
-      // commit (refetch + the optimistic flip below) so it always mirrors
-      // the latest committed mine[].
-      const snapshot = mineRef.current.find((t) => t.id === todoId) ?? null;
-      if (!snapshot) return { error: 'todo-not-found' };
-
-      const wasCompleted = snapshot.completed_at !== null;
-      const newCompletedAt = wasCompleted ? null : new Date().toISOString();
-
-      // Optimistic flip
-      const optimistic = mineRef.current.map((t) =>
-        t.id === todoId ? { ...t, completed_at: newCompletedAt } : t
-      );
-      mineRef.current = optimistic;
-      setMine(optimistic);
-
-      // Direct UPDATE — RLS UPDATE policy gates on user_id = auth.uid()
-      // (T-29.1-19 mitigation: client cannot bypass cross-user write).
-      const { error: updErr } = await supabase
-        .from('todos')
-        .update({ completed_at: newCompletedAt })
-        .eq('id', todoId);
-      if (updErr) {
-        // Revert: swap the row back to its pre-toggle state.
-        const reverted = mineRef.current.map((t) =>
-          t.id === todoId ? snapshot : t
-        );
-        mineRef.current = reverted;
-        setMine(reverted);
-        return { error: updErr.message };
-      }
-      return { error: null };
+  const mineQuery = useQuery({
+    queryKey: mineKey,
+    queryFn: async (): Promise<MyTodoRow[]> => {
+      const { data, error } = await (supabase as any).rpc('get_my_todos', { p_today: today });
+      if (error) throw error;
+      return ((data ?? []) as unknown) as MyTodoRow[];
     },
-    []
-  );
+    enabled: !!userId,
+  });
 
-  const completeChatTodo = useCallback(
-    async (
-      itemId: string
-    ): Promise<{ error: string | null; messageId: string | null }> => {
-      // RPC handles atomic state update + system message insert (Plan 01
-      // §complete_chat_todo). On success the caller's "From chats" row needs
-      // a fresh done_count, so we refetch — Realtime on the chat thread will
-      // surface the system message into the existing chat subscription.
-      const { data, error: rpcErr } = await supabase.rpc('complete_chat_todo', {
+  const fromChatsQuery = useQuery({
+    queryKey: fromChatsKey,
+    queryFn: async (): Promise<ChatTodoRow[]> => {
+      const { data, error } = await (supabase as any).rpc('get_chat_todos', { p_today: today });
+      if (error) throw error;
+      return ((data ?? []) as unknown) as ChatTodoRow[];
+    },
+    enabled: !!userId,
+  });
+
+  // completeTodo — optimistic flip of completed_at, persisted via direct UPDATE
+  // on `todos` (RLS UPDATE policy gates ownership, mitigates T-29.1-19).
+  const completeMutation = useMutation({
+    mutationFn: async (input: { todoId: string; newCompletedAt: string | null }) => {
+      const { error } = await (supabase as any)
+        .from('todos')
+        .update({ completed_at: input.newCompletedAt })
+        .eq('id', input.todoId);
+      if (error) throw error;
+    },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: mineKey });
+      const previous = queryClient.getQueryData<MyTodoRow[]>(mineKey);
+      queryClient.setQueryData<MyTodoRow[]>(mineKey, (old) =>
+        old?.map((t) =>
+          t.id === input.todoId ? { ...t, completed_at: input.newCompletedAt } : t,
+        ) ?? [],
+      );
+      return { previous };
+    },
+    onError: (_err, _input, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(mineKey, ctx.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: mineKey });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home.all() });
+    },
+  });
+
+  // completeChatTodo — RPC atomically writes the system message + state update.
+  // No optimistic write on this side (chat thread Realtime delivers the system
+  // message). Invalidate both chat-todo and Home aggregate keys on settle.
+  const completeChatMutation = useMutation({
+    mutationFn: async (
+      itemId: string,
+    ): Promise<{ messageId: string | null }> => {
+      const { data, error } = await (supabase as any).rpc('complete_chat_todo', {
         p_item_id: itemId,
       });
-      if (rpcErr) {
-        console.warn('complete_chat_todo failed', rpcErr);
-        return { error: rpcErr.message, messageId: null };
-      }
-      void refetch();
-      return { error: null, messageId: (data as string | null) ?? null };
+      if (error) throw error;
+      return { messageId: (data as string | null) ?? null };
     },
-    [refetch]
-  );
+    onMutate: async (_itemId) => {
+      await queryClient.cancelQueries({ queryKey: fromChatsKey });
+      const previous = queryClient.getQueryData<ChatTodoRow[]>(fromChatsKey);
+      // No optimistic mutation of done_count here — the RPC owns the cross-
+      // table state; rollback ctx still snapshots the prior cache for parity
+      // with Pattern 5 (a future iteration could bump done_count optimistically).
+      return { previous };
+    },
+    onError: (_err, _itemId, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(fromChatsKey, ctx.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: fromChatsKey });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home.all() });
+    },
+  });
+
+  const refetch = async () => {
+    return Promise.all([mineQuery.refetch(), fromChatsQuery.refetch()]);
+  };
 
   return {
-    mine,
-    fromChats,
-    loading,
-    error,
+    mine: mineQuery.data ?? [],
+    fromChats: fromChatsQuery.data ?? [],
+    loading: mineQuery.isLoading || fromChatsQuery.isLoading,
+    error:
+      mineQuery.error
+        ? (mineQuery.error as Error).message
+        : fromChatsQuery.error
+          ? (fromChatsQuery.error as Error).message
+          : null,
     refetch,
-    completeTodo,
-    completeChatTodo,
+    completeTodo: async (todoId: string) => {
+      const snapshot = (mineQuery.data ?? []).find((t) => t.id === todoId);
+      if (!snapshot) return { error: 'todo-not-found' };
+      const wasCompleted = snapshot.completed_at !== null;
+      const newCompletedAt = wasCompleted ? null : new Date().toISOString();
+      try {
+        await completeMutation.mutateAsync({ todoId, newCompletedAt });
+        return { error: null };
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : 'complete failed' };
+      }
+    },
+    completeChatTodo: async (itemId: string) => {
+      try {
+        const result = await completeChatMutation.mutateAsync(itemId);
+        return { error: null, messageId: result.messageId };
+      } catch (err) {
+        return {
+          error: err instanceof Error ? err.message : 'completeChatTodo failed',
+          messageId: null,
+        };
+      }
+    },
   };
 }
