@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 32-04-PLAN.md
-last_updated: "2026-05-13T13:25:49.459Z"
+stopped_at: Completed 32-02-PLAN.md
+last_updated: "2026-05-13T14:14:59.446Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 32
-  completed_plans: 30
-  percent: 94
+  completed_plans: 31
+  percent: 97
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — EXECUTING
-Plan: 3 of 4
+Plan: 2 of 4
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -164,6 +164,7 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Phase 32 Plan 01: polls table accessed via (supabase as any) cast — generated database.ts does not include polls yet; same pattern as usePoll.ts:61 and Phase 29.1 hooks; regeneration deferred
 - [Phase 32]: Plan 32-04: sendPoll uses onSuccess (not onSettled) for chat-cache invalidates, preserving its @mutationShape: no-optimistic exemption rationale
 - [Phase 32]: Plan 32-04: completeChatTodo's chatScope arg is optional — backwards-compatible for non-chat callers (Squad useTodos, Home tile mocks)
+- [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Plan 32-02: IIFE for icon-name derivation inside JSX; previewWrap View owns flex:1+marginRight; UNSAFE_queryAllByType for no-instance guards; findTextNodeWithChildren helper for mixed-children Text node assertions in RNTL
 
 ### Roadmap Evolution
 
@@ -200,8 +201,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31 P08 | 18min | 8 tasks | 17 files |
 | Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry- P01 | 10min | 3 tasks | 3 files |
 | Phase 32 P04 | ~6.5min | 5 tasks | 6 files |
+| Phase 32 P02 | 5min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T13:25:49.455Z
-Stopped at: Completed 32-04-PLAN.md
+Last session: 2026-05-13T14:14:59.442Z
+Stopped at: Completed 32-02-PLAN.md
