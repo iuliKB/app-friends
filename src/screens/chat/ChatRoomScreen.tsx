@@ -280,7 +280,11 @@ export function ChatRoomScreen({
   // invalidates the cache entry for any message whose list contains the item
   // so the bubble re-fetches and reflects the new completed_at.
   async function handleCompleteChatTodoItem(itemId: string) {
-    const result = await completeChatTodo(itemId);
+    // Phase 32 — pass chatScope so completeMutation can derive channelId and
+    // invalidate chat.messages(channelId) for the system-message bubble update.
+    const result = await completeChatTodo(itemId, {
+      chatScope: chatScope ?? undefined,
+    });
     // Find which message holds this item and invalidate its cache slot.
     for (const [msgId, payload] of Object.entries(chatTodoData)) {
       if (payload.items.some((it) => it.id === itemId)) {
@@ -585,7 +589,10 @@ export function ChatRoomScreen({
               // sendChatTodo writes the parent 'todo' message via the RPC; the
               // existing useChatRoom realtime subscription surfaces it, then the
               // lazy-fetch effect above resolves the list + items for the bubble.
-              void refetch();
+              // Phase 32 — flipped void→await so the picker sheet does not dismiss
+              // before the bubble's children resolve (~500ms user-accepted latency
+              // per CONTEXT.md §2 todo row).
+              await refetch();
             }
             return result;
           }}

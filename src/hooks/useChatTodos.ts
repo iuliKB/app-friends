@@ -18,11 +18,23 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { todayLocal } from '@/lib/dateLocal';
 import { queryKeys } from '@/lib/queryKeys';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export type ChatScope =
   | { kind: 'group'; groupChannelId: string }
   | { kind: 'plan'; planId: string }
   | { kind: 'dm'; dmChannelId: string };
+
+function channelIdFromScope(scope: ChatScope): string {
+  switch (scope.kind) {
+    case 'plan':
+      return scope.planId;
+    case 'dm':
+      return scope.dmChannelId;
+    case 'group':
+      return scope.groupChannelId;
+  }
+}
 
 export interface SendChatTodoArgs {
   scope: ChatScope;
@@ -37,11 +49,13 @@ export interface UseChatTodosResult {
     args: SendChatTodoArgs
   ) => Promise<{ listId: string | null; error: string | null }>;
   completeChatTodo: (
-    itemId: string
+    itemId: string,
+    opts?: { listId?: string; chatScope?: ChatScope }
   ) => Promise<{ messageId: string | null; error: string | null }>;
 }
 
 export function useChatTodos(): UseChatTodosResult {
+  const userId = useAuthStore((s) => s.session?.user?.id ?? '');
   const queryClient = useQueryClient();
 
   // @mutationShape: no-optimistic
@@ -68,7 +82,7 @@ export function useChatTodos(): UseChatTodosResult {
     onError: (_err, _args, _ctx) => {
       // No rollback target; caller surfaces the error via the returned shape.
     },
-    onSettled: (data) => {
+    onSettled: (data, _err, args) => {
       // Invalidate the newly created list's chatList key (best-effort).
       const newListId = (data as string | null) ?? null;
       if (newListId) {
@@ -76,6 +90,14 @@ export function useChatTodos(): UseChatTodosResult {
       }
       void queryClient.invalidateQueries({ queryKey: queryKeys.todos.fromChats(todayLocal()) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.home.all() });
+
+      // Phase 32 — invalidate the chat caches so the new 'todo' message bubble
+      // surfaces in chat.messages AND the chat-list last-entry preview updates.
+      const channelId = channelIdFromScope(args.scope);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chat.messages(channelId) });
+      if (userId) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) });
+      }
     },
   });
 
@@ -84,6 +106,7 @@ export function useChatTodos(): UseChatTodosResult {
     mutationFn: async (input: {
       itemId: string;
       listId?: string;
+      chatScope?: ChatScope;
     }): Promise<string | null> => {
       const { data, error } = await (supabase as any).rpc('complete_chat_todo', {
         p_item_id: input.itemId,
@@ -107,6 +130,18 @@ export function useChatTodos(): UseChatTodosResult {
       }
       void queryClient.invalidateQueries({ queryKey: queryKeys.todos.fromChats(todayLocal()) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.home.all() });
+
+      // Phase 32 — complete_chat_todo emits a 'system' message via DB trigger.
+      // Invalidate the chat caches so the system bubble surfaces in chat.messages
+      // and the chat-list preview updates. Caller may omit chatScope (e.g. Home
+      // tile direct-complete path) in which case we only invalidate chat.list.
+      if (input?.chatScope) {
+        const channelId = channelIdFromScope(input.chatScope);
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chat.messages(channelId) });
+      }
+      if (userId) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) });
+      }
     },
   });
 
@@ -122,9 +157,13 @@ export function useChatTodos(): UseChatTodosResult {
         };
       }
     },
-    completeChatTodo: async (itemId) => {
+    completeChatTodo: async (itemId, opts) => {
       try {
-        const messageId = await completeMutation.mutateAsync({ itemId });
+        const messageId = await completeMutation.mutateAsync({
+          itemId,
+          listId: opts?.listId,
+          chatScope: opts?.chatScope,
+        });
         return { messageId, error: null };
       } catch (err) {
         return {
