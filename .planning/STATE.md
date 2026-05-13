@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 32-02-PLAN.md
-last_updated: "2026-05-13T14:14:59.446Z"
+stopped_at: Completed 32-03-PLAN.md
+last_updated: "2026-05-13T14:20:16.699Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 10
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 32
-  completed_plans: 31
-  percent: 97
+  completed_plans: 32
+  percent: 100
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -165,6 +165,8 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 32]: Plan 32-04: sendPoll uses onSuccess (not onSettled) for chat-cache invalidates, preserving its @mutationShape: no-optimistic exemption rationale
 - [Phase 32]: Plan 32-04: completeChatTodo's chatScope arg is optional — backwards-compatible for non-chat callers (Squad useTodos, Home tile mocks)
 - [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Plan 32-02: IIFE for icon-name derivation inside JSX; previewWrap View owns flex:1+marginRight; UNSAFE_queryAllByType for no-instance guards; findTextNodeWithChildren helper for mixed-children Text node assertions in RNTL
+- [Phase 32]: subscribeChatList uses global listener (no filter): Supabase Realtime only supports single eq filter; chat list spans 3 scope columns x N memberships — one over-permissive channel + membership-filtered SELECT is cheaper than N per-room subscriptions
+- [Phase 32]: subscribeChatList payload intentionally unused: re-running the canonical RLS-filtered SELECT is simpler and correct; splicing the payload would require a membership check the handler cannot perform
 
 ### Roadmap Evolution
 
@@ -202,8 +204,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry- P01 | 10min | 3 tasks | 3 files |
 | Phase 32 P04 | ~6.5min | 5 tasks | 6 files |
 | Phase 32 P02 | 5min | 2 tasks | 2 files |
+| Phase 32 P03 | 3 | 3 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T14:14:59.442Z
-Stopped at: Completed 32-02-PLAN.md
+Last session: 2026-05-13T14:20:16.695Z
+Stopped at: Completed 32-03-PLAN.md
