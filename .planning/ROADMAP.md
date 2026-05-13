@@ -107,7 +107,7 @@ Plans:
 Plans:
 - [x] 31-01-PLAN.md — Wave 1 Foundation: install deps, create queryClient/queryKeys/realtimeBridge/authBridge/useRefreshOnFocus/createTestQueryClient + 3 unit tests + mount QueryClientProvider in _layout.tsx
 - [x] 31-02-PLAN.md — Wave 2 PILOT: migrate useHabits + useHabitDetail; cross-screen reactivity test (TSQ-01) + mutationShape regression gate (TSQ-08); blocking pilot smoke before Wave 3
-- [ ] 31-03-PLAN.md — Wave 3 Home aggregates + Todos: migrate useHomeScreen + useTodos + useUpcomingBirthdays + useUpcomingEvents + useInvitationCount + usePendingRequestsCount + useChatTodos; add subscribeHomeStatuses; strip useHomeStore.friends/lastFetchedAt
+- [x] 31-03-PLAN.md — Wave 3 Home aggregates + Todos: migrate useHomeScreen + useTodos + useUpcomingBirthdays + useUpcomingEvents + useInvitationCount + usePendingRequestsCount + useChatTodos; add subscribeHomeStatuses; strip useHomeStore.friends/lastFetchedAt
 - [ ] 31-04-PLAN.md — Wave 4 Plans: migrate usePlans (RSVP optimistic + createPlan no-optimistic exemption) + usePlanDetail + usePlanPhotos + useAllPlanPhotos; strip usePlansStore.plans
 - [ ] 31-05-PLAN.md — Wave 5 Friends + Expenses: migrate 9 hooks (useFriends + 3 wish-list + 4 expenses + useExpenseCreate); shared cache key with useHomeScreen
 - [ ] 31-06-PLAN.md — Wave 6 Status (hybrid) + Polls + Invitations: migrate useStatus (preserve useStatusStore for outside-React reads) + usePoll (Realtime via subscribePollVotes) + useInvitations; extend authBridge to clear useStatusStore on SIGNED_OUT; useNetworkStatus + useViewPreference intentionally deferred

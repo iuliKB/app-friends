@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 31-02-PLAN.md (all 6 tasks); pilot gate PASS; Wave 3 (31-03) unblocked
-last_updated: "2026-05-13T02:52:34.984Z"
+stopped_at: Completed 31-03-PLAN.md (all 5 tasks); Wave 4 (31-04 Plans) unblocked
+last_updated: "2026-05-13T09:13:24.946Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 28
-  completed_plans: 22
-  percent: 79
+  completed_plans: 23
+  percent: 82
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
-Plan: 3 of 8
+Plan: 4 of 8
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -132,6 +132,10 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-02: TSQ-01 cross-screen reactivity proven by useHabits.crossScreen.test.tsx — two renderHook calls share one QueryClient; toggle in mount-A surfaces in mount-B in the same React tick
 - [Phase 31]: Phase 31-02: TSQ-08 mutationShape regression gate locked in src/hooks/__tests__/mutationShape.test.ts — static fs-based brace-depth walk; canonical shape enforced for Waves 3-7; exemption marker '// @mutationShape: no-optimistic' for create-with-side-effects mutations
 - [Phase 31]: Phase 31-02: PILOT GATE Task 6 PASS recorded 2026-05-13 (tester iuliKB) — cross-screen numerator update verified on dev client; sign-out → different-account showed no prior-user cache leakage; Wave 3 (31-03) unblocked
+- [Phase 31]: Phase 31-03: useHomeScreen migrated to two composed useQuery sharing queryKeys.friends.list with future useFriends; subscribeHomeStatuses added to realtimeBridge; useHomeStore.friends+lastFetchedAt stripped while lastActiveAt preserved
+- [Phase 31]: Phase 31-03: useTodos public shape preserved verbatim ({mine, fromChats, completeTodo, completeChatTodo}) — plan's phantom {todos, addTodo, toggleTodo, deleteTodo} shape and RPCs add/toggle/delete_my_todo did not exist; canonical Pattern 5 mutations applied to the REAL contract
+- [Phase 31]: Phase 31-03: useSpotlight + useStreakData deferred to Wave 7; useUpcomingEvents NOT migrated (pure client-side filter on usePlansStore, will benefit transitively from Wave 4 usePlans migration)
+- [Phase 31]: Phase 31-03: useChatTodos uses '@mutationShape: no-optimistic' exemption markers on both useMutation calls (RPC-atomic, no per-list cache key to splice); mutationShape gate now covers 5 blocks across 3 files (useHabits + useTodos + useChatTodos)
 
 ### Roadmap Evolution
 
@@ -158,8 +162,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | 260513-5as | Add useTabBarSpacing hook for consistent bottom-nav clearance across tab screens | 2026-05-13 | 6bc55d8 | Verified | [260513-5as-add-usetabbarspacing-hook-for-consistent](./quick/260513-5as-add-usetabbarspacing-hook-for-consistent/) |
 | Phase 31 P01 | 17min | 9 tasks | 12 files |
 | Phase 31 P02 | 6min | 5 tasks | 5 files |
+| Phase 31 P03 | 8min | 5 tasks | 12 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T02:52:30.363Z
-Stopped at: Completed 31-02-PLAN.md (all 6 tasks); pilot gate PASS; Wave 3 (31-03) unblocked
+Last session: 2026-05-13T09:13:24.942Z
+Stopped at: Completed 31-03-PLAN.md (all 5 tasks); Wave 4 (31-04 Plans) unblocked
