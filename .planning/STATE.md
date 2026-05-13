@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 31-01-PLAN.md — QueryClient foundation mounted; ref-counted Realtime bridge + auth cache clear + devtools wired; 27 new tests green
-last_updated: "2026-05-13T02:42:51.810Z"
+stopped_at: Completed automated tasks of 31-02-PLAN.md (Tasks 1-5); Task 6 PILOT GATE pending manual cross-screen smoke on dev client
+last_updated: "2026-05-13T02:52:34.984Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 28
-  completed_plans: 21
-  percent: 75
+  completed_plans: 22
+  percent: 79
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -127,6 +127,11 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-01: REPLICA IDENTITY FULL audit found 2 tables (messages, statuses) — Waves 6 + 7 can opt into setQueryData on UPDATE; all other tables stay on invalidate-on-UPDATE default
 - [Phase 31]: Phase 31-01: Edge Functions audit found 0 supabase.functions.invoke callsites — no edge-function mutations to model in Waves 3-7
 - [Phase 31]: Phase 31-01: Jest mock vars must be prefixed with mock* to satisfy babel hoisting (Rule 1 auto-fix in realtimeBridge.test.ts + authBridge.test.ts) — convention adopted for all future Phase 31 hook tests
+- [Phase 31]: Phase 31-02: useHabits migrated to useQuery+useMutation+realtimeBridge — canonical Pattern 5 shape (onMutate snapshot + onError rollback + onSettled invalidate); 152 → 99 LOC
+- [Phase 31]: Phase 31-02: useHabitDetail migrated to single useQuery with parallel-read queryFn; public shape preserved (zero callsite edits); 128 → 112 LOC (profile-join branch irreducible)
+- [Phase 31]: Phase 31-02: TSQ-01 cross-screen reactivity proven by useHabits.crossScreen.test.tsx — two renderHook calls share one QueryClient; toggle in mount-A surfaces in mount-B in the same React tick
+- [Phase 31]: Phase 31-02: TSQ-08 mutationShape regression gate locked in src/hooks/__tests__/mutationShape.test.ts — static fs-based brace-depth walk; canonical shape enforced for Waves 3-7; exemption marker '// @mutationShape: no-optimistic' for create-with-side-effects mutations
+- [Phase 31]: Phase 31-02: PILOT GATE Task 6 (manual cross-screen reactivity smoke on dev client) is PENDING; Wave 3 must not begin until smoke PASS is recorded in 31-02-SUMMARY.md §Pilot Smoke Results
 
 ### Roadmap Evolution
 
@@ -145,6 +150,7 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 ### Blockers/Concerns
 
 - EAS build / Apple Dev account still pending for hardware smoke test (carried from v1.7)
+- Phase 31-02 Pilot Gate (Task 6) PENDING — manual cross-screen reactivity smoke on dev client required before Wave 3 begins; record PASS/FAIL in 31-02-SUMMARY.md §Pilot Smoke Results
 
 ### Quick Tasks Completed
 
@@ -152,8 +158,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 |---|-------------|------|--------|--------|-----------|
 | 260513-5as | Add useTabBarSpacing hook for consistent bottom-nav clearance across tab screens | 2026-05-13 | 6bc55d8 | Verified | [260513-5as-add-usetabbarspacing-hook-for-consistent](./quick/260513-5as-add-usetabbarspacing-hook-for-consistent/) |
 | Phase 31 P01 | 17min | 9 tasks | 12 files |
+| Phase 31 P02 | 6min | 5 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T02:42:51.807Z
-Stopped at: Completed 31-01-PLAN.md — QueryClient foundation mounted; ref-counted Realtime bridge + auth cache clear + devtools wired; 27 new tests green
+Last session: 2026-05-13T02:52:30.363Z
+Stopped at: Completed automated tasks of 31-02-PLAN.md (Tasks 1-5); Task 6 PILOT GATE pending manual cross-screen smoke on dev client
