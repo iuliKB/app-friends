@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 Phase: 31
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-05-13
+Last activity: 2026-05-13 - Completed quick task 260513-5as: Add useTabBarSpacing hook for consistent bottom-nav clearance across tab screens
 
 ## Phase Structure
 
@@ -138,6 +138,12 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 ### Blockers/Concerns
 
 - EAS build / Apple Dev account still pending for hardware smoke test (carried from v1.7)
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
+| 260513-5as | Add useTabBarSpacing hook for consistent bottom-nav clearance across tab screens | 2026-05-13 | a21f125 | Needs Review | [260513-5as-add-usetabbarspacing-hook-for-consistent](./quick/260513-5as-add-usetabbarspacing-hook-for-consistent/) |
 
 ## Session Continuity
 
