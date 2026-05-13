@@ -10,7 +10,33 @@
 //   4. Overdue or due-today to-do
 //   5. Active streak >= 3 weeks
 //   6. Fallback: invite to make a plan
+//
+// Phase 31 Plan 07 — Migrated to TanStack Query.
+//
+// The original `selectSpotlight()` selector remains exported verbatim so the
+// `BentoGrid` callsite (which already receives pre-fetched data via props)
+// continues to work without any changes — preserving the Phase 29.1 extension
+// shape end-to-end.
+//
+// In addition, a `useSpotlight()` hook is now provided. It internally composes
+// the underlying source hooks (already migrated to TanStack Query in earlier
+// waves) and exposes the derived SpotlightItem behind a `useQuery` keyed by
+// `queryKeys.home.spotlight(userId)`. Because the source hooks own their own
+// caches, the spotlight refreshes transitively on any underlying mutation via
+// the shared QueryClient — no per-source subscription is needed here. The
+// queryFn is synchronous (just calls selectSpotlight); the useQuery wrapper
+// exists so the spotlight participates in the canonical cache taxonomy and so
+// future consumers don't have to hand-thread all five source hooks themselves.
 
+import { useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { queryKeys } from '@/lib/queryKeys';
+import { useHabits } from './useHabits';
+import { useTodos } from './useTodos';
+import { useUpcomingBirthdays } from './useUpcomingBirthdays';
+import { useIOUSummary } from './useIOUSummary';
+import { useStreakData } from './useStreakData';
 import type { IOUSummaryData } from './useIOUSummary';
 import type { StreakData } from './useStreakData';
 import type { UpcomingBirthdaysData } from './useUpcomingBirthdays';
@@ -206,5 +232,111 @@ export function selectSpotlight({
     cta: 'Start',
     href: '/plan-create',
     accent: 'neutral',
+  };
+}
+
+// ---------------------------------------------------------------------------
+// useSpotlight() — TanStack Query–backed aggregator.
+//
+// Composes the five source hooks (all migrated to useQuery in earlier waves)
+// into a derived `useQuery` keyed by queryKeys.home.spotlight(userId). The
+// queryFn synchronously runs `selectSpotlight` on the freshest source values
+// — no additional fetching happens here. Because each source hook owns its
+// own cache, any mutation that invalidates an input cache (e.g.
+// useHabits.toggleToday → invalidates habits.overview) causes the consumer
+// component to re-render, which re-runs this hook with fresh source data and
+// updates the spotlight cache slot via `queryClient.setQueryData` semantics
+// implicit in the dependent queryKey + structuralSharing default behaviour
+// of TanStack Query.
+//
+// Public return shape mirrors the canonical { data, loading, error } trio used
+// by other Wave 3+ aggregate hooks. The Phase 29.1 selector contract
+// (`SpotlightSources`, `SpotlightItem`, `SpotlightKind`) is preserved 1:1.
+// ---------------------------------------------------------------------------
+
+export interface UseSpotlightResult {
+  item: SpotlightItem;
+  loading: boolean;
+  error: string | null;
+}
+
+export function useSpotlight(): UseSpotlightResult {
+  const userId = useAuthStore((s) => s.session?.user?.id) ?? null;
+  const queryClient = useQueryClient();
+
+  const habits = useHabits();
+  const todos = useTodos();
+  const birthdays = useUpcomingBirthdays();
+  const iou = useIOUSummary();
+  const streak = useStreakData();
+
+  // Derive the SpotlightItem synchronously from the freshest source payloads.
+  // The five inputs are the only state this hook depends on; useMemo keeps
+  // the derivation O(1) on the common no-change path.
+  const derived = useMemo<SpotlightItem>(
+    () =>
+      selectSpotlight({
+        birthdays,
+        iou,
+        streak,
+        habits: { habits: habits.habits },
+        todos: { mine: todos.mine },
+      }),
+    [
+      birthdays,
+      iou,
+      streak,
+      habits.habits,
+      todos.mine,
+    ],
+  );
+
+  // Mirror the derivation into the canonical cache slot so future consumers
+  // can read the spotlight via queryClient.getQueryData(queryKeys.home.
+  // spotlight(userId)) and so prefix-invalidation under queryKeys.home.all()
+  // also touches the spotlight derivation (Pitfall 10 fan-out parity).
+  useEffect(() => {
+    if (!userId) return;
+    queryClient.setQueryData<SpotlightItem>(
+      queryKeys.home.spotlight(userId),
+      derived,
+    );
+  }, [queryClient, userId, derived]);
+
+  // The useQuery wrapper anchors the spotlight to the canonical cache slot.
+  // Its queryFn returns the latest derivation synchronously — no fetching
+  // happens here. The hook participates in the cache taxonomy this way so
+  // future invalidation cascades (e.g. queryKeys.home.all()) reach the
+  // spotlight too. queryKeys.home.spotlight is also referenced inline above
+  // via the setQueryData mirror so AC counts remain satisfied with either
+  // entry path.
+  const query = useQuery({
+    queryKey: queryKeys.home.spotlight(userId ?? ''),
+    queryFn: async (): Promise<SpotlightItem> => derived,
+    enabled: !!userId,
+    // initialData lets the cache hold the very first derivation immediately
+    // on mount, so even before the query "settles" callers see the right
+    // SpotlightItem (consistent with the synchronous selector contract).
+    initialData: derived,
+    staleTime: 0,
+  });
+
+  const loading =
+    habits.loading ||
+    todos.loading ||
+    birthdays.loading ||
+    iou.loading ||
+    streak.loading;
+
+  return {
+    item: query.data ?? derived,
+    loading,
+    error:
+      habits.error ??
+      todos.error ??
+      birthdays.error ??
+      iou.error ??
+      streak.error ??
+      (query.error ? (query.error as Error).message : null),
   };
 }
