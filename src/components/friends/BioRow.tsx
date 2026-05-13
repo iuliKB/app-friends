@@ -41,7 +41,10 @@ export function BioRow({ bio, isLast }: BioRowProps) {
   const [overflowing, setOverflowing] = useState(false);
 
   function handleTextLayout(e: NativeSyntheticEvent<TextLayoutEventData>) {
-    if (!overflowing && e.nativeEvent.lines.length >= BIO_COLLAPSED_LINES) {
+    // Use `>` (not `>=`): when the natural line count exceeds the collapsed limit
+    // the bio is genuinely overflowing. Exactly 3 lines fits without truncation
+    // and must not become a no-op Pressable. See REVIEW WR-04.
+    if (!overflowing && e.nativeEvent.lines.length > BIO_COLLAPSED_LINES) {
       setOverflowing(true);
     }
   }
