@@ -65,7 +65,8 @@ function renderBubble(message: MessageWithProfile, currentUserId: string) {
       <MessageBubble
         message={message}
         isOwn={message.sender_id === currentUserId}
-        showSenderInfo={false}
+        showAvatar={false}
+        showSenderName={false}
         allMessages={[message]}
         onReply={jest.fn()}
         onDelete={jest.fn()}

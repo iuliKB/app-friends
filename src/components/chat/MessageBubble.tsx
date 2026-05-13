@@ -25,7 +25,12 @@ import type { ChatTodoList, ChatTodoItem } from '@/types/todos';
 interface MessageBubbleProps {
   message: MessageWithProfile;
   isOwn: boolean;
-  showSenderInfo: boolean;
+  // Messenger/Instagram pattern: avatar shows on the LAST (bottom) bubble of a
+  // run; sender name shows on the FIRST (top) bubble of a run, group chats only.
+  // The two booleans are independent — they may both be true on a single-bubble
+  // run, both false on a middle bubble, or any combination at the run's edges.
+  showAvatar: boolean;
+  showSenderName: boolean;
   // Phase 14 additions:
   allMessages: MessageWithProfile[];
   highlighted?: boolean;
@@ -181,7 +186,8 @@ function QuotedBlock({
 export function MessageBubble({
   message,
   isOwn,
-  showSenderInfo,
+  showAvatar,
+  showSenderName,
   allMessages,
   highlighted,
   onReply,
@@ -776,7 +782,7 @@ export function MessageBubble({
           onLongPress={handleLongPress}
           activeOpacity={0.8}
         >
-          {showSenderInfo ? (
+          {showAvatar ? (
             <AvatarCircle
               size={32}
               imageUri={message.sender_avatar_url}
@@ -786,7 +792,7 @@ export function MessageBubble({
             <View style={styles.avatarSpacer} />
           )}
           <View style={styles.othersContent}>
-            {showSenderInfo && <Text style={styles.senderName}>{message.sender_display_name}</Text>}
+            {showSenderName && <Text style={styles.senderName}>{message.sender_display_name}</Text>}
             <View
               style={[
                 styles.othersBubble,

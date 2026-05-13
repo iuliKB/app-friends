@@ -389,6 +389,19 @@ export function ChatRoomScreen({
     return next.sender_id !== current.sender_id;
   }
 
+  // Messenger/Instagram pattern: avatar anchors at the BOTTOM of a sender's run
+  // (the most recent / visually lowest bubble). In the inverted list the item
+  // visually below `index` is `index - 1`. So this message is the last of its
+  // run when there is no newer message below it, or when the newer one is from
+  // a different sender.
+  function isLastInGroup(msgs: MessageWithProfile[], index: number): boolean {
+    if (index === 0) return true;
+    const current = msgs[index];
+    const prev = msgs[index - 1];
+    if (!current || !prev) return true;
+    return prev.sender_id !== current.sender_id;
+  }
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -510,7 +523,8 @@ export function ChatRoomScreen({
                 <MessageBubble
                   message={item}
                   isOwn={item.sender_id === currentUserId}
-                  showSenderInfo={isFirstInGroup(messages, index)}
+                  showAvatar={isLastInGroup(messages, index)}
+                  showSenderName={isFirstInGroup(messages, index) && chatScope?.kind !== 'dm'}
                   allMessages={messages}
                   highlighted={highlightedId === item.id}
                   onReply={(msg) =>
