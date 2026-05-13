@@ -387,7 +387,16 @@ export function useChatRoom({
       }
     },
     onSettled: () => {
-      // No-op: Realtime INSERT (subscribeChatRoom) reconciles the optimistic row by id.
+      // Tier A — text optimistic shape matches canonical, so Realtime INSERT
+      // (subscribeChatRoom) reconciles the optimistic row by id; we do NOT
+      // invalidate chat.messages(channelId). But the chat-list query has a
+      // separate cache key + 30s staleTime, and Realtime echo back to the
+      // sending user is racy — so we always invalidate chat.list to surface the
+      // new last-entry preview to other screens. See README.md "Tiered
+      // onSettled policy (Phase 32)" + CONTEXT.md §4.
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.list(currentUserId),
+      });
     },
   });
 
@@ -452,7 +461,18 @@ export function useChatRoom({
       }
     },
     onSettled: () => {
-      // No-op: Realtime INSERT reconciles by id.
+      // Tier B — image optimistic uses a local URI in `image_url` whereas the
+      // canonical row uses a Supabase CDN URL. The 70% opacity overlay on the
+      // optimistic bubble only clears when Realtime INSERT replaces the row by
+      // id — but Realtime echoes can be dropped (WS reconnect, mid-upload).
+      // Belt-and-braces: invalidate chat.messages so a missed echo still
+      // resolves on next render; also chat.list for cross-screen freshness.
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.messages(channelId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.list(currentUserId),
+      });
     },
   });
 
@@ -486,6 +506,22 @@ export function useChatRoom({
         await supabase.from('messages').delete().eq('id', input.messageId);
         throw rpcError;
       }
+    },
+    onSuccess: () => {
+      // Tier B (no-optimistic exemption) — sendPoll is a 2-step insert+RPC with
+      // a server-generated poll_id; the optimistic message row carries
+      // poll_id:null while Realtime UPDATE fills the canonical poll_id. If the
+      // UPDATE echo is missed, PollCard sticks on the spinner card branch
+      // (pending || !poll_id). Invalidating chat.messages forces a refetch
+      // that surfaces the canonical poll_id; chat.list invalidates so the
+      // last-entry preview ("Poll: <question>") refreshes too. See README.md
+      // "Tiered onSettled policy (Phase 32)" + CONTEXT.md §4.
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.messages(channelId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.list(currentUserId),
+      });
     },
   });
 
