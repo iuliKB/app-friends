@@ -4,7 +4,7 @@ milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: verifying
 stopped_at: Completed 31-08-PLAN.md (Task 8 manual smoke PASS with deferred chat-list reactivity caveat)
-last_updated: "2026-05-13T10:28:21.867Z"
+last_updated: "2026-05-13T11:22:18.334Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 
 ## Current Position
 
-Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
-Plan: 8 of 8
+Phase: 31
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-05-13
 
