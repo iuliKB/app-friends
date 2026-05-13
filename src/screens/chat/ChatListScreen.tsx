@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { SkeletonPulse } from '@/components/common/SkeletonPulse';
@@ -31,21 +32,28 @@ export function ChatListScreen() {
 
   function handleChatPress(item: ChatListItem) {
     if (item.type === 'plan') {
-      router.push(('/chat/room?plan_id=' + item.id) as never);
+      openChat(router, { kind: 'plan', planId: item.id });
     } else if (item.type === 'group') {
-      const params = new URLSearchParams({
-        group_channel_id: item.id,
-        friend_name: item.title,
-        ...(item.birthdayPersonId ? { birthday_person_id: item.birthdayPersonId } : {}),
+      // NOTE (per Plan 30-05): URL param ORDER may change for the group branch
+      // (original used URLSearchParams; openChat uses a template literal in
+      // buildChatRoomUrl). This is functionally equivalent because chat/room.tsx
+      // consumes params via key-based useLocalSearchParams, not positional parsing.
+      openChat(router, {
+        kind: 'group',
+        groupChannelId: item.id,
+        friendName: item.title,
+        // ChatListItem.birthdayPersonId is `string | null | undefined`; openChat
+        // accepts `string | undefined`. Coerce null → undefined so the helper's
+        // truthy-check skips the param the same way the previous URLSearchParams
+        // builder did (which only included the param when truthy).
+        birthdayPersonId: item.birthdayPersonId ?? undefined,
       });
-      router.push((`/chat/room?${params.toString()}`) as never);
     } else {
-      router.push(
-        ('/chat/room?dm_channel_id=' +
-          item.id +
-          '&friend_name=' +
-          encodeURIComponent(item.title)) as never
-      );
+      openChat(router, {
+        kind: 'dmChannel',
+        dmChannelId: item.id,
+        friendName: item.title,
+      });
     }
   }
 

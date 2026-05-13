@@ -28,6 +28,7 @@ import { DARK, SPACING, FONT_SIZE, FONT_WEIGHT, FONT_FAMILY, ThemeProvider, useT
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeWindowExpiry, nextLargerWindow } from '@/lib/windows';
 import { computeHeartbeatState } from '@/lib/heartbeat';
+import { openChat } from '@/lib/openChat';
 import type { WindowId } from '@/types/app';
 
 SplashScreen.setOptions({
@@ -57,13 +58,11 @@ async function handleNotificationResponse(
 
   // --- Friend Went Free (FREE-09) ---
   if (category === 'friend_free' && data?.senderId) {
-    // Resolve the DM channel lazily via the existing RPC; we do NOT cache in the push payload.
-    const { data: dmChannelId, error } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: data.senderId,
-    });
-    if (error || !dmChannelId) return;
-    const friendName = encodeURIComponent(data.senderName ?? 'Friend');
-    router.push(`/chat/room?dm_channel_id=${dmChannelId}&friend_name=${friendName}` as never);
+    await openChat(
+      router,
+      { kind: 'dmFriend', friendId: data.senderId, friendName: data.senderName ?? 'Friend' },
+      { silentError: true }
+    );
     return;
   }
 

@@ -9,6 +9,7 @@ import { useFriendWishList } from '@/hooks/useFriendWishList';
 import { WishListItem } from '@/components/squad/WishListItem';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 type StatusValue = 'free' | 'busy' | 'maybe';
@@ -87,16 +88,11 @@ export default function FriendProfileScreen() {
 
   async function handleStartDM() {
     if (!profile) return;
-    const { data, error } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: id,
+    await openChat(router, {
+      kind: 'dmFriend',
+      friendId: id,
+      friendName: profile.display_name,
     });
-    if (error || !data) {
-      Alert.alert('Error', "Couldn't open chat. Try again.");
-      return;
-    }
-    router.push(
-      `/chat/room?dm_channel_id=${data}&friend_name=${encodeURIComponent(profile.display_name)}` as never
-    );
   }
 
   function handleRemoveFriend() {

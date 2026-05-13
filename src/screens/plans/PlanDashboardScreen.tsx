@@ -19,6 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTheme, SPACING, FONT_SIZE, FONT_WEIGHT, RADII } from '@/theme';
 import { openInMapsApp, DARK_MAP_STYLE } from '@/lib/maps';
+import { openChat } from '@/lib/openChat';
 import { usePlanDetail } from '@/hooks/usePlanDetail';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { usePlansStore } from '@/stores/usePlansStore';
@@ -1019,7 +1020,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
       >
         <TouchableOpacity
           style={styles.stickyChatPill}
-          onPress={() => router.push(`/chat/room?plan_id=${planId}` as never)}
+          onPress={() => openChat(router, { kind: 'plan', planId })}
           activeOpacity={0.85}
           accessibilityRole="button"
           accessibilityLabel="Open chat"
