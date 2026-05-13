@@ -121,6 +121,15 @@ export function subscribePollVotes(
   return () => releaseSubscription(channelName);
 }
 
+/** Filter spec for chat-room subscriptions. The `messages` table carries three
+ * mutually-exclusive scope columns (plan_id / dm_channel_id / group_channel_id);
+ * the caller selects which column equals the channelId via the `column` field. */
+export interface ChatRoomFilter {
+  channelId: string;
+  /** Which column on `messages` to filter by. The caller picks based on chat kind. */
+  column: 'plan_id' | 'dm_channel_id' | 'group_channel_id';
+}
+
 /** Subscribe to chat_room messages for a given channelId. Hybrid (research §Pattern 6):
  *    INSERT → setQueryData prepend with id-dedup (handles own-user optimistic replay)
  *    UPDATE → invalidateQueries (REPLICA IDENTITY default ships PK-only payloads)
@@ -132,11 +141,17 @@ export function subscribePollVotes(
  * Reactions and poll-vote events stay in their own subscriber helpers (subscribeReactions
  * is not yet bridged; subscribePollVotes already exists). This helper owns the
  * messages-table subscription only.
+ *
+ * Backward-compat: passing a plain string for `arg` defaults `column` to `plan_id`
+ * for legacy callers (tests that don't care about the filter column).
  */
 export function subscribeChatRoom(
   queryClient: QueryClient,
-  channelId: string,
+  arg: ChatRoomFilter | string,
 ): Unsubscribe {
+  const filterSpec: ChatRoomFilter =
+    typeof arg === 'string' ? { channelId: arg, column: 'plan_id' } : arg;
+  const { channelId, column } = filterSpec;
   const channelName = `chat-${channelId}`;
   const existing = registry.get(channelName);
   if (existing) {
@@ -144,11 +159,13 @@ export function subscribeChatRoom(
     return () => releaseSubscription(channelName);
   }
 
+  const filter = `${column}=eq.${channelId}`;
+
   const channel = supabase
     .channel(channelName)
     .on(
       'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${channelId}` },
+      { event: 'INSERT', schema: 'public', table: 'messages', filter },
       (payload: { new: { id?: string } & Record<string, unknown> }) => {
         const incoming = payload?.new;
         if (!incoming?.id) return;
@@ -170,14 +187,14 @@ export function subscribeChatRoom(
     )
     .on(
       'postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: 'messages', filter: `channel_id=eq.${channelId}` },
+      { event: 'UPDATE', schema: 'public', table: 'messages', filter },
       () => {
         void queryClient.invalidateQueries({ queryKey: queryKeys.chat.messages(channelId) });
       },
     )
     .on(
       'postgres_changes',
-      { event: 'DELETE', schema: 'public', table: 'messages', filter: `channel_id=eq.${channelId}` },
+      { event: 'DELETE', schema: 'public', table: 'messages', filter },
       (payload: { old?: { id?: string } | null }) => {
         const removed = payload?.old ?? null;
         if (!removed?.id) return;
@@ -185,6 +202,68 @@ export function subscribeChatRoom(
           old?.filter((m: any) => m.id !== removed.id) ?? [],
         );
       },
+    )
+    .subscribe();
+
+  registry.set(channelName, {
+    refCount: 1,
+    teardown: () => {
+      void supabase.removeChannel(channel);
+    },
+  });
+
+  return () => releaseSubscription(channelName);
+}
+
+/** Subscribe to global message_reactions + poll_votes for client-side dispatch.
+ * Used by useChatRoom to keep its reactions cache + lastPollVoteEvent state in sync.
+ * No server-side filter is possible because neither table carries the room scope on
+ * the wire — the caller's handlers do client-side scope guards (message-in-room,
+ * poll-in-room).
+ *
+ * Channel name is per-room (`chat-aux-${channelId}`) so two screens viewing the same
+ * room share one Supabase channel. Handlers are caller-provided so each consumer
+ * owns the dispatch semantics (e.g. own-user dedup, cache mutation, setState).
+ */
+export interface ChatAuxHandlers {
+  onReactionInsert: (payload: { new: Record<string, unknown> }) => void;
+  onReactionDelete: (payload: { old: Record<string, unknown> }) => void;
+  onPollVoteInsert: (payload: { new: Record<string, unknown> }) => void;
+  onPollVoteDelete: (payload: { old: Record<string, unknown> }) => void;
+}
+
+export function subscribeChatAux(
+  channelId: string,
+  handlers: ChatAuxHandlers,
+): Unsubscribe {
+  const channelName = `chat-aux-${channelId}`;
+  const existing = registry.get(channelName);
+  if (existing) {
+    existing.refCount++;
+    return () => releaseSubscription(channelName);
+  }
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'message_reactions' },
+      handlers.onReactionInsert,
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'message_reactions' },
+      handlers.onReactionDelete,
+    )
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'poll_votes' },
+      handlers.onPollVoteInsert,
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'poll_votes' },
+      handlers.onPollVoteDelete,
     )
     .subscribe();
 

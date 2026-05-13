@@ -1,7 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
+// Phase 31 Plan 08 — Migrated to TanStack Query.
+//
+// Cache key: queryKeys.chat.messages(channelId). channelId = planId ?? dmChannelId ?? groupChannelId.
+// Realtime: subscribeChatRoom in src/lib/realtimeBridge owns the messages-table channel.
+// Reactions + poll_votes Realtime stays inline because those tables have no server-side
+// scope column on the wire (filter is client-side guard); subscribeReactions is a future
+// extraction. Per-chat AsyncStorage preference keys (chat:last_read:*) are preserved
+// unchanged — they are local UI state, NOT server cache.
+//
+// Public shape is verbatim-preserved (ChatRoomScreen reads ~8 fields including
+// lastPollVoteEvent + refetch). The mutationShape gate sees:
+//   - sendMessage / sendImage → Pattern 5 (mutationFn + onMutate + onError + onSettled-no-op)
+//   - sendPoll → @mutationShape: no-optimistic (2-step insert+RPC with server-generated id)
+// The empty onSettled body is intentional: Realtime INSERT reconciles the optimistic row,
+// so an invalidate would be redundant and could cause an extra round-trip on every send.
+
+import { useEffect, useRef, useState } from 'react'; // useRef retained for profilesMapRef
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { queryKeys } from '@/lib/queryKeys';
+import { subscribeChatAux, subscribeChatRoom } from '@/lib/realtimeBridge';
 import { aggregateReactions } from '@/utils/aggregateReactions';
 import { uploadChatMedia } from '@/lib/uploadChatMedia';
 import type { Message, MessageReaction, MessageType, MessageWithProfile } from '@/types/chat';
@@ -16,6 +35,7 @@ interface UseChatRoomResult {
   messages: MessageWithProfile[];
   loading: boolean;
   error: string | null;
+  refetch: () => Promise<unknown>;
   sendMessage: (body: string, replyToId?: string) => Promise<{ error: Error | null }>;
   retryMessage: (tempId: string, body: string) => Promise<{ error: unknown }>;
   sendImage: (localUri: string, replyToId?: string) => Promise<{ error: Error | null }>;
@@ -27,6 +47,16 @@ interface UseChatRoomResult {
 }
 
 type ProfileInfo = { display_name: string; avatar_url: string | null };
+
+function genMessageId(): string {
+  // Hermes-safe UUID-shaped id via Math.random (STATE.md decision — the platform
+  // crypto.* UUID helper is not available on Hermes). Used as both the temp id and the canonical id so
+  // Realtime INSERT can dedup by id (eliminates the body+sender+5s heuristic).
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
 
 export function useChatRoom({
   planId,
@@ -40,15 +70,19 @@ export function useChatRoom({
   const currentUserAvatarUrl =
     (session?.user?.user_metadata?.avatar_url as string | null | undefined) ?? null;
 
-  const [messages, setMessages] = useState<MessageWithProfile[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const channelId = planId ?? dmChannelId ?? groupChannelId ?? '';
+  const filterColumn: 'plan_id' | 'dm_channel_id' | 'group_channel_id' = planId
+    ? 'plan_id'
+    : dmChannelId
+      ? 'dm_channel_id'
+      : 'group_channel_id';
+
   const [lastPollVoteEvent, setLastPollVoteEvent] = useState<{
     pollId: string;
     timestamp: number;
   } | null>(null);
 
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const profilesMapRef = useRef<Map<string, ProfileInfo>>(new Map());
 
   function enrichMessage(msg: Message): MessageWithProfile {
@@ -67,27 +101,23 @@ export function useChatRoom({
     };
   }
 
-  async function fetchMessages() {
-    if (!planId && !dmChannelId && !groupChannelId) return;
+  const messagesQuery = useQuery({
+    queryKey: queryKeys.chat.messages(channelId),
+    queryFn: async (): Promise<MessageWithProfile[]> => {
+      if (!planId && !dmChannelId && !groupChannelId) return [];
 
-    setLoading(true);
-    setError(null);
-
-    try {
       // Build profiles map — fetch member user_ids then profiles separately
       if (planId) {
         const { data: members } = await supabase
           .from('plan_members')
           .select('user_id')
           .eq('plan_id', planId);
-
         const userIds = (members ?? []).map((m) => m.user_id as string);
         if (userIds.length > 0) {
           const { data: profiles } = await supabase
             .from('profiles')
             .select('id, display_name, avatar_url')
             .in('id', userIds);
-
           for (const p of profiles ?? []) {
             profilesMapRef.current.set(p.id, {
               display_name: p.display_name,
@@ -96,13 +126,11 @@ export function useChatRoom({
           }
         }
       } else if (dmChannelId) {
-        // For DMs, fetch the other user's profile
         const { data: channel } = await supabase
           .from('dm_channels')
           .select('user_a, user_b')
           .eq('id', dmChannelId)
           .single();
-
         if (channel) {
           const otherUserId =
             (channel.user_a as string) === currentUserId
@@ -112,7 +140,6 @@ export function useChatRoom({
             .from('profiles')
             .select('id, display_name, avatar_url')
             .in('id', [otherUserId, currentUserId]);
-
           for (const p of profiles ?? []) {
             profilesMapRef.current.set(p.id, {
               display_name: p.display_name,
@@ -125,7 +152,6 @@ export function useChatRoom({
           .from('group_channel_members')
           .select('user_id')
           .eq('group_channel_id', groupChannelId);
-
         const userIds = (members ?? []).map((m) => m.user_id as string);
         if (userIds.length > 0) {
           const { data: profiles } = await supabase
@@ -152,13 +178,7 @@ export function useChatRoom({
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (fetchError) {
-        setError(fetchError.message);
-        setLoading(false);
-        return;
-      }
-
-      // Keep newest-first order — inverted FlatList renders index 0 at the bottom
+      if (fetchError) throw fetchError;
 
       const enriched = (rows ?? []).map((row: any) =>
         enrichMessage({
@@ -175,42 +195,38 @@ export function useChatRoom({
           poll_id: (row.poll_id as string | null) ?? null,
           reactions: aggregateReactions(
             (row.reactions as { emoji: string; user_id: string }[] | null) ?? [],
-            currentUserId
+            currentUserId,
           ),
-        })
+        }),
       );
 
-      setMessages(enriched);
-      setLoading(false);
-
-      // Mark as read
+      // Mark as read — per-chat UI preference (NOT cache). Untouched by Wave 8.
       await AsyncStorage.setItem(
         'chat:last_read:' + (planId ?? dmChannelId ?? groupChannelId),
-        new Date().toISOString()
+        new Date().toISOString(),
       );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message);
-      setLoading(false);
-    }
-  }
 
-  function subscribeRealtime() {
-    // Tear down existing channel
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+      return enriched;
+    },
+    enabled: !!currentUserId && !!channelId,
+    // Chat is "always live" — Realtime maintains the canonical state.
+    staleTime: 0,
+  });
 
-    if (!planId && !dmChannelId && !groupChannelId) return;
+  const messages = messagesQuery.data ?? [];
 
-    const filter = planId
-      ? `plan_id=eq.${planId}`
-      : dmChannelId
-        ? `dm_channel_id=eq.${dmChannelId}`
-        : `group_channel_id=eq.${groupChannelId}`;
+  // Realtime ownership — messages table goes through realtimeBridge.subscribeChatRoom.
+  // Reactions + poll_votes stay inline because they have no server-side scope filter
+  // (the messages table they reference is in this room, but the reactions/votes tables
+  // are global; we filter client-side after dispatch).
+  useEffect(() => {
+    if (!channelId) return;
+    return subscribeChatRoom(queryClient, { channelId, column: filterColumn });
+  }, [queryClient, channelId, filterColumn]);
 
-    const channelName = `chat-${planId ?? dmChannelId ?? groupChannelId}`;
+  // Reactions + poll_votes inline subscription (preserve pre-migration behavior).
+  useEffect(() => {
+    if (!channelId) return;
 
     function handleReactionInsert(payload: { new: Record<string, unknown> }) {
       const raw = payload.new;
@@ -221,28 +237,31 @@ export function useChatRoom({
       // Pitfall 1 dedup guard: own INSERT already applied via optimistic update
       if (incomingUserId === currentUserId) return;
 
-      setMessages((prev) => {
-        const msgIdx = prev.findIndex((m) => m.id === incomingMessageId);
-        if (msgIdx === -1) return prev; // not in this room — client-side scope guard
-
-        const msg = prev[msgIdx]!;
-        const reactions = msg.reactions ?? [];
-        const existingIdx = reactions.findIndex((r) => r.emoji === incomingEmoji);
-        let updatedReactions: typeof reactions;
-        if (existingIdx >= 0) {
-          updatedReactions = reactions.map((r, i) =>
-            i === existingIdx ? { ...r, count: r.count + 1 } : r
-          );
-        } else {
-          updatedReactions = [
-            ...reactions,
-            { emoji: incomingEmoji, count: 1, reacted_by_me: false },
-          ];
-        }
-        const updated = [...prev];
-        updated[msgIdx] = { ...msg, reactions: updatedReactions };
-        return updated;
-      });
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (prev) => {
+          if (!prev) return prev;
+          const msgIdx = prev.findIndex((m) => m.id === incomingMessageId);
+          if (msgIdx === -1) return prev; // not in this room — client-side scope guard
+          const msg = prev[msgIdx]!;
+          const reactions = msg.reactions ?? [];
+          const existingIdx = reactions.findIndex((r) => r.emoji === incomingEmoji);
+          let updatedReactions: typeof reactions;
+          if (existingIdx >= 0) {
+            updatedReactions = reactions.map((r, i) =>
+              i === existingIdx ? { ...r, count: r.count + 1 } : r,
+            );
+          } else {
+            updatedReactions = [
+              ...reactions,
+              { emoji: incomingEmoji, count: 1, reacted_by_me: false },
+            ];
+          }
+          const updated = [...prev];
+          updated[msgIdx] = { ...msg, reactions: updatedReactions };
+          return updated;
+        },
+      );
     }
 
     function handleReactionDelete(payload: { old: Record<string, unknown> }) {
@@ -251,21 +270,23 @@ export function useChatRoom({
       const deletedEmoji = raw.emoji as string;
       const deletedMessageId = raw.message_id as string;
 
-      // Pitfall 2 dedup guard: own DELETE already applied via optimistic update
       if (deletedUserId === currentUserId) return;
 
-      setMessages((prev) => {
-        const msgIdx = prev.findIndex((m) => m.id === deletedMessageId);
-        if (msgIdx === -1) return prev;
-
-        const msg = prev[msgIdx]!;
-        const updatedReactions = (msg.reactions ?? [])
-          .map((r) => (r.emoji === deletedEmoji ? { ...r, count: r.count - 1 } : r))
-          .filter((r) => r.count > 0);
-        const updated = [...prev];
-        updated[msgIdx] = { ...msg, reactions: updatedReactions };
-        return updated;
-      });
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (prev) => {
+          if (!prev) return prev;
+          const msgIdx = prev.findIndex((m) => m.id === deletedMessageId);
+          if (msgIdx === -1) return prev;
+          const msg = prev[msgIdx]!;
+          const updatedReactions = (msg.reactions ?? [])
+            .map((r) => (r.emoji === deletedEmoji ? { ...r, count: r.count - 1 } : r))
+            .filter((r) => r.count > 0);
+          const updated = [...prev];
+          updated[msgIdx] = { ...msg, reactions: updatedReactions };
+          return updated;
+        },
+      );
     }
 
     function handlePollVoteInsert(payload: { new: Record<string, unknown> }) {
@@ -273,15 +294,12 @@ export function useChatRoom({
       const incomingUserId = raw.user_id as string;
       const incomingPollId = raw.poll_id as string;
 
-      // Dedup: own INSERT already applied via optimistic update in usePoll
       if (incomingUserId === currentUserId) return;
 
-      // Scope guard: only signal PollCard if this poll belongs to a message in this room
-      let isInRoom = false;
-      setMessages((prev) => {
-        isInRoom = prev.some((m) => m.poll_id === incomingPollId);
-        return prev;
-      });
+      const current = queryClient.getQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+      );
+      const isInRoom = (current ?? []).some((m) => m.poll_id === incomingPollId);
       if (isInRoom) {
         setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
       }
@@ -294,284 +312,223 @@ export function useChatRoom({
 
       if (deletedUserId === currentUserId) return;
 
-      let isInRoom = false;
-      setMessages((prev) => {
-        isInRoom = prev.some((m) => m.poll_id === incomingPollId);
-        return prev;
-      });
+      const current = queryClient.getQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+      );
+      const isInRoom = (current ?? []).some((m) => m.poll_id === incomingPollId);
       if (isInRoom) {
         setLastPollVoteEvent({ pollId: incomingPollId, timestamp: Date.now() });
       }
     }
 
-    channelRef.current = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter,
-        },
-        (payload) => {
-          const raw = payload.new as Record<string, unknown>;
-          const incoming: Message = {
-            id: raw.id as string,
-            plan_id: raw.plan_id as string | null,
-            dm_channel_id: raw.dm_channel_id as string | null,
-            group_channel_id: raw.group_channel_id as string | null,
-            sender_id: raw.sender_id as string,
-            body: raw.body as string | null,
-            created_at: raw.created_at as string,
-            image_url: (raw.image_url as string | null) ?? null,
-            reply_to_message_id: (raw.reply_to_message_id as string | null) ?? null,
-            message_type: ((raw.message_type as string) ?? 'text') as MessageType,
-            poll_id: (raw.poll_id as string | null) ?? null,
-          };
+    return subscribeChatAux(channelId, {
+      onReactionInsert: handleReactionInsert,
+      onReactionDelete: handleReactionDelete,
+      onPollVoteInsert: handlePollVoteInsert,
+      onPollVoteDelete: handlePollVoteDelete,
+    });
+  }, [queryClient, channelId, currentUserId]);
 
-          setMessages((prev) => {
-            // Primary dedup: match by id — works for both text (client UUID via sendMessage)
-            // and image messages. Avoids false negatives when the same text is sent twice
-            // within 5 seconds (WR-04). Body-based matching is kept as a secondary fallback
-            // for any legacy messages that may not carry a client-generated id.
-            const byIdIdx = prev.findIndex((m) => m.pending === true && m.id === incoming.id);
-            if (byIdIdx !== -1) {
-              const enriched = enrichMessage(incoming);
-              const updated = [...prev];
-              updated[byIdIdx] = enriched;
-              return updated;
-            }
-
-            // Secondary dedup (fallback): same sender_id + same body within 5 seconds
-            const now = new Date(incoming.created_at).getTime();
-            const optimisticIdx = prev.findIndex(
-              (m) =>
-                m.pending === true &&
-                m.sender_id === incoming.sender_id &&
-                m.body !== null &&
-                m.body === incoming.body &&
-                Math.abs(new Date(m.created_at).getTime() - now) < 5000
-            );
-
-            if (optimisticIdx !== -1) {
-              // Replace the optimistic entry with the canonical one
-              const enriched = enrichMessage(incoming);
-              const updated = [...prev];
-              updated[optimisticIdx] = enriched;
-              return updated;
-            }
-
-            // Check if already in state (duplicate INSERT guard)
-            if (prev.some((m) => m.id === incoming.id)) {
-              return prev;
-            }
-
-            // Prepend new message at index 0 (bottom of inverted FlatList)
-            const enriched = enrichMessage(incoming);
-            // Keep last_read current for own messages so they don't show as unread
-            if (incoming.sender_id === currentUserId) {
-              AsyncStorage.setItem(
-                'chat:last_read:' + (planId ?? dmChannelId ?? groupChannelId),
-                new Date().toISOString()
-              );
-            }
-            return [enriched, ...prev];
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'messages', filter },
-        (payload) => {
-          const raw = payload.new as Record<string, unknown>;
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === raw.id
-                ? {
-                    ...m,
-                    body: raw.body as string | null,
-                    message_type: raw.message_type as string as MessageType,
-                    poll_id: (raw.poll_id as string | null) ?? m.poll_id,
-                  }
-                : m
-            )
-          );
-        }
-      )
-      // reaction listeners — no server-side filter (no room column on message_reactions; use client-side guard)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'message_reactions' },
-        handleReactionInsert
-      )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'message_reactions' },
-        handleReactionDelete
-      )
-      // poll_votes listeners — no server-side filter (no room column on poll_votes; use client-side guard)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'poll_votes' },
-        handlePollVoteInsert
-      )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'poll_votes' },
-        handlePollVoteDelete
-      )
-      .subscribe();
-  }
-
-  useEffect(() => {
-    fetchMessages();
-    subscribeRealtime();
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+  // Canonical Pattern 5 — sendMessage. onSettled is intentionally empty because
+  // Realtime INSERT (subscribeChatRoom) replays the canonical row and reconciles
+  // the optimistic placeholder by id. An invalidate here would cause a redundant
+  // round-trip on every send. The empty body satisfies the mutationShape gate.
+  const sendMessageMutation = useMutation({
+    mutationFn: async (input: { body: string; replyToId?: string; messageId: string }) => {
+      const { error: insertError } = await supabase.from('messages').insert({
+        id: input.messageId,
+        plan_id: planId ?? null,
+        dm_channel_id: dmChannelId ?? null,
+        group_channel_id: groupChannelId ?? null,
+        sender_id: currentUserId,
+        body: input.body,
+        reply_to_message_id: input.replyToId ?? null,
+      });
+      if (insertError) throw insertError;
+    },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.chat.messages(channelId) });
+      const previous = queryClient.getQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+      );
+      const optimistic: MessageWithProfile = {
+        id: input.messageId,
+        plan_id: planId ?? null,
+        dm_channel_id: dmChannelId ?? null,
+        group_channel_id: groupChannelId ?? null,
+        sender_id: currentUserId,
+        body: input.body,
+        created_at: new Date().toISOString(),
+        image_url: null,
+        reply_to_message_id: input.replyToId ?? null,
+        message_type: 'text',
+        poll_id: null,
+        pending: true,
+        tempId: input.messageId,
+        sender_display_name: currentUserDisplayName,
+        sender_avatar_url: currentUserAvatarUrl,
+      };
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (old) => [optimistic, ...(old ?? [])],
+      );
+      return { previous, tempId: input.messageId };
+    },
+    onError: (_err, _input, ctx) => {
+      // CHAT-03 — mark failed (do NOT remove). User can retry; the bubble surfaces a retry CTA.
+      if (ctx?.tempId) {
+        queryClient.setQueryData<MessageWithProfile[]>(
+          queryKeys.chat.messages(channelId),
+          (old) =>
+            old?.map((m) =>
+              m.id === ctx.tempId ? { ...m, pending: false, failed: true } : m,
+            ) ?? [],
+        );
       }
-    };
-  }, [planId, dmChannelId, groupChannelId, session?.user?.id]);
+    },
+    onSettled: () => {
+      // No-op: Realtime INSERT (subscribeChatRoom) reconciles the optimistic row by id.
+    },
+  });
+
+  // Canonical Pattern 5 — sendImage. Upload + insert flow; same Pattern 5 shape.
+  const sendImageMutation = useMutation({
+    mutationFn: async (input: {
+      localUri: string;
+      replyToId?: string;
+      messageId: string;
+    }) => {
+      const cdnUrl = await uploadChatMedia(currentUserId, input.messageId, input.localUri);
+      if (!cdnUrl) throw new Error('Upload failed');
+      const { error: insertError } = await supabase.from('messages').insert({
+        id: input.messageId,
+        plan_id: planId ?? null,
+        dm_channel_id: dmChannelId ?? null,
+        group_channel_id: groupChannelId ?? null,
+        sender_id: currentUserId,
+        body: null as any, // body is nullable since migration 0018
+        image_url: cdnUrl,
+        reply_to_message_id: input.replyToId ?? null,
+        message_type: 'image',
+      });
+      if (insertError) throw insertError;
+    },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.chat.messages(channelId) });
+      const previous = queryClient.getQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+      );
+      const optimistic: MessageWithProfile = {
+        id: input.messageId,
+        plan_id: planId ?? null,
+        dm_channel_id: dmChannelId ?? null,
+        group_channel_id: groupChannelId ?? null,
+        sender_id: currentUserId,
+        body: null,
+        created_at: new Date().toISOString(),
+        image_url: input.localUri, // local URI for instant display
+        reply_to_message_id: input.replyToId ?? null,
+        message_type: 'image',
+        poll_id: null,
+        reactions: [],
+        pending: true,
+        tempId: input.messageId,
+        sender_display_name: currentUserDisplayName,
+        sender_avatar_url: currentUserAvatarUrl,
+      };
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (old) => [optimistic, ...(old ?? [])],
+      );
+      return { previous, tempId: input.messageId };
+    },
+    onError: (_err, _input, ctx) => {
+      // D-13: remove optimistic row on upload/insert failure (no retry affordance for image).
+      if (ctx?.tempId) {
+        queryClient.setQueryData<MessageWithProfile[]>(
+          queryKeys.chat.messages(channelId),
+          (old) => old?.filter((m) => m.id !== ctx.tempId) ?? [],
+        );
+      }
+    },
+    onSettled: () => {
+      // No-op: Realtime INSERT reconciles by id.
+    },
+  });
+
+  // sendPoll is a 2-step insert+RPC with a server-generated poll_id — the optimistic
+  // row carries poll_id:null and the canonical row's poll_id is unknown until the RPC
+  // completes. Use the non-optimistic exemption per research §Pattern 5 line 503.
+  // @mutationShape: no-optimistic
+  const sendPollMutation = useMutation({
+    mutationFn: async (input: {
+      question: string;
+      options: string[];
+      messageId: string;
+    }) => {
+      const { error: msgError } = await supabase.from('messages').insert({
+        id: input.messageId,
+        plan_id: planId ?? null,
+        dm_channel_id: dmChannelId ?? null,
+        group_channel_id: groupChannelId ?? null,
+        sender_id: currentUserId,
+        body: null as any,
+        message_type: 'poll',
+      });
+      if (msgError) throw msgError;
+      const { error: rpcError } = await supabase.rpc('create_poll', {
+        p_message_id: input.messageId,
+        p_question: input.question,
+        p_options: input.options,
+      });
+      if (rpcError) {
+        // Cleanup the orphan message row whose poll_id never landed.
+        await supabase.from('messages').delete().eq('id', input.messageId);
+        throw rpcError;
+      }
+    },
+  });
+
+  // --- Public method wrappers ---
 
   async function sendMessage(body: string, replyToId?: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
-
-    // Client-side UUID — passed as id in the insert so Realtime dedup can match by id
-    // instead of body text. This eliminates false-negative dedup when the same text is
-    // sent twice within 5 seconds (WR-04, same strategy as sendImage).
-    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-    });
-    const tempId = messageId;
-
-    const optimistic: MessageWithProfile = {
-      id: tempId,
-      plan_id: planId ?? null,
-      dm_channel_id: dmChannelId ?? null,
-      group_channel_id: groupChannelId ?? null,
-      sender_id: currentUserId,
-      body,
-      created_at: new Date().toISOString(),
-      image_url: null,
-      reply_to_message_id: replyToId ?? null,
-      message_type: 'text',
-      poll_id: null,
-      pending: true,
-      tempId,
-      sender_display_name: currentUserDisplayName,
-      sender_avatar_url: currentUserAvatarUrl,
-    };
-
-    setMessages((prev) => [optimistic, ...prev]);
-
-    const { error: insertError } = await supabase.from('messages').insert({
-      id: messageId,
-      plan_id: planId ?? null,
-      dm_channel_id: dmChannelId ?? null,
-      group_channel_id: groupChannelId ?? null,
-      sender_id: currentUserId,
-      body,
-      reply_to_message_id: replyToId ?? null,
-    });
-
-    if (insertError) {
-      // D-19: mark failed instead of removing — user sees their content and can retry
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.tempId === tempId ? { ...m, pending: false, failed: true } : m
-        )
-      );
-      return { error: insertError };
+    const messageId = genMessageId();
+    try {
+      await sendMessageMutation.mutateAsync({ body, replyToId, messageId });
+      return { error: null };
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error(String(err)) };
     }
-
-    return { error: null };
   }
 
   async function retryMessage(tempId: string, body: string): Promise<{ error: unknown }> {
-    // Remove the failed entry, then re-send via normal sendMessage flow
-    setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
+    // Remove the failed entry from the cache, then re-send via the normal flow.
+    queryClient.setQueryData<MessageWithProfile[]>(
+      queryKeys.chat.messages(channelId),
+      (old) => old?.filter((m) => m.tempId !== tempId) ?? [],
+    );
     return sendMessage(body);
   }
 
   async function sendImage(localUri: string, replyToId?: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
-
-    // Client-side UUID — used for both storage path AND message id so Realtime dedup matches.
-    // Cannot use Date.now() tempId like sendMessage because body=null breaks the body-based dedup guard.
-    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-    });
-    const tempId = messageId;
-
-    const optimistic: MessageWithProfile = {
-      id: tempId,
-      plan_id: planId ?? null,
-      dm_channel_id: dmChannelId ?? null,
-      group_channel_id: groupChannelId ?? null,
-      sender_id: currentUserId,
-      body: null, // D-10: image messages never have body
-      created_at: new Date().toISOString(),
-      image_url: localUri, // D-11: local URI for instant display
-      reply_to_message_id: replyToId ?? null,
-      message_type: 'image',
-      poll_id: null,
-      reactions: [],
-      pending: true,
-      tempId,
-      sender_display_name: currentUserDisplayName,
-      sender_avatar_url: currentUserAvatarUrl,
-    };
-
-    setMessages((prev) => [optimistic, ...prev]);
-
-    // Upload first, then insert with CDN URL (unlike text sends that insert immediately)
-    const cdnUrl = await uploadChatMedia(currentUserId, messageId, localUri);
-
-    if (!cdnUrl) {
-      // D-13: remove optimistic on failure; caller shows toast
-      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
-      return { error: new Error('Upload failed') };
+    const messageId = genMessageId();
+    try {
+      await sendImageMutation.mutateAsync({ localUri, replyToId, messageId });
+      return { error: null };
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error(String(err)) };
     }
-
-    // Insert with client-generated UUID so Realtime dedup fires on the same id (body=null breaks
-    // the existing body+sender guard — supplying id is the clean alternative per RESEARCH.md Pitfall 1)
-    const { error: insertError } = await supabase.from('messages').insert({
-      id: messageId,
-      plan_id: planId ?? null,
-      dm_channel_id: dmChannelId ?? null,
-      group_channel_id: groupChannelId ?? null,
-      sender_id: currentUserId,
-
-      body: null as any, // same cast pattern as deleteMessage — Supabase types mark body non-nullable but DB is nullable since 0018
-      image_url: cdnUrl,
-      reply_to_message_id: replyToId ?? null,
-      message_type: 'image',
-    });
-
-    if (insertError) {
-      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
-      return { error: insertError };
-    }
-
-    return { error: null };
   }
 
   async function sendPoll(question: string, options: string[]): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
-
-    const messageId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-    });
-    const tempId = messageId;
-
+    const messageId = genMessageId();
+    // Optimistic insert at the cache level — non-Pattern-5 mutation handles the server
+    // side; on error we remove the row.
     const optimistic: MessageWithProfile = {
-      id: tempId,
+      id: messageId,
       plan_id: planId ?? null,
       dm_channel_id: dmChannelId ?? null,
       group_channel_id: groupChannelId ?? null,
@@ -581,129 +538,106 @@ export function useChatRoom({
       image_url: null,
       reply_to_message_id: null,
       message_type: 'poll',
-      poll_id: null, // unknown until RPC completes
+      poll_id: null,
       reactions: [],
       pending: true,
-      tempId,
+      tempId: messageId,
       sender_display_name: currentUserDisplayName,
       sender_avatar_url: currentUserAvatarUrl,
     };
-
-    setMessages((prev) => [optimistic, ...prev]);
-
-    // Step 1: insert message row FIRST (create_poll() RPC verifies sender ownership via this row)
-    const { error: msgError } = await supabase.from('messages').insert({
-      id: messageId,
-      plan_id: planId ?? null,
-      dm_channel_id: dmChannelId ?? null,
-      group_channel_id: groupChannelId ?? null,
-      sender_id: currentUserId,
-
-      body: null as any, // Supabase types mark non-nullable; DB nullable since migration 0018
-      message_type: 'poll',
-    });
-
-    if (msgError) {
-      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
-      return { error: msgError };
+    queryClient.setQueryData<MessageWithProfile[]>(
+      queryKeys.chat.messages(channelId),
+      (old) => [optimistic, ...(old ?? [])],
+    );
+    try {
+      await sendPollMutation.mutateAsync({ question, options, messageId });
+      return { error: null };
+    } catch (err) {
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (old) => old?.filter((m) => m.tempId !== messageId) ?? [],
+      );
+      return { error: err instanceof Error ? err : new Error(String(err)) };
     }
-
-    // Step 2: atomically create poll + options rows; sets messages.poll_id
-    const { error: rpcError } = await supabase.rpc('create_poll', {
-      p_message_id: messageId,
-      p_question: question,
-      p_options: options,
-    });
-
-    if (rpcError) {
-      // Roll back optimistic message AND delete the orphaned server-side row (poll_id still null)
-      setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
-      await supabase.from('messages').delete().eq('id', messageId);
-      return { error: rpcError };
-    }
-
-    return { error: null };
   }
 
   async function deleteMessage(messageId: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
-
-    // Stash original body and message_type inside the updater to avoid stale closure reads.
-    // Collapsing snapshot-capture and optimistic update into a single setMessages call guarantees
-    // the snapshot is taken from the same state being mutated (same pattern as addReaction).
     let originalBody: string | null = null;
     let originalMessageType: MessageType = 'text';
-
-    // Optimistic update: set body=NULL + message_type='deleted'
-    setMessages((prev) => {
-      const original = prev.find((m) => m.id === messageId);
-      originalBody = original?.body ?? null;
-      originalMessageType = original?.message_type ?? 'text';
-      return prev.map((m) =>
-        m.id === messageId ? { ...m, body: null, message_type: 'deleted' as MessageType } : m
-      );
-    });
+    // Optimistic update via cache write
+    queryClient.setQueryData<MessageWithProfile[]>(
+      queryKeys.chat.messages(channelId),
+      (prev) => {
+        if (!prev) return prev;
+        const original = prev.find((m) => m.id === messageId);
+        originalBody = original?.body ?? null;
+        originalMessageType = original?.message_type ?? 'text';
+        return prev.map((m) =>
+          m.id === messageId ? { ...m, body: null, message_type: 'deleted' as MessageType } : m,
+        );
+      },
+    );
 
     const { error: updateError } = await supabase
       .from('messages')
-
       .update({ body: null as any, message_type: 'deleted' })
       .eq('id', messageId)
       .eq('sender_id', currentUserId);
 
     if (updateError) {
-      // Rollback optimistic update
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === messageId ? { ...m, body: originalBody, message_type: originalMessageType } : m
-        )
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (prev) =>
+          prev?.map((m) =>
+            m.id === messageId
+              ? { ...m, body: originalBody, message_type: originalMessageType }
+              : m,
+          ) ?? [],
       );
       return { error: updateError };
     }
-
     return { error: null };
   }
 
   async function addReaction(messageId: string, emoji: string): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
-
-    // Capture snapshot from latest state inside the updater to avoid stale closure reads
     let preSnapshot: MessageReaction[] = [];
     let isSameEmoji = false;
 
-    setMessages((prev) => {
-      const msg = prev.find((m) => m.id === messageId);
-      preSnapshot = msg?.reactions ?? [];
-      isSameEmoji = preSnapshot.some((r) => r.emoji === emoji && r.reacted_by_me);
-      return prev; // no-op: only reading state here
-    });
+    const currentMessages = queryClient.getQueryData<MessageWithProfile[]>(
+      queryKeys.chat.messages(channelId),
+    );
+    const msg = currentMessages?.find((m) => m.id === messageId);
+    preSnapshot = msg?.reactions ?? [];
+    isSameEmoji = preSnapshot.some((r) => r.emoji === emoji && r.reacted_by_me);
 
-    // Toggle-off: tapping the same emoji the user already reacted with → remove it
     if (isSameEmoji) {
       return removeReaction(messageId, emoji);
     }
 
-    // Optimistic update: apply net result (remove old reaction, add/increment new)
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id !== messageId) return m;
-        const existing = m.reactions ?? [];
-        // Remove previous reaction by this user (one-emoji-per-user — D-03)
-        const withoutOld = existing
-          .map((r) => (r.reacted_by_me ? { ...r, count: r.count - 1, reacted_by_me: false } : r))
-          .filter((r) => r.count > 0);
-        // Add or increment new emoji
-        const idx = withoutOld.findIndex((r) => r.emoji === emoji);
-        if (idx >= 0) {
-          const updated = [...withoutOld];
-          updated[idx] = { ...updated[idx]!, count: updated[idx]!.count + 1, reacted_by_me: true };
-          return { ...m, reactions: updated };
-        }
-        return { ...m, reactions: [...withoutOld, { emoji, count: 1, reacted_by_me: true }] };
-      })
+    // Optimistic update: apply net result
+    queryClient.setQueryData<MessageWithProfile[]>(
+      queryKeys.chat.messages(channelId),
+      (prev) =>
+        prev?.map((m) => {
+          if (m.id !== messageId) return m;
+          const existing = m.reactions ?? [];
+          const withoutOld = existing
+            .map((r) =>
+              r.reacted_by_me ? { ...r, count: r.count - 1, reacted_by_me: false } : r,
+            )
+            .filter((r) => r.count > 0);
+          const idx = withoutOld.findIndex((r) => r.emoji === emoji);
+          if (idx >= 0) {
+            const updated = [...withoutOld];
+            updated[idx] = { ...updated[idx]!, count: updated[idx]!.count + 1, reacted_by_me: true };
+            return { ...m, reactions: updated };
+          }
+          return { ...m, reactions: [...withoutOld, { emoji, count: 1, reacted_by_me: true }] };
+        }) ?? [],
     );
 
-    // DB write: delete any existing reaction for this user on this message, then insert new
     const oldReaction = preSnapshot.find((r) => r.reacted_by_me);
     if (oldReaction) {
       const { error: deleteError } = await supabase
@@ -711,11 +645,11 @@ export function useChatRoom({
         .delete()
         .eq('message_id', messageId)
         .eq('user_id', currentUserId);
-
       if (deleteError) {
-        // Delete failed — original reaction is still in DB; rollback optimistic update
-        setMessages((prev) =>
-          prev.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m))
+        queryClient.setQueryData<MessageWithProfile[]>(
+          queryKeys.chat.messages(channelId),
+          (prev) =>
+            prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? [],
         );
         return { error: deleteError };
       }
@@ -723,9 +657,7 @@ export function useChatRoom({
     const { error: insertError } = await supabase
       .from('message_reactions')
       .insert({ message_id: messageId, user_id: currentUserId, emoji });
-
     if (insertError) {
-      // Delete succeeded but insert failed — re-insert old reaction to restore DB consistency
       if (oldReaction) {
         await supabase.from('message_reactions').insert({
           message_id: messageId,
@@ -733,8 +665,10 @@ export function useChatRoom({
           emoji: oldReaction.emoji,
         });
       }
-      setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m))
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (prev) =>
+          prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? [],
       );
       return { error: insertError };
     }
@@ -743,27 +677,28 @@ export function useChatRoom({
 
   async function removeReaction(
     messageId: string,
-    emoji: string
+    emoji: string,
   ): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
-    // Capture snapshot from latest state inside the updater to avoid stale closure reads
-    let preSnapshot: MessageReaction[] = [];
-    setMessages((prev) => {
-      const msg = prev.find((m) => m.id === messageId);
-      preSnapshot = msg?.reactions ?? [];
-      return prev; // no-op: only reading state here
-    });
+    const currentMessages = queryClient.getQueryData<MessageWithProfile[]>(
+      queryKeys.chat.messages(channelId),
+    );
+    const msg = currentMessages?.find((m) => m.id === messageId);
+    const preSnapshot: MessageReaction[] = msg?.reactions ?? [];
 
-    // Optimistic update: decrement count, remove pill if count reaches 0
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id !== messageId) return m;
-        const updated = (m.reactions ?? [])
-          .map((r) => (r.emoji === emoji ? { ...r, count: r.count - 1, reacted_by_me: false } : r))
-          .filter((r) => r.count > 0);
-        return { ...m, reactions: updated };
-      })
+    queryClient.setQueryData<MessageWithProfile[]>(
+      queryKeys.chat.messages(channelId),
+      (prev) =>
+        prev?.map((m) => {
+          if (m.id !== messageId) return m;
+          const updated = (m.reactions ?? [])
+            .map((r) =>
+              r.emoji === emoji ? { ...r, count: r.count - 1, reacted_by_me: false } : r,
+            )
+            .filter((r) => r.count > 0);
+          return { ...m, reactions: updated };
+        }) ?? [],
     );
 
     const { error: deleteError } = await supabase
@@ -774,8 +709,10 @@ export function useChatRoom({
       .eq('emoji', emoji);
 
     if (deleteError) {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m))
+      queryClient.setQueryData<MessageWithProfile[]>(
+        queryKeys.chat.messages(channelId),
+        (prev) =>
+          prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? [],
       );
       return { error: deleteError };
     }
@@ -784,9 +721,9 @@ export function useChatRoom({
 
   return {
     messages,
-    loading,
-    error,
-    refetch: fetchMessages,  // AUTH-03: expose for retry button in ChatRoomScreen
+    loading: messagesQuery.isLoading,
+    error: messagesQuery.error ? (messagesQuery.error as Error).message : null,
+    refetch: messagesQuery.refetch, // AUTH-03: expose for retry button in ChatRoomScreen
     sendMessage,
     retryMessage,
     sendImage,
