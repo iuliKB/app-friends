@@ -221,4 +221,4 @@ Known technical considerations:
 | Two-step single-Modal picker for chat to-do sheet (v1.8 Phase 29.1) | Stacked Modals break KeyboardAvoidingView on iOS; internal step state + back-arrow keeps one modal mounted | ✓ Good |
 
 ---
-*Last updated: 2026-05-12 — Phase 29.1 complete (Habits & To-Dos: schema → Bento tiles → routes → chat roundtrip → home widgets). 6 hardware-gate items queued for v1.3 Hardware Verification Gate. Next: Phase 30 — Squad Screen Overhaul (scope reduced to SQUAD-06 per D-21; SQUAD-05/07/08 superseded by 29.1)*
+*Last updated: 2026-05-13 — Phase 30 complete (Unify navigation source-of-truth and chat-entry handlers: useNavigationStore zustand slice + openChat helper + /chat/room hoisted to root Stack + 12 callsites consolidated + dead /friends and RecentMemoriesSection removed). 14/14 automated must-haves verified; 8-path bar-visibility smoke test deferred to v1.3 Hardware Verification Gate. Next: Phase 31 — Adopt TanStack Query for server-state caching and cross-screen reactivity.*
