@@ -8,7 +8,7 @@
 // chat:rooms:cache) are UNTOUCHED — those are UI preferences, not server cache.
 // useChatStore server-data fields are removed in the same commit.
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -403,6 +403,7 @@ export function useChatList(): UseChatListResult {
   const userId = session?.user?.id ?? null;
 
   const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -421,14 +422,21 @@ export function useChatList(): UseChatListResult {
     staleTime: 30_000,
   });
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await query.refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [query]);
+
   return {
     chatList: query.data ?? [],
     loading: query.isLoading,
     error: query.error ? (query.error as Error).message : null,
-    refreshing: query.isFetching && !query.isLoading,
-    handleRefresh: async () => {
-      await query.refetch();
-    },
+    refreshing,
+    handleRefresh,
     refetch: query.refetch,
   };
 }
