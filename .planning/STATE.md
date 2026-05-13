@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: executing
+status: Idle — ready for next phase
 stopped_at: Completed 32-03-PLAN.md
-last_updated: "2026-05-13T14:20:16.699Z"
+last_updated: "2026-05-13T17:58:00.408Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 10
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-06)
 
 **Core value:** Daily availability status (Free/Busy/Maybe) drives daily active use — if nothing else works, this must
-**Current focus:** Phase 32 — chat-list-reactivity-widget-send-reliability-and-last-entry-
+**Current focus:** Phase 32 complete. Ready to plan next phase.
 
 ## Current Position
 
-Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — EXECUTING
-Plan: 3 of 4
-Status: Ready to execute
+Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — COMPLETE
+Plans: 4 of 4 complete
+Status: Idle — ready for next phase
 Last activity: 2026-05-13
 
 ## Phase Structure
@@ -41,8 +41,10 @@ Last activity: 2026-05-13
 | 28 | Branding | BRAND-01, BRAND-02, BRAND-03 | Complete |
 | 29 | Home Screen Overhaul | HOME-05, HOME-06, HOME-07, HOME-08 | Complete |
 | 29.1 | Habits & To-Do Features | D-01..D-21 (inline) | Complete |
-| 30 | Unify navigation source-of-truth and chat-entry handlers | TBD | Not planned |
-| 31 | Adopt TanStack Query for server-state caching and cross-screen reactivity | TBD | Not planned |
+| 30 | Unify navigation source-of-truth and chat-entry handlers | TBD | Complete |
+| 31 | Adopt TanStack Query for server-state caching and cross-screen reactivity | TBD | Complete |
+| 32 | Chat list reactivity, widget send reliability, and last-entry previews | TBD | Complete |
+| 33 | Friend Profile Redesign | TBD | Not planned |
 
 ## Performance Metrics
 
@@ -178,6 +180,7 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - Phase 30 added 2026-05-13: Unify navigation source-of-truth and chat-entry handlers — fixes bottom-nav-bar visibility leak on `ChatRoomScreen` reached from non-canonical entry points (e.g., Squad → Memories → PlanDashboard → "Open Chat" pill); introduces `useNavigationStore` (zustand), consolidates 12+ `/chat/room` callers behind a single helper, removes legacy `FriendsList` route + dead `RecentMemoriesSection`. Full context in `.planning/phases/30-unify-navigation-source-of-truth-and-chat-entry-handlers/CONTEXT.md`. Origin: two parallel Opus 4.7 research agents confirmed assumption #2 (inconsistent source of truth) and partially confirmed assumption #1 (related duplication exists but not on the chat path).
 - Phase 31 added 2026-05-13: Adopt TanStack Query for server-state caching and cross-screen reactivity — replaces ~35 per-hook `useState + useFocusEffect + supabase` fetch pattern with `useQuery`/`useMutation`; enables cross-screen reactivity, unifies optimistic-update + cache-invalidation patterns. Zustand stays for client/UI state only (auth, navigation surface, UI flags). Incremental migration with habits as pilot vertical. Depends on Phase 30 shipping first (stable routing layer for verification). Full context in `.planning/phases/31-adopt-tanstack-query-for-server-state-caching-and-cross-scre/CONTEXT.md`.
 - Phase 32 added 2026-05-13: Chat list reactivity, widget send reliability, and last-entry previews — fixes three chat-surface gaps left after Phase 31 Wave 8: (1) chat list goes stale after sending any entry until pull-to-refresh; (2) widget bubbles (image/poll/todo) stick in pending state when Realtime echo is missed (most common: image 70% opacity overlay); (3) chat list preview is blank for non-text entries because the query omits `message_type`/`image_url`/`poll_id` and the row has no per-kind formatter. Also adds `realtimeBridge.subscribeChatList(userId, queryClient)` for incoming-message reactivity and amends the Phase-31 empty-`onSettled` contract into a tiered policy (text: invalidate chat.list only; widgets: invalidate both chat.messages + chat.list). Uses Ionicons (`image-outline`, `stats-chart-outline`, `checkbox-outline`) and sender attribution (`"You: "` / `"<FirstName>: "`) across all chat scopes. Out of scope: new `expense` message_type, RPC signature changes for todos, i18n. Origin: three parallel Opus 4.7 research agents confirmed root causes; user-confirmed design decisions captured in `.planning/phases/32-chat-list-reactivity-widget-send-reliability-and-last-entry-/CONTEXT.md`.
+- Phase 33 added 2026-05-13: Friend Profile Redesign — ground-up redesign of the friend profile screen (opened by tapping a friend in the friends list, member list, or message-author chip). Telegram/WhatsApp-style layout: large avatar + name header at top, then sectioned rows for richer info (bio, mutual plans, shared groups, recent activity) and quick actions (Start DM, Mute, Block, etc.). Three improvement axes: (1) visual polish — better hierarchy, typography, spacing, avatar treatment; (2) more information shown beyond just name/avatar; (3) more actions available. Out of scope: DM info screen (tapping a DM header) and Plan info screen (tapping a plan title) — those get their own phases. Origin: user request 2026-05-13 to improve the friend-profile screen first before the related DM/Plan info screens. Next step: /gsd-discuss-phase 33 to capture implementation decisions before planning.
 
 ### Pending Todos
 
@@ -208,5 +211,5 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 
 ## Session Continuity
 
-Last session: 2026-05-13T14:20:16.695Z
+Last session: 2026-05-13T17:58:00.404Z
 Stopped at: Completed 32-03-PLAN.md

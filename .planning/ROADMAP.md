@@ -127,6 +127,16 @@ Plans:
 - [x] 32-03-PLAN.md — Chat list reactivity: add realtimeBridge.subscribeChatList global Realtime subscription + mount via useEffect in useChatList (Wave 2, depends on 32-01 due to useChatList.ts overlap)
 - [x] 32-04-PLAN.md — Send reliability + chat-list invalidation: tiered onSettled policy across sendMessage / sendImage / sendPoll / sendChatTodo / completeChatTodo + ChatRoomScreen await refetch + src/hooks/README.md doc (Wave 1)
 
+### Phase 33: Friend Profile Redesign
+
+**Goal:** Ground-up redesign of the friend profile screen (opened when tapping a friend in the friends list, member list, or message-author chip). Telegram/WhatsApp-style layout — large avatar + name header at top, then sectioned rows for richer info (bio, mutual plans, shared groups, recent activity) and quick actions (Start DM, Mute, Block, etc.). Three improvement axes: (1) visual polish — better hierarchy, typography, spacing, avatar treatment; (2) more information shown beyond just name/avatar; (3) more actions available. Out of scope: DM info screen, Plan info screen — those get their own phases.
+**Requirements**: TBD (no formal REQ-IDs — must-haves derived from CONTEXT.md after /gsd-discuss-phase 33)
+**Depends on:** Phase 32
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 33 to break down)
+
 ---
 
 <details>
