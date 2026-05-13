@@ -4,6 +4,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import {
+  subscribeChatList,
   subscribeChatRoom,
   subscribeHabitCheckins,
   subscribeHomeStatuses,
@@ -218,6 +219,79 @@ describe('realtimeBridge.subscribePollVotes', () => {
     expect(mockRemoveChannel).not.toHaveBeenCalled();
     u2();
     expect(mockRemoveChannel).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('realtimeBridge.subscribeChatList', () => {
+  let qc: QueryClient;
+  let invalidateSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    mockCapturedHandler = null;
+    _resetRealtimeBridgeForTests();
+    mockChannel.mockClear();
+    mockOn.mockClear();
+    mockRemoveChannel.mockClear();
+    qc = new QueryClient();
+    invalidateSpy = jest.spyOn(qc, 'invalidateQueries').mockResolvedValue();
+  });
+
+  it('subscribes to chat-list-${userId} with NO filter on messages table', () => {
+    subscribeChatList(qc, 'u1');
+    expect(mockChannel).toHaveBeenCalledTimes(1);
+    expect(mockChannel).toHaveBeenCalledWith('chat-list-u1');
+    expect(mockOn).toHaveBeenCalledWith(
+      'postgres_changes',
+      expect.objectContaining({
+        event: '*',
+        schema: 'public',
+        table: 'messages',
+      }),
+      expect.any(Function),
+    );
+    // Crucially — NO `filter` key in the options object.
+    const [, opts] = (mockOn.mock.calls[0] ?? []);
+    expect(opts).not.toHaveProperty('filter');
+  });
+
+  it('dedups two subscriptions for the same userId into ONE supabase.channel call', () => {
+    const unsub1 = subscribeChatList(qc, 'u1');
+    const unsub2 = subscribeChatList(qc, 'u1');
+    expect(mockChannel).toHaveBeenCalledTimes(1); // refcount, not a new channel
+    unsub1();
+    unsub2();
+  });
+
+  it.each(['INSERT', 'UPDATE', 'DELETE'] as const)(
+    'invalidates queryKeys.chat.list(userId) on %s payload',
+    (eventType) => {
+      subscribeChatList(qc, 'u1');
+      // The captured handler is the second argument of mockOn (set by the mock).
+      const handler = mockCapturedHandler;
+      expect(handler).toBeTruthy();
+      handler?.({ eventType, new: { id: 'm1' }, old: null });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.chat.list('u1'),
+      });
+    },
+  );
+
+  it('tears down the channel only after all subscribers have unsubscribed', () => {
+    const unsub1 = subscribeChatList(qc, 'u1');
+    const unsub2 = subscribeChatList(qc, 'u1');
+    expect(mockRemoveChannel).not.toHaveBeenCalled();
+    unsub1();
+    expect(mockRemoveChannel).not.toHaveBeenCalled();
+    unsub2();
+    expect(mockRemoveChannel).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens a NEW channel when userId changes (different cache key)', () => {
+    subscribeChatList(qc, 'u1');
+    subscribeChatList(qc, 'u2');
+    expect(mockChannel).toHaveBeenCalledTimes(2);
+    expect(mockChannel).toHaveBeenNthCalledWith(1, 'chat-list-u1');
+    expect(mockChannel).toHaveBeenNthCalledWith(2, 'chat-list-u2');
   });
 });
 
