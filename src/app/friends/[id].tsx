@@ -1,276 +1,662 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+// Phase 33 — Friend profile screen rewrite (D-13).
+//
+// Replaces the inline useState + useEffect + direct profiles select
+// block with composed TanStack Query hooks. Implements the full Telegram-style
+// redesign: FriendProfileHeader (collapsing avatar), QuickActionsRow, INFO/MUTUAL/
+// WISH LIST grouped-inset sections.
+//
+// Architecture:
+//   - Parent-owned scrollY SharedValue shared by FriendProfileHeader AND
+//     Stack.Screen headerTitle (AnimatedStackTitle component below).
+//   - AnimatedStackTitle is a FILE-PRIVATE top-level component (not an inline arrow)
+//     per RESEARCH §Risks #1 + UI-SPEC §Reanimated Implementation Notes #2.
+//   - Remove Friend follows canonical Pattern 5: optimistic splice, rollback,
+//     settle-invalidate — satisfies mutationShape gate.
+//   - Mute toggle: lazy-resolve DM channel via get_or_create_dm_channel RPC,
+//     then upsert chat_preferences (PATTERNS §10 verbatim).
+//   - friend-not-found: detected via `data.friendsSince === null` (NOT profile === null)
+//     per RESEARCH §Recommendations §Friend-not-found fallback + Plan 02 SUMMARY.
 
-import { AvatarCircle } from '@/components/common/AvatarCircle';
-import { LoadingIndicator } from '@/components/common/LoadingIndicator';
-import { PrimaryButton } from '@/components/common/PrimaryButton';
-import { useFriendWishList } from '@/hooks/useFriendWishList';
-import { WishListItem } from '@/components/squad/WishListItem';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { router, Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+  type SharedValue,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+  useReducedMotion,
+} from 'react-native-reanimated';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { supabase } from '@/lib/supabase';
-import { openChat } from '@/lib/openChat';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { queryKeys } from '@/lib/queryKeys';
+import { openChat } from '@/lib/openChat';
+import { showActionSheet } from '@/lib/action-sheet';
 
-type StatusValue = 'free' | 'busy' | 'maybe';
+import { useFriendProfile } from '@/hooks/useFriendProfile';
+import { useFriendMutuals } from '@/hooks/useFriendMutuals';
+import { useFriendWishList } from '@/hooks/useFriendWishList';
+import { useExpensesWithFriend } from '@/hooks/useExpensesWithFriend';
+import { useChatDmPreferences } from '@/hooks/useChatDmPreferences';
+import { useFriends } from '@/hooks/useFriends';
+import { useFriendsOfFriend } from '@/hooks/useFriendsOfFriend';
 
-interface FriendProfile {
-  display_name: string;
-  username: string;
-  avatar_url: string | null;
-  birthday_month: number | null;
-  birthday_day: number | null;
+import { FriendProfileHeader } from '@/components/friends/FriendProfileHeader';
+import { QuickActionsRow } from '@/components/friends/QuickActionsRow';
+import { GroupedInsetSection } from '@/components/friends/GroupedInsetSection';
+import { ProfileInfoRow } from '@/components/friends/ProfileInfoRow';
+import { BioRow } from '@/components/friends/BioRow';
+import { ErrorDisplay } from '@/components/common/ErrorDisplay';
+import { SkeletonPulse } from '@/components/common/SkeletonPulse';
+import { ImageViewerModal } from '@/components/chat/ImageViewerModal';
+import { WishListItem } from '@/components/squad/WishListItem';
+import { PrimaryButton } from '@/components/common/PrimaryButton';
+
+// Nav-title animation constants (must match FriendProfileHeader.tsx)
+const COLLAPSE_END = 160;
+
+// ─── AnimatedStackTitle (file-private top-level component) ──────────────────
+// Top-level component (NOT inline arrow) per UI-SPEC §Reanimated Implementation
+// Notes #2 — expo-router clones the render-prop each navigation event.
+
+interface AnimatedStackTitleProps {
+  scrollY: SharedValue<number>;
+  displayName: string;
 }
 
+function AnimatedStackTitle({ scrollY, displayName }: AnimatedStackTitleProps) {
+  const { colors } = useTheme();
+  const reducedMotion = useReducedMotion();
+
+  const navTitleStyle = useAnimatedStyle(() => {
+    if (reducedMotion) return { opacity: 1 };
+    return {
+      opacity: interpolate(
+        scrollY.value,
+        [COLLAPSE_END * 0.6, COLLAPSE_END],
+        [0, 1],
+        Extrapolation.CLAMP,
+      ),
+    };
+  }, [reducedMotion]);
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        title: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+      }),
+    [colors],
+  );
+
+  return (
+    <Animated.Text style={[styles.title, navTitleStyle]} numberOfLines={1}>
+      {displayName}
+    </Animated.Text>
+  );
+}
+
+// ─── NotFriendsView (file-private inline component) ───────────────────────
+// ~15 LOC custom view per RESEARCH §Recommendations §Friend-not-found fallback
+// (NOT ErrorDisplay — uses router.back CTA).
+
+interface NotFriendsViewProps {
+  onBack: () => void;
+}
+
+function NotFriendsView({ onBack }: NotFriendsViewProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: SPACING.xxl,
+          backgroundColor: colors.surface.base,
+        },
+        heading: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          textAlign: 'center',
+          marginTop: SPACING.lg,
+          marginBottom: SPACING.sm,
+        },
+        body: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginBottom: SPACING.xl,
+        },
+      }),
+    [colors],
+  );
+  return (
+    <View style={styles.container}>
+      <Text style={styles.heading}>No longer friends</Text>
+      <Text style={styles.body}>{"This person isn't in your friends list anymore."}</Text>
+      <PrimaryButton title="Back to friends" onPress={onBack} />
+    </View>
+  );
+}
+
+// ─── SkeletonShells (file-private loading state) ─────────────────────────────
+
+function SkeletonShells() {
+  const { colors } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.xxl,
+          alignItems: 'center',
+        },
+        row: {
+          marginTop: SPACING.md,
+        },
+        sectionRow: {
+          marginTop: SPACING.xl,
+          alignSelf: 'stretch',
+        },
+      }),
+    [colors],
+  );
+  return (
+    <View style={styles.container}>
+      {/* Avatar */}
+      <SkeletonPulse width={140} height={140} />
+      {/* Display name */}
+      <View style={styles.row}>
+        <SkeletonPulse width={180} height={24} />
+      </View>
+      {/* Username */}
+      <View style={styles.row}>
+        <SkeletonPulse width={100} height={14} />
+      </View>
+      {/* Status pill */}
+      <View style={styles.row}>
+        <SkeletonPulse width={140} height={24} />
+      </View>
+      {/* INFO section skeleton */}
+      <View style={styles.sectionRow}>
+        <SkeletonPulse width="100%" height={56} />
+      </View>
+      {/* MUTUAL section skeleton */}
+      <View style={styles.sectionRow}>
+        <SkeletonPulse width="100%" height={56} />
+      </View>
+      {/* WISH LIST section skeleton */}
+      <View style={styles.sectionRow}>
+        <SkeletonPulse width="100%" height={56} />
+      </View>
+    </View>
+  );
+}
+
+// ─── Helper: format birthday ─────────────────────────────────────────────────
+
 const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
 function formatBirthday(month: number, day: number): string {
   return `${MONTH_NAMES[month - 1]} ${day}`;
 }
 
+function formatFriendsSince(isoDate: string): string {
+  const d = new Date(isoDate);
+  if (isNaN(d.getTime())) return 'Unknown';
+  return `Since ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ─── Helper: IOU balance summary ─────────────────────────────────────────────
+
+interface IouSummary {
+  balanceCents: number;
+  direction: 'owe' | 'owed' | 'settled';
+}
+
+function computeIouSummary(expenses: Array<{ totalCents: number; isFullySettled: boolean; payerName: string }>, myDisplayName: string): IouSummary {
+  if (expenses.length === 0) return { balanceCents: 0, direction: 'settled' };
+  const unsettled = expenses.filter((e) => !e.isFullySettled);
+  if (unsettled.length === 0) return { balanceCents: 0, direction: 'settled' };
+  // Simple heuristic: sum totalCents where payer is NOT me (I owe them) or IS me (they owe me)
+  let iOwe = 0;
+  let theyOwe = 0;
+  for (const e of unsettled) {
+    if (e.payerName === myDisplayName) {
+      theyOwe += e.totalCents;
+    } else {
+      iOwe += e.totalCents;
+    }
+  }
+  const net = theyOwe - iOwe;
+  if (net === 0) return { balanceCents: 0, direction: 'settled' };
+  if (net > 0) return { balanceCents: net, direction: 'owed' }; // they owe me
+  return { balanceCents: -net, direction: 'owe' }; // I owe them
+}
+
+function formatIouValue(summary: IouSummary, friendFirstName: string): string {
+  if (summary.direction === 'settled') return 'All settled';
+  const dollars = (summary.balanceCents / 100).toFixed(2);
+  if (summary.direction === 'owed') return `${friendFirstName} owes you $${dollars}`;
+  return `You owe ${friendFirstName} $${dollars}`;
+}
+
+// ─── Main screen component ────────────────────────────────────────────────────
+
 export default function FriendProfileScreen() {
   const { colors } = useTheme();
+  const localRouter = useRouter();
   const params = useLocalSearchParams<{ id: string | string[] }>();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const friendId = (Array.isArray(params.id) ? params.id[0] : (params.id ?? '')) ?? '';
   const session = useAuthStore((s) => s.session);
+  const myId = session?.user?.id ?? '';
+  const queryClient = useQueryClient();
 
-  const [profile, setProfile] = useState<FriendProfile | null>(null);
-  const [status, setStatus] = useState<StatusValue | null>(null);
-  const [contextTag, setContextTag] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  // ── Shared scrollY owned by this screen ──
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
 
-  const { items: wishListItems, loading: wishListLoading } = useFriendWishList(id ?? '');
+  // ── Data hooks ──
+  const { data, isLoading, error, refetch } = useFriendProfile(friendId);
+  const { data: mutuals } = useFriendMutuals(friendId);
+  const { items: wishListItems, loading: wishListLoading, toggleClaim } = useFriendWishList(friendId);
+  const { expenses } = useExpensesWithFriend(friendId);
 
-  useEffect(() => {
-    if (!id) return;
+  // ── Cache-warming hooks (warm friends list + friends-of-friend caches for mutual friend count) ──
+  useFriends();
+  useFriendsOfFriend(friendId);
 
-    async function fetchData() {
-      const [profileResult, statusResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('display_name, username, avatar_url, birthday_month, birthday_day')
-          .eq('id', id)
-          .single(),
-        supabase
-          .from('effective_status')
-          .select('effective_status, context_tag')
-          .eq('user_id', id)
-          .single(),
-      ]);
+  // ── DM channel lazy-resolution for Mute ──
+  const [dmChannelId, setDmChannelId] = useState<string | null>(null);
+  const [mutingInFlight, setMutingInFlight] = useState(false);
 
-      if (profileResult.data && !profileResult.error) {
-        setProfile(profileResult.data as FriendProfile);
+  const { data: mutePrefs } = useChatDmPreferences(dmChannelId);
+  const isMuted = mutePrefs?.isMuted ?? false;
+
+  // ── Avatar viewer state ──
+  const [avatarViewerOpen, setAvatarViewerOpen] = useState(false);
+
+  // ── Remove Friend mutation (canonical Pattern 5) ──
+  const removeMutation = useMutation({
+    mutationFn: async () => {
+      if (!myId || !friendId) throw new Error('Missing IDs');
+      const { error: deleteError } = await supabase
+        .from('friendships')
+        .delete()
+        .or(
+          `and(requester_id.eq.${myId},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${myId})`,
+        );
+      if (deleteError) throw deleteError;
+    },
+    onMutate: async () => {
+      const listKey = queryKeys.friends.list(myId);
+      await queryClient.cancelQueries({ queryKey: listKey });
+      const previousList = queryClient.getQueryData(listKey);
+      queryClient.setQueryData(listKey, (old: Array<{ friend_id: string }> | undefined) =>
+        (old ?? []).filter((f) => f.friend_id !== friendId),
+      );
+      return { previousList };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previousList !== undefined) {
+        queryClient.setQueryData(queryKeys.friends.list(myId), ctx.previousList);
       }
-      const effectiveStatus =
-        statusResult.error || !statusResult.data
-          ? null
-          : (statusResult.data.effective_status as StatusValue | null);
-      setStatus(effectiveStatus);
-      setContextTag((statusResult.data?.context_tag as string | null) ?? null);
-      setLoading(false);
-    }
+      Alert.alert('Error', "Couldn't remove friend. Try again.");
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.friends.list(myId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home.friends(myId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home.pendingRequestCount(myId) });
+    },
+  });
 
-    fetchData();
-  }, [id]);
+  // ── Quick action handlers ──
 
-  async function handleStartDM() {
-    if (!profile) return;
-    await openChat(router, {
+  function handleMessage() {
+    if (!data?.profile) return;
+    openChat(router, {
       kind: 'dmFriend',
-      friendId: id,
-      friendName: profile.display_name,
+      friendId,
+      friendName: data.profile.display_name,
     });
   }
 
-  function handleRemoveFriend() {
-    if (!profile || !session) return;
+  async function handleToggleMute() {
+    if (!myId) return;
+    setMutingInFlight(true);
+    try {
+      let channelId = dmChannelId;
+      if (!channelId) {
+        const { data: rpcData, error: rpcError } = await supabase.rpc(
+          'get_or_create_dm_channel',
+          { other_user_id: friendId },
+        );
+        if (rpcError || !rpcData) {
+          setMutingInFlight(false);
+          return;
+        }
+        // RPC returns a string channel_id directly (same shape as openChat.ts:102-112)
+        channelId = typeof rpcData === 'string' ? rpcData : String(rpcData);
+        setDmChannelId(channelId);
+      }
+
+      const resolvedChannelId = channelId;
+      const nextMuted = !isMuted;
+      // Optimistic flip on the preferences cache slot
+      queryClient.setQueryData(queryKeys.chat.preferences(resolvedChannelId), { isMuted: nextMuted });
+
+      // Mute upsert — verbatim from PATTERNS §10 (ChatListScreen.tsx:120-123)
+      await supabase.from('chat_preferences').upsert(
+        {
+          user_id: myId,
+          chat_type: 'dm',
+          chat_id: resolvedChannelId,
+          is_muted: nextMuted,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,chat_type,chat_id' },
+      );
+
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chat.preferences(resolvedChannelId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(myId) });
+    } finally {
+      setMutingInFlight(false);
+    }
+  }
+
+  function handlePhotos() {
+    localRouter.push(`/friends/${friendId}/photos` as never);
+  }
+
+  function handleConfirmRemove() {
+    if (!data?.profile) return;
     Alert.alert(
       'Remove Friend',
-      `Remove ${profile.display_name} from your friends? You can add them again by searching their username.`,
+      `Remove ${data.profile.display_name} from your friends? You can add them again by searching their username.`,
       [
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: async () => {
-            const myId = session.user.id;
-            const { error } = await supabase
-              .from('friendships')
-              .delete()
-              .or(
-                `and(requester_id.eq.${myId},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${myId})`
-              );
-
-            if (error) {
-              Alert.alert('Error', "Couldn't remove friend. Try again.");
-              return;
-            }
-            router.back();
+          onPress: () => {
+            removeMutation.mutate(undefined, {
+              onSuccess: () => router.back(),
+            });
           },
         },
         { text: 'Cancel', style: 'cancel' },
-      ]
+      ],
     );
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    scroll: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    scrollContent: {
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xxl,
-      paddingBottom: SPACING.xxl,
-    },
-    topSection: {
-      alignItems: 'center',
-    },
-    displayName: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginTop: SPACING.lg,
-      textAlign: 'center',
-    },
-    username: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-      textAlign: 'center',
-    },
-    birthday: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-      textAlign: 'center',
-    },
-    statusRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: SPACING.sm,
-    },
-    statusDot: {
-      width: SPACING.sm,
-      height: SPACING.sm,
-      borderRadius: RADII.xs,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginRight: 6, // no exact token
-    },
-    statusText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-    },
-    contextTag: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    actionsSection: {
-      marginTop: SPACING.xl,
-    },
-    removeFriendButton: {
-      height: 52,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: SPACING.sm,
-    },
-    removeFriendText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-    },
-    wishListSection: {
-      marginTop: SPACING.xl,
-    },
-    sectionHeader: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xl,
-      marginBottom: SPACING.md,
-      paddingHorizontal: SPACING.lg,
-    },
-    emptyWishList: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-    },
-  }), [colors]);
-
-  if (loading) {
-    return <LoadingIndicator />;
+  function handleMore() {
+    if (!data?.profile) return;
+    showActionSheet(data.profile.display_name, [
+      { label: 'Remove Friend', destructive: true, onPress: handleConfirmRemove },
+    ]);
   }
 
-  if (!profile) {
-    return null;
+  // ── Styles ──
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        scrollContent: {
+          paddingBottom: SPACING.xxl,
+        },
+        wishListEmpty: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+        },
+        notFoundOuter: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        errorOuter: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+      }),
+    [colors],
+  );
+
+  // ── Loading / error / not-found states ──
+
+  if (isLoading && !data) {
+    return (
+      <>
+        <Stack.Screen options={{ title: '', headerTransparent: true }} />
+        <SkeletonShells />
+      </>
+    );
   }
 
-  const firstName = profile.display_name.split(' ')[0];
+  if (error) {
+    return (
+      <>
+        <Stack.Screen options={{ title: '' }} />
+        <View style={styles.errorOuter}>
+          <ErrorDisplay
+            mode="screen"
+            message="Couldn't load profile. Check your connection and try again."
+            onRetry={refetch}
+          />
+        </View>
+      </>
+    );
+  }
+
+  // friend-not-found: friendsSince === null per Plan 02 SUMMARY + RESEARCH §Recommendations
+  if (!isLoading && data && data.friendsSince === null) {
+    return (
+      <>
+        <Stack.Screen options={{ title: '' }} />
+        <View style={styles.notFoundOuter}>
+          <NotFriendsView onBack={() => router.back()} />
+        </View>
+      </>
+    );
+  }
+
+  const profile = data?.profile ?? null;
+  const displayName = profile?.display_name ?? '';
+  const firstName = displayName.split(' ')[0] ?? displayName;
+
+  // IOU balance
+  const iouSummary = computeIouSummary(expenses, displayName);
+  const iouValue = formatIouValue(iouSummary, firstName);
 
   return (
     <>
-      <Stack.Screen options={{ title: profile.display_name }} />
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        {/* Top section */}
-        <View style={styles.topSection}>
-          <AvatarCircle
-            size={80}
-            imageUri={profile.avatar_url}
-            displayName={profile.display_name}
+      <Stack.Screen
+        options={{
+          title: displayName,
+          headerTransparent: true,
+          headerTitle: () => (
+            <AnimatedStackTitle scrollY={scrollY} displayName={displayName} />
+          ),
+        }}
+      />
+
+      <Animated.ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.scrollContent}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
+        {/* Header */}
+        <FriendProfileHeader
+          scrollY={scrollY}
+          displayName={displayName}
+          username={profile?.username ?? ''}
+          avatarUrl={profile?.avatar_url ?? null}
+          status={data?.status ?? null}
+          contextTag={data?.contextTag ?? null}
+          statusExpiresAt={data?.statusExpiresAt ?? null}
+          lastActiveAt={data?.lastActiveAt ?? null}
+          onAvatarPress={
+            profile?.avatar_url
+              ? () => setAvatarViewerOpen(true)
+              : undefined
+          }
+        />
+
+        {/* Quick Actions Row */}
+        <QuickActionsRow
+          onMessage={handleMessage}
+          onToggleMute={handleToggleMute}
+          onPhotos={handlePhotos}
+          onMore={handleMore}
+          isMuted={isMuted}
+          friendFirstName={firstName}
+          muteDisabled={mutingInFlight}
+          messageDisabled={false}
+        />
+
+        {/* INFO section */}
+        <GroupedInsetSection title="INFO">
+          {profile?.bio ? <BioRow bio={profile.bio} /> : null}
+          {data?.friendsSince ? (
+            <ProfileInfoRow
+              iconTint="friendsSince"
+              label="Friends since"
+              value={formatFriendsSince(data.friendsSince)}
+              accessibilityLabel={`Friends since ${formatFriendsSince(data.friendsSince)}`}
+            />
+          ) : null}
+          {profile?.birthday_month && profile?.birthday_day ? (
+            <ProfileInfoRow
+              iconTint="birthday"
+              label="Birthday"
+              value={formatBirthday(profile.birthday_month, profile.birthday_day)}
+              accessibilityLabel={`Birthday ${formatBirthday(profile.birthday_month, profile.birthday_day)}`}
+            />
+          ) : null}
+          {profile?.timezone ? (
+            <ProfileInfoRow
+              iconTint="timezone"
+              label="Timezone"
+              value={profile.timezone}
+              accessibilityLabel={`Timezone ${profile.timezone}`}
+            />
+          ) : null}
+          {/* Fallback row when all optional INFO rows are null — always show friends since at minimum */}
+          {!profile?.bio && !data?.friendsSince && !profile?.birthday_month && !profile?.timezone ? (
+            <ProfileInfoRow
+              iconTint="friendsSince"
+              label="Friends since"
+              value="Unknown"
+            />
+          ) : null}
+        </GroupedInsetSection>
+
+        {/* MUTUAL section */}
+        <GroupedInsetSection title="MUTUAL">
+          <ProfileInfoRow
+            iconTint="mutualPlans"
+            label="Mutual plans"
+            value={
+              mutuals && mutuals.mutualPlansCount > 0
+                ? String(mutuals.mutualPlansCount)
+                : 'None yet'
+            }
+            onPress={
+              mutuals && mutuals.mutualPlansCount > 0
+                ? () => {
+                    // TODO: navigate to mutual plans list when route exists
+                  }
+                : undefined
+            }
+            chevron={!!(mutuals && mutuals.mutualPlansCount > 0)}
+            accessibilityLabel={`Mutual plans: ${mutuals?.mutualPlansCount ?? 0}`}
+            accessibilityHint={mutuals && mutuals.mutualPlansCount > 0 ? 'Opens the list of mutual plans' : undefined}
           />
-          <Text style={styles.displayName}>{profile.display_name}</Text>
-          <Text style={styles.username}>@{profile.username}</Text>
+          <ProfileInfoRow
+            iconTint="mutualFriends"
+            label="Mutual friends"
+            value={
+              mutuals && mutuals.mutualFriendsCount > 0
+                ? String(mutuals.mutualFriendsCount)
+                : 'None yet'
+            }
+            onPress={
+              mutuals && mutuals.mutualFriendsCount > 0
+                ? () => {
+                    // TODO: navigate to mutual friends list when route exists
+                  }
+                : undefined
+            }
+            chevron={!!(mutuals && mutuals.mutualFriendsCount > 0)}
+            accessibilityLabel={`Mutual friends: ${mutuals?.mutualFriendsCount ?? 0}`}
+            accessibilityHint={mutuals && mutuals.mutualFriendsCount > 0 ? 'Opens the list of mutual friends' : undefined}
+          />
+          <ProfileInfoRow
+            iconTint="sharedPhotos"
+            label="Shared photos"
+            value={
+              mutuals && mutuals.sharedPhotosCount > 0
+                ? String(mutuals.sharedPhotosCount)
+                : 'None yet'
+            }
+            onPress={
+              mutuals && mutuals.sharedPhotosCount > 0
+                ? handlePhotos
+                : undefined
+            }
+            chevron={!!(mutuals && mutuals.sharedPhotosCount > 0)}
+            accessibilityLabel={`Shared photos: ${mutuals?.sharedPhotosCount ?? 0}`}
+            accessibilityHint={mutuals && mutuals.sharedPhotosCount > 0 ? 'Opens shared photos' : undefined}
+          />
+          <ProfileInfoRow
+            iconTint="iou"
+            label="IOU balance"
+            value={iouValue}
+            accessibilityLabel={`IOU balance: ${iouValue}`}
+          />
+        </GroupedInsetSection>
 
-          {/* Birthday row — only render when both month and day are non-null (D-10) */}
-          {profile.birthday_month && profile.birthday_day ? (
-            <Text style={styles.birthday}>
-              {formatBirthday(profile.birthday_month, profile.birthday_day)}
-            </Text>
-          ) : null}
-
-          {/* Status row — only render when effective_status is non-null (D-09) */}
-          {status !== null ? (
-            <View style={styles.statusRow}>
-              <View style={[styles.statusDot, { backgroundColor: colors.status[status] }]} />
-              <Text style={[styles.statusText, { color: colors.status[status] }]}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </Text>
-              {contextTag ? <Text style={styles.contextTag}> {contextTag}</Text> : null}
-            </View>
-          ) : null}
-        </View>
-
-        {/* Action buttons */}
-        <View style={styles.actionsSection}>
-          <PrimaryButton title={`Message ${firstName}`} onPress={handleStartDM} />
-          <TouchableOpacity style={styles.removeFriendButton} onPress={handleRemoveFriend}>
-            <Text style={styles.removeFriendText}>Remove Friend</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Wish list section (D-11) */}
-        <View style={styles.wishListSection}>
-          <Text style={styles.sectionHeader}>WISH LIST</Text>
-          {wishListLoading ? null : wishListItems.length === 0 ? (
-            <Text style={styles.emptyWishList}>No wish list items.</Text>
+        {/* WISH LIST section */}
+        <GroupedInsetSection title="WISH LIST">
+          {wishListLoading ? (
+            <ActivityIndicator
+              size="small"
+              color={colors.interactive.accent}
+              style={{ paddingVertical: SPACING.md }}
+            />
+          ) : wishListItems.length === 0 ? (
+            <Text style={styles.wishListEmpty}>No wish list items.</Text>
           ) : (
             wishListItems.map((item) => (
               <WishListItem
@@ -280,12 +666,19 @@ export default function FriendProfileScreen() {
                 notes={item.notes}
                 isClaimed={item.isClaimed}
                 isClaimedByMe={item.isClaimedByMe}
-                readOnly={true}
+                onToggleClaim={() => toggleClaim(item.id, item.isClaimed)}
               />
             ))
           )}
-        </View>
-      </ScrollView>
+        </GroupedInsetSection>
+      </Animated.ScrollView>
+
+      {/* Full-screen avatar viewer */}
+      <ImageViewerModal
+        visible={avatarViewerOpen}
+        imageUrl={profile?.avatar_url ?? null}
+        onClose={() => setAvatarViewerOpen(false)}
+      />
     </>
   );
 }
