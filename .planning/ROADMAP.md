@@ -95,7 +95,7 @@ Plans:
 - [ ] 30-04-PLAN.md — Refactor `CustomTabBar` to consume `useNavigationStore` + add `useFocusEffect` writer in `ChatRoomScreen` (Wave 2, depends on 01 + 03)
 - [ ] 30-05-PLAN.md — Migrate all 10 callsite files (4 home DM duplicates, 4 routing handlers, 2 sheet handlers) to use `openChat` (Wave 2, depends on 02 + 03 + 07)
 - [x] 30-06-PLAN.md — Delete dead-code `RecentMemoriesSection.tsx` (Wave 1)
-- [ ] 30-07-PLAN.md — Delete legacy `/friends` index route + `FriendsList.tsx` (Wave 1)
+- [x] 30-07-PLAN.md — Delete legacy `/friends` index route + `FriendsList.tsx` (Wave 1)
 
 ### Phase 31: Adopt TanStack Query for server-state caching and cross-screen reactivity
 

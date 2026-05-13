@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 30-06-PLAN.md — dead RecentMemoriesSection.tsx deleted
-last_updated: "2026-05-12T23:59:30.183Z"
-last_activity: 2026-05-12
+stopped_at: Completed 30-07-PLAN.md — legacy /friends index route deleted
+last_updated: "2026-05-13T00:02:28.460Z"
+last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 20
-  completed_plans: 17
-  percent: 85
+  completed_plans: 18
+  percent: 90
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 30 (unify-navigation-source-of-truth-and-chat-entry-handlers) — EXECUTING
-Plan: 5 of 7
+Plan: 7 of 7
 Status: Ready to execute
-Last activity: 2026-05-12
+Last activity: 2026-05-13
 
 ## Phase Structure
 
@@ -111,6 +111,8 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-03: Hoist /chat/room route from src/app/(tabs)/chat/room.tsx to src/app/chat/room.tsx — eliminates dual-mount risk by putting ChatRoomScreen at root Stack level structurally; URL /chat/room?... resolves identically so zero callsite changes needed
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-03: src/app/chat/_layout.tsx leaves default headerShown intact (no headerShown:false) so chat/room.tsx navigation.setOptions({title}) renders the per-route title via the Stack header chrome; mirrors plans/_layout.tsx exactly except component name
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-03: Root-level <Stack.Screen name="chat" options={{ headerShown: false }} /> placed inside <Stack.Protected guard={!!session && !needsProfileSetup}> alongside plans — chat needs auth + complete profile; no presentation:'modal' because chat is a regular push
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-07: Cleaned up stale FriendsList.tsx JSDoc reference in src/lib/openChat.ts as part of deletion plan — Rule 3 auto-fix preserved the plan's grep-zero acceptance criterion downstream
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-07: src/app/friends/_layout.tsx left untouched — expo-router file-based routing infers Stack.Screen entries from filesystem, so deleting index.tsx leaves layout valid (URL /friends becomes 404, acceptable per CONTEXT.md scope item 5)
 
 ### Roadmap Evolution
 
@@ -132,5 +134,5 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 
 ## Session Continuity
 
-Last session: 2026-05-12T23:59:30.179Z
-Stopped at: Completed 30-06-PLAN.md — dead RecentMemoriesSection.tsx deleted
+Last session: 2026-05-13T00:02:28.457Z
+Stopped at: Completed 30-07-PLAN.md — legacy /friends index route deleted
