@@ -15,7 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import { useTheme, FONT_SIZE, FONT_FAMILY, SPACING, RADII } from '@/theme';
 import { ScreenHeader } from '@/components/common/ScreenHeader';
 import { SearchBar } from '@/components/common/SearchBar';
@@ -189,19 +189,19 @@ export default function SquadScreen() {
 
   async function handleStartDM() {
     if (!selectedFriend) return;
-    setLoadingDM(true);
-    const { data: channelId, error: rpcError } = await supabase.rpc('get_or_create_dm_channel', {
-      other_user_id: selectedFriend.friend_id,
-    });
-    setLoadingDM(false);
-    if (rpcError || !channelId) {
-      Alert.alert('Error', "Couldn't open chat. Try again.");
-      return;
+    try {
+      // Locked ordering (Phase 30-05): handleCloseSheet runs AFTER await openChat
+      // so the in-sheet loading spinner (driven by onLoadingChange: setLoadingDM)
+      // stays visible while the get-or-create-DM RPC runs. The `finally` block
+      // guarantees the sheet still closes if openChat throws.
+      await openChat(
+        router,
+        { kind: 'dmFriend', friendId: selectedFriend.friend_id, friendName: selectedFriend.display_name },
+        { onLoadingChange: setLoadingDM }
+      );
+    } finally {
+      handleCloseSheet();
     }
-    handleCloseSheet();
-    router.push(
-      `/chat/room?dm_channel_id=${channelId}&friend_name=${encodeURIComponent(selectedFriend.display_name)}` as never
-    );
   }
 
   async function handleRemoveFriend() {

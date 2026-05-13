@@ -19,6 +19,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { supabase } from '@/lib/supabase';
+import { openChat } from '@/lib/openChat';
 import { useChatStore } from '@/stores/useChatStore';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { WishListItem } from '@/components/squad/WishListItem';
@@ -80,9 +81,12 @@ export default function FriendBirthdayPage() {
     invalidateChatList();
 
     // Navigate to the group chat room using the existing chat UI (D-18)
-    router.push(
-      `/chat/room?group_channel_id=${groupChannelId}&friend_name=${encodeURIComponent(groupName)}&birthday_person_id=${friendId}` as never
-    );
+    await openChat(router, {
+      kind: 'group',
+      groupChannelId,
+      friendName: groupName,
+      birthdayPersonId: friendId,
+    });
   }
 
   function handleRefresh() {
