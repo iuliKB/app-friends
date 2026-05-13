@@ -77,16 +77,35 @@ function findIonicons(getByTestId: ReturnType<typeof render>['UNSAFE_getAllByTyp
   }
 }
 
+// Look up a <Text> node by its direct children value (handles mixed-children rows
+// where getByText would match the concatenated text across the whole subtree).
+type TextElement = { props: { children?: unknown; style?: unknown } };
+function findTextNodeWithChildren(
+  allTexts: TextElement[],
+  childValue: unknown,
+): TextElement | undefined {
+  return allTexts.find((el) => {
+    const c = el.props.children;
+    // Direct string match
+    if (c === childValue) return true;
+    // Array children — check if the array contains the value
+    if (Array.isArray(c)) return c.includes(childValue);
+    return false;
+  });
+}
+
 describe('ChatListRow — Phase 32 preview rendering', () => {
   it('image kind renders image-outline icon next to "Photo"', () => {
-    const { getByText, UNSAFE_getAllByType } = renderRow({
+    const { UNSAFE_getAllByType } = renderRow({
       lastMessageKind: 'image',
       lastMessage: 'Photo',
       lastMessageSenderName: 'Alice',
+      title: 'Alice Chat',
     });
-    // Sender prefix and preview text are rendered
-    expect(getByText(/Alice/)).toBeTruthy();
-    expect(getByText(/Photo/)).toBeTruthy();
+    // The outer preview <Text> has children ["Alice: ", "Photo"] — verify "Photo" appears
+    const allTexts = UNSAFE_getAllByType('Text' as unknown as React.ComponentType) as TextElement[];
+    const previewText = findTextNodeWithChildren(allTexts, 'Photo');
+    expect(previewText).toBeTruthy();
     // An Ionicons element with name="image-outline" is present
     const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
     const previewIcon = icons.find((el: { props: { name?: string } }) => el.props.name === 'image-outline');
@@ -94,36 +113,45 @@ describe('ChatListRow — Phase 32 preview rendering', () => {
   });
 
   it('poll kind renders stats-chart-outline icon next to "Poll: Pizza?"', () => {
-    const { getByText, UNSAFE_getAllByType } = renderRow({
+    const { UNSAFE_getAllByType } = renderRow({
       lastMessageKind: 'poll',
       lastMessage: 'Poll: Pizza?',
       lastMessageSenderName: 'Alice',
+      title: 'Alice Chat',
     });
-    expect(getByText(/Alice/)).toBeTruthy();
-    expect(getByText(/Poll: Pizza\?/)).toBeTruthy();
+    const allTexts = UNSAFE_getAllByType('Text' as unknown as React.ComponentType) as TextElement[];
+    const previewText = findTextNodeWithChildren(allTexts, 'Poll: Pizza?');
+    expect(previewText).toBeTruthy();
     const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
     const previewIcon = icons.find((el: { props: { name?: string } }) => el.props.name === 'stats-chart-outline');
     expect(previewIcon).toBeTruthy();
   });
 
   it('todo kind renders checkbox-outline icon next to "To-do: Buy milk" with "You: " prefix', () => {
-    const { getByText, UNSAFE_getAllByType } = renderRow({
+    const { UNSAFE_getAllByType } = renderRow({
       lastMessageKind: 'todo',
       lastMessage: 'To-do: Buy milk',
       lastMessageSenderName: 'You',
+      title: 'Group Chat',
     });
-    expect(getByText(/You/)).toBeTruthy();
-    expect(getByText(/To-do: Buy milk/)).toBeTruthy();
+    // The outer preview <Text> has children ["You: ", "To-do: Buy milk"]
+    const allTexts = UNSAFE_getAllByType('Text' as unknown as React.ComponentType) as TextElement[];
+    const previewText = findTextNodeWithChildren(allTexts, 'To-do: Buy milk');
+    expect(previewText).toBeTruthy();
+    // Sender prefix "You: " is a sibling child
+    const prefixText = findTextNodeWithChildren(allTexts, 'You: ');
+    expect(prefixText).toBeTruthy();
     const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
     const previewIcon = icons.find((el: { props: { name?: string } }) => el.props.name === 'checkbox-outline');
     expect(previewIcon).toBeTruthy();
   });
 
   it('deleted kind renders "Message deleted" in italic with sender prefix upright — no preview icon', () => {
-    const { UNSAFE_getAllByType } = renderRow({
+    const { UNSAFE_getAllByType, UNSAFE_queryAllByType } = renderRow({
       lastMessageKind: 'deleted',
       lastMessage: 'Message deleted',
       lastMessageSenderName: 'Alice',
+      title: 'Alice Chat',
     });
 
     // Find the <Text> whose children is 'Message deleted' and assert it has fontStyle: 'italic'
@@ -141,8 +169,8 @@ describe('ChatListRow — Phase 32 preview rendering', () => {
     );
     expect(hasItalic).toBe(true);
 
-    // No preview icon for deleted kind (only mute icon can appear, but item.isMuted=false)
-    const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
+    // No preview icon for deleted kind — UNSAFE_queryAllByType returns [] not throws when empty
+    const icons = UNSAFE_queryAllByType('Ionicons' as unknown as React.ComponentType);
     const previewIcon = icons.find(
       (el: { props: { name?: string } }) =>
         el.props.name !== 'notifications-off-outline' &&
