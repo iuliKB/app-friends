@@ -31,9 +31,9 @@ export interface OpenChatOptions {
   silentError?: boolean;
   /** Loading-state callback invoked with `true` before any awaited work and
    * `false` after success or error. Used by sheet-based callsites
-   * (squad.tsx, FriendsList.tsx) that toggle a `loadingDM` flag. Called
-   * exactly twice per invocation when the variant performs an RPC, or not
-   * at all for synchronous variants (plan, group, dmChannel). */
+   * (e.g. squad.tsx) that toggle a `loadingDM` flag. Called exactly twice
+   * per invocation when the variant performs an RPC, or not at all for
+   * synchronous variants (plan, group, dmChannel). */
   onLoadingChange?: (loading: boolean) => void;
 }
 
