@@ -132,7 +132,7 @@ Plans:
 **Goal:** Ground-up redesign of the friend profile screen (opened when tapping a friend in the friends list, member list, or message-author chip). Telegram-style large avatar with blurred-wash backdrop that collapses into the Stack nav title on scroll, iOS-grouped-inset sections (INFO + MUTUAL + WISH LIST) with Messenger-style colorful round leading icons, 4-button quick-action row (Message · Mute · Photos · More), full-screen avatar viewer modal, and a new bio TEXT column on profiles editable from /profile/edit. Migrates the screen to TanStack Query (new useFriendProfile + useFriendMutuals hooks) sharing the effective_status cache slice with home (D-15 — no new Realtime subscription). Remove Friend lives only in the More overflow ActionSheet. Out of scope: DM info screen, Plan info screen, Block feature (deferred to moderation phase).
 **Requirements**: TBD (no formal REQ-IDs — must-haves derived from CONTEXT.md D-01..D-16 and RESEARCH §Validation Architecture REQ-FP-01..REQ-FP-12)
 **Depends on:** Phase 32
-**Plans:** 7 plans across 3 waves
+**Plans:** 7/7 plans complete
 
 Plans:
 - [x] 33-01-PLAN.md — Foundation: Migration 0027 (bio column) + 3 new queryKeys + useUpdateMyBio hook + [BLOCKING] supabase db push (Wave 1)
