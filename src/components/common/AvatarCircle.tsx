@@ -7,6 +7,7 @@ interface AvatarCircleProps {
   imageUri?: string | null;
   displayName: string;
   onPress?: () => void;
+  onLoad?: () => void;
 }
 
 function getInitials(displayName: string): string {
@@ -18,7 +19,7 @@ function getInitials(displayName: string): string {
     .join('');
 }
 
-export function AvatarCircle({ size = 80, imageUri, displayName, onPress }: AvatarCircleProps) {
+export function AvatarCircle({ size = 80, imageUri, displayName, onPress, onLoad }: AvatarCircleProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => StyleSheet.create({
     circle: {
@@ -48,7 +49,7 @@ export function AvatarCircle({ size = 80, imageUri, displayName, onPress }: Avat
   const content = (
     <View style={[styles.circle, circleStyle]}>
       {imageUri ? (
-        <Image source={{ uri: imageUri }} style={[styles.image, circleStyle]} resizeMode="cover" />
+        <Image source={{ uri: imageUri }} style={[styles.image, circleStyle]} resizeMode="cover" onLoad={onLoad} />
       ) : (
         <Text style={styles.initials}>{getInitials(displayName)}</Text>
       )}
