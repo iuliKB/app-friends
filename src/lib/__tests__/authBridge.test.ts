@@ -13,6 +13,11 @@ const mockOnAuthStateChange = jest.fn().mockImplementation((cb: (e: string, s: a
   return { data: { subscription: { unsubscribe: mockSubscriptionUnsubscribe } } };
 });
 
+const mockClear = jest.fn();
+jest.mock('@/stores/useStatusStore', () => ({
+  useStatusStore: { getState: () => ({ clear: mockClear }) },
+}));
+
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
@@ -29,6 +34,7 @@ describe('authBridge.attachAuthBridge', () => {
     mockCapturedHandler = null;
     mockSubscriptionUnsubscribe.mockClear();
     mockOnAuthStateChange.mockClear();
+    mockClear.mockClear();
     qc = new QueryClient();
     removeSpy = jest.spyOn(qc, 'removeQueries');
   });
@@ -49,12 +55,28 @@ describe('authBridge.attachAuthBridge', () => {
     expect(removeSpy).toHaveBeenCalledWith(); // no args = removeAll
   });
 
+  it('also clears useStatusStore on SIGNED_OUT (T-31-19 mitigation)', () => {
+    attachAuthBridge(qc);
+    expect(mockCapturedHandler).not.toBeNull();
+    mockCapturedHandler!('SIGNED_OUT', null);
+    expect(mockClear).toHaveBeenCalledTimes(1);
+  });
+
   it.each(['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED', 'INITIAL_SESSION'])(
     'does NOT call removeQueries on %s',
     (event) => {
       attachAuthBridge(qc);
       mockCapturedHandler!(event, { user: { id: 'u1' } });
       expect(removeSpy).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED', 'INITIAL_SESSION'])(
+    'does NOT call useStatusStore.clear on %s',
+    (event) => {
+      attachAuthBridge(qc);
+      mockCapturedHandler!(event, { user: { id: 'u1' } });
+      expect(mockClear).not.toHaveBeenCalled();
     },
   );
 });
