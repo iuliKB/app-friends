@@ -16,13 +16,15 @@
 //     per RESEARCH §Recommendations §Friend-not-found fallback + Plan 02 SUMMARY.
 
 import { router, Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  ScrollView,
   StyleSheet,
   Text,
   View,
+  type LayoutChangeEvent,
 } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
@@ -280,6 +282,18 @@ export default function FriendProfileScreen() {
     },
   });
 
+  // ── Imperative scroll ref + wishlist anchor for the "Wish list" INFO row ──
+  const scrollRef = useRef<ScrollView>(null);
+  const wishlistYRef = useRef<number | null>(null);
+  const handleWishlistAnchorLayout = (e: LayoutChangeEvent) => {
+    wishlistYRef.current = e.nativeEvent.layout.y;
+  };
+  const scrollToWishlist = () => {
+    const y = wishlistYRef.current;
+    if (y == null) return;
+    scrollRef.current?.scrollTo({ y: Math.max(0, y - 16), animated: true });
+  };
+
   // ── Data hooks ──
   const { data, isLoading, error, refetch } = useFriendProfile(friendId);
   const { data: mutuals } = useFriendMutuals(friendId);
@@ -465,6 +479,7 @@ export default function FriendProfileScreen() {
       />
 
       <Animated.ScrollView
+        ref={scrollRef as unknown as React.Ref<Animated.ScrollView>}
         style={styles.screen}
         contentContainerStyle={styles.scrollContent}
         onScroll={scrollHandler}
@@ -515,16 +530,23 @@ export default function FriendProfileScreen() {
               accessibilityLabel={`Birthday ${formatBirthday(profile.birthday_month, profile.birthday_day)}`}
             />
           ) : null}
-          {profile?.timezone ? (
-            <ProfileInfoRow
-              iconTint="timezone"
-              label="Timezone"
-              value={profile.timezone}
-              accessibilityLabel={`Timezone ${profile.timezone}`}
-            />
-          ) : null}
+          <ProfileInfoRow
+            iconTint="wishlist"
+            label="Wish list"
+            value={
+              wishListLoading
+                ? '…'
+                : wishListItems.length > 0
+                  ? String(wishListItems.length)
+                  : 'None yet'
+            }
+            onPress={wishListItems.length > 0 ? scrollToWishlist : undefined}
+            chevron={wishListItems.length > 0}
+            accessibilityLabel={`Wish list: ${wishListItems.length} ${wishListItems.length === 1 ? 'item' : 'items'}`}
+            accessibilityHint={wishListItems.length > 0 ? 'Scrolls down to the wish list section' : undefined}
+          />
           {/* Fallback row when all optional INFO rows are null — always show friends since at minimum */}
-          {!profile?.bio && !data?.friendsSince && !profile?.birthday_month && !profile?.timezone ? (
+          {!profile?.bio && !data?.friendsSince && !profile?.birthday_month ? (
             <ProfileInfoRow
               iconTint="friendsSince"
               label="Friends since"
@@ -598,7 +620,8 @@ export default function FriendProfileScreen() {
           />
         </GroupedInsetSection>
 
-        {/* WISH LIST section */}
+        {/* WISH LIST section (anchored for INFO → Wish list nav row scroll-to) */}
+        <View onLayout={handleWishlistAnchorLayout} />
         <GroupedInsetSection title="WISH LIST">
           {wishListLoading ? (
             <ActivityIndicator

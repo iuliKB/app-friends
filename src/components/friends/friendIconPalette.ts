@@ -25,6 +25,7 @@ export type IconTint =
   | 'friendsSince'
   | 'birthday'
   | 'timezone'
+  | 'wishlist'
   | 'mutualPlans'
   | 'mutualFriends'
   | 'sharedPhotos'
@@ -70,6 +71,12 @@ export function getIconPalette(tint: IconTint, colors: PaletteColors): IconPalet
         bg: dark ? 'rgba(125, 211, 252, 0.18)' : 'rgba(2, 132, 199, 0.12)',
         glyph: dark ? '#7DD3FC' : '#0284C7',
         ionicon: 'globe-outline',
+      };
+    case 'wishlist':
+      return {
+        bg: dark ? 'rgba(252, 165, 165, 0.20)' : 'rgba(220, 38, 38, 0.14)',
+        glyph: dark ? '#FCA5A5' : '#DC2626',
+        ionicon: 'heart-outline',
       };
     case 'mutualPlans':
       return {
