@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
-status: executing
-stopped_at: Completed 31-07-PLAN.md (useSpotlight + useStreakData migrated; Edge Function audit closed as Case A; Wave 8 unblocked — last plan in phase)
-last_updated: "2026-05-13T10:04:09.238Z"
+status: verifying
+stopped_at: Completed 31-08-PLAN.md (Task 8 manual smoke pending)
+last_updated: "2026-05-13T10:28:21.867Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 28
-  completed_plans: 27
-  percent: 96
+  completed_plans: 28
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 
 Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
 Plan: 8 of 8
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-13
 
 ## Phase Structure
@@ -157,6 +157,8 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-07: useSpotlight() hook derives synchronously via useMemo + mirrors into queryKeys.home.spotlight(userId) cache slot via useEffect + setQueryData; useQuery wraps with initialData: derived + staleTime: 0 so the derivation participates in the cache taxonomy without an async fetch
 - [Phase 31]: Phase 31-07: useStreakData cache key in habits namespace (queryKeys.habits.streak) NOT a separate streak namespace — prefix invalidation under queryKeys.habits.all() reaches both overview and streak; Wave 2 useHabits.toggleToday invalidation intentionally NOT broadened (server batches streak end-of-day)
 - [Phase 31]: Phase 31-07: Edge Function audit closed out as Case A (Wave 1 found 0 supabase.functions.invoke callsites; the phase's edge functions are server-side trigger-driven via outbox pattern, not client-invoked)
+- [Phase 31]: Plan 31-08 closes Phase 31: chat hooks migrated, useChatStore stripped, PersistQueryClientProvider with selective shouldDehydrateQuery, boundary doc written. Manual smoke gate (Task 8) pending dev-client verification.
+- [Phase 31]: shouldDehydrateQuery destructures [root, sub] to exclude 'chat' root + ('plans','photos') + ('plans','allPhotos') only — the whole plans namespace stays persisted (Plan list is needed on cold start).
 
 ### Roadmap Evolution
 
@@ -188,8 +190,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31 P05 | 9min | 6 tasks | 16 files |
 | Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P06 | 8 min | 5 tasks | 10 files |
 | Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P07 | 5 min | 3 tasks | 5 files |
+| Phase 31 P08 | 18min | 8 tasks | 17 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T10:04:09.234Z
-Stopped at: Completed 31-07-PLAN.md (useSpotlight + useStreakData migrated; Edge Function audit closed as Case A; Wave 8 unblocked — last plan in phase)
+Last session: 2026-05-13T10:28:21.863Z
+Stopped at: Completed 31-08-PLAN.md (Task 8 manual smoke pending)
