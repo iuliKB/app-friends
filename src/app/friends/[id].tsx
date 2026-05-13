@@ -476,7 +476,13 @@ export default function FriendProfileScreen() {
   if (isLoading && !data) {
     return (
       <>
-        <Stack.Screen options={{ title: '', headerTransparent: true }} />
+        <Stack.Screen
+          options={{
+            title: '',
+            headerTransparent: true,
+            headerStyle: { backgroundColor: 'transparent' },
+          }}
+        />
         <SkeletonShells />
       </>
     );
@@ -523,6 +529,7 @@ export default function FriendProfileScreen() {
         options={{
           title: displayName,
           headerTransparent: true,
+          headerStyle: { backgroundColor: 'transparent' },
           headerTitle: () => (
             <AnimatedStackTitle scrollY={scrollY} displayName={displayName} />
           ),
