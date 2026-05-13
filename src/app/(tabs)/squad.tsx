@@ -63,12 +63,19 @@ export default function SquadScreen() {
   const pagerRef = useRef<ScrollView>(null);
   const [activeTab, setActiveTab] = useState(0);
 
-  // Scroll to Memories page when navigated here from the Home widget
+  // Scroll to Memories or Activity page when navigated here from a Home widget
   useEffect(() => {
     if (tab === 'memories') {
       const t = setTimeout(() => {
         pagerRef.current?.scrollTo({ x: SCREEN_WIDTH, animated: false });
         setActiveTab(1);
+      }, 50);
+      return () => clearTimeout(t);
+    }
+    if (tab === 'activity') {
+      const t = setTimeout(() => {
+        pagerRef.current?.scrollTo({ x: SCREEN_WIDTH * 2, animated: false });
+        setActiveTab(2);
       }, 50);
       return () => clearTimeout(t);
     }
@@ -331,11 +338,7 @@ export default function SquadScreen() {
   if (streak.error) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
-        <ErrorDisplay
-          mode="screen"
-          message="Couldn't load your streak."
-          onRetry={streak.refetch}
-        />
+        <ErrorDisplay mode="screen" message="Couldn't load your streak." onRetry={streak.refetch} />
       </View>
     );
   }
