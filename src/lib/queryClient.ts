@@ -7,7 +7,9 @@
 // Defaults rationale (research §Pattern 1):
 // - staleTime 60_000 (1 min) — tab-bounces inside the window are cache hits, not refetches.
 //   Realtime events keep cache fresh for tables with subscriptions; staleTime covers everything else.
-// - gcTime 5*60_000 (5 min) — default; bumped to 24h in Wave 8 when PersistQueryClientProvider lands.
+// - gcTime 24h — bumped from the pre-Wave-8 default (5 min) so persisted queries are
+//   not garbage-collected before they can be restored from AsyncStorage. The persister
+//   `maxAge` in src/app/_layout.tsx is also 24h; the two must be aligned.
 // - refetchOnWindowFocus false — RN does not fire window 'focus'; focusManager.setFocused covers app foreground.
 // - refetchOnReconnect true — onlineManager + NetInfo (wired in _layout.tsx) drives this.
 // - retry on read: skip 401/403/404 (auth/permission issues are NOT transient), otherwise retry up to 2x.
@@ -20,7 +22,11 @@ export function createQueryClient(): QueryClient {
     defaultOptions: {
       queries: {
         staleTime: 60_000,
-        gcTime: 5 * 60_000,
+        // Bumped from 5min to 24 * 60 * 60 * 1000 in Wave 8 to enable persistence per
+        // research §Persistence Recommendation. The PersistQueryClientProvider's
+        // maxAge in src/app/_layout.tsx is set to the same window so persisted
+        // queries are restored before gc reaps them.
+        gcTime: 24 * 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnReconnect: true,
         retry: (failureCount, error: unknown) => {

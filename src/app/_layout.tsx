@@ -21,9 +21,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
-import { QueryClientProvider, focusManager, onlineManager } from '@tanstack/react-query';
+import { focusManager, onlineManager } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import { createQueryClient } from '@/lib/queryClient';
 import { attachAuthBridge } from '@/lib/authBridge';
@@ -268,6 +272,22 @@ export default function RootLayout() {
   // HMR-driven double-mount cannot accidentally share a stale cache.
   const [queryClient] = useState(() => createQueryClient());
 
+  // Phase 31 Plan 08 — persistence. AsyncStorage-backed persister with selective
+  // dehydration: 'chat' root and 'plans/photos' + 'plans/allPhotos' are excluded.
+  // - Chat: high-volume + most-sensitive; survives only in memory.
+  // - Plan photos: signed URLs have a ~1h TTL — persisting would surface expired URLs
+  //   on cold start (Phase 22 STATE decision).
+  // The persister `key` is bumpable on shape-breaking cache changes; `buster` is the
+  // app version so persistence is reset across app updates without a manual flush.
+  const [persister] = useState(() =>
+    createAsyncStoragePersister({
+      storage: AsyncStorage,
+      key: 'campfire-query-cache-v1',
+      throttleTime: 1000,
+    }),
+  );
+  const APP_VERSION = Constants.expoConfig?.version ?? 'dev';
+
   // Dev-only — auto-gated on __DEV__ by the plugin itself (TSQ-09). Never ships to prod.
   useReactQueryDevTools(queryClient);
 
@@ -392,12 +412,30 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: DARK.surface.base }}>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister,
+          maxAge: 24 * 60 * 60 * 1000,
+          buster: APP_VERSION,
+          dehydrateOptions: {
+            // Exclude high-churn / sensitive / TTL-bound queries from persistence.
+            // 'chat' root: high-volume and sensitive — stays in memory only.
+            // 'plans/photos' + 'plans/allPhotos': 1h signed URLs expire on cold start.
+            shouldDehydrateQuery: (query) => {
+              const [root, sub] = query.queryKey as readonly string[];
+              if (root === 'chat') return false;
+              if (root === 'plans' && (sub === 'photos' || sub === 'allPhotos')) return false;
+              return true;
+            },
+          },
+        }}
+      >
         <ThemeProvider>
           <OfflineBanner />
           <RootLayoutStack session={session} needsProfileSetup={needsProfileSetup} />
         </ThemeProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </GestureHandlerRootView>
   );
 }

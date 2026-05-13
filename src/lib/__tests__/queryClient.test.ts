@@ -21,8 +21,8 @@ describe('queryClient defaults', () => {
     expect(opts.queries?.staleTime).toBe(60_000);
   });
 
-  it('gcTime is 5 * 60_000', () => {
-    expect(opts.queries?.gcTime).toBe(5 * 60_000);
+  it('gcTime is 24h (Wave 8 — required for PersistQueryClientProvider)', () => {
+    expect(opts.queries?.gcTime).toBe(24 * 60 * 60 * 1000);
   });
 
   it('refetchOnWindowFocus is false (RN does not fire window focus)', () => {
