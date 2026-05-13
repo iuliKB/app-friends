@@ -1,15 +1,30 @@
-// Phase 2 v1.3 — Heartbeat-aware status hook (D-33, D-34, OVR-02, OVR-03).
+// Phase 31 Plan 06 — Migrated to hybrid TanStack Query + useStatusStore mirror.
 //
-// Reads: public.effective_status view (D-16 view is source of truth).
-// Writes: public.statuses table (views are not writable).
-// Cross-screen sync: Zustand useStatusStore (replaces D-25 react-query plan).
-// Debounce: module-scope lastTouchAt ref, 60s floor (D-34, T-02-15 mitigation).
-// Signout: module-scope auth subscriber clears store (T-02-16 mitigation).
+// HYBRID PATTERN (research Open Q #3; 31-PATTERNS.md line 430):
+//   - useStatusStore.currentStatus STAYS — _layout.tsx:106-111 (notification
+//     dispatcher) reads it synchronously from OUTSIDE the React tree. That read
+//     path is the load-bearing constraint that keeps the store alive.
+//   - FETCHING moves into useQuery(queryKeys.status.own(userId)).
+//   - The query result is mirrored into useStatusStore via a useEffect so the
+//     dispatcher always sees the freshest value.
+//   - setMutation onMutate writes BOTH setQueryData AND
+//     useStatusStore.getState().setCurrentStatus — they stay in sync during the
+//     optimistic window. onError restores BOTH from ctx.previous.
+//   - The auth listener that previously cleared useStatusStore on SIGNED_OUT in
+//     this file MOVED to authBridge.ts (Task 4). The notification-side cleanup
+//     halves (cancelExpiryNotification / cancelMorningPrompt) STAY here as a
+//     dedicated module-scope listener.
+//
+// Public shape (UseStatusResult) verbatim-preserved so the 5 consumers (
+// _layout.tsx, (tabs)/_layout.tsx, MoodPicker, ReEngagementBanner, OwnStatusPill,
+// HomeScreen, OwnStatusCard) need zero edits.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useCallback, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useStatusStore } from '@/stores/useStatusStore';
+import { queryKeys } from '@/lib/queryKeys';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { computeWindowExpiry } from '@/lib/windows';
 import type { StatusValue, WindowId, CurrentStatus, HeartbeatState } from '@/types/app';
@@ -18,28 +33,26 @@ import { scheduleExpiryNotification, cancelExpiryNotification } from '@/lib/expi
 import { cancelMorningPrompt } from '@/lib/morningPrompt';
 
 // ---------------------------------------------------------------------------
-// Auth listener (module scope) — clears cached status on signout.
-// Mitigates T-02-16: cached currentStatus must not bleed across sessions.
-// Subscribed exactly once per JS module load (not per hook render).
+// Notification-side cleanup on sign-out — kept here because notifications are
+// status-domain side effects, not generic cache concerns. The store-clear half
+// moved to authBridge.ts (Task 4) so cache + status-store reset together.
 // ---------------------------------------------------------------------------
-let authListenerInstalled = false;
-function installAuthListenerOnce() {
-  if (authListenerInstalled) return;
-  authListenerInstalled = true;
+let notificationListenerInstalled = false;
+function installNotificationCleanupOnce() {
+  if (notificationListenerInstalled) return;
+  notificationListenerInstalled = true;
   useAuthStore.subscribe((state, prev) => {
     if (prev?.session && !state.session) {
-      useStatusStore.getState().clear();
-      // Phase 3 EXPIRY-01 — tear down scheduled expiry notification on signout
       cancelExpiryNotification().catch(() => {});
-      // Phase 4 D-33 — tear down scheduled morning prompt on signout
       cancelMorningPrompt().catch(() => {});
     }
   });
 }
+installNotificationCleanupOnce();
 
 // ---------------------------------------------------------------------------
 // Phase 3 FREE-06 / D-14, D-15 — timezone sync with Hermes iOS guard.
-// Called from the hydrate effect on session change. Fire-and-forget; silent on error.
+// Called fire-and-forget on session change. Silent on error.
 // ---------------------------------------------------------------------------
 async function syncDeviceTimezone(userId: string): Promise<void> {
   let tz: string | null = null;
@@ -55,13 +68,12 @@ async function syncDeviceTimezone(userId: string): Promise<void> {
   }
   if (!tz) return; // Fail-open per D-16 — Edge Function falls back to UTC
 
-  // Only write if value differs from what's stored
   const { data: existing } = await supabase
     .from('profiles')
     .select('timezone')
     .eq('id', userId)
     .maybeSingle();
-  if (existing?.timezone === tz) return;
+  if ((existing as { timezone?: string | null } | null)?.timezone === tz) return;
 
   await supabase.from('profiles').update({ timezone: tz }).eq('id', userId);
 }
@@ -88,100 +100,158 @@ export interface UseStatusResult {
   touch: () => Promise<void>;
 }
 
+interface SetStatusInput {
+  mood: StatusValue;
+  tag: string | null;
+  windowId: WindowId;
+  customExpiry?: Date;
+}
+
 export function useStatus(): UseStatusResult {
-  installAuthListenerOnce();
-
   const session = useAuthStore((s) => s.session);
-  const currentStatus = useStatusStore((s) => s.currentStatus);
-  const setCurrentStatus = useStatusStore((s) => s.setCurrentStatus);
-  const updateLastActive = useStatusStore((s) => s.updateLastActive);
+  const userId = session?.user?.id ?? null;
+  const queryClient = useQueryClient();
+  const key = queryKeys.status.own(userId ?? '');
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Hydrate from effective_status view on session change (OVR-03).
+  const query = useQuery({
+    queryKey: key,
+    queryFn: async (): Promise<CurrentStatus | null> => {
+      if (!userId) return null;
+      // Fire-and-forget timezone sync alongside the hydrate read.
+      syncDeviceTimezone(userId).catch(() => {});
+      const { data, error } = await supabase
+        .from('effective_status')
+        .select('effective_status, context_tag, status_expires_at, last_active_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (error) throw error;
+      const row = data as
+        | {
+            effective_status: StatusValue | null;
+            context_tag: string | null;
+            status_expires_at: string;
+            last_active_at: string;
+          }
+        | null;
+      if (!row || !row.effective_status) return null;
+      return {
+        status: row.effective_status,
+        context_tag: row.context_tag ?? null,
+        status_expires_at: row.status_expires_at,
+        last_active_at: row.last_active_at,
+        window_id: null,
+      };
+    },
+    enabled: !!userId,
+  });
+
+  // Mirror the query result into useStatusStore so the notification dispatcher
+  // in _layout.tsx (outside the React tree) keeps reading the freshest value.
+  // This is the load-bearing line for the hybrid pattern — research Open Q #3.
   useEffect(() => {
-    if (!session) {
-      setLoading(false);
-      return;
+    if (query.data !== undefined) {
+      useStatusStore.getState().setCurrentStatus(query.data);
     }
-    // Phase 3 — timezone sync (D-15). Fire-and-forget, does not gate loading state.
-    syncDeviceTimezone(session.user.id).catch(() => {});
-    setLoading(true);
-    supabase
-      .from('effective_status')
-      .select('effective_status, context_tag, status_expires_at, last_active_at')
-      .eq('user_id', session.user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!error && data && data.effective_status) {
-          setCurrentStatus({
-            status: data.effective_status as StatusValue,
-            context_tag: (data.context_tag as string | null) ?? null,
-            status_expires_at: data.status_expires_at as string,
-            last_active_at: data.last_active_at as string,
-            window_id: null, // Server doesn't store window_id; re-derived only on client setStatus
-          });
-        } else {
-          setCurrentStatus(null);
-        }
-        setLoading(false);
-      });
-  }, [session, setCurrentStatus]);
+  }, [query.data]);
+
+  const setMutation = useMutation({
+    mutationFn: async (input: SetStatusInput) => {
+      if (!userId) throw new Error('Not ready');
+      const now = new Date();
+      const expiry = input.customExpiry ?? computeWindowExpiry(input.windowId, now);
+      const nowIso = now.toISOString();
+      const expiryIso = expiry.toISOString();
+
+      const { error } = await supabase.from('statuses').upsert(
+        {
+          user_id: userId,
+          status: input.mood,
+          context_tag: input.tag,
+          status_expires_at: expiryIso,
+          last_active_at: nowIso,
+        },
+        { onConflict: 'user_id' }
+      );
+      if (error) throw error;
+
+      // Schedule the expiry notification on success only.
+      scheduleExpiryNotification(expiry, input.mood).catch(() => {});
+      markPushPromptEligible().catch(() => {});
+      lastTouchAt = Date.now();
+
+      return {
+        status: input.mood,
+        context_tag: input.tag,
+        status_expires_at: expiryIso,
+        last_active_at: nowIso,
+        window_id: input.customExpiry !== undefined ? null : input.windowId,
+      } satisfies CurrentStatus;
+    },
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.status.own(userId ?? '') });
+      const previous = queryClient.getQueryData<CurrentStatus | null>(
+        queryKeys.status.own(userId ?? ''),
+      );
+
+      const now = new Date();
+      const expiry = input.customExpiry ?? computeWindowExpiry(input.windowId, now);
+      const optimistic: CurrentStatus = {
+        status: input.mood,
+        context_tag: input.tag,
+        status_expires_at: expiry.toISOString(),
+        last_active_at: now.toISOString(),
+        window_id: input.customExpiry !== undefined ? null : input.windowId,
+      };
+
+      queryClient.setQueryData<CurrentStatus | null>(
+        queryKeys.status.own(userId ?? ''),
+        optimistic,
+      );
+      // Mirror to useStatusStore (outside-React read path).
+      useStatusStore.getState().setCurrentStatus(optimistic);
+
+      return { previous };
+    },
+    onError: (_err, _input, ctx) => {
+      if (ctx?.previous !== undefined) {
+        queryClient.setQueryData<CurrentStatus | null>(
+          queryKeys.status.own(userId ?? ''),
+          ctx.previous,
+        );
+        useStatusStore.getState().setCurrentStatus(ctx.previous as CurrentStatus | null);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.status.own(userId ?? '') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home.friends(userId ?? '') });
+    },
+  });
 
   const setStatus = useCallback(
     async (
       mood: StatusValue,
       tag: string | null,
       windowId: WindowId,
-      customExpiry?: Date
+      customExpiry?: Date,
     ): Promise<{ error: string | null }> => {
       if (!session) return { error: 'Not ready' };
       setSaving(true);
-
-      const now = new Date();
-      // When a custom expiry is provided, it overrides the canonical window math.
-      // window_id is stored as null in that case — there's no canned window to
-      // anchor the Keep-it action against.
-      const expiry = customExpiry ?? computeWindowExpiry(windowId, now);
-      const isCustom = customExpiry !== undefined;
-      const nowIso = now.toISOString();
-      const expiryIso = expiry.toISOString();
-
-      const { error } = await supabase.from('statuses').upsert(
-        {
-          user_id: session.user.id,
-          status: mood,
-          context_tag: tag,
-          status_expires_at: expiryIso,
-          last_active_at: nowIso,
-        },
-        { onConflict: 'user_id' }
-      );
-
-      if (!error) {
-        setCurrentStatus({
-          status: mood,
-          context_tag: tag,
-          status_expires_at: expiryIso,
-          last_active_at: nowIso,
-          window_id: isCustom ? null : windowId, // Phase 3 — carry for Keep-it action (CONTEXT D-03)
-        });
-        // Phase 3 EXPIRY-01 — schedule 30-min-before-expiry local notification (D-01, D-02)
-        scheduleExpiryNotification(expiry, mood).catch(() => {});
-        // PUSH-08 (Plan 01): mark push-prompt eligibility on first meaningful action.
-        markPushPromptEligible().catch(() => {});
-        // Reset touch debounce — we just wrote last_active_at.
-        lastTouchAt = Date.now();
+      try {
+        await setMutation.mutateAsync({ mood, tag, windowId, customExpiry });
+        return { error: null };
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : 'setStatus failed' };
+      } finally {
+        setSaving(false);
       }
-      setSaving(false);
-      return { error: error?.message ?? null };
     },
-    [session, setCurrentStatus]
+    [session, setMutation],
   );
 
   const touch = useCallback(async (): Promise<void> => {
-    if (!session) return;
+    if (!session || !userId) return;
     const nowMs = Date.now();
     if (nowMs - lastTouchAt < TOUCH_DEBOUNCE_MS) return; // D-34
     lastTouchAt = nowMs;
@@ -190,24 +260,31 @@ export function useStatus(): UseStatusResult {
     const { error } = await supabase
       .from('statuses')
       .update({ last_active_at: nowIso })
-      .eq('user_id', session.user.id);
+      .eq('user_id', userId);
     if (!error) {
-      updateLastActive(nowIso);
+      useStatusStore.getState().updateLastActive(nowIso);
+      // Also mirror into the cache so the next render reads the fresh value.
+      queryClient.setQueryData<CurrentStatus | null>(
+        queryKeys.status.own(userId),
+        (old) => (old ? { ...old, last_active_at: nowIso } : old),
+      );
     }
-  }, [session, updateLastActive]);
+  }, [session, userId, queryClient]);
+
+  const currentStatus = query.data ?? null;
 
   const heartbeatState = useMemo<HeartbeatState>(
     () =>
       computeHeartbeatState(
         currentStatus?.status_expires_at ?? null,
-        currentStatus?.last_active_at ?? null
+        currentStatus?.last_active_at ?? null,
       ),
-    [currentStatus?.status_expires_at, currentStatus?.last_active_at]
+    [currentStatus?.status_expires_at, currentStatus?.last_active_at],
   );
 
   return {
     currentStatus,
-    loading,
+    loading: query.isLoading,
     saving,
     heartbeatState,
     setStatus,
