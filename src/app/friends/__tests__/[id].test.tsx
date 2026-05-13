@@ -138,20 +138,15 @@ jest.mock('@/components/friends/QuickActionsRow', () => {
   const React = require('react');
   const { View, TouchableOpacity, Text } = require('react-native');
   return {
-    QuickActionsRow: ({ onMessage, onToggleMute, onPhotos, onMore, isMuted, friendFirstName }: {
+    QuickActionsRow: ({ onMessage, onPhotos, onMore, friendFirstName }: {
       onMessage: () => void;
-      onToggleMute: () => void;
       onPhotos: () => void;
       onMore: () => void;
-      isMuted: boolean;
       friendFirstName: string;
     }) =>
       React.createElement(View, { testID: 'quick-actions-row' },
         React.createElement(TouchableOpacity, { onPress: onMessage, accessibilityLabel: `Message ${friendFirstName}` },
           React.createElement(Text, null, 'Message'),
-        ),
-        React.createElement(TouchableOpacity, { onPress: onToggleMute, accessibilityLabel: isMuted ? `Unmute ${friendFirstName}` : `Mute ${friendFirstName}` },
-          React.createElement(Text, null, isMuted ? 'Unmute' : 'Mute'),
         ),
         React.createElement(TouchableOpacity, { onPress: onPhotos },
           React.createElement(Text, null, 'Photos'),
@@ -379,7 +374,7 @@ beforeEach(() => {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-test('REQ-FP-07 happy path: renders bio, friends since, birthday, timezone, and all mutual rows', () => {
+test('REQ-FP-07 happy path: renders bio, friends since, birthday, wish list nav row, and all mutual rows', () => {
   render(<FriendProfileScreen />);
 
   // Bio section
@@ -388,8 +383,10 @@ test('REQ-FP-07 happy path: renders bio, friends since, birthday, timezone, and 
   expect(screen.getByText('Friends since')).toBeTruthy();
   // Birthday row
   expect(screen.getByText('Birthday')).toBeTruthy();
-  // Timezone row
-  expect(screen.getByText('Timezone')).toBeTruthy();
+  // Wish list nav row (replaces the old Timezone row)
+  expect(screen.getByText('Wish list')).toBeTruthy();
+  // Timezone row is gone
+  expect(screen.queryByText('Timezone')).toBeNull();
   // MUTUAL section rows
   expect(screen.getByText('Mutual plans')).toBeTruthy();
   expect(screen.getByText('Mutual friends')).toBeTruthy();
@@ -403,7 +400,7 @@ test('REQ-FP-07 happy path: renders bio, friends since, birthday, timezone, and 
   expect(screen.getByText('WISH LIST')).toBeTruthy();
 });
 
-test('REQ-FP-07 sparse profile: no bio/birthday/timezone — INFO shows only Friends since; MUTUAL shows None yet', () => {
+test('REQ-FP-07 sparse profile: no bio/birthday — INFO shows Friends since + Wish list; MUTUAL shows None yet', () => {
   mockUseFriendProfile.mockReturnValue({
     data: {
       profile: {
@@ -441,11 +438,13 @@ test('REQ-FP-07 sparse profile: no bio/birthday/timezone — INFO shows only Fri
   expect(screen.queryByText('Bio')).toBeNull();
   // Birthday row should not appear
   expect(screen.queryByText('Birthday')).toBeNull();
-  // Timezone row should not appear
+  // Timezone row is permanently removed
   expect(screen.queryByText('Timezone')).toBeNull();
-  // MUTUAL rows should show "None yet" for zero counts
+  // Wish list nav row always appears
+  expect(screen.getByText('Wish list')).toBeTruthy();
+  // "None yet" appears for: mutual plans, mutual friends, shared photos, wish list
   const noneYetInstances = screen.getAllByText('None yet');
-  expect(noneYetInstances.length).toBeGreaterThanOrEqual(3); // plans, friends, photos at min
+  expect(noneYetInstances.length).toBeGreaterThanOrEqual(4);
 });
 
 test('REQ-FP-06 Message button: calls openChat with dmFriend params', async () => {
