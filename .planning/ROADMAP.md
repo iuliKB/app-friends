@@ -125,7 +125,7 @@ Plans:
 - [x] 32-01-PLAN.md — Last-entry preview data layer: extend useChatList SELECTs + join polls.question + compute per-kind preview + sender attribution + ChatListItem type fields (Wave 1)
 - [ ] 32-02-PLAN.md — Last-entry preview UI: refactor ChatListRow preview composition with Ionicon + sender prefix + italic-for-deleted (Wave 2, depends on 32-01)
 - [ ] 32-03-PLAN.md — Chat list reactivity: add realtimeBridge.subscribeChatList global Realtime subscription + mount via useEffect in useChatList (Wave 2, depends on 32-01 due to useChatList.ts overlap)
-- [ ] 32-04-PLAN.md — Send reliability + chat-list invalidation: tiered onSettled policy across sendMessage / sendImage / sendPoll / sendChatTodo / completeChatTodo + ChatRoomScreen await refetch + src/hooks/README.md doc (Wave 1)
+- [x] 32-04-PLAN.md — Send reliability + chat-list invalidation: tiered onSettled policy across sendMessage / sendImage / sendPoll / sendChatTodo / completeChatTodo + ChatRoomScreen await refetch + src/hooks/README.md doc (Wave 1)
 
 ---
 

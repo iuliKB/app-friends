@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 32-01-PLAN.md (3/3 tasks; data-layer for last-entry previews ready for Plan 32-02 UI)
-last_updated: "2026-05-13T13:15:22.038Z"
+stopped_at: Completed 32-04-PLAN.md
+last_updated: "2026-05-13T13:25:49.459Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 32
-  completed_plans: 29
-  percent: 91
+  completed_plans: 30
+  percent: 94
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 32 (chat-list-reactivity-widget-send-reliability-and-last-entry-) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -162,6 +162,8 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Phase 32 Plan 01: first_name derived from display_name (split on first whitespace) — schema lacks dedicated first_name column; documented as Rule 1+3 deviation in SUMMARY
 - [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Phase 32 Plan 01: lastMessageKind + lastMessageSenderName declared REQUIRED on ChatListItem (null is a legitimate value for the no-messages branch) — type-safe representation forces consumer null-checks
 - [Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry-]: Phase 32 Plan 01: polls table accessed via (supabase as any) cast — generated database.ts does not include polls yet; same pattern as usePoll.ts:61 and Phase 29.1 hooks; regeneration deferred
+- [Phase 32]: Plan 32-04: sendPoll uses onSuccess (not onSettled) for chat-cache invalidates, preserving its @mutationShape: no-optimistic exemption rationale
+- [Phase 32]: Plan 32-04: completeChatTodo's chatScope arg is optional — backwards-compatible for non-chat callers (Squad useTodos, Home tile mocks)
 
 ### Roadmap Evolution
 
@@ -197,8 +199,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31-adopt-tanstack-query-for-server-state-caching-and-cross-scre P07 | 5 min | 3 tasks | 5 files |
 | Phase 31 P08 | 18min | 8 tasks | 17 files |
 | Phase 32-chat-list-reactivity-widget-send-reliability-and-last-entry- P01 | 10min | 3 tasks | 3 files |
+| Phase 32 P04 | ~6.5min | 5 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T13:15:22.034Z
-Stopped at: Completed 32-01-PLAN.md (3/3 tasks; data-layer for last-entry previews ready for Plan 32-02 UI)
+Last session: 2026-05-13T13:25:49.455Z
+Stopped at: Completed 32-04-PLAN.md
