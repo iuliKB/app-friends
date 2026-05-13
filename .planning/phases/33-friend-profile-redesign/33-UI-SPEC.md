@@ -114,7 +114,7 @@ Source: `src/theme/typography.ts`. Phase 33 uses exactly **4 font sizes** and **
 | Role | Token | Size | Font Family | Weight | Line Height | Usage |
 |------|-------|------|-------------|--------|-------------|-------|
 | Display name (header) | `FONT_SIZE.xxl` | 24px | `FONT_FAMILY.display.semibold` | 600 | 28px (1.17) | Centered display name in header |
-| Section title (small caps) | `FONT_SIZE.xs` | 12px | `FONT_FAMILY.body.semibold` | 600 | 16px (1.33) | "INFO", "MUTUAL", "WISH LIST" — `textTransform: 'uppercase'`, `letterSpacing: 0.5`, color `text.secondary`, left-aligned with `paddingHorizontal: SPACING.lg` |
+| Section title (small caps) | `FONT_SIZE.xs` | 12px | `FONT_FAMILY.body.semibold` | 600 | 16px (1.33) | "INFO", "MUTUAL", "WISH LIST" — `textTransform: 'uppercase'`, `letterSpacing: 0.5` (raw value — requires `// eslint-disable-next-line campfire/no-hardcoded-styles` per existing repo convention, see `src/app/friends/[id].tsx` `marginRight: 6` precedent), color `text.secondary`, left-aligned with `paddingHorizontal: SPACING.lg` |
 | Row label (primary) | `FONT_SIZE.lg` | 16px | `FONT_FAMILY.body.regular` | 400 | 22px (1.375) | "Bio", "Friends since", "Mutual plans", etc. — color `text.primary` |
 | Row value (secondary) | `FONT_SIZE.md` | 14px | `FONT_FAMILY.body.regular` | 400 | 20px (1.43) | "May 2024", "London", "+ $14.50", etc. — color `text.secondary`, right-aligned |
 | Quick-action label | `FONT_SIZE.xs` | 12px | `FONT_FAMILY.body.semibold` | 600 | 16px (1.33) | "Message", "Mute", "Photos", "More" — under each circular icon button |
@@ -385,7 +385,7 @@ All four buttons render the same `ActionIconButton` shape:
 | Button | Icon | Label | Tone | onPress |
 |--------|------|-------|------|---------|
 | Message | `chatbubble-outline` | "Message" | `accent` (glyph in `colors.interactive.accent`) | `await openChat(router, { kind: 'dmFriend', friendId, friendName: profile.display_name })` then `Haptics.impactAsync(Light)` BEFORE the navigation push (so the haptic fires the moment the user commits) |
-| Mute | `notifications-off-outline` (when muted) / `notifications-outline` (when unmuted) | "Mute" / "Unmute" (toggles label) | `default` (glyph in `colors.text.primary`) | Toggle `chat_settings.is_muted` for the DM channel via mutation. Pattern 5 with optimistic flip on `chat_settings.muted(channelId)` cache slot. `Haptics.selectionAsync()` after the toggle commits locally. Show inline spinner via `disabled` if mutation is in flight > 250ms. |
+| Mute | `notifications-off-outline` (when muted) / `notifications-outline` (when unmuted) | "Mute" / "Unmute" (toggles label) | `default` (glyph in `colors.text.primary`) | Toggle `chat_preferences.is_muted` for the DM channel via mutation (canonical table from migration `0022_chat_preferences.sql`; composite key `(user_id, chat_type, chat_id)`). Pattern 5 with optimistic flip on `queryKeys.chat.preferences(channelId)` cache slot (matches the `chat_preferences` read path in `src/hooks/useChatList.ts:357` and `src/screens/chat/ChatListScreen.tsx:99,120`). `Haptics.selectionAsync()` after the toggle commits locally. Show inline spinner via `disabled` if mutation is in flight > 250ms. |
 | Photos | `images-outline` | "Photos" | `default` | Navigate to shared-photos viewer route (Claude's discretion per CONTEXT.md — recommendation: `/memories?friendId={id}` extending the existing Memories route rather than a new `/friends/[id]/photos`). [Discretion] |
 | More | `ellipsis-horizontal` | "More" | `default` | Invoke `action-sheet.ts` with options: `["Remove Friend", "Cancel"]`, destructive index = 0, cancel index = 1. Future moderation phase adds "Block". |
 
@@ -644,7 +644,7 @@ Non-binding but pre-decided implementation guidance for the executor — keep th
 2. The Stack header `headerTitle` is rendered as `() => <AnimatedStackTitle scrollY={scrollY} displayName={profile.display_name} />` — separate component because expo-router clones the render-prop each navigation event.
 3. Reanimated v4 mock at `src/__mocks__/reanimated.js` already includes `useReducedMotion` per Phase 29.1-04 (verified). New tests can rely on it.
 4. `useFriendProfile` exposes `data: { profile, status, contextTag } | null` — components destructure once at the top of `FriendProfileScreen`. Avoid prop-drilling individual fields.
-5. Bio mutation lives in `useUpdateMyBio` (or extends existing `useUpdateProfile` if one exists) — invalidates `queryKeys.friends.profile(myId)` AND the inverse-key `queryKeys.friends.profile(friendId)` for whichever friend views the editor's owner. Pattern-5 with optimistic flip. mutationShape regression gate applies.
+5. Bio mutation lives in a **new `useUpdateMyBio` hook** at `src/hooks/useUpdateMyBio.ts` (no existing `useUpdateProfile` hook exists in the codebase — confirmed by checker). Invalidates `queryKeys.friends.profile(myId)`. Pattern-5 with optimistic flip on the `profiles.bio` field. mutationShape regression gate applies.
 
 ---
 
