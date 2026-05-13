@@ -73,6 +73,7 @@ function setupPollMock() {
           eq: () => Promise.resolve({ data: VOTES_INITIAL, error: null }),
         }),
         insert: () => Promise.resolve({ data: null, error: null }),
+        upsert: () => Promise.resolve({ data: null, error: null }),
         delete: () => ({
           eq: () => ({
             eq: () => Promise.resolve({ data: null, error: null }),
@@ -119,6 +120,64 @@ describe('usePoll (migrated to TanStack Query)', () => {
 
     unmount();
     expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  // Regression: changing a vote (A → B) must NOT go through DELETE-then-INSERT.
+  // That two-write sequence emitted two realtime echoes — the DELETE invalidate
+  // triggered a refetch that could land before INSERT committed, overwriting
+  // the optimistic state and making the new vote appear lost. With an upsert
+  // on PK (poll_id, user_id) the change is one atomic UPDATE and one event.
+  it('change-vote calls upsert exactly once and does not call delete', async () => {
+    const upsertSpy = jest.fn(() => Promise.resolve({ data: null, error: null }));
+    const deleteEqEq = jest.fn(() => Promise.resolve({ data: null, error: null }));
+    const insertSpy = jest.fn(() => Promise.resolve({ data: null, error: null }));
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'polls') {
+        return {
+          select: () => ({
+            eq: () => ({ single: () => Promise.resolve({ data: POLL_ROW, error: null }) }),
+          }),
+        };
+      }
+      if (table === 'poll_options') {
+        return {
+          select: () => ({
+            eq: () => ({
+              order: () => Promise.resolve({ data: OPTIONS, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === 'poll_votes') {
+        return {
+          select: () => ({
+            // Seed: self already voted for option 'o1' (so this is a CHANGE-vote case)
+            eq: () => Promise.resolve({
+              data: [{ option_id: 'o1', user_id: 'u-self' }],
+              error: null,
+            }),
+          }),
+          insert: insertSpy,
+          upsert: upsertSpy,
+          delete: () => ({ eq: () => ({ eq: deleteEqEq }) }),
+        };
+      }
+      return {};
+    });
+
+    const { wrapper } = createTestQueryClient();
+    const { result } = renderHook(() => usePoll('p1'), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.pollState?.myVotedOptionId).toBe('o1');
+
+    await act(async () => {
+      await result.current.vote('o2');
+    });
+
+    expect(upsertSpy).toHaveBeenCalledTimes(1);
+    expect(deleteEqEq).not.toHaveBeenCalled();
+    expect(insertSpy).not.toHaveBeenCalled();
   });
 
   it('vote invalidates polls.poll on settle', async () => {

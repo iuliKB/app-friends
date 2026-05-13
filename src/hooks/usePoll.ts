@@ -120,11 +120,6 @@ export function usePoll(
       if (!currentUserId) throw new Error('Not authenticated');
       if (!pollId) throw new Error('No poll');
 
-      // optionId === null → unvote only (delete the user's row).
-      // optionId !== null → if user had a prior vote, delete it; insert new.
-      const cached = queryClient.getQueryData<PollState | null>(pollKey);
-      const oldOptionId = cached?.myVotedOptionId ?? null;
-
       if (input.optionId === null) {
         // Pure unvote
         const { error } = await supabase
@@ -136,21 +131,19 @@ export function usePoll(
         return;
       }
 
-      // Vote — delete any prior vote then insert. (DB also has a unique-per-user
-      // constraint that the pre-migration code worked around the same way.)
-      if (oldOptionId) {
-        const { error: deleteError } = await supabase
-          .from('poll_votes')
-          .delete()
-          .eq('poll_id', pollId)
-          .eq('user_id', currentUserId);
-        if (deleteError) throw deleteError;
-      }
-
-      const { error: insertError } = await supabase
+      // Change-vote: must be a single atomic write. The earlier DELETE-then-INSERT
+      // emitted two realtime events for poll_votes; the DELETE echo triggered an
+      // invalidate+refetch that could land between the two writes and overwrite the
+      // optimistic state with `myVotedOptionId = null` (or revert to the prior vote
+      // depending on which refetch response wins). PK is (poll_id, user_id), so an
+      // upsert on that conflict target performs one UPDATE and emits one event.
+      const { error: upsertError } = await supabase
         .from('poll_votes')
-        .insert({ poll_id: pollId, option_id: input.optionId, user_id: currentUserId });
-      if (insertError) throw insertError;
+        .upsert(
+          { poll_id: pollId, option_id: input.optionId, user_id: currentUserId },
+          { onConflict: 'poll_id,user_id' },
+        );
+      if (upsertError) throw upsertError;
     },
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: pollKey });
