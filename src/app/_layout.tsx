@@ -16,12 +16,17 @@ import {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
 } from '@expo-google-fonts/plus-jakarta-sans';
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, type AppStateStatus, Platform, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
+import { QueryClientProvider, focusManager, onlineManager } from '@tanstack/react-query';
+import { useReactQueryDevTools } from '@dev-plugins/react-query';
+import NetInfo from '@react-native-community/netinfo';
 import { supabase } from '@/lib/supabase';
+import { createQueryClient } from '@/lib/queryClient';
+import { attachAuthBridge } from '@/lib/authBridge';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { DARK, SPACING, FONT_SIZE, FONT_WEIGHT, FONT_FAMILY, ThemeProvider, useTheme } from '@/theme';
@@ -258,6 +263,39 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
   });
 
+  // Phase 31 — TanStack Query foundation.
+  // Lazy initialiser keeps the cache instance tied to RootLayout's lifetime, so an
+  // HMR-driven double-mount cannot accidentally share a stale cache.
+  const [queryClient] = useState(() => createQueryClient());
+
+  // Dev-only — auto-gated on __DEV__ by the plugin itself (TSQ-09). Never ships to prod.
+  useReactQueryDevTools(queryClient);
+
+  // focusManager — pause/resume queries when the OS surfaces or backgrounds the app.
+  useEffect(() => {
+    function onAppStateChange(status: AppStateStatus) {
+      if (Platform.OS !== 'web') {
+        focusManager.setFocused(status === 'active');
+      }
+    }
+    const sub = AppState.addEventListener('change', onAppStateChange);
+    return () => sub.remove();
+  }, []);
+
+  // onlineManager — refetch on reconnect via NetInfo.
+  useEffect(() => {
+    const unsubscribe = onlineManager.setEventListener((setOnline) =>
+      NetInfo.addEventListener((state) => setOnline(!!state.isConnected)),
+    );
+    return unsubscribe;
+  }, []);
+
+  // Auth bridge — clears query cache on SIGNED_OUT (TSQ-10, T-31-04 mitigation).
+  useEffect(() => {
+    const off = attachAuthBridge(queryClient);
+    return off;
+  }, [queryClient]);
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       setSession(s);
@@ -354,10 +392,12 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: DARK.surface.base }}>
-      <ThemeProvider>
-        <OfflineBanner />
-        <RootLayoutStack session={session} needsProfileSetup={needsProfileSetup} />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <OfflineBanner />
+          <RootLayoutStack session={session} needsProfileSetup={needsProfileSetup} />
+        </ThemeProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }
