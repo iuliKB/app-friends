@@ -2,7 +2,7 @@
 phase: 33
 slug: friend-profile-redesign
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-05-13
 ---
@@ -40,20 +40,20 @@ created: 2026-05-13
 
 | Req ID | Plan (TBD) | Wave (TBD) | Behavior | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |--------|------------|------------|----------|------------|-----------------|-----------|-------------------|-------------|--------|
-| REQ-FP-01 | TBD | TBD | `useFriendProfile` returns profile + status; shares cache slice with home; refetches on invalidate | — | N/A | unit | `npm test -- --testPathPatterns=useFriendProfile` | ❌ W0 | ⬜ pending |
-| REQ-FP-02 | TBD | TBD | Migration 0027 applies cleanly; `bio` column nullable; profile rows still SELECT-able | T-33-RLS | RLS unchanged; bio reads work for any authenticated user | manual (psql up/down) | n/a | ❌ W0 (manual gate) | ⬜ pending |
-| REQ-FP-03 | TBD | TBD | `useUpdateMyBio` follows Pattern 5; invalidates own profile cache | T-33-XSS | React Native `<Text>` auto-escapes user input | unit | `npm test -- --testPathPatterns=useUpdateMyBio` | ❌ W0 | ⬜ pending |
-| REQ-FP-04 | TBD | TBD | Header collapse interpolation values match UI-SPEC at scrollY offsets 0, 80, 160 | — | N/A | manual hardware | n/a | ❌ W0 | ⬜ pending |
-| REQ-FP-05 | TBD | TBD | Blurred wash renders; fades in on `onLoad`; falls back to `surface.card` when avatar null | — | N/A | manual hardware | n/a | ❌ W0 | ⬜ pending |
-| REQ-FP-06 | TBD | TBD | Quick actions: Message opens DM; Mute toggles `chat_preferences.is_muted`; Photos navigates; More opens ActionSheet | — | N/A | unit (handler-level) + manual (visual + haptics) | `npm test -- --testPathPatterns=FriendProfileScreen` | ❌ W0 | ⬜ pending |
-| REQ-FP-07 | TBD | TBD | INFO / MUTUAL grouped-inset sections render with correct row visibility (bio/birthday/timezone conditional; mutual rows always present with "None yet" when zero) | — | N/A | unit (RTL render assertions) | `npm test -- --testPathPatterns=FriendProfileScreen` | ❌ W0 | ⬜ pending |
-| REQ-FP-08 | TBD | TBD | `useFriendMutuals` returns correct counts; mutual rows tappable only when count > 0 | — | N/A | unit | `npm test -- --testPathPatterns=useFriendMutuals` | ❌ W0 | ⬜ pending |
-| REQ-FP-09 | TBD | TBD | Tap big avatar → `ImageViewerModal` opens with `imageUrl={profile.avatar_url}` | — | N/A | unit (state assertion) + manual (modal animation) | `npm test -- --testPathPatterns=FriendProfileScreen` | ❌ W0 | ⬜ pending |
-| REQ-FP-10 | TBD | TBD | Status pill reflects `effective_status` from shared `queryKeys.home.friends(myId)` slice when present; falls back to dedicated read when home cache empty | — | N/A | unit | `npm test -- --testPathPatterns=useFriendProfile.statusSharing` | ❌ W0 | ⬜ pending |
-| REQ-FP-11 | TBD | TBD | Remove Friend confirm Alert → optimistic remove from `friends.list(myId)` → `router.back()`; rollback on DELETE error | T-33-RACE | Second DELETE is no-op (no row matched); UI optimistic mask | unit (handler-level) | `npm test -- --testPathPatterns=FriendProfileScreen.removeFriend` | ❌ W0 | ⬜ pending |
-| REQ-FP-12 | TBD | TBD | Friend-not-found: when `friendships` returns empty for the pair, screen renders fallback empty state with "Back to friends" CTA | — | N/A | unit | `npm test -- --testPathPatterns=FriendProfileScreen.friendNotFound` | ❌ W0 | ⬜ pending |
-| GATE-mutationShape | TBD | TBD | New `useUpdateMyBio` passes regression gate (mutationFn + onMutate + onError + onSettled) | — | N/A | unit | `npx jest --testPathPatterns=mutationShape --no-coverage` | ✅ `src/hooks/__tests__/mutationShape.test.ts` | ⬜ pending |
-| GATE-queryKeys | TBD | TBD | New `friends.mutuals(friendId)`, `friends.sharedPhotos(friendId)`, `chat.preferences(channelId)` keys are unique and follow taxonomy convention | — | N/A | unit | `npm test -- --testPathPatterns=queryKeys` (planner adds if not present) | ❓ check at plan time | ⬜ pending |
+| REQ-FP-01 | 02 | W2 | `useFriendProfile` returns profile + status; shares cache slice with home; refetches on invalidate | — | N/A | unit | `npm test -- --testPathPatterns=useFriendProfile` | ❌ W0 | ⬜ pending |
+| REQ-FP-02 | 01 | W1 | Migration 0027 applies cleanly; `bio` column nullable; profile rows still SELECT-able | T-33-RLS | RLS unchanged; bio reads work for any authenticated user | manual (psql up/down) | n/a | ❌ W0 (manual gate) | ⬜ pending |
+| REQ-FP-03 | 01 + 07 | W1, W2 | `useUpdateMyBio` follows Pattern 5; invalidates own profile cache | T-33-XSS | React Native `<Text>` auto-escapes user input | unit | `npm test -- --testPathPatterns=useUpdateMyBio` | ❌ W0 | ⬜ pending |
+| REQ-FP-04 | 03 + 06 | W1, W3 | Header collapse interpolation values match UI-SPEC at scrollY offsets 0, 80, 160 | — | N/A | manual hardware | n/a | ❌ W0 | ⬜ pending |
+| REQ-FP-05 | 03 + 06 | W1, W3 | Blurred wash renders; fades in on `onLoad`; falls back to `surface.card` when avatar null | — | N/A | manual hardware | n/a | ❌ W0 | ⬜ pending |
+| REQ-FP-06 | 05 + 06 | W1, W3 | Quick actions: Message opens DM; Mute toggles `chat_preferences.is_muted`; Photos navigates; More opens ActionSheet | — | N/A | unit (handler-level) + manual (visual + haptics) | `npm test -- --testPathPatterns=FriendProfileScreen` | ❌ W0 | ⬜ pending |
+| REQ-FP-07 | 04 + 06 | W1, W3 | INFO / MUTUAL grouped-inset sections render with correct row visibility (bio/birthday/timezone conditional; mutual rows always present with "None yet" when zero) | — | N/A | unit (RTL render assertions) | `npm test -- --testPathPatterns=FriendProfileScreen` | ❌ W0 | ⬜ pending |
+| REQ-FP-08 | 02 | W2 | `useFriendMutuals` returns correct counts; mutual rows tappable only when count > 0 | — | N/A | unit | `npm test -- --testPathPatterns=useFriendMutuals` | ❌ W0 | ⬜ pending |
+| REQ-FP-09 | 06 | W3 | Tap big avatar → `ImageViewerModal` opens with `imageUrl={profile.avatar_url}` | — | N/A | unit (state assertion) + manual (modal animation) | `npm test -- --testPathPatterns=FriendProfileScreen` | ❌ W0 | ⬜ pending |
+| REQ-FP-10 | 02 | W2 | Status pill reflects `effective_status` from shared `queryKeys.home.friends(myId)` slice when present; falls back to dedicated read when home cache empty | — | N/A | unit | `npm test -- --testPathPatterns=useFriendProfile.statusSharing` | ❌ W0 | ⬜ pending |
+| REQ-FP-11 | 06 | W3 | Remove Friend confirm Alert → optimistic remove from `friends.list(myId)` → `router.back()`; rollback on DELETE error | T-33-RACE | Second DELETE is no-op (no row matched); UI optimistic mask | unit (handler-level) | `npm test -- --testPathPatterns=FriendProfileScreen.removeFriend` | ❌ W0 | ⬜ pending |
+| REQ-FP-12 | 06 | W3 | Friend-not-found: when `friendships` returns empty for the pair, screen renders fallback empty state with "Back to friends" CTA | — | N/A | unit | `npm test -- --testPathPatterns=FriendProfileScreen.friendNotFound` | ❌ W0 | ⬜ pending |
+| GATE-mutationShape | 01 + 06 | W1, W3 | New `useUpdateMyBio` passes regression gate (mutationFn + onMutate + onError + onSettled) | — | N/A | unit | `npx jest --testPathPatterns=mutationShape --no-coverage` | ✅ `src/hooks/__tests__/mutationShape.test.ts` | ⬜ pending |
+| GATE-queryKeys | 01 | W1 | New `friends.mutuals(friendId)`, `friends.sharedPhotos(friendId)`, `chat.preferences(channelId)` keys are unique and follow taxonomy convention | — | N/A | unit | `npm test -- --testPathPatterns=queryKeys` (planner adds if not present) | ❓ check at plan time | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -91,4 +91,4 @@ created: 2026-05-13
 - [ ] Feedback latency < 60s (full suite); < 5s (quick run)
 - [ ] `nyquist_compliant: true` set in frontmatter once plans wire each REQ-FP-XX to a task ID
 
-**Approval:** pending
+**Approval:** plans wired (33-01..33-07); nyquist_compliant: true. Manual gate (REQ-FP-02 round-trip) executes during Plan 01 Task 4; hardware smoke (REQ-FP-04/05/06/09) executes at Plan 06 Task 3 checkpoint.

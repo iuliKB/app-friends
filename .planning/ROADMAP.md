@@ -129,13 +129,19 @@ Plans:
 
 ### Phase 33: Friend Profile Redesign
 
-**Goal:** Ground-up redesign of the friend profile screen (opened when tapping a friend in the friends list, member list, or message-author chip). Telegram/WhatsApp-style layout — large avatar + name header at top, then sectioned rows for richer info (bio, mutual plans, shared groups, recent activity) and quick actions (Start DM, Mute, Block, etc.). Three improvement axes: (1) visual polish — better hierarchy, typography, spacing, avatar treatment; (2) more information shown beyond just name/avatar; (3) more actions available. Out of scope: DM info screen, Plan info screen — those get their own phases.
-**Requirements**: TBD (no formal REQ-IDs — must-haves derived from CONTEXT.md after /gsd-discuss-phase 33)
+**Goal:** Ground-up redesign of the friend profile screen (opened when tapping a friend in the friends list, member list, or message-author chip). Telegram-style large avatar with blurred-wash backdrop that collapses into the Stack nav title on scroll, iOS-grouped-inset sections (INFO + MUTUAL + WISH LIST) with Messenger-style colorful round leading icons, 4-button quick-action row (Message · Mute · Photos · More), full-screen avatar viewer modal, and a new bio TEXT column on profiles editable from /profile/edit. Migrates the screen to TanStack Query (new useFriendProfile + useFriendMutuals hooks) sharing the effective_status cache slice with home (D-15 — no new Realtime subscription). Remove Friend lives only in the More overflow ActionSheet. Out of scope: DM info screen, Plan info screen, Block feature (deferred to moderation phase).
+**Requirements**: TBD (no formal REQ-IDs — must-haves derived from CONTEXT.md D-01..D-16 and RESEARCH §Validation Architecture REQ-FP-01..REQ-FP-12)
 **Depends on:** Phase 32
-**Plans:** 0 plans
+**Plans:** 7 plans across 3 waves
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 33 to break down)
+- [ ] 33-01-PLAN.md — Foundation: Migration 0027 (bio column) + 3 new queryKeys + useUpdateMyBio hook + [BLOCKING] supabase db push (Wave 1)
+- [ ] 33-02-PLAN.md — Data hooks: useFriendProfile (shared status slice + friend-not-found via friendships row) + useFriendMutuals (Wave 2, depends on 01)
+- [ ] 33-03-PLAN.md — Header components: AvatarCircle onLoad pass-through + FriendProfileBlurredWash + FriendProfileHeader (Reanimated v4 scroll-driven collapse) (Wave 1)
+- [ ] 33-04-PLAN.md — Row primitives: friendIconPalette (8-tone) + GroupedInsetSection + ProfileInfoRow + BioRow (Wave 1)
+- [ ] 33-05-PLAN.md — Quick actions: ActionIconButton (press-spring + haptic + tone) + QuickActionsRow (Wave 1)
+- [ ] 33-06-PLAN.md — Screen rewrite + photos route + useChatDmPreferences + screen test + manual hardware smoke checkpoint (Wave 3, depends on 01+02+03+04+05)
+- [ ] 33-07-PLAN.md — Bio editor on /profile/edit (Wave 2, depends on 01)
 
 ---
 
