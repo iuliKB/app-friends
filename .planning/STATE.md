@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: executing
-stopped_at: Completed 31-03-PLAN.md (all 5 tasks); Wave 4 (31-04 Plans) unblocked
-last_updated: "2026-05-13T09:13:24.946Z"
+stopped_at: Completed 31-04-PLAN.md (Plans vertical migrated; Wave 5 unblocked)
+last_updated: "2026-05-13T09:25:46.843Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 28
-  completed_plans: 23
-  percent: 82
+  completed_plans: 24
+  percent: 86
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-06)
 ## Current Position
 
 Phase: 31 (adopt-tanstack-query-for-server-state-caching-and-cross-scre) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Status: Ready to execute
 Last activity: 2026-05-13
 
@@ -136,6 +136,13 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 31]: Phase 31-03: useTodos public shape preserved verbatim ({mine, fromChats, completeTodo, completeChatTodo}) — plan's phantom {todos, addTodo, toggleTodo, deleteTodo} shape and RPCs add/toggle/delete_my_todo did not exist; canonical Pattern 5 mutations applied to the REAL contract
 - [Phase 31]: Phase 31-03: useSpotlight + useStreakData deferred to Wave 7; useUpcomingEvents NOT migrated (pure client-side filter on usePlansStore, will benefit transitively from Wave 4 usePlans migration)
 - [Phase 31]: Phase 31-03: useChatTodos uses '@mutationShape: no-optimistic' exemption markers on both useMutation calls (RPC-atomic, no per-list cache key to splice); mutationShape gate now covers 5 blocks across 3 files (useHabits + useTodos + useChatTodos)
+- [Phase 31]: Phase 31-04: usePlans gains a new rsvp() mutator (canonical Pattern 5; updates list+detail caches, invalidates home.upcomingEvents) — additive to public shape, mitigates T-31-14 cross-member-write threat
+- [Phase 31]: Phase 31-04: usePlans.createPlan preserves real 2-insert flow (plans row + plan_members rows) — plan template referenced phantom supabase.rpc('create_plan') that does not exist; @mutationShape: no-optimistic marker applies because server-generated plan.id is unknown until first insert returns
+- [Phase 31]: Phase 31-04: usePlanDetail mutators stay plain async (NOT useMutation) — invalidate plans.detail+plans.list+home.upcomingEvents on success; keeps public shape verbatim without adding ~120 LOC of net-equivalent Pattern 5 boilerplate
+- [Phase 31]: Phase 31-04: usePlansStore stripped fully (plans + lastFetchedAt + setPlans + removePlan); kept as empty _placeholder?: never scaffold; PlanDashboardScreen.removePlan + PlanCreateModal.setPlans both migrated to queryClient.invalidateQueries
+- [Phase 31]: Phase 31-04: useUpcomingEvents migrated transitively — reads usePlans().plans (TanStack Query cache) instead of usePlansStore.plans; no separate useQuery (pure client-side filter on creator-or-going + future + capped at 5)
+- [Phase 31]: Phase 31-04: useAllPlanPhotos.deletePhoto showcases Pattern-5-across-cache-family — optimistically splices both plans.allPhotos(userId) AND plans.photos(planId); rolls back both on error; invalidates the triple (allPhotos+photos+home.all) so Memories+per-plan grid+Home tile stay in sync
+- [Phase 31]: Phase 31-04: mutationShape gate now covers 6 files / 10 mutation blocks (was 3/5); 4 exemption markers in use (useChatTodos x2 + usePlans.createPlan + usePlanPhotos.uploadPhoto) — exemption pattern proven across 3 distinct rationales (side-effect-heavy creates, async file IO, RPC-atomic with no per-list cache key)
 
 ### Roadmap Evolution
 
@@ -163,8 +170,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | Phase 31 P01 | 17min | 9 tasks | 12 files |
 | Phase 31 P02 | 6min | 5 tasks | 5 files |
 | Phase 31 P03 | 8min | 5 tasks | 12 files |
+| Phase 31 P04 | 7min | 4 tasks | 11 files |
 
 ## Session Continuity
 
-Last session: 2026-05-13T09:13:24.942Z
-Stopped at: Completed 31-03-PLAN.md (all 5 tasks); Wave 4 (31-04 Plans) unblocked
+Last session: 2026-05-13T09:25:33.457Z
+Stopped at: Completed 31-04-PLAN.md (Plans vertical migrated; Wave 5 unblocked)
