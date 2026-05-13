@@ -567,9 +567,10 @@ export default function FriendProfileScreen() {
             }
             onPress={
               mutuals && mutuals.mutualPlansCount > 0
-                ? () => {
-                    // TODO: navigate to mutual plans list when route exists
-                  }
+                ? () =>
+                    localRouter.push(
+                      `/friends/${friendId}/mutual-plans` as never,
+                    )
                 : undefined
             }
             chevron={!!(mutuals && mutuals.mutualPlansCount > 0)}
