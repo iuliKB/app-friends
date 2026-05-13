@@ -517,7 +517,7 @@ export default function TodoDetailScreen() {
                 color={isCompleted ? colors.surface.base : TILE_ACCENTS.todos}
               />
               <Text style={isCompleted ? styles.toggleLabelDone : styles.toggleLabelPending}>
-                {isCompleted ? '✓ Done' : toggleLabel}
+                {isCompleted ? 'Done' : toggleLabel}
               </Text>
             </>
           )}
