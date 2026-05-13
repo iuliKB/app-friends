@@ -2,12 +2,23 @@
 phase: 260513-5as-add-usetabbarspacing-hook-for-consistent
 verified: 2026-05-13T00:00:00Z
 status: human_needed
-score: 8/8 must-haves verified (static-code) — pending 1 device-level human check
+score: 9/9 must-haves verified (static-code) — pending device-level human check for all 6 originally migrated screens + the ChatListScreen follow-up
 overrides_applied: 0
+re_verification:
+  previous_status: human_needed
+  previous_score: 8/8
+  followup_commit: 6bc55d8
+  gaps_closed:
+    - "ChatListScreen.tsx (src/screens/chat/) was not in the original callsite_map; user reported the chat list still overflowed the floating bottom bar. Commit 6bc55d8 added the hook to this 7th callsite — static checks PASS"
+  gaps_remaining: []
+  regressions: []
 human_verification:
   - test: "Open the running app on a physical device or simulator, navigate through Home, Plans, Profile, Squad → Friends, Squad → Activity, Squad → Memories. Scroll each list/screen to its end."
     expected: "The last row/content in every tab screen stops above the floating bottom-nav bar with comfortable breathing room (matching Home's existing feel). No content is hidden under the bar. When entering a chat/plan/modal surface, padding shrinks back to just the device safe-area inset."
     why_human: "Visual layout cannot be confirmed programmatically. The numeric formula equivalence is proven by the unit test (134 === 34 + 100), but pixel-level placement on real device chrome and the perceived 'breathing room' need an eye."
+  - test: "Open the Chats tab. Scroll the SectionList to its end with several conversations present. Also force the empty state (e.g. clear or filter to zero matches) and confirm the EmptyState centering still works."
+    expected: "The last chat row stops above the floating bottom-nav bar with the same breathing room as Home — no row hidden behind the bar. In the empty state, the EmptyState component remains vertically centered (driven by styles.emptyList.flex: 1) and its content is not clipped by the bar."
+    why_human: "Follow-up commit 6bc55d8 added ChatListScreen to the hook's consumer set. Static checks confirm the diff is applied correctly and identically structured to the squad.tsx Friends SectionList, but the chat-tab visual feel was the specific surface the user flagged — needs an eye to confirm parity with Home."
 ---
 
 # Quick Task 260513-5as: useTabBarSpacing Hook — Verification Report
@@ -120,4 +131,52 @@ No automated gaps. All 8 must-haves verified by static analysis, grep evidence, 
 ---
 
 _Verified: 2026-05-13_
+_Verifier: Claude (gsd-verifier)_
+
+---
+
+## Supplementary Verification — ChatListScreen follow-up (commit 6bc55d8)
+
+**Context:** The original 6-callsite plan shipped without covering `src/screens/chat/ChatListScreen.tsx`. The user reported the chat list still overflowed the floating bottom bar. Commit `6bc55d8` ("fix(chat): route ChatListScreen padding through useTabBarSpacing") added the hook to this 7th consumer.
+
+**Verified:** 2026-05-13 (supplementary pass)
+**Commit:** 6bc55d8 — 1 file changed, 7 insertions(+), 1 deletion(-)
+
+### Observable Truth #9
+
+| # | Truth | Status | Evidence |
+|---|-------|--------|----------|
+| 9 | `ChatListScreen.tsx` SectionList content clears the floating bottom-nav bar via `useTabBarSpacing()` on both populated and empty branches | VERIFIED (static) | Hook imported at L14 from `@/hooks/useTabBarSpacing` (matches the 5 other callsites' alias-path style). Hook invoked unconditionally at top of component (L28, between `useSafeAreaInsets()` on L27 and `useAuthStore` on L29). `contentContainerStyle` on the SectionList (L278-282) is the array form `sections.length === 0 ? [styles.emptyList, { paddingBottom: bottomSpacing }] : { paddingBottom: bottomSpacing }` — both ternary branches apply `paddingBottom: bottomSpacing` unconditionally. Visual confirmation deferred to human-verification item #2 below |
+
+**Cumulative score:** 9/9 truths verified by static checks (the original 8 + this addition). One human-verification item already covered Home/Plans/Profile/Squad/Memories visual feel; a second item below covers the Chats tab specifically.
+
+### Per-Check Verdict Table (ChatListScreen)
+
+| # | Check | Verdict | Evidence |
+|---|-------|---------|----------|
+| 1 | Hook import is correct — uses `@/hooks/useTabBarSpacing` (not relative path), matches 5 other callsites' style | PASS | L14: `import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';` — identical alias to HomeScreen L20, PlansListScreen L17, profile L33, squad L28, MemoriesTabContent L18 |
+| 2 | Hook invoked once at top of component, not inside render/conditional/callback | PASS | L28: `const bottomSpacing = useTabBarSpacing();` — sits at top of `ChatListScreen` function body alongside `useTheme`, `useRouter`, `useSafeAreaInsets`, `useAuthStore`, etc. No re-invocation; not nested in any branch |
+| 3 | `paddingBottom: bottomSpacing` applied unconditionally on both branches of the `sections.length === 0` ternary | PASS | L278-282: empty branch is `[styles.emptyList, { paddingBottom: bottomSpacing }]`, populated branch is `{ paddingBottom: bottomSpacing }`. Both include `paddingBottom: bottomSpacing` |
+| 4 | `styles.emptyList` (`flex: 1`) preserved on empty branch — EmptyState vertical centering not regressed | PASS | L181-183: `emptyList: { flex: 1 }` still in StyleSheet. L280 spreads `styles.emptyList` first inside the array so `flex: 1` survives composition with `{ paddingBottom: bottomSpacing }` |
+| 5 | No other padding hacks (e.g. `paddingBottom: 100`, `insets.bottom + 100`, `insets.bottom + SPACING.xxl`, `insets.bottom + SPACING.lg`) remain in ChatListScreen.tsx | PASS | `grep -nE 'paddingBottom:\s*100\|insets\.bottom\s*\+\s*100\|insets\.bottom\s*\+\s*SPACING\.(xxl\|lg)' src/screens/chat/ChatListScreen.tsx` → 0 matches |
+| 6 | Hook returns the correct value on the chat tab — `useNavigationStore.currentSurface === 'tabs'` while the Chats tab is displayed (the floating bar is visible), so the hook returns `insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_GAP + 24` (== `insets.bottom + 100`) | PASS | The Chats tab is part of the `(tabs)` group — surface stays `'tabs'` while on it. Hook source L12-19 confirms branch: `if (surface !== 'tabs') return insets.bottom; return insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_GAP + BREATHING_ROOM;`. Yields parity with Home's pre-refactor `insets.bottom + 100`. (When the user taps a row and `openChat` pushes the chat/room route, `currentSurface` transitions to `'chat'` and the spacing collapses to `insets.bottom` — correct behavior) |
+| 7 | No type regressions — array form `[styles.emptyList, { paddingBottom: bottomSpacing }]` is a standard `StyleProp<ViewStyle>` accepted by SectionList | PASS | Same pattern as squad.tsx Friends SectionList L456 (`[styles.listContent, { paddingBottom: bottomSpacing }]`) and other migrated screens. RN `SectionListProps.contentContainerStyle` accepts `StyleProp<ViewStyle>`, which covers both `ViewStyle` and `RegisteredStyle<ViewStyle> \| RecursiveArray<…>`. The original pre-fix code already used a conditional that returned either `styles.emptyList` or `undefined`, so the typing surface is unchanged — and the existing passing TypeScript baseline (no new errors per the original plan's tsc check) carries forward |
+| 8 | No dead imports — `useSafeAreaInsets` is still used (L4 import, L27 call, L222 and L248 consumption via `{ paddingTop: insets.top }`) | PASS | Import at L4 retained correctly; `insets.top` is still consumed in both the loading-skeleton container (L222) and the main render container (L248). Removing `useSafeAreaInsets` here would have been wrong |
+
+### Diff Verification
+
+`git show --stat 6bc55d8` confirms: 1 file changed, 7 insertions, 1 deletion. The diff aligns 1:1 with the user-reported description (import added, hook called, contentContainerStyle widened to apply `paddingBottom: bottomSpacing` on both branches of the ternary). No collateral edits.
+
+### Additional Human Verification Required
+
+The supplementary human-verification entry for the Chats tab is in the frontmatter `human_verification` array (second item). Summary: scroll the Chats SectionList to its end with several conversations present, confirm the last row clears the floating bar with the same breathing room as Home; also force the empty state to verify the `EmptyState` component remains vertically centered.
+
+### Supplementary Gaps Summary
+
+No automated gaps for the ChatListScreen addition. All 8 check dimensions PASS. Status remains `human_needed` — the visual-feel confirmation now spans the original 6 screens plus the Chats tab.
+
+---
+
+_Supplementary verification: 2026-05-13_
+_Commit verified: 6bc55d8_
 _Verifier: Claude (gsd-verifier)_
