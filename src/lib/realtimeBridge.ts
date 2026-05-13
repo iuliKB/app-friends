@@ -121,6 +121,83 @@ export function subscribePollVotes(
   return () => releaseSubscription(channelName);
 }
 
+/** Subscribe to chat_room messages for a given channelId. Hybrid (research §Pattern 6):
+ *    INSERT → setQueryData prepend with id-dedup (handles own-user optimistic replay)
+ *    UPDATE → invalidateQueries (REPLICA IDENTITY default ships PK-only payloads)
+ *    DELETE → setQueryData filter by id
+ *
+ * Channel name: `chat-${channelId}` (matches the pre-migration useChatRoom convention so
+ * existing dev-client smoke tests are unaffected).
+ *
+ * Reactions and poll-vote events stay in their own subscriber helpers (subscribeReactions
+ * is not yet bridged; subscribePollVotes already exists). This helper owns the
+ * messages-table subscription only.
+ */
+export function subscribeChatRoom(
+  queryClient: QueryClient,
+  channelId: string,
+): Unsubscribe {
+  const channelName = `chat-${channelId}`;
+  const existing = registry.get(channelName);
+  if (existing) {
+    existing.refCount++;
+    return () => releaseSubscription(channelName);
+  }
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${channelId}` },
+      (payload: { new: { id?: string } & Record<string, unknown> }) => {
+        const incoming = payload?.new;
+        if (!incoming?.id) return;
+        queryClient.setQueryData<any[]>(queryKeys.chat.messages(channelId), (old) => {
+          if (!old) return old;
+          // 1) Optimistic replacement: same client-generated id flagged pending
+          const optimisticIdx = old.findIndex((m: any) => m.pending && m.id === incoming.id);
+          if (optimisticIdx >= 0) {
+            const next = [...old];
+            next[optimisticIdx] = { ...(incoming as any), pending: false, failed: false };
+            return next;
+          }
+          // 2) Server already mirrors this id — no-op dedup
+          if (old.some((m: any) => m.id === incoming.id)) return old;
+          // 3) New row — prepend (chat list is newest-first; inverted FlatList renders [0] at bottom)
+          return [incoming, ...old];
+        });
+      },
+    )
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'messages', filter: `channel_id=eq.${channelId}` },
+      () => {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chat.messages(channelId) });
+      },
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'messages', filter: `channel_id=eq.${channelId}` },
+      (payload: { old?: { id?: string } | null }) => {
+        const removed = payload?.old ?? null;
+        if (!removed?.id) return;
+        queryClient.setQueryData<any[]>(queryKeys.chat.messages(channelId), (old) =>
+          old?.filter((m: any) => m.id !== removed.id) ?? [],
+        );
+      },
+    )
+    .subscribe();
+
+  registry.set(channelName, {
+    refCount: 1,
+    teardown: () => {
+      void supabase.removeChannel(channel);
+    },
+  });
+
+  return () => releaseSubscription(channelName);
+}
+
 /** Subscribe to statuses changes for the caller's friend set. Returns unsubscribe.
  * Channel name is scoped by userId (not friendIds) so refCount works across renders
  * where friendIds changes (a friend being added/removed only invalidates the friends
