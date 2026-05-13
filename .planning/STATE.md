@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.8
 milestone_name: Deep UI Refinement & Screen Overhaul
 status: verifying
-stopped_at: Completed 30-04-PLAN.md — CustomTabBar consumer + ChatRoomScreen useFocusEffect writer wired (Phase 30 root-cause bug closed)
-last_updated: "2026-05-13T00:10:59.520Z"
+stopped_at: Completed 30-05-PLAN.md — 12 chat-entry callsites migrated to openChat across 10 files; originating bug callsite consolidated end-to-end
+last_updated: "2026-05-13T00:21:10.661Z"
 last_activity: 2026-05-13
 progress:
   total_phases: 9
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 20
-  completed_plans: 19
-  percent: 95
+  completed_plans: 20
+  percent: 100
 ---
 
 # Project State
@@ -117,6 +117,9 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-04: ChatRoomScreen useFocusEffect writer uses bare useCallback (named import) — React.useCallback form is forbidden per plan's locked import-style rule to match the file's existing hook-import convention
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-04: setSurface selector returns only the stable setter (not currentSurface) — pulling both in the same selector would re-render the heavy chat screen on every other surface push; setSurface in dep array satisfies exhaustive-deps without triggering re-runs
 - [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-04: src/__mocks__/theme.js extended with FONT_WEIGHT + RADII.pill (Rule 3 — required to render ChatRoomScreen in jest); scoped to mock file, zero production-code impact, matches Phase 29.1 Plan 04/06 mock-extension precedent
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-05: 10 callsites migrated to openChat — 4 home, 4 routing-handler, 2 sheet/group; 8 duplicate get_or_create_dm_channel blocks collapsed; originating-bug pill (PlanDashboardScreen line 1023) consolidated
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-05: ChatListItem.birthdayPersonId (string|null|undefined) coerced to (string|undefined) via ?? undefined when passing to openChat group variant — preserves prior URLSearchParams truthy-only behavior; Rule 1 auto-fix for new TS error
+- [Phase 30-unify-navigation-source-of-truth-and-chat-entry-handlers]: Phase 30-05: squad.tsx handleStartDM locked ordering — try { await openChat(... onLoadingChange: setLoadingDM) } finally { handleCloseSheet() } — preserves in-sheet spinner visibility during the get-or-create-DM RPC
 
 ### Roadmap Evolution
 
@@ -138,5 +141,5 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 
 ## Session Continuity
 
-Last session: 2026-05-13T00:10:59.517Z
-Stopped at: Completed 30-04-PLAN.md — CustomTabBar consumer + ChatRoomScreen useFocusEffect writer wired (Phase 30 root-cause bug closed)
+Last session: 2026-05-13T00:21:10.657Z
+Stopped at: Completed 30-05-PLAN.md — 12 chat-entry callsites migrated to openChat across 10 files; originating bug callsite consolidated end-to-end
