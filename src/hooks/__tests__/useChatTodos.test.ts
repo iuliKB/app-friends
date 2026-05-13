@@ -27,6 +27,11 @@ jest.mock('@/lib/supabase', () => ({
 
 jest.mock('@/lib/dateLocal', () => ({ todayLocal: () => '2026-05-13' }));
 
+jest.mock('@/stores/useAuthStore', () => ({
+  useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
+    selector({ session: { user: { id: 'u1' } } }),
+}));
+
 import { useChatTodos } from '../useChatTodos';
 
 describe('useChatTodos (migrated to TanStack Query)', () => {
@@ -135,14 +140,14 @@ describe('useChatTodos (migrated to TanStack Query)', () => {
     expect(returned?.error).toBe('item not found');
   });
 
-  it('sendChatTodo onSettled invalidates todos.fromChats + home.all() + the new listId chatList key', async () => {
+  it('sendChatTodo onSettled invalidates todos.fromChats + home.all() + chatList + chat.messages + chat.list', async () => {
     mockRpc.mockResolvedValueOnce({ data: 'list-new', error: null });
     const { client, wrapper } = createTestQueryClient();
     const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
     const { result } = renderHook(() => useChatTodos(), { wrapper });
     await act(async () => {
       await result.current.sendChatTodo({
-        scope: { kind: 'group', groupChannelId: 'gc1' },
+        scope: { kind: 'plan', planId: 'p1' },
         assigneeId: 'u-other',
         title: 't',
         isList: false,
@@ -158,21 +163,37 @@ describe('useChatTodos (migrated to TanStack Query)', () => {
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: queryKeys.home.all(),
     });
+    // Phase 32 — chat caches invalidate too (Tier B).
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.messages('p1'),
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.list('u1'),
+    });
   });
 
-  it('completeChatTodo onSettled invalidates todos.fromChats + home.all()', async () => {
+  it('completeChatTodo onSettled invalidates todos.fromChats + home.all() + chat.messages + chat.list', async () => {
     mockRpc.mockResolvedValueOnce({ data: 'msg-1', error: null });
     const { client, wrapper } = createTestQueryClient();
     const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
     const { result } = renderHook(() => useChatTodos(), { wrapper });
     await act(async () => {
-      await result.current.completeChatTodo('item-1');
+      await result.current.completeChatTodo('item-1', {
+        chatScope: { kind: 'plan', planId: 'p1' },
+      });
     });
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: queryKeys.todos.fromChats('2026-05-13'),
     });
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: queryKeys.home.all(),
+    });
+    // Phase 32 — chat caches invalidate too (Tier B).
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.messages('p1'),
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: queryKeys.chat.list('u1'),
     });
   });
 });
