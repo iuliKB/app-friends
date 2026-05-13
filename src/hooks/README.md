@@ -12,7 +12,51 @@ The three buckets are: TanStack Query (server state), Zustand (cross-tree app st
 - **Where:** `src/hooks/use<X>.ts` using `useQuery` + `useMutation` from `@tanstack/react-query`.
 - **Keys:** ALWAYS through `src/lib/queryKeys.ts`. Inline arrays like `queryKey: ['habits', ...]` are forbidden — TSQ-07 grep gate catches them in CI.
 - **Mutations:** ALWAYS follow the canonical Pattern 5 shape (`mutationFn` + `onMutate` snapshot + `onError` rollback + `onSettled` invalidate). The `mutationShape.test.ts` regression gate enforces this. Exempt only with `// @mutationShape: no-optimistic` directly above the `useMutation({` block (use for create/destroy with server side effects — e.g., `usePlans.createPlan`, `usePlanPhotos.uploadPhoto`, `useChatRoom.sendPoll`, `useChatTodos.*`).
-- **Realtime:** channel ownership lives in `src/lib/realtimeBridge.ts` (ref-counted subscribe helpers). Hooks call `useEffect(() => subscribe<Vertical>(qc, ...args), [...])`. NEVER call `supabase.channel(...)` inside a hook. Available helpers as of Wave 8: `subscribeHabitCheckins`, `subscribePollVotes`, `subscribeHomeStatuses`, `subscribeChatRoom`, `subscribeChatAux`.
+
+### Tiered onSettled policy (Phase 32)
+
+The Pattern 5 default is "invalidate everything that may have changed" in `onSettled`. For chat send mutations, Phase 31 amended this to "do nothing — Realtime INSERT reconciles." Phase 32 amends that contract once more by splitting send mutations into two tiers based on whether Realtime alone is enough.
+
+**Pithy rule:**
+
+> Use Realtime-only reconciliation only when the optimistic shape is identical to the canonical shape AND the failure mode is invisible. Otherwise, invalidate in `onSettled`.
+
+**Per-mutation policy table:**
+
+| Mutation | `chat.messages(channelId)` | `chat.list(userId)` | Rationale |
+|---|---|---|---|
+| `useChatRoom.sendMessage` (text) | NO | YES | Optimistic text shape = canonical text shape; Realtime INSERT reconciles the messages cache. But chat.list has a separate cache key + 30s staleTime, so invalidate it. (Tier A) |
+| `useChatRoom.sendImage` | YES | YES | Optimistic carries local URI in `image_url`; canonical carries CDN URL. If Realtime INSERT echo is missed, the 70% opacity bubble sticks forever. Belt-and-braces. (Tier B) |
+| `useChatRoom.sendPoll` | YES | YES | 2-step insert+RPC; optimistic row has `poll_id: null` until Realtime UPDATE fires. Missed UPDATE → PollCard spinner stickiness. Wired via `onSuccess` because the mutation keeps its `@mutationShape: no-optimistic` exemption. (Tier B) |
+| `useChatTodos.sendChatTodo` | YES | YES | RPC creates the message row with server-generated UUID; client has nothing to optimistically splice. Bubble appears only via Realtime INSERT or via explicit refetch — invalidate covers the missed-Realtime case. (Tier B) |
+| `useChatTodos.completeChatTodo` | YES (if caller supplies `chatScope`) | YES | Complete RPC emits a 'system' message via DB trigger. Same Tier B reasoning as sendChatTodo. |
+
+**Tier A example (`sendMessage`):**
+
+```typescript
+onSettled: () => {
+  void queryClient.invalidateQueries({
+    queryKey: queryKeys.chat.list(currentUserId),
+  });
+},
+```
+
+**Tier B example (`sendImage`):**
+
+```typescript
+onSettled: () => {
+  void queryClient.invalidateQueries({
+    queryKey: queryKeys.chat.messages(channelId),
+  });
+  void queryClient.invalidateQueries({
+    queryKey: queryKeys.chat.list(currentUserId),
+  });
+},
+```
+
+Counterpart Realtime layer: `realtimeBridge.subscribeChatList(queryClient, userId)` (Phase 32 Plan 03) is the global Realtime echo path for incoming messages from other users. The `onSettled` invalidates above are the deterministic local path for own-sends; the global subscription is the backstop for both.
+
+- **Realtime:** channel ownership lives in `src/lib/realtimeBridge.ts` (ref-counted subscribe helpers). Hooks call `useEffect(() => subscribe<Vertical>(qc, ...args), [...])`. NEVER call `supabase.channel(...)` inside a hook. Available helpers as of Phase 32: `subscribeHabitCheckins`, `subscribePollVotes`, `subscribeHomeStatuses`, `subscribeChatRoom`, `subscribeChatAux`, `subscribeChatList`.
 - **Persistence:** `PersistQueryClientProvider` in `src/app/_layout.tsx` persists most root keys. Exclude `chat` (high-volume + Android 6MB cap) and `plans/photos` + `plans/allPhotos` (signed-URL 1h TTL). Bump `key: 'campfire-query-cache-v1'` on shape-breaking changes; `buster: APP_VERSION` invalidates on app version change. `gcTime: 24h` aligns with `maxAge: 24h` so persisted queries are restored before garbage collection.
 
 ### 2. Zustand — auth, navigation surface, UI flags, ephemeral coordination
