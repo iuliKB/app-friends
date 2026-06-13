@@ -1,5 +1,6 @@
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
+const globals = require('globals');
 const expoConfig = require('eslint-config-expo/flat');
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
 const noHardcodedStyles = require('./eslint-rules/no-hardcoded-styles');
@@ -27,6 +28,13 @@ module.exports = defineConfig([
     files: ['src/theme/**/*.ts'],
     rules: {
       'campfire/no-hardcoded-styles': 'off',
+    },
+  },
+  {
+    // Jest globals for test files and mocks (jest.fn/mock, describe, expect…)
+    files: ['**/__tests__/**', '**/*.test.{ts,tsx,js,jsx}', 'src/__mocks__/**'],
+    languageOptions: {
+      globals: globals.jest,
     },
   },
 ]);
