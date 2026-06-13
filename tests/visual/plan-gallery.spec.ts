@@ -46,6 +46,6 @@ test.describe('Plan Gallery — Phase 22 (GALL-04 through GALL-07)', () => {
     test.skip(true, 'TODO: requires live server + authenticated as photo uploader');
     await page.goto('/plans/[planId]');
     await page.locator('[data-testid="photo-thumbnail"]').first().tap();
-    await expect(page.getByAccessibilityLabel('Delete photo')).toBeVisible();
+    await expect(page.getByLabel('Delete photo')).toBeVisible();
   });
 });

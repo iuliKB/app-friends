@@ -71,7 +71,7 @@ export function EventCard({ plan }: EventCardProps) {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const hasImage = Boolean(plan.cover_image_url);
-  const gradientPair = COVER_GRADIENTS[plan.id.charCodeAt(0) % COVER_GRADIENTS.length];
+  const gradientPair = COVER_GRADIENTS[plan.id.charCodeAt(0) % COVER_GRADIENTS.length]!;
   // Array.from splits by codepoint so emoji/accented titles don't yield a
   // half-character; fallback "?" handles empty/whitespace titles.
   const monogram = (Array.from(plan.title.trim())[0] ?? '?').toUpperCase();

@@ -57,7 +57,7 @@ export function useStreakData(): StreakData {
     queryKey: queryKeys.habits.streak(userId ?? ''),
     queryFn: async (): Promise<StreakRow> => {
       const { data, error } = await supabase.rpc('get_squad_streak', {
-        viewer_id: userId,
+        viewer_id: userId!,
         tz: getDeviceTimezone(),
       });
       if (error) {

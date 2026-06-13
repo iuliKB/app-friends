@@ -76,7 +76,7 @@ export function EventArtwork({
   monogramSize = 72,
 }: EventArtworkProps) {
   const hasImage = Boolean(plan.cover_image_url);
-  const gradientPair = COVER_GRADIENTS[plan.id.charCodeAt(0) % COVER_GRADIENTS.length];
+  const gradientPair = COVER_GRADIENTS[plan.id.charCodeAt(0) % COVER_GRADIENTS.length]!;
   const monogram = (Array.from(plan.title.trim())[0] ?? '?').toUpperCase();
   const labels = formatEventLabels(plan.scheduled_for);
 
