@@ -127,7 +127,7 @@ export function HomeTopBar() {
           )}
         </Text>
         <Text style={styles.statusPrompt} numberOfLines={1}>
-          What's your status today?
+          What&apos;s your status today?
         </Text>
       </View>
       <Pressable

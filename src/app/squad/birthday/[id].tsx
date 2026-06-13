@@ -252,12 +252,12 @@ export default function FriendBirthdayPage() {
       }
     >
       {/* Wish List Section */}
-      <Text style={styles.sectionLabel}>{friendName}'s Wish List</Text>
+      <Text style={styles.sectionLabel}>{friendName}&apos;s Wish List</Text>
 
       {wishListError ? (
         <Text style={styles.errorText}>{wishListError}</Text>
       ) : items.length === 0 ? (
-        <Text style={styles.emptyText}>{friendName} hasn't added any wishes yet.</Text>
+        <Text style={styles.emptyText}>{friendName} hasn&apos;t added any wishes yet.</Text>
       ) : (
         items.map((item) => (
           <WishListItem

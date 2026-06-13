@@ -103,7 +103,7 @@ export function OnboardingHintSheet({ visible, onDismiss }: OnboardingHintSheetP
           <Text style={styles.emoji}>🔥</Text>
           <Text style={styles.heading}>Welcome to Campfire!</Text>
           <Text style={styles.guidanceLine}>
-            Tap your status above to let friends know if you're free.
+            Tap your status above to let friends know if you&apos;re free.
           </Text>
           <Text style={styles.guidanceLine}>Head to Squad to add friends.</Text>
           <View style={styles.ctaContainer}>

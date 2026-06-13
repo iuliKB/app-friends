@@ -41,8 +41,10 @@ const PROFILE_ROW = {
 };
 
 function wrap(client: QueryClient) {
-  return ({ children }: { children: React.ReactNode }) =>
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client }, children);
+  Wrapper.displayName = 'Wrapper';
+  return Wrapper;
 }
 
 beforeEach(() => {
