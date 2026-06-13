@@ -74,9 +74,8 @@ const REST_OPACITY = {
 // Gentle Y bob between sweeps so the radar feels alive. Deterministic phase per
 // friend keeps bubbles desynchronized without random jitter.
 
-// eslint-disable-next-line campfire/no-hardcoded-styles
 const FLOAT_AMPLITUDE = 3; // peak ±px
-// eslint-disable-next-line campfire/no-hardcoded-styles
+
 const FLOAT_PERIOD_MS = 3800;
 
 function hashFloat(str: string, seed: number): number {
@@ -180,7 +179,17 @@ export function RadarBubble({
   // Convert continuous floatAnim into ±FLOAT_AMPLITUDE Y oscillation (sin-shaped via 4 keyframes)
   const floatY = floatAnim.interpolate({
     inputRange: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
-    outputRange: [0, -FLOAT_AMPLITUDE, 0, FLOAT_AMPLITUDE, 0, -FLOAT_AMPLITUDE, 0, FLOAT_AMPLITUDE, 0],
+    outputRange: [
+      0,
+      -FLOAT_AMPLITUDE,
+      0,
+      FLOAT_AMPLITUDE,
+      0,
+      -FLOAT_AMPLITUDE,
+      0,
+      FLOAT_AMPLITUDE,
+      0,
+    ],
     extrapolate: 'extend',
   });
 
@@ -342,9 +351,7 @@ export function RadarBubble({
         <View>
           {/* Outer: native-driven opacity. Inner: non-native width/height. */}
           <Animated.View style={{ opacity: scanOpacity }}>
-            <Animated.View
-              style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}
-            >
+            <Animated.View style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}>
               <AvatarCircle
                 size={targetSize}
                 imageUri={friend.avatar_url}
@@ -377,12 +384,8 @@ export function RadarBubble({
         >
           {/* Outer: native-driven opacity + scale (avoids native/non-native conflict
               with the inner view's animated width/height). */}
-          <Animated.View
-            style={{ opacity: scanOpacity, transform: [{ scale: scanScale }] }}
-          >
-            <Animated.View
-              style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}
-            >
+          <Animated.View style={{ opacity: scanOpacity, transform: [{ scale: scanScale }] }}>
+            <Animated.View style={[styles.bubbleContainer, { width: sizeAnim, height: sizeAnim }]}>
               {/* Sweep-triggered outer pulse ring */}
               <Animated.View
                 pointerEvents="none"

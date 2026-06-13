@@ -15,17 +15,12 @@ export function TodosTile({ todos }: TodosTileProps) {
   const { colors } = useTheme();
   const router = useRouter();
 
-  const overdueCount = todos.mine.filter(
-    (t) => t.completed_at === null && t.is_overdue
-  ).length;
-  const dueTodayCount = todos.mine.filter(
-    (t) => t.completed_at === null && t.is_due_today
-  ).length;
+  const overdueCount = todos.mine.filter((t) => t.completed_at === null && t.is_overdue).length;
+  const dueTodayCount = todos.mine.filter((t) => t.completed_at === null && t.is_due_today).length;
   const total = overdueCount + dueTodayCount;
   // Accent flips to destructive when any overdue items exist; mirrors IOUTile
   // positive/negative accent flip.
-  const tileAccent =
-    overdueCount > 0 ? colors.interactive.destructive : TILE_ACCENTS.todos;
+  const tileAccent = overdueCount > 0 ? colors.interactive.destructive : TILE_ACCENTS.todos;
 
   const styles = useMemo(
     () =>
@@ -77,12 +72,7 @@ export function TodosTile({ todos }: TodosTileProps) {
   }
 
   // Subline copy per UI-SPEC §Copywriting Contract — Bento tile labels.
-  const subline =
-    overdueCount > 0
-      ? 'due now'
-      : dueTodayCount > 0
-        ? 'due today'
-        : 'all caught up';
+  const subline = overdueCount > 0 ? 'due now' : dueTodayCount > 0 ? 'due today' : 'all caught up';
 
   const a11yLabel =
     total === 0
@@ -103,12 +93,7 @@ export function TodosTile({ todos }: TodosTileProps) {
         <Text style={styles.title}>To-Dos</Text>
       </View>
 
-      <Text
-        style={[
-          styles.bigNumber,
-          total > 0 ? { color: tileAccent } : styles.bigNumberMuted,
-        ]}
-      >
+      <Text style={[styles.bigNumber, total > 0 ? { color: tileAccent } : styles.bigNumberMuted]}>
         {total}
       </Text>
 

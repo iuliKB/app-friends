@@ -26,10 +26,7 @@ type MsgEntry = {
   poll_id: string | null;
 };
 
-function previewForLatest(
-  latest: MsgEntry,
-  pollQuestionMap: Map<string, string>,
-): string {
+function previewForLatest(latest: MsgEntry, pollQuestionMap: Map<string, string>): string {
   switch (latest.message_type) {
     case 'image':
       return 'Photo';
@@ -53,7 +50,7 @@ function previewForLatest(
 function senderNameForLatest(
   latest: MsgEntry,
   currentUserId: string,
-  firstNameMap: Map<string, string | null>,
+  firstNameMap: Map<string, string | null>
 ): string | null {
   if (latest.sender_id === currentUserId) return 'You';
   return firstNameMap.get(latest.sender_id) ?? null;
@@ -62,7 +59,7 @@ function senderNameForLatest(
 async function getUnreadInfo(
   chatId: string,
   msgs: MsgEntry[],
-  currentUserId: string,
+  currentUserId: string
 ): Promise<{ hasUnread: boolean; unreadCount: number }> {
   const latest = msgs[0];
   if (!latest || latest.sender_id === currentUserId) return { hasUnread: false, unreadCount: 0 };
@@ -70,7 +67,7 @@ async function getUnreadInfo(
   const hasUnread = !lastRead || latest.created_at > lastRead;
   if (!hasUnread) return { hasUnread: false, unreadCount: 0 };
   const unreadCount = msgs.filter(
-    (m) => m.sender_id !== currentUserId && (!lastRead || m.created_at > lastRead),
+    (m) => m.sender_id !== currentUserId && (!lastRead || m.created_at > lastRead)
   ).length;
   return { hasUnread: true, unreadCount };
 }
@@ -244,7 +241,7 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
     for (const p of senderProfiles ?? []) {
       const id = p.id as string;
       const displayName = (p.display_name as string | null) ?? null;
-      const firstToken = displayName ? displayName.trim().split(/\s+/)[0] ?? '' : '';
+      const firstToken = displayName ? (displayName.trim().split(/\s+/)[0] ?? '') : '';
       firstNameMap.set(id, firstToken.length > 0 ? firstToken : null);
     }
   }
@@ -270,7 +267,7 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
       .from('polls')
       .select('id, question')
       .in('id', [...pollIdsForPreview]);
-    for (const p of (pollRows ?? []) as Array<{ id: string; question: string }>) {
+    for (const p of (pollRows ?? []) as { id: string; question: string }[]) {
       pollQuestionMap.set(p.id, p.question);
     }
   }

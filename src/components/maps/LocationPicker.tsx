@@ -236,7 +236,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
               label: `${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}`,
             } as SearchResult;
           }
-        }),
+        })
       );
       // De-duplicate by label so iOS' multi-candidate variants collapse.
       const seen = new Set<string>();
@@ -267,7 +267,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       },
-      500,
+      500
     );
   }
 
@@ -323,7 +323,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
           fontSize: FONT_SIZE.md,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           paddingVertical: 0,
         },
         searchResultsDropdown: {
@@ -371,9 +371,9 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
         },
         pinContainer: {
           position: 'absolute',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           top: '50%',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           left: '50%',
           // eslint-disable-next-line campfire/no-hardcoded-styles
           marginLeft: -18,
@@ -382,9 +382,9 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
         },
         pinShadow: {
           position: 'absolute',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           top: '50%',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           left: '50%',
           // eslint-disable-next-line campfire/no-hardcoded-styles
           marginLeft: -5,
@@ -425,7 +425,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
           flexDirection: 'row',
           alignItems: 'center',
           gap: SPACING.sm,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           minHeight: 44,
           marginBottom: SPACING.sm,
         },
@@ -466,17 +466,17 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
           color: isDark ? '#0E0F11' : '#FFFFFF',
         },
       }),
-    [colors, isDark],
+    [colors, isDark]
   );
 
   const headerStyle = useMemo(
     () => [styles.header, { paddingTop: insets.top + SPACING.md, paddingBottom: SPACING.md }],
-    [styles.header, insets.top],
+    [styles.header, insets.top]
   );
 
   const confirmBarStyle = useMemo(
     () => [styles.confirmBar, { paddingBottom: insets.bottom + SPACING.lg }],
-    [styles.confirmBar, insets.bottom],
+    [styles.confirmBar, insets.bottom]
   );
 
   const showResultsDropdown =
@@ -559,11 +559,7 @@ export function LocationPicker({ visible, onConfirm, onCancel }: LocationPickerP
                     accessibilityRole="button"
                     accessibilityLabel={`Choose ${item.label}`}
                   >
-                    <Ionicons
-                      name="location-outline"
-                      size={18}
-                      color={colors.interactive.accent}
-                    />
+                    <Ionicons name="location-outline" size={18} color={colors.interactive.accent} />
                     <Text style={styles.searchResultLabel} numberOfLines={2}>
                       {item.label}
                     </Text>

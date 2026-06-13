@@ -17,6 +17,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { usePoll } from '../usePoll';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -37,8 +39,6 @@ jest.mock('@/lib/realtimeBridge', () => ({
   subscribePollVotes: (...args: unknown[]) => mock_subscribePollVotes(...args),
   _resetRealtimeBridgeForTests: jest.fn(),
 }));
-
-import { usePoll } from '../usePoll';
 
 const POLL_ROW = { id: 'p1', question: 'Pick one' };
 const OPTIONS = [
@@ -115,7 +115,7 @@ describe('usePoll (migrated to TanStack Query)', () => {
 
     expect(mock_subscribePollVotes).toHaveBeenCalledWith(
       expect.anything(), // queryClient
-      'p1',
+      'p1'
     );
 
     unmount();
@@ -153,10 +153,11 @@ describe('usePoll (migrated to TanStack Query)', () => {
         return {
           select: () => ({
             // Seed: self already voted for option 'o1' (so this is a CHANGE-vote case)
-            eq: () => Promise.resolve({
-              data: [{ option_id: 'o1', user_id: 'u-self' }],
-              error: null,
-            }),
+            eq: () =>
+              Promise.resolve({
+                data: [{ option_id: 'o1', user_id: 'u-self' }],
+                error: null,
+              }),
           }),
           insert: insertSpy,
           upsert: upsertSpy,
@@ -194,7 +195,7 @@ describe('usePoll (migrated to TanStack Query)', () => {
     });
 
     const invalidatedKeys = invalidateSpy.mock.calls.map((c) =>
-      JSON.stringify((c[0] as { queryKey: unknown }).queryKey),
+      JSON.stringify((c[0] as { queryKey: unknown }).queryKey)
     );
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.polls.poll('p1')));
   });

@@ -16,29 +16,36 @@ interface OverflowChipProps {
 
 export function OverflowChip({ friend }: OverflowChipProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    chip: {
-      position: 'relative',
-      marginRight: SPACING.sm,
-    },
-    dot: {
-      position: 'absolute',
-      bottom: 0,
-      right: 0,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 8,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 8,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderRadius: 4,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        chip: {
+          position: 'relative',
+          marginRight: SPACING.sm,
+        },
+        dot: {
+          position: 'absolute',
+          bottom: 0,
+          right: 0,
 
-  const STATUS_COLORS: Record<string, string> = useMemo(() => ({
-    free: colors.status.free,   // #22c55e
-    maybe: colors.status.maybe, // #eab308
-    busy: colors.status.busy,   // #ef4444
-  }), [colors]);
+          width: 8,
+
+          height: 8,
+
+          borderRadius: 4,
+        },
+      }),
+    [colors]
+  );
+
+  const STATUS_COLORS: Record<string, string> = useMemo(
+    () => ({
+      free: colors.status.free, // #22c55e
+      maybe: colors.status.maybe, // #eab308
+      busy: colors.status.busy, // #ef4444
+    }),
+    [colors]
+  );
 
   const router = useRouter();
   const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);

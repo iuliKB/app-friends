@@ -14,6 +14,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useExpenseDetail } from '../useExpenseDetail';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -30,8 +32,6 @@ jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn(() => Promise.resolve()),
   NotificationFeedbackType: { Success: 'success' },
 }));
-
-import { useExpenseDetail } from '../useExpenseDetail';
 
 const EXPENSE_ID = 'e1';
 const GROUP_ROW = {
@@ -133,7 +133,7 @@ describe('useExpenseDetail (migrated to TanStack Query)', () => {
 
     // After rollback, f1 is still unsettled.
     const cached = client.getQueryData(queryKeys.expenses.detail(EXPENSE_ID)) as
-      | { participants: Array<{ userId: string; isSettled: boolean }> }
+      | { participants: { userId: string; isSettled: boolean }[] }
       | undefined;
     const f1 = cached?.participants.find((p) => p.userId === 'f1');
     expect(f1?.isSettled).toBe(false);

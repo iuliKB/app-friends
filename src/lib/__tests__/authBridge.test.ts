@@ -68,7 +68,7 @@ describe('authBridge.attachAuthBridge', () => {
       attachAuthBridge(qc);
       mockCapturedHandler!(event, { user: { id: 'u1' } });
       expect(removeSpy).not.toHaveBeenCalled();
-    },
+    }
   );
 
   it.each(['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED', 'INITIAL_SESSION'])(
@@ -77,6 +77,6 @@ describe('authBridge.attachAuthBridge', () => {
       attachAuthBridge(qc);
       mockCapturedHandler!(event, { user: { id: 'u1' } });
       expect(mockClear).not.toHaveBeenCalled();
-    },
+    }
   );
 });

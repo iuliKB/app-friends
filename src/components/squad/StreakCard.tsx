@@ -24,72 +24,76 @@ interface StreakCardProps {
 
 export function StreakCard({ streak }: StreakCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      paddingVertical: SPACING.xxl,
-      paddingHorizontal: SPACING.xl,
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.xl,
-      alignItems: 'center',
-    },
-    cardPressed: {
-      opacity: 0.85,
-    },
-    bigNumber: {
-      fontSize: FONT_SIZE.xxl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    bigNumberMuted: {
-      color: colors.text.secondary,
-    },
-    label: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    emoji: {
-      fontSize: FONT_SIZE.xxl,
-      marginTop: SPACING.md,
-    },
-    divider: {
-      height: 1,
-      alignSelf: 'stretch',
-      backgroundColor: colors.border,
-      marginVertical: SPACING.lg,
-    },
-    subline: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-    },
-    skeletonCard: {
-      opacity: 0.5,
-    },
-    skeletonBig: {
-      width: SPACING.xxl * 2,
-      height: SPACING.xxl,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-    },
-    skeletonLabel: {
-      width: SPACING.xxl * 3,
-      height: SPACING.lg,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-      marginTop: SPACING.md,
-    },
-    skeletonSubline: {
-      width: SPACING.xxl * 4,
-      height: SPACING.md,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          paddingVertical: SPACING.xxl,
+          paddingHorizontal: SPACING.xl,
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.xl,
+          alignItems: 'center',
+        },
+        cardPressed: {
+          opacity: 0.85,
+        },
+        bigNumber: {
+          fontSize: FONT_SIZE.xxl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        bigNumberMuted: {
+          color: colors.text.secondary,
+        },
+        label: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        emoji: {
+          fontSize: FONT_SIZE.xxl,
+          marginTop: SPACING.md,
+        },
+        divider: {
+          height: 1,
+          alignSelf: 'stretch',
+          backgroundColor: colors.border,
+          marginVertical: SPACING.lg,
+        },
+        subline: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+        },
+        skeletonCard: {
+          opacity: 0.5,
+        },
+        skeletonBig: {
+          width: SPACING.xxl * 2,
+          height: SPACING.xxl,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+        },
+        skeletonLabel: {
+          width: SPACING.xxl * 3,
+          height: SPACING.lg,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+          marginTop: SPACING.md,
+        },
+        skeletonSubline: {
+          width: SPACING.xxl * 4,
+          height: SPACING.md,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+        },
+      }),
+    [colors]
+  );
 
   const router = useRouter();
   const { currentWeeks, bestWeeks, loading } = streak;

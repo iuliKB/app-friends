@@ -33,39 +33,43 @@ export function ExpenseHistoryRow({
   onPress,
 }: ExpenseHistoryRowProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-    },
-    rowPressed: {
-      opacity: 0.75,
-    },
-    leftColumn: {
-      flex: 1,
-      marginRight: SPACING.sm,
-    },
-    title: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    meta: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    amount: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+
+          minHeight: 44,
+        },
+        rowPressed: {
+          opacity: 0.75,
+        },
+        leftColumn: {
+          flex: 1,
+          marginRight: SPACING.sm,
+        },
+        title: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        meta: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        amount: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={isFullySettled ? { opacity: 0.45 } : undefined}>

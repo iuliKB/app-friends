@@ -12,25 +12,29 @@ interface AvatarStackProps {
 
 export function AvatarStack({ members, maxVisible = 5, size = 28 }: AvatarStackProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    avatarWrapper: {
-      // zIndex set inline per avatar
-    },
-    overflowBadge: {
-      backgroundColor: colors.surface.card,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    overflowText: {
-      color: colors.interactive.accent,
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        avatarWrapper: {
+          // zIndex set inline per avatar
+        },
+        overflowBadge: {
+          backgroundColor: colors.surface.card,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        overflowText: {
+          color: colors.interactive.accent,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+        },
+      }),
+    [colors]
+  );
 
   const visibleMembers = members.slice(0, maxVisible);
   const overflow = members.length - visibleMembers.length;

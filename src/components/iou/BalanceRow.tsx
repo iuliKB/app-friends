@@ -25,39 +25,43 @@ export function BalanceRow({
   onPress,
 }: BalanceRowProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-    },
-    rowPressed: {
-      opacity: 0.75,
-    },
-    nameColumn: {
-      flex: 1,
-      marginLeft: SPACING.sm,
-    },
-    name: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    unsettledLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    amount: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      marginLeft: SPACING.sm,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+
+          minHeight: 44,
+        },
+        rowPressed: {
+          opacity: 0.75,
+        },
+        nameColumn: {
+          flex: 1,
+          marginLeft: SPACING.sm,
+        },
+        name: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        unsettledLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        amount: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          marginLeft: SPACING.sm,
+        },
+      }),
+    [colors]
+  );
 
   const isPositive = netAmountCents >= 0;
   const absAmount = formatCentsDisplay(Math.abs(netAmountCents));
@@ -76,9 +80,7 @@ export function BalanceRow({
         <Text style={styles.name} numberOfLines={1}>
           {displayName}
         </Text>
-        <Text style={styles.unsettledLabel}>
-          {unsettledCount} unsettled
-        </Text>
+        <Text style={styles.unsettledLabel}>{unsettledCount} unsettled</Text>
       </View>
       <Text style={[styles.amount, { color: amountColor }]}>{signedLabel}</Text>
     </Pressable>

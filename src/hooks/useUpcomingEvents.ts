@@ -35,9 +35,6 @@ export function useUpcomingEvents(): PlanWithMembers[] {
       const isGoing = p.members.some((m) => m.user_id === userId && m.rsvp === 'going');
       return isCreator || isGoing;
     })
-    .sort(
-      (a, b) =>
-        new Date(a.scheduled_for!).getTime() - new Date(b.scheduled_for!).getTime()
-    )
+    .sort((a, b) => new Date(a.scheduled_for!).getTime() - new Date(b.scheduled_for!).getTime())
     .slice(0, 5); // D-08
 }

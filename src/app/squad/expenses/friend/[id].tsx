@@ -39,78 +39,79 @@ export default function FriendExpenseHistoryScreen() {
     router.push(`/squad/expenses/${expense.id}` as never);
   };
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    netBalanceStrip: {
-      backgroundColor: colors.surface.card,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: SPACING.lg,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 48,
-    },
-    netBalanceLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    netBalanceAmount: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-    },
-    listContent: {
-      paddingTop: SPACING.lg,
-    },
-    emptyContainer: {
-      flex: 1,
-    },
-    separator: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginHorizontal: SPACING.lg,
-    },
-    // Skeleton styles
-    skeletonRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      opacity: 0.5,
-    },
-    skeletonLeft: {
-      flex: 1,
-      marginRight: SPACING.sm,
-    },
-    skeletonTitle: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 160,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 16,
-      backgroundColor: colors.border,
-      borderRadius: SPACING.xs,
-    },
-    skeletonMeta: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 120,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 14,
-      backgroundColor: colors.border,
-      borderRadius: SPACING.xs,
-      marginTop: SPACING.xs,
-    },
-    skeletonAmount: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 60,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 16,
-      backgroundColor: colors.border,
-      borderRadius: SPACING.xs,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        netBalanceStrip: {
+          backgroundColor: colors.surface.card,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: SPACING.lg,
+
+          height: 48,
+        },
+        netBalanceLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        netBalanceAmount: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+        },
+        listContent: {
+          paddingTop: SPACING.lg,
+        },
+        emptyContainer: {
+          flex: 1,
+        },
+        separator: {
+          height: 1,
+          backgroundColor: colors.border,
+          marginHorizontal: SPACING.lg,
+        },
+        // Skeleton styles
+        skeletonRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          opacity: 0.5,
+        },
+        skeletonLeft: {
+          flex: 1,
+          marginRight: SPACING.sm,
+        },
+        skeletonTitle: {
+          width: 160,
+
+          height: 16,
+          backgroundColor: colors.border,
+          borderRadius: SPACING.xs,
+        },
+        skeletonMeta: {
+          width: 120,
+
+          height: 14,
+          backgroundColor: colors.border,
+          borderRadius: SPACING.xs,
+          marginTop: SPACING.xs,
+        },
+        skeletonAmount: {
+          width: 60,
+
+          height: 16,
+          backgroundColor: colors.border,
+          borderRadius: SPACING.xs,
+        },
+      }),
+    [colors]
+  );
 
   const renderSkeletons = () => (
     <>
@@ -134,9 +135,7 @@ export default function FriendExpenseHistoryScreen() {
       {/* Net balance summary strip (D-09) — height 48px, always shown */}
       <View style={styles.netBalanceStrip}>
         <Text style={styles.netBalanceLabel}>Net balance</Text>
-        <Text style={[styles.netBalanceAmount, { color: netBalanceColor }]}>
-          {netBalanceLabel}
-        </Text>
+        <Text style={[styles.netBalanceAmount, { color: netBalanceColor }]}>{netBalanceLabel}</Text>
       </View>
 
       {loading ? (

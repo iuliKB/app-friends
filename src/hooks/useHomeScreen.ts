@@ -73,7 +73,7 @@ export function useHomeScreen(): UseHomeScreenResult {
     queryFn: async (): Promise<FriendRow[]> => {
       const { data, error } = await supabase.rpc('get_friends');
       if (error) throw error;
-      return ((data ?? []) as unknown) as FriendRow[];
+      return (data ?? []) as unknown as FriendRow[];
     },
     enabled: !!userId,
   });
@@ -94,7 +94,7 @@ export function useHomeScreen(): UseHomeScreenResult {
         .select('user_id, effective_status, context_tag, status_expires_at, last_active_at')
         .in('user_id', friendIds);
       if (error) throw error;
-      return ((data ?? []) as unknown) as StatusRow[];
+      return (data ?? []) as unknown as StatusRow[];
     },
     enabled: !!userId && friendIds.length > 0,
   });
@@ -147,12 +147,11 @@ export function useHomeScreen(): UseHomeScreenResult {
   return {
     friends: merged,
     loading: friendsQuery.isLoading || statusesQuery.isLoading,
-    error:
-      friendsQuery.error
-        ? (friendsQuery.error as Error).message
-        : statusesQuery.error
-          ? (statusesQuery.error as Error).message
-          : null,
+    error: friendsQuery.error
+      ? (friendsQuery.error as Error).message
+      : statusesQuery.error
+        ? (statusesQuery.error as Error).message
+        : null,
     refreshing,
     handleRefresh,
     fetchAllFriends: refetch,

@@ -32,7 +32,7 @@ export function useUpcomingBirthdays(): UpcomingBirthdaysData {
     queryFn: async (): Promise<BirthdayEntry[]> => {
       const { data, error } = await supabase.rpc('get_upcoming_birthdays');
       if (error) throw error;
-      return ((data ?? []) as unknown) as BirthdayEntry[];
+      return (data ?? []) as unknown as BirthdayEntry[];
     },
     enabled: !!userId,
   });

@@ -9,8 +9,8 @@ export interface Plan {
   created_at: string;
   updated_at: string;
   cover_image_url?: string | null;
-  latitude: number | null;   // Phase 20 — MAP-01
-  longitude: number | null;  // Phase 20 — MAP-01
+  latitude: number | null; // Phase 20 — MAP-01
+  longitude: number | null; // Phase 20 — MAP-01
 }
 
 export interface PlanMember {

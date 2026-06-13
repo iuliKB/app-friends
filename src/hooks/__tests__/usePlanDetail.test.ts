@@ -15,6 +15,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { usePlanDetail } from '../usePlanDetail';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -26,8 +28,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u-self' } } }),
 }));
-
-import { usePlanDetail } from '../usePlanDetail';
 
 const PLAN_ID = 'p1';
 const PLAN_ROW = {
@@ -65,7 +65,9 @@ function setupDetailMock() {
         select: () => ({
           eq: () =>
             Promise.resolve({
-              data: [{ plan_id: PLAN_ID, user_id: 'u-self', rsvp: 'going', joined_at: '2026-05-12' }],
+              data: [
+                { plan_id: PLAN_ID, user_id: 'u-self', rsvp: 'going', joined_at: '2026-05-12' },
+              ],
               error: null,
             }),
         }),

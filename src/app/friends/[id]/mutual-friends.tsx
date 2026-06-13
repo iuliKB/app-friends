@@ -3,13 +3,7 @@
 // and renders FriendCard list. Tap → /friends/[id].
 
 import React, { useMemo } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
@@ -82,7 +76,7 @@ export default function MutualFriendsScreen() {
           justifyContent: 'center',
         },
       }),
-    [colors],
+    [colors]
   );
 
   const isLoading = friendsLoading || ofFriendLoading;

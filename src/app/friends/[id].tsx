@@ -85,7 +85,7 @@ function AnimatedStackTitle({ scrollY, displayName }: AnimatedStackTitleProps) {
         scrollY.value,
         [COLLAPSE_END * 0.6, COLLAPSE_END],
         [0, 1],
-        Extrapolation.CLAMP,
+        Extrapolation.CLAMP
       ),
     };
   }, [reducedMotion]);
@@ -99,7 +99,7 @@ function AnimatedStackTitle({ scrollY, displayName }: AnimatedStackTitleProps) {
           color: colors.text.primary,
         },
       }),
-    [colors],
+    [colors]
   );
 
   return (
@@ -145,7 +145,7 @@ function NotFriendsView({ onBack }: NotFriendsViewProps) {
           marginBottom: SPACING.xl,
         },
       }),
-    [colors],
+    [colors]
   );
   return (
     <View style={styles.container}>
@@ -178,7 +178,7 @@ function SkeletonShells() {
           alignSelf: 'stretch',
         },
       }),
-    [colors],
+    [colors]
   );
   return (
     <View style={styles.container}>
@@ -215,8 +215,18 @@ function SkeletonShells() {
 // ─── Helper: format birthday ─────────────────────────────────────────────────
 
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 function formatBirthday(month: number, day: number): string {
@@ -236,7 +246,10 @@ interface IouSummary {
   direction: 'owe' | 'owed' | 'settled';
 }
 
-function computeIouSummary(expenses: Array<{ totalCents: number; isFullySettled: boolean; payerName: string }>, myDisplayName: string): IouSummary {
+function computeIouSummary(
+  expenses: { totalCents: number; isFullySettled: boolean; payerName: string }[],
+  myDisplayName: string
+): IouSummary {
   if (expenses.length === 0) return { balanceCents: 0, direction: 'settled' };
   const unsettled = expenses.filter((e) => !e.isFullySettled);
   if (unsettled.length === 0) return { balanceCents: 0, direction: 'settled' };
@@ -297,7 +310,11 @@ export default function FriendProfileScreen() {
   // ── Data hooks ──
   const { data, isLoading, error, refetch } = useFriendProfile(friendId);
   const { data: mutuals } = useFriendMutuals(friendId);
-  const { items: wishListItems, loading: wishListLoading, toggleClaim } = useFriendWishList(friendId);
+  const {
+    items: wishListItems,
+    loading: wishListLoading,
+    toggleClaim,
+  } = useFriendWishList(friendId);
   const { expenses } = useExpensesWithFriend(friendId);
 
   // ── Cache-warming hooks (warm friends list + friends-of-friend caches for mutual friend count) ──
@@ -315,7 +332,7 @@ export default function FriendProfileScreen() {
         .from('friendships')
         .delete()
         .or(
-          `and(requester_id.eq.${myId},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${myId})`,
+          `and(requester_id.eq.${myId},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${myId})`
         );
       if (deleteError) throw deleteError;
     },
@@ -323,8 +340,8 @@ export default function FriendProfileScreen() {
       const listKey = queryKeys.friends.list(myId);
       await queryClient.cancelQueries({ queryKey: listKey });
       const previousList = queryClient.getQueryData(listKey);
-      queryClient.setQueryData(listKey, (old: Array<{ friend_id: string }> | undefined) =>
-        (old ?? []).filter((f) => f.friend_id !== friendId),
+      queryClient.setQueryData(listKey, (old: { friend_id: string }[] | undefined) =>
+        (old ?? []).filter((f) => f.friend_id !== friendId)
       );
       return { previousList };
     },
@@ -372,7 +389,7 @@ export default function FriendProfileScreen() {
           },
         },
         { text: 'Cancel', style: 'cancel' },
-      ],
+      ]
     );
   }
 
@@ -410,7 +427,7 @@ export default function FriendProfileScreen() {
           backgroundColor: colors.surface.base,
         },
       }),
-    [colors],
+    [colors]
   );
 
   // ── Loading / error / not-found states ──
@@ -472,9 +489,7 @@ export default function FriendProfileScreen() {
           title: displayName,
           headerTransparent: true,
           headerStyle: { backgroundColor: 'transparent' },
-          headerTitle: () => (
-            <AnimatedStackTitle scrollY={scrollY} displayName={displayName} />
-          ),
+          headerTitle: () => <AnimatedStackTitle scrollY={scrollY} displayName={displayName} />,
         }}
       />
 
@@ -495,11 +510,7 @@ export default function FriendProfileScreen() {
           contextTag={data?.contextTag ?? null}
           statusExpiresAt={data?.statusExpiresAt ?? null}
           lastActiveAt={data?.lastActiveAt ?? null}
-          onAvatarPress={
-            profile?.avatar_url
-              ? () => setAvatarViewerOpen(true)
-              : undefined
-          }
+          onAvatarPress={profile?.avatar_url ? () => setAvatarViewerOpen(true) : undefined}
         />
 
         {/* Quick Actions Row */}
@@ -543,15 +554,13 @@ export default function FriendProfileScreen() {
             onPress={wishListItems.length > 0 ? scrollToWishlist : undefined}
             chevron={wishListItems.length > 0}
             accessibilityLabel={`Wish list: ${wishListItems.length} ${wishListItems.length === 1 ? 'item' : 'items'}`}
-            accessibilityHint={wishListItems.length > 0 ? 'Scrolls down to the wish list section' : undefined}
+            accessibilityHint={
+              wishListItems.length > 0 ? 'Scrolls down to the wish list section' : undefined
+            }
           />
           {/* Fallback row when all optional INFO rows are null — always show friends since at minimum */}
           {!profile?.bio && !data?.friendsSince && !profile?.birthday_month ? (
-            <ProfileInfoRow
-              iconTint="friendsSince"
-              label="Friends since"
-              value="Unknown"
-            />
+            <ProfileInfoRow iconTint="friendsSince" label="Friends since" value="Unknown" />
           ) : null}
         </GroupedInsetSection>
 
@@ -567,15 +576,14 @@ export default function FriendProfileScreen() {
             }
             onPress={
               mutuals && mutuals.mutualPlansCount > 0
-                ? () =>
-                    localRouter.push(
-                      `/friends/${friendId}/mutual-plans` as never,
-                    )
+                ? () => localRouter.push(`/friends/${friendId}/mutual-plans` as never)
                 : undefined
             }
             chevron={!!(mutuals && mutuals.mutualPlansCount > 0)}
             accessibilityLabel={`Mutual plans: ${mutuals?.mutualPlansCount ?? 0}`}
-            accessibilityHint={mutuals && mutuals.mutualPlansCount > 0 ? 'Opens the list of mutual plans' : undefined}
+            accessibilityHint={
+              mutuals && mutuals.mutualPlansCount > 0 ? 'Opens the list of mutual plans' : undefined
+            }
           />
           <ProfileInfoRow
             iconTint="mutualFriends"
@@ -587,15 +595,16 @@ export default function FriendProfileScreen() {
             }
             onPress={
               mutuals && mutuals.mutualFriendsCount > 0
-                ? () =>
-                    localRouter.push(
-                      `/friends/${friendId}/mutual-friends` as never,
-                    )
+                ? () => localRouter.push(`/friends/${friendId}/mutual-friends` as never)
                 : undefined
             }
             chevron={!!(mutuals && mutuals.mutualFriendsCount > 0)}
             accessibilityLabel={`Mutual friends: ${mutuals?.mutualFriendsCount ?? 0}`}
-            accessibilityHint={mutuals && mutuals.mutualFriendsCount > 0 ? 'Opens the list of mutual friends' : undefined}
+            accessibilityHint={
+              mutuals && mutuals.mutualFriendsCount > 0
+                ? 'Opens the list of mutual friends'
+                : undefined
+            }
           />
           <ProfileInfoRow
             iconTint="sharedPhotos"
@@ -605,14 +614,12 @@ export default function FriendProfileScreen() {
                 ? String(mutuals.sharedPhotosCount)
                 : 'None yet'
             }
-            onPress={
-              mutuals && mutuals.sharedPhotosCount > 0
-                ? handlePhotos
-                : undefined
-            }
+            onPress={mutuals && mutuals.sharedPhotosCount > 0 ? handlePhotos : undefined}
             chevron={!!(mutuals && mutuals.sharedPhotosCount > 0)}
             accessibilityLabel={`Shared photos: ${mutuals?.sharedPhotosCount ?? 0}`}
-            accessibilityHint={mutuals && mutuals.sharedPhotosCount > 0 ? 'Opens shared photos' : undefined}
+            accessibilityHint={
+              mutuals && mutuals.sharedPhotosCount > 0 ? 'Opens shared photos' : undefined
+            }
           />
           <ProfileInfoRow
             iconTint="iou"

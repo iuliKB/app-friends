@@ -309,14 +309,14 @@ export type Database = {
           id: string;
           plan_id: string | null;
           dm_channel_id: string | null;
-          group_channel_id: string | null;  // Phase 11 v1.4 (migration 0017) — group DM channel
+          group_channel_id: string | null; // Phase 11 v1.4 (migration 0017) — group DM channel
           sender_id: string;
-          body: string | null;              // Phase 14 v1.4 (migration 0018) — nullable for image-only messages
+          body: string | null; // Phase 14 v1.4 (migration 0018) — nullable for image-only messages
           created_at: string;
-          image_url: string | null;         // Phase 14 v1.4 (migration 0018)
+          image_url: string | null; // Phase 14 v1.4 (migration 0018)
           reply_to_message_id: string | null; // Phase 14 v1.4 (migration 0018)
-          message_type: string;             // Phase 14 v1.4 (migration 0018) — 'text' | 'image' | 'poll'
-          poll_id: string | null;           // Phase 14 v1.4 (migration 0018)
+          message_type: string; // Phase 14 v1.4 (migration 0018) — 'text' | 'image' | 'poll'
+          poll_id: string | null; // Phase 14 v1.4 (migration 0018)
         };
         Insert: {
           id?: string;

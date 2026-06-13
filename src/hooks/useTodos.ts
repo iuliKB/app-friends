@@ -28,9 +28,7 @@ export interface UseTodosResult {
   error: string | null;
   refetch: () => Promise<unknown>;
   completeTodo: (todoId: string) => Promise<{ error: string | null }>;
-  completeChatTodo: (
-    itemId: string
-  ) => Promise<{ error: string | null; messageId: string | null }>;
+  completeChatTodo: (itemId: string) => Promise<{ error: string | null; messageId: string | null }>;
 }
 
 export function useTodos(): UseTodosResult {
@@ -46,7 +44,7 @@ export function useTodos(): UseTodosResult {
     queryFn: async (): Promise<MyTodoRow[]> => {
       const { data, error } = await (supabase as any).rpc('get_my_todos', { p_today: today });
       if (error) throw error;
-      return ((data ?? []) as unknown) as MyTodoRow[];
+      return (data ?? []) as unknown as MyTodoRow[];
     },
     enabled: !!userId,
   });
@@ -56,7 +54,7 @@ export function useTodos(): UseTodosResult {
     queryFn: async (): Promise<ChatTodoRow[]> => {
       const { data, error } = await (supabase as any).rpc('get_chat_todos', { p_today: today });
       if (error) throw error;
-      return ((data ?? []) as unknown) as ChatTodoRow[];
+      return (data ?? []) as unknown as ChatTodoRow[];
     },
     enabled: !!userId,
   });
@@ -74,10 +72,12 @@ export function useTodos(): UseTodosResult {
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: mineKey });
       const previous = queryClient.getQueryData<MyTodoRow[]>(mineKey);
-      queryClient.setQueryData<MyTodoRow[]>(mineKey, (old) =>
-        old?.map((t) =>
-          t.id === input.todoId ? { ...t, completed_at: input.newCompletedAt } : t,
-        ) ?? [],
+      queryClient.setQueryData<MyTodoRow[]>(
+        mineKey,
+        (old) =>
+          old?.map((t) =>
+            t.id === input.todoId ? { ...t, completed_at: input.newCompletedAt } : t
+          ) ?? []
       );
       return { previous };
     },
@@ -94,9 +94,7 @@ export function useTodos(): UseTodosResult {
   // No optimistic write on this side (chat thread Realtime delivers the system
   // message). Invalidate both chat-todo and Home aggregate keys on settle.
   const completeChatMutation = useMutation({
-    mutationFn: async (
-      itemId: string,
-    ): Promise<{ messageId: string | null }> => {
+    mutationFn: async (itemId: string): Promise<{ messageId: string | null }> => {
       const { data, error } = await (supabase as any).rpc('complete_chat_todo', {
         p_item_id: itemId,
       });
@@ -128,12 +126,11 @@ export function useTodos(): UseTodosResult {
     mine: mineQuery.data ?? [],
     fromChats: fromChatsQuery.data ?? [],
     loading: mineQuery.isLoading || fromChatsQuery.isLoading,
-    error:
-      mineQuery.error
-        ? (mineQuery.error as Error).message
-        : fromChatsQuery.error
-          ? (fromChatsQuery.error as Error).message
-          : null,
+    error: mineQuery.error
+      ? (mineQuery.error as Error).message
+      : fromChatsQuery.error
+        ? (fromChatsQuery.error as Error).message
+        : null,
     refetch,
     completeTodo: async (todoId: string) => {
       const snapshot = (mineQuery.data ?? []).find((t) => t.id === todoId);

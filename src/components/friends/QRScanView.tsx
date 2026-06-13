@@ -18,93 +18,97 @@ export function QRScanView({ onScanned }: QRScanViewProps) {
   const [scanned, setScanned] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      alignItems: 'center',
-    },
-    cameraContainer: {
-      width: SCREEN_WIDTH,
-      height: SCREEN_WIDTH,
-      borderRadius: RADII.lg,
-      overflow: 'hidden',
-    },
-    camera: {
-      width: SCREEN_WIDTH,
-      height: SCREEN_WIDTH,
-    },
-    overlayContainer: {
-      ...StyleSheet.absoluteFillObject,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    scanFrame: {
-      width: 220,
-      height: 220,
-      borderWidth: 2,
-      borderColor: colors.interactive.accent,
-      borderRadius: RADII.md,
-    },
-    hint: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      paddingHorizontal: SPACING.xl,
-      marginTop: SPACING.lg,
-    },
-    permissionContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: SPACING.xl,
-    },
-    permissionHeading: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      textAlign: 'center',
-      marginTop: SPACING.lg,
-    },
-    permissionBody: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.sm,
-    },
-    permissionButton: {
-      alignSelf: 'stretch',
-      marginTop: SPACING.xl,
-      marginHorizontal: SPACING.xl,
-    },
-    errorContainer: {
-      alignItems: 'center',
-      paddingTop: SPACING.xxl,
-      paddingHorizontal: SPACING.xl,
-    },
-    errorText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-      textAlign: 'center',
-      marginTop: SPACING.lg,
-    },
-    scanAgainButton: {
-      marginTop: SPACING.lg,
-      height: 44,
-      paddingHorizontal: SPACING.xl,
-      borderRadius: RADII.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    scanAgainText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.regular,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          alignItems: 'center',
+        },
+        cameraContainer: {
+          width: SCREEN_WIDTH,
+          height: SCREEN_WIDTH,
+          borderRadius: RADII.lg,
+          overflow: 'hidden',
+        },
+        camera: {
+          width: SCREEN_WIDTH,
+          height: SCREEN_WIDTH,
+        },
+        overlayContainer: {
+          ...StyleSheet.absoluteFillObject,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        scanFrame: {
+          width: 220,
+          height: 220,
+          borderWidth: 2,
+          borderColor: colors.interactive.accent,
+          borderRadius: RADII.md,
+        },
+        hint: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          paddingHorizontal: SPACING.xl,
+          marginTop: SPACING.lg,
+        },
+        permissionContainer: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: SPACING.xl,
+        },
+        permissionHeading: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          textAlign: 'center',
+          marginTop: SPACING.lg,
+        },
+        permissionBody: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.sm,
+        },
+        permissionButton: {
+          alignSelf: 'stretch',
+          marginTop: SPACING.xl,
+          marginHorizontal: SPACING.xl,
+        },
+        errorContainer: {
+          alignItems: 'center',
+          paddingTop: SPACING.xxl,
+          paddingHorizontal: SPACING.xl,
+        },
+        errorText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.destructive,
+          textAlign: 'center',
+          marginTop: SPACING.lg,
+        },
+        scanAgainButton: {
+          marginTop: SPACING.lg,
+          height: 44,
+          paddingHorizontal: SPACING.xl,
+          borderRadius: RADII.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        scanAgainText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.regular,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   function handleScanAgain() {
     setScanned(false);

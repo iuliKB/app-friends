@@ -35,9 +35,9 @@ export function GroupedInsetSection({ title, children, style }: GroupedInsetSect
           color: colors.text.secondary,
           paddingHorizontal: SPACING.lg,
           paddingBottom: SPACING.xs,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           textTransform: 'uppercase',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           letterSpacing: 0.5, // UI-SPEC §Typography line 117 — small-caps spec
         },
         card: {
@@ -47,7 +47,7 @@ export function GroupedInsetSection({ title, children, style }: GroupedInsetSect
           marginHorizontal: SPACING.lg,
         },
       }),
-    [colors],
+    [colors]
   );
 
   // Inject isLast on the final child so it suppresses its own bottom separator.

@@ -195,15 +195,15 @@ export function useChatRoom({
           poll_id: (row.poll_id as string | null) ?? null,
           reactions: aggregateReactions(
             (row.reactions as { emoji: string; user_id: string }[] | null) ?? [],
-            currentUserId,
+            currentUserId
           ),
-        }),
+        })
       );
 
       // Mark as read — per-chat UI preference (NOT cache). Untouched by Wave 8.
       await AsyncStorage.setItem(
         'chat:last_read:' + (planId ?? dmChannelId ?? groupChannelId),
-        new Date().toISOString(),
+        new Date().toISOString()
       );
 
       return enriched;
@@ -237,31 +237,28 @@ export function useChatRoom({
       // Pitfall 1 dedup guard: own INSERT already applied via optimistic update
       if (incomingUserId === currentUserId) return;
 
-      queryClient.setQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
-        (prev) => {
-          if (!prev) return prev;
-          const msgIdx = prev.findIndex((m) => m.id === incomingMessageId);
-          if (msgIdx === -1) return prev; // not in this room — client-side scope guard
-          const msg = prev[msgIdx]!;
-          const reactions = msg.reactions ?? [];
-          const existingIdx = reactions.findIndex((r) => r.emoji === incomingEmoji);
-          let updatedReactions: typeof reactions;
-          if (existingIdx >= 0) {
-            updatedReactions = reactions.map((r, i) =>
-              i === existingIdx ? { ...r, count: r.count + 1 } : r,
-            );
-          } else {
-            updatedReactions = [
-              ...reactions,
-              { emoji: incomingEmoji, count: 1, reacted_by_me: false },
-            ];
-          }
-          const updated = [...prev];
-          updated[msgIdx] = { ...msg, reactions: updatedReactions };
-          return updated;
-        },
-      );
+      queryClient.setQueryData<MessageWithProfile[]>(queryKeys.chat.messages(channelId), (prev) => {
+        if (!prev) return prev;
+        const msgIdx = prev.findIndex((m) => m.id === incomingMessageId);
+        if (msgIdx === -1) return prev; // not in this room — client-side scope guard
+        const msg = prev[msgIdx]!;
+        const reactions = msg.reactions ?? [];
+        const existingIdx = reactions.findIndex((r) => r.emoji === incomingEmoji);
+        let updatedReactions: typeof reactions;
+        if (existingIdx >= 0) {
+          updatedReactions = reactions.map((r, i) =>
+            i === existingIdx ? { ...r, count: r.count + 1 } : r
+          );
+        } else {
+          updatedReactions = [
+            ...reactions,
+            { emoji: incomingEmoji, count: 1, reacted_by_me: false },
+          ];
+        }
+        const updated = [...prev];
+        updated[msgIdx] = { ...msg, reactions: updatedReactions };
+        return updated;
+      });
     }
 
     function handleReactionDelete(payload: { old: Record<string, unknown> }) {
@@ -272,21 +269,18 @@ export function useChatRoom({
 
       if (deletedUserId === currentUserId) return;
 
-      queryClient.setQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
-        (prev) => {
-          if (!prev) return prev;
-          const msgIdx = prev.findIndex((m) => m.id === deletedMessageId);
-          if (msgIdx === -1) return prev;
-          const msg = prev[msgIdx]!;
-          const updatedReactions = (msg.reactions ?? [])
-            .map((r) => (r.emoji === deletedEmoji ? { ...r, count: r.count - 1 } : r))
-            .filter((r) => r.count > 0);
-          const updated = [...prev];
-          updated[msgIdx] = { ...msg, reactions: updatedReactions };
-          return updated;
-        },
-      );
+      queryClient.setQueryData<MessageWithProfile[]>(queryKeys.chat.messages(channelId), (prev) => {
+        if (!prev) return prev;
+        const msgIdx = prev.findIndex((m) => m.id === deletedMessageId);
+        if (msgIdx === -1) return prev;
+        const msg = prev[msgIdx]!;
+        const updatedReactions = (msg.reactions ?? [])
+          .map((r) => (r.emoji === deletedEmoji ? { ...r, count: r.count - 1 } : r))
+          .filter((r) => r.count > 0);
+        const updated = [...prev];
+        updated[msgIdx] = { ...msg, reactions: updatedReactions };
+        return updated;
+      });
     }
 
     function handlePollVoteInsert(payload: { new: Record<string, unknown> }) {
@@ -297,7 +291,7 @@ export function useChatRoom({
       if (incomingUserId === currentUserId) return;
 
       const current = queryClient.getQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
+        queryKeys.chat.messages(channelId)
       );
       const isInRoom = (current ?? []).some((m) => m.poll_id === incomingPollId);
       if (isInRoom) {
@@ -313,7 +307,7 @@ export function useChatRoom({
       if (deletedUserId === currentUserId) return;
 
       const current = queryClient.getQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
+        queryKeys.chat.messages(channelId)
       );
       const isInRoom = (current ?? []).some((m) => m.poll_id === incomingPollId);
       if (isInRoom) {
@@ -349,7 +343,7 @@ export function useChatRoom({
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.chat.messages(channelId) });
       const previous = queryClient.getQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
+        queryKeys.chat.messages(channelId)
       );
       const optimistic: MessageWithProfile = {
         id: input.messageId,
@@ -368,10 +362,10 @@ export function useChatRoom({
         sender_display_name: currentUserDisplayName,
         sender_avatar_url: currentUserAvatarUrl,
       };
-      queryClient.setQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
-        (old) => [optimistic, ...(old ?? [])],
-      );
+      queryClient.setQueryData<MessageWithProfile[]>(queryKeys.chat.messages(channelId), (old) => [
+        optimistic,
+        ...(old ?? []),
+      ]);
       return { previous, tempId: input.messageId };
     },
     onError: (_err, _input, ctx) => {
@@ -380,9 +374,8 @@ export function useChatRoom({
         queryClient.setQueryData<MessageWithProfile[]>(
           queryKeys.chat.messages(channelId),
           (old) =>
-            old?.map((m) =>
-              m.id === ctx.tempId ? { ...m, pending: false, failed: true } : m,
-            ) ?? [],
+            old?.map((m) => (m.id === ctx.tempId ? { ...m, pending: false, failed: true } : m)) ??
+            []
         );
       }
     },
@@ -402,11 +395,7 @@ export function useChatRoom({
 
   // Canonical Pattern 5 — sendImage. Upload + insert flow; same Pattern 5 shape.
   const sendImageMutation = useMutation({
-    mutationFn: async (input: {
-      localUri: string;
-      replyToId?: string;
-      messageId: string;
-    }) => {
+    mutationFn: async (input: { localUri: string; replyToId?: string; messageId: string }) => {
       const cdnUrl = await uploadChatMedia(currentUserId, input.messageId, input.localUri);
       if (!cdnUrl) throw new Error('Upload failed');
       const { error: insertError } = await supabase.from('messages').insert({
@@ -425,7 +414,7 @@ export function useChatRoom({
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.chat.messages(channelId) });
       const previous = queryClient.getQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
+        queryKeys.chat.messages(channelId)
       );
       const optimistic: MessageWithProfile = {
         id: input.messageId,
@@ -445,10 +434,10 @@ export function useChatRoom({
         sender_display_name: currentUserDisplayName,
         sender_avatar_url: currentUserAvatarUrl,
       };
-      queryClient.setQueryData<MessageWithProfile[]>(
-        queryKeys.chat.messages(channelId),
-        (old) => [optimistic, ...(old ?? [])],
-      );
+      queryClient.setQueryData<MessageWithProfile[]>(queryKeys.chat.messages(channelId), (old) => [
+        optimistic,
+        ...(old ?? []),
+      ]);
       return { previous, tempId: input.messageId };
     },
     onError: (_err, _input, ctx) => {
@@ -456,7 +445,7 @@ export function useChatRoom({
       if (ctx?.tempId) {
         queryClient.setQueryData<MessageWithProfile[]>(
           queryKeys.chat.messages(channelId),
-          (old) => old?.filter((m) => m.id !== ctx.tempId) ?? [],
+          (old) => old?.filter((m) => m.id !== ctx.tempId) ?? []
         );
       }
     },
@@ -481,11 +470,7 @@ export function useChatRoom({
   // completes. Use the non-optimistic exemption per research §Pattern 5 line 503.
   // @mutationShape: no-optimistic
   const sendPollMutation = useMutation({
-    mutationFn: async (input: {
-      question: string;
-      options: string[];
-      messageId: string;
-    }) => {
+    mutationFn: async (input: { question: string; options: string[]; messageId: string }) => {
       const { error: msgError } = await supabase.from('messages').insert({
         id: input.messageId,
         plan_id: planId ?? null,
@@ -542,7 +527,7 @@ export function useChatRoom({
     // Remove the failed entry from the cache, then re-send via the normal flow.
     queryClient.setQueryData<MessageWithProfile[]>(
       queryKeys.chat.messages(channelId),
-      (old) => old?.filter((m) => m.tempId !== tempId) ?? [],
+      (old) => old?.filter((m) => m.tempId !== tempId) ?? []
     );
     return sendMessage(body);
   }
@@ -581,17 +566,17 @@ export function useChatRoom({
       sender_display_name: currentUserDisplayName,
       sender_avatar_url: currentUserAvatarUrl,
     };
-    queryClient.setQueryData<MessageWithProfile[]>(
-      queryKeys.chat.messages(channelId),
-      (old) => [optimistic, ...(old ?? [])],
-    );
+    queryClient.setQueryData<MessageWithProfile[]>(queryKeys.chat.messages(channelId), (old) => [
+      optimistic,
+      ...(old ?? []),
+    ]);
     try {
       await sendPollMutation.mutateAsync({ question, options, messageId });
       return { error: null };
     } catch (err) {
       queryClient.setQueryData<MessageWithProfile[]>(
         queryKeys.chat.messages(channelId),
-        (old) => old?.filter((m) => m.tempId !== messageId) ?? [],
+        (old) => old?.filter((m) => m.tempId !== messageId) ?? []
       );
       return { error: err instanceof Error ? err : new Error(String(err)) };
     }
@@ -602,18 +587,15 @@ export function useChatRoom({
     let originalBody: string | null = null;
     let originalMessageType: MessageType = 'text';
     // Optimistic update via cache write
-    queryClient.setQueryData<MessageWithProfile[]>(
-      queryKeys.chat.messages(channelId),
-      (prev) => {
-        if (!prev) return prev;
-        const original = prev.find((m) => m.id === messageId);
-        originalBody = original?.body ?? null;
-        originalMessageType = original?.message_type ?? 'text';
-        return prev.map((m) =>
-          m.id === messageId ? { ...m, body: null, message_type: 'deleted' as MessageType } : m,
-        );
-      },
-    );
+    queryClient.setQueryData<MessageWithProfile[]>(queryKeys.chat.messages(channelId), (prev) => {
+      if (!prev) return prev;
+      const original = prev.find((m) => m.id === messageId);
+      originalBody = original?.body ?? null;
+      originalMessageType = original?.message_type ?? 'text';
+      return prev.map((m) =>
+        m.id === messageId ? { ...m, body: null, message_type: 'deleted' as MessageType } : m
+      );
+    });
 
     const { error: updateError } = await supabase
       .from('messages')
@@ -626,10 +608,8 @@ export function useChatRoom({
         queryKeys.chat.messages(channelId),
         (prev) =>
           prev?.map((m) =>
-            m.id === messageId
-              ? { ...m, body: originalBody, message_type: originalMessageType }
-              : m,
-          ) ?? [],
+            m.id === messageId ? { ...m, body: originalBody, message_type: originalMessageType } : m
+          ) ?? []
       );
       return { error: updateError };
     }
@@ -642,7 +622,7 @@ export function useChatRoom({
     let isSameEmoji = false;
 
     const currentMessages = queryClient.getQueryData<MessageWithProfile[]>(
-      queryKeys.chat.messages(channelId),
+      queryKeys.chat.messages(channelId)
     );
     const msg = currentMessages?.find((m) => m.id === messageId);
     preSnapshot = msg?.reactions ?? [];
@@ -660,18 +640,20 @@ export function useChatRoom({
           if (m.id !== messageId) return m;
           const existing = m.reactions ?? [];
           const withoutOld = existing
-            .map((r) =>
-              r.reacted_by_me ? { ...r, count: r.count - 1, reacted_by_me: false } : r,
-            )
+            .map((r) => (r.reacted_by_me ? { ...r, count: r.count - 1, reacted_by_me: false } : r))
             .filter((r) => r.count > 0);
           const idx = withoutOld.findIndex((r) => r.emoji === emoji);
           if (idx >= 0) {
             const updated = [...withoutOld];
-            updated[idx] = { ...updated[idx]!, count: updated[idx]!.count + 1, reacted_by_me: true };
+            updated[idx] = {
+              ...updated[idx]!,
+              count: updated[idx]!.count + 1,
+              reacted_by_me: true,
+            };
             return { ...m, reactions: updated };
           }
           return { ...m, reactions: [...withoutOld, { emoji, count: 1, reacted_by_me: true }] };
-        }) ?? [],
+        }) ?? []
     );
 
     const oldReaction = preSnapshot.find((r) => r.reacted_by_me);
@@ -685,7 +667,7 @@ export function useChatRoom({
         queryClient.setQueryData<MessageWithProfile[]>(
           queryKeys.chat.messages(channelId),
           (prev) =>
-            prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? [],
+            prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? []
         );
         return { error: deleteError };
       }
@@ -704,7 +686,7 @@ export function useChatRoom({
       queryClient.setQueryData<MessageWithProfile[]>(
         queryKeys.chat.messages(channelId),
         (prev) =>
-          prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? [],
+          prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? []
       );
       return { error: insertError };
     }
@@ -713,12 +695,12 @@ export function useChatRoom({
 
   async function removeReaction(
     messageId: string,
-    emoji: string,
+    emoji: string
   ): Promise<{ error: Error | null }> {
     if (!currentUserId) return { error: new Error('Not authenticated') };
 
     const currentMessages = queryClient.getQueryData<MessageWithProfile[]>(
-      queryKeys.chat.messages(channelId),
+      queryKeys.chat.messages(channelId)
     );
     const msg = currentMessages?.find((m) => m.id === messageId);
     const preSnapshot: MessageReaction[] = msg?.reactions ?? [];
@@ -730,11 +712,11 @@ export function useChatRoom({
           if (m.id !== messageId) return m;
           const updated = (m.reactions ?? [])
             .map((r) =>
-              r.emoji === emoji ? { ...r, count: r.count - 1, reacted_by_me: false } : r,
+              r.emoji === emoji ? { ...r, count: r.count - 1, reacted_by_me: false } : r
             )
             .filter((r) => r.count > 0);
           return { ...m, reactions: updated };
-        }) ?? [],
+        }) ?? []
     );
 
     const { error: deleteError } = await supabase
@@ -748,7 +730,7 @@ export function useChatRoom({
       queryClient.setQueryData<MessageWithProfile[]>(
         queryKeys.chat.messages(channelId),
         (prev) =>
-          prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? [],
+          prev?.map((m) => (m.id === messageId ? { ...m, reactions: preSnapshot } : m)) ?? []
       );
       return { error: deleteError };
     }

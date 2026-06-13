@@ -16,62 +16,66 @@ interface PrePromptModalProps {
 export function PrePromptModal({ visible, onAccept, onDecline }: PrePromptModalProps) {
   const { colors } = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    backdrop: {
-      flex: 1,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(0,0,0,0.6)', // no exact token — modal scrim
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: SPACING.lg,
-    },
-    card: {
-      width: '100%',
-      maxWidth: 360,
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      padding: SPACING.xl,
-      alignItems: 'stretch',
-    },
-    title: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginBottom: SPACING.md,
-      textAlign: 'center',
-    },
-    body: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginBottom: SPACING.xl,
-      textAlign: 'center',
-    },
-    primary: {
-      backgroundColor: colors.interactive.accent,
-      borderRadius: RADII.md,
-      paddingVertical: SPACING.md,
-      alignItems: 'center',
-      marginBottom: SPACING.sm,
-    },
-    primaryLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.surface.base,
-    },
-    secondary: {
-      paddingVertical: SPACING.md,
-      alignItems: 'center',
-    },
-    secondaryLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    pressed: {
-      opacity: 0.7,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        backdrop: {
+          flex: 1,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(0,0,0,0.6)', // no exact token — modal scrim
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: SPACING.lg,
+        },
+        card: {
+          width: '100%',
+          maxWidth: 360,
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          padding: SPACING.xl,
+          alignItems: 'stretch',
+        },
+        title: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginBottom: SPACING.md,
+          textAlign: 'center',
+        },
+        body: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginBottom: SPACING.xl,
+          textAlign: 'center',
+        },
+        primary: {
+          backgroundColor: colors.interactive.accent,
+          borderRadius: RADII.md,
+          paddingVertical: SPACING.md,
+          alignItems: 'center',
+          marginBottom: SPACING.sm,
+        },
+        primaryLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.surface.base,
+        },
+        secondary: {
+          paddingVertical: SPACING.md,
+          alignItems: 'center',
+        },
+        secondaryLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        pressed: {
+          opacity: 0.7,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDecline}>

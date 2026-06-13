@@ -263,7 +263,10 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
           accessibilityHint="Swipe down to close the status picker"
         >
           <Animated.View
-            style={[styles.dragHandle, { transform: [{ scaleX: handleScale }, { scaleY: handleScale }] }]}
+            style={[
+              styles.dragHandle,
+              { transform: [{ scaleX: handleScale }, { scaleY: handleScale }] },
+            ]}
           />
         </View>
 

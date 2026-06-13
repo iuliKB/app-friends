@@ -26,7 +26,7 @@ function renderRSVP(props: Partial<React.ComponentProps<typeof RSVPButtons>> = {
   const result = render(
     <ThemeProvider>
       <RSVPButtons currentRsvp={null} onRsvp={onRsvp} {...props} />
-    </ThemeProvider>,
+    </ThemeProvider>
   );
   return { ...result, onRsvp };
 }

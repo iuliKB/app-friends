@@ -25,7 +25,7 @@ const mockOn = jest.fn().mockImplementation(function chainOn(
   this: any,
   _evt: string,
   filter: { event?: string },
-  cb: (payload: any) => void,
+  cb: (payload: any) => void
 ) {
   mockCapturedHandler = cb;
   if (filter && typeof filter.event === 'string') {
@@ -93,7 +93,7 @@ describe('realtimeBridge.subscribeHabitCheckins', () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.habits.overview('2026-05-13'),
       });
-    },
+    }
   );
 });
 
@@ -123,7 +123,7 @@ describe('realtimeBridge.subscribeHomeStatuses', () => {
         table: 'statuses',
         filter: 'user_id=in.(f1,f2)',
       }),
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -188,7 +188,7 @@ describe('realtimeBridge.subscribePollVotes', () => {
         table: 'poll_votes',
         filter: 'poll_id=eq.p1',
       }),
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -209,7 +209,7 @@ describe('realtimeBridge.subscribePollVotes', () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.polls.poll('p1'),
       });
-    },
+    }
   );
 
   it('tears down only after all subscribers have unsubscribed', () => {
@@ -247,10 +247,10 @@ describe('realtimeBridge.subscribeChatList', () => {
         schema: 'public',
         table: 'messages',
       }),
-      expect.any(Function),
+      expect.any(Function)
     );
     // Crucially — NO `filter` key in the options object.
-    const [, opts] = (mockOn.mock.calls[0] ?? []);
+    const [, opts] = mockOn.mock.calls[0] ?? [];
     expect(opts).not.toHaveProperty('filter');
   });
 
@@ -273,7 +273,7 @@ describe('realtimeBridge.subscribeChatList', () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.chat.list('u1'),
       });
-    },
+    }
   );
 
   it('tears down the channel only after all subscribers have unsubscribed', () => {
@@ -320,17 +320,17 @@ describe('realtimeBridge.subscribeChatRoom', () => {
     expect(mockOn).toHaveBeenCalledWith(
       'postgres_changes',
       expect.objectContaining({ event: 'INSERT', schema: 'public', table: 'messages' }),
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(mockOn).toHaveBeenCalledWith(
       'postgres_changes',
       expect.objectContaining({ event: 'UPDATE', schema: 'public', table: 'messages' }),
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(mockOn).toHaveBeenCalledWith(
       'postgres_changes',
       expect.objectContaining({ event: 'DELETE', schema: 'public', table: 'messages' }),
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -360,9 +360,7 @@ describe('realtimeBridge.subscribeChatRoom', () => {
   });
 
   it('INSERT payload with same id as canonical existing message is a no-op (dedup)', () => {
-    qc.setQueryData(queryKeys.chat.messages('room-1'), [
-      { id: 'msg-2', body: 'world' },
-    ]);
+    qc.setQueryData(queryKeys.chat.messages('room-1'), [{ id: 'msg-2', body: 'world' }]);
     subscribeChatRoom(qc, 'room-1');
     const insertHandler = mockHandlersByEvent.get('INSERT')!;
     insertHandler({ new: { id: 'msg-2', body: 'world' } });
@@ -372,9 +370,7 @@ describe('realtimeBridge.subscribeChatRoom', () => {
   });
 
   it('INSERT payload with new id prepends the message', () => {
-    qc.setQueryData(queryKeys.chat.messages('room-1'), [
-      { id: 'msg-old', body: 'older' },
-    ]);
+    qc.setQueryData(queryKeys.chat.messages('room-1'), [{ id: 'msg-old', body: 'older' }]);
     subscribeChatRoom(qc, 'room-1');
     const insertHandler = mockHandlersByEvent.get('INSERT')!;
     insertHandler({ new: { id: 'msg-new', body: 'newer' } });
@@ -395,10 +391,7 @@ describe('realtimeBridge.subscribeChatRoom', () => {
   });
 
   it('DELETE payload filters out the deleted message via setQueryData', () => {
-    qc.setQueryData(queryKeys.chat.messages('room-1'), [
-      { id: 'msg-keep' },
-      { id: 'msg-delete' },
-    ]);
+    qc.setQueryData(queryKeys.chat.messages('room-1'), [{ id: 'msg-keep' }, { id: 'msg-delete' }]);
     subscribeChatRoom(qc, 'room-1');
     const deleteHandler = mockHandlersByEvent.get('DELETE')!;
     expect(deleteHandler).toBeDefined();

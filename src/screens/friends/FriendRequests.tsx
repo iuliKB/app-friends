@@ -62,19 +62,23 @@ export function FriendRequests() {
     }
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    separator: {
-      height: 1,
-      backgroundColor: colors.border,
-    },
-    emptyList: {
-      flex: 1,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        separator: {
+          height: 1,
+          backgroundColor: colors.border,
+        },
+        emptyList: {
+          flex: 1,
+        },
+      }),
+    [colors]
+  );
 
   if (error) {
     return (

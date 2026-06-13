@@ -5,20 +5,13 @@ import * as Location from 'expo-location';
  * Haversine distance between two GPS coordinates, in kilometres.
  * Used for the 25 km Explore map filter (MAP-04, D-16).
  */
-export function haversineKm(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
+export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -28,11 +21,7 @@ export function haversineKm(
  * Android: geo: scheme → Google Maps (or user's default).
  * MAP-05, D-14.
  */
-export async function openInMapsApp(
-  lat: number,
-  lng: number,
-  label: string,
-): Promise<boolean> {
+export async function openInMapsApp(lat: number, lng: number, label: string): Promise<boolean> {
   const encodedLabel = encodeURIComponent(label);
   const url =
     Platform.OS === 'ios'
@@ -54,7 +43,7 @@ export async function openInMapsApp(
 export function formatAddress(
   r: Location.LocationGeocodedAddress,
   lat: number,
-  lng: number,
+  lng: number
 ): string {
   const streetParts = [r.streetNumber, r.street].filter(Boolean).join(' ');
   const parts = [streetParts, r.city].filter(Boolean);

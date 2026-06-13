@@ -50,7 +50,7 @@ export function _resetRealtimeBridgeForTests() {
 export function subscribeHabitCheckins(
   queryClient: QueryClient,
   userId: string,
-  today: string,
+  today: string
 ): Unsubscribe {
   const channelName = `habit-checkins-${userId}`;
   const existing = registry.get(channelName);
@@ -68,7 +68,7 @@ export function subscribeHabitCheckins(
         // get_habits_overview is an aggregation — payload.new can't be spliced safely.
         // INSERT, UPDATE, DELETE all invalidate the same overview key.
         void queryClient.invalidateQueries({ queryKey: queryKeys.habits.overview(today) });
-      },
+      }
     )
     .subscribe();
 
@@ -89,10 +89,7 @@ export function subscribeHabitCheckins(
  * Vote aggregation in the poll detail cache is a count over all rows for the
  * poll — INSERT / UPDATE / DELETE all invalidate the same polls.poll key.
  */
-export function subscribePollVotes(
-  queryClient: QueryClient,
-  pollId: string,
-): Unsubscribe {
+export function subscribePollVotes(queryClient: QueryClient, pollId: string): Unsubscribe {
   const channelName = `poll-votes-${pollId}`;
   const existing = registry.get(channelName);
   if (existing) {
@@ -107,7 +104,7 @@ export function subscribePollVotes(
       { event: '*', schema: 'public', table: 'poll_votes', filter: `poll_id=eq.${pollId}` },
       (_payload) => {
         void queryClient.invalidateQueries({ queryKey: queryKeys.polls.poll(pollId) });
-      },
+      }
     )
     .subscribe();
 
@@ -139,10 +136,7 @@ export function subscribePollVotes(
  * SELECT is cheaper than N per-room subscriptions. Acceptable Realtime budget
  * for friend-group apps (3-15 users per chat). See CONTEXT.md §5.
  */
-export function subscribeChatList(
-  queryClient: QueryClient,
-  userId: string,
-): Unsubscribe {
+export function subscribeChatList(queryClient: QueryClient, userId: string): Unsubscribe {
   const channelName = `chat-list-${userId}`;
   const existing = registry.get(channelName);
   if (existing) {
@@ -152,17 +146,13 @@ export function subscribeChatList(
 
   const channel = supabase
     .channel(channelName)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'messages' },
-      (_payload) => {
-        // Payload is intentionally unused — the chat-list query is
-        // membership-filtered, so we re-run the canonical SELECT instead of
-        // attempting to splice the payload (which would require a complex
-        // membership check anyway).
-        void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) });
-      },
-    )
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (_payload) => {
+      // Payload is intentionally unused — the chat-list query is
+      // membership-filtered, so we re-run the canonical SELECT instead of
+      // attempting to splice the payload (which would require a complex
+      // membership check anyway).
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) });
+    })
     .subscribe();
 
   registry.set(channelName, {
@@ -201,7 +191,7 @@ export interface ChatRoomFilter {
  */
 export function subscribeChatRoom(
   queryClient: QueryClient,
-  arg: ChatRoomFilter | string,
+  arg: ChatRoomFilter | string
 ): Unsubscribe {
   const filterSpec: ChatRoomFilter =
     typeof arg === 'string' ? { channelId: arg, column: 'plan_id' } : arg;
@@ -237,14 +227,14 @@ export function subscribeChatRoom(
           // 3) New row — prepend (chat list is newest-first; inverted FlatList renders [0] at bottom)
           return [incoming, ...old];
         });
-      },
+      }
     )
     .on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'messages', filter },
       () => {
         void queryClient.invalidateQueries({ queryKey: queryKeys.chat.messages(channelId) });
-      },
+      }
     )
     .on(
       'postgres_changes',
@@ -252,10 +242,11 @@ export function subscribeChatRoom(
       (payload: { old?: { id?: string } | null }) => {
         const removed = payload?.old ?? null;
         if (!removed?.id) return;
-        queryClient.setQueryData<any[]>(queryKeys.chat.messages(channelId), (old) =>
-          old?.filter((m: any) => m.id !== removed.id) ?? [],
+        queryClient.setQueryData<any[]>(
+          queryKeys.chat.messages(channelId),
+          (old) => old?.filter((m: any) => m.id !== removed.id) ?? []
         );
-      },
+      }
     )
     .subscribe();
 
@@ -286,10 +277,7 @@ export interface ChatAuxHandlers {
   onPollVoteDelete: (payload: { old: Record<string, unknown> }) => void;
 }
 
-export function subscribeChatAux(
-  channelId: string,
-  handlers: ChatAuxHandlers,
-): Unsubscribe {
+export function subscribeChatAux(channelId: string, handlers: ChatAuxHandlers): Unsubscribe {
   const channelName = `chat-aux-${channelId}`;
   const existing = registry.get(channelName);
   if (existing) {
@@ -302,22 +290,22 @@ export function subscribeChatAux(
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'message_reactions' },
-      handlers.onReactionInsert,
+      handlers.onReactionInsert
     )
     .on(
       'postgres_changes',
       { event: 'DELETE', schema: 'public', table: 'message_reactions' },
-      handlers.onReactionDelete,
+      handlers.onReactionDelete
     )
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'poll_votes' },
-      handlers.onPollVoteInsert,
+      handlers.onPollVoteInsert
     )
     .on(
       'postgres_changes',
       { event: 'DELETE', schema: 'public', table: 'poll_votes' },
-      handlers.onPollVoteDelete,
+      handlers.onPollVoteDelete
     )
     .subscribe();
 
@@ -344,7 +332,7 @@ export function subscribeChatAux(
 export function subscribeHomeStatuses(
   queryClient: QueryClient,
   userId: string,
-  friendIds: string[],
+  friendIds: string[]
 ): Unsubscribe {
   if (friendIds.length === 0) return () => {};
 
@@ -363,7 +351,7 @@ export function subscribeHomeStatuses(
       { event: '*', schema: 'public', table: 'statuses', filter },
       (_payload) => {
         void queryClient.invalidateQueries({ queryKey: queryKeys.home.friends(userId) });
-      },
+      }
     )
     .subscribe();
 

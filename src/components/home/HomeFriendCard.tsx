@@ -22,52 +22,56 @@ const MOOD_LABEL: Record<StatusValue, string> = {
 
 export function HomeFriendCard({ friend }: HomeFriendCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      ...colors.cardElevation,
-      flex: 1,
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingVertical: SPACING.lg,
-      paddingHorizontal: SPACING.lg,
-      margin: SPACING.xs,
-    },
-    fadingCard: {
-      opacity: 0.6,
-    },
-    avatarWrapper: {
-      position: 'relative',
-      marginBottom: SPACING.sm,
-    },
-    emojiBadge: {
-      position: 'absolute',
-      bottom: 0,
-      right: -2, // no exact token
-      backgroundColor: colors.surface.base,
-      borderRadius: RADII.md,
-      padding: 1,
-    },
-    emojiText: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 12, // no exact token
-    },
-    displayName: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-      textAlign: 'center',
-    },
-    statusLabel: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.xs,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          ...colors.cardElevation,
+          flex: 1,
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          paddingVertical: SPACING.lg,
+          paddingHorizontal: SPACING.lg,
+          margin: SPACING.xs,
+        },
+        fadingCard: {
+          opacity: 0.6,
+        },
+        avatarWrapper: {
+          position: 'relative',
+          marginBottom: SPACING.sm,
+        },
+        emojiBadge: {
+          position: 'absolute',
+          bottom: 0,
+          right: -2, // no exact token
+          backgroundColor: colors.surface.base,
+          borderRadius: RADII.md,
+          padding: 1,
+        },
+        emojiText: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 12, // no exact token
+        },
+        displayName: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+          textAlign: 'center',
+        },
+        statusLabel: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.xs,
+        },
+      }),
+    [colors]
+  );
 
   const router = useRouter();
   const scaleAnim = useRef(new Animated.Value(1)).current;

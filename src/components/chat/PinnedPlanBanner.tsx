@@ -11,28 +11,32 @@ interface PinnedPlanBannerProps {
 
 export function PinnedPlanBanner({ planId }: PinnedPlanBannerProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      height: 48,
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      backgroundColor: colors.surface.card,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    title: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      flex: 1,
-    },
-    secondary: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          height: 48,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          backgroundColor: colors.surface.card,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        title: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          flex: 1,
+        },
+        secondary: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
   const router = useRouter();
   const { plan } = usePlanDetail(planId);
 

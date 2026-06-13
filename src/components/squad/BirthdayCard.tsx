@@ -18,115 +18,111 @@ interface BirthdayCardProps {
 
 export function BirthdayCard({ birthdays }: BirthdayCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      paddingVertical: SPACING.xxl,
-      paddingHorizontal: SPACING.xl,
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.xl,
-    },
-    cardPressed: {
-      opacity: 0.85,
-    },
-    title: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    countLine: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.sm,
-    },
-    emptyText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.sm,
-    },
-    divider: {
-      height: 1,
-      alignSelf: 'stretch',
-      backgroundColor: colors.border,
-      marginVertical: SPACING.lg,
-    },
-    nearestRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    nearestName: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-      marginLeft: SPACING.sm,
-    },
-    nearestDays: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    skeletonCard: {
-      opacity: 0.5,
-    },
-    skeletonTitle: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 120,
-      height: SPACING.lg,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-    },
-    skeletonCount: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 180,
-      height: SPACING.md,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-      marginTop: SPACING.md,
-    },
-    skeletonRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    skeletonAvatar: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 32,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 32,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderRadius: 16,
-      backgroundColor: colors.border,
-    },
-    skeletonName: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 100,
-      height: SPACING.md,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-      marginLeft: SPACING.sm,
-      flex: 1,
-    },
-    skeletonDays: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 60,
-      height: SPACING.md,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          paddingVertical: SPACING.xxl,
+          paddingHorizontal: SPACING.xl,
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.xl,
+        },
+        cardPressed: {
+          opacity: 0.85,
+        },
+        title: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        countLine: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.sm,
+        },
+        emptyText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.sm,
+        },
+        divider: {
+          height: 1,
+          alignSelf: 'stretch',
+          backgroundColor: colors.border,
+          marginVertical: SPACING.lg,
+        },
+        nearestRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        nearestName: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+          marginLeft: SPACING.sm,
+        },
+        nearestDays: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        skeletonCard: {
+          opacity: 0.5,
+        },
+        skeletonTitle: {
+          width: 120,
+          height: SPACING.lg,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+        },
+        skeletonCount: {
+          width: 180,
+          height: SPACING.md,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+          marginTop: SPACING.md,
+        },
+        skeletonRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        skeletonAvatar: {
+          width: 32,
+
+          height: 32,
+
+          borderRadius: 16,
+          backgroundColor: colors.border,
+        },
+        skeletonName: {
+          width: 100,
+          height: SPACING.md,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+          marginLeft: SPACING.sm,
+          flex: 1,
+        },
+        skeletonDays: {
+          width: 60,
+          height: SPACING.md,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+        },
+      }),
+    [colors]
+  );
 
   const router = useRouter();
   const { entries, loading } = birthdays;
 
   if (loading) {
     return (
-      <View
-        style={[styles.card, styles.skeletonCard]}
-        accessibilityLabel="Loading birthdays"
-      >
+      <View style={[styles.card, styles.skeletonCard]} accessibilityLabel="Loading birthdays">
         <View style={styles.skeletonTitle} />
         <View style={styles.skeletonCount} />
         <View style={styles.divider} />

@@ -134,9 +134,8 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
           gap: SPACING.sm,
         },
         priorityDot: {
-          // eslint-disable-next-line campfire/no-hardcoded-styles
           width: 6,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           height: 6,
           borderRadius: RADII.full,
         },

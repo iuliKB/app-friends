@@ -37,7 +37,7 @@ function listHookFiles(dir: string): string[] {
  * each block plus the leading-comment exemption flag.
  */
 function extractMutationBlocks(
-  src: string,
+  src: string
 ): { startLine: number; body: string; exempt: boolean }[] {
   const lines = src.split('\n');
   const blocks: { startLine: number; body: string; exempt: boolean }[] = [];
@@ -92,7 +92,7 @@ describe('mutationShape regression gate (TSQ-08)', () => {
         }).toEqual(
           expect.objectContaining({
             missing: expect.any(String),
-          }),
+          })
         );
         expect(block.body).toContain(required);
       }

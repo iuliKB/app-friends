@@ -50,16 +50,14 @@ export function usePlanDetail(planId: string): {
 
       // Parallel reads of plan row + member rows. The profile join is sequenced
       // after these complete because it depends on memberRows.user_id values.
-      const [
-        { data: planRow, error: planError },
-        { data: memberRows, error: membersError },
-      ] = await Promise.all([
-        supabase.from('plans').select('*').eq('id', planId).single(),
-        supabase
-          .from('plan_members')
-          .select('plan_id, user_id, rsvp, joined_at')
-          .eq('plan_id', planId),
-      ]);
+      const [{ data: planRow, error: planError }, { data: memberRows, error: membersError }] =
+        await Promise.all([
+          supabase.from('plans').select('*').eq('id', planId).single(),
+          supabase
+            .from('plan_members')
+            .select('plan_id, user_id, rsvp, joined_at')
+            .eq('plan_id', planId),
+        ]);
 
       if (planError) throw new Error(planError.message);
       if (membersError) throw new Error(membersError.message);
@@ -127,7 +125,7 @@ export function usePlanDetail(planId: string): {
       });
       return { error: null };
     },
-    [planId, userId, queryClient, detailKey],
+    [planId, userId, queryClient, detailKey]
   );
 
   const updatePlanDetails = useCallback(
@@ -157,7 +155,7 @@ export function usePlanDetail(planId: string): {
       });
       return { error: null };
     },
-    [planId, userId, queryClient, detailKey],
+    [planId, userId, queryClient, detailKey]
   );
 
   const deletePlan = useCallback(async (): Promise<{ error: Error | null }> => {

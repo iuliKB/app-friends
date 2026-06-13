@@ -15,6 +15,8 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useFriendProfile } from '../useFriendProfile';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: { from: (...args: unknown[]) => mockFrom(...args) },
@@ -25,8 +27,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: typeof mockSession }) => unknown) =>
     selector({ session: mockSession }),
 }));
-
-import { useFriendProfile } from '../useFriendProfile';
 
 const FRIEND = 'friend-1';
 const PROFILE_ROW = {
@@ -89,9 +89,7 @@ test('Test A — warm home cache: skips effective_status fetch', async () => {
         }),
       };
     }
-    throw new Error(
-      `Unexpected ${table} call (#${call}) — Test A should not hit effective_status`,
-    );
+    throw new Error(`Unexpected ${table} call (#${call}) — Test A should not hit effective_status`);
   });
 
   const { result } = renderHook(() => useFriendProfile(FRIEND), {
@@ -105,7 +103,7 @@ test('Test A — warm home cache: skips effective_status fetch', async () => {
       friendsSince: '2024-05-12T00:00:00Z',
       status: 'free',
       contextTag: 'lunch',
-    }),
+    })
   );
   expect(call).toBe(2); // exactly 2 .from() calls — effective_status skipped
 });

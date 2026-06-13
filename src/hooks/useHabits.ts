@@ -34,7 +34,7 @@ export function useHabits(): UseHabitsResult {
         p_date_local: today,
       });
       if (error) throw error;
-      return ((data ?? []) as unknown) as HabitOverviewRow[];
+      return (data ?? []) as unknown as HabitOverviewRow[];
     },
     enabled: !!userId,
   });
@@ -55,7 +55,7 @@ export function useHabits(): UseHabitsResult {
     onMutate: async (habitId: string) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.habits.overview(today) });
       const previous = queryClient.getQueryData<HabitOverviewRow[]>(
-        queryKeys.habits.overview(today),
+        queryKeys.habits.overview(today)
       );
       queryClient.setQueryData<HabitOverviewRow[]>(
         queryKeys.habits.overview(today),
@@ -68,7 +68,7 @@ export function useHabits(): UseHabitsResult {
               did_me_check_in_today: next,
               completed_today: next ? h.completed_today + 1 : Math.max(0, h.completed_today - 1),
             };
-          }) ?? [],
+          }) ?? []
       );
       return { previous };
     },

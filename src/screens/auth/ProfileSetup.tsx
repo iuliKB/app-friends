@@ -120,55 +120,59 @@ export default function ProfileSetup() {
 
   const canSave = usernameAvailable && displayName.trim().length > 0 && !saving;
 
-  const styles = useMemo(() => StyleSheet.create({
-    keyboardView: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    scroll: {
-      flex: 1,
-    },
-    scrollContent: {
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.xxl,
-    },
-    title: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingTop: 48, // no exact token
-      marginBottom: SPACING.xxl,
-    },
-    avatarSection: {
-      alignItems: 'center',
-      marginBottom: SPACING.xxl,
-    },
-    addPhoto: {
-      marginTop: SPACING.sm,
-      minHeight: 32, // no exact token — not flagged by rule
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    addPhotoText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.accent,
-    },
-    fieldGap: {
-      height: SPACING.lg,
-    },
-    saveError: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-      marginTop: SPACING.sm,
-      textAlign: 'center',
-    },
-    buttonTop: {
-      marginTop: SPACING.xl,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        keyboardView: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        scroll: {
+          flex: 1,
+        },
+        scrollContent: {
+          paddingHorizontal: SPACING.lg,
+          paddingBottom: SPACING.xxl,
+        },
+        title: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          paddingTop: 48, // no exact token
+          marginBottom: SPACING.xxl,
+        },
+        avatarSection: {
+          alignItems: 'center',
+          marginBottom: SPACING.xxl,
+        },
+        addPhoto: {
+          marginTop: SPACING.sm,
+          minHeight: 32, // no exact token — not flagged by rule
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        addPhotoText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.accent,
+        },
+        fieldGap: {
+          height: SPACING.lg,
+        },
+        saveError: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.destructive,
+          marginTop: SPACING.sm,
+          textAlign: 'center',
+        },
+        buttonTop: {
+          marginTop: SPACING.xl,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <KeyboardAvoidingView

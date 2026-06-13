@@ -11,10 +11,7 @@ import { supabase } from '@/lib/supabase';
  * that issue — RN's native fetch handles file:// correctly.
  * upsert: true allows safe re-upload when editing an existing plan's cover.
  */
-export async function uploadPlanCover(
-  planId: string,
-  localUri: string
-): Promise<string | null> {
+export async function uploadPlanCover(planId: string, localUri: string): Promise<string | null> {
   try {
     const path = `${planId}/cover.jpg`;
 

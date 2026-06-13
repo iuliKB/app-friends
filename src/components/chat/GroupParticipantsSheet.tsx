@@ -24,71 +24,79 @@ interface GroupParticipantsSheetProps {
   groupChannelId: string;
 }
 
-export function GroupParticipantsSheet({ visible, onClose, groupChannelId }: GroupParticipantsSheetProps) {
+export function GroupParticipantsSheet({
+  visible,
+  onClose,
+  groupChannelId,
+}: GroupParticipantsSheetProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    backdrop: {
-      ...StyleSheet.absoluteFillObject,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    sheet: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: colors.surface.card,
-      borderTopLeftRadius: RADII.lg,
-      borderTopRightRadius: RADII.lg,
-      paddingBottom: SPACING.xxl,
-    },
-    dragHandle: {
-      width: 40,
-      height: 4,
-      borderRadius: RADII.xs,
-      backgroundColor: colors.border,
-      alignSelf: 'center',
-      marginTop: SPACING.sm,
-      marginBottom: SPACING.md,
-    },
-    title: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      paddingHorizontal: SPACING.lg,
-      marginBottom: SPACING.sm,
-    },
-    row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      gap: SPACING.md,
-    },
-    rowBorder: {
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    },
-    name: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    closeBtn: {
-      marginTop: SPACING.md,
-      marginHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      borderRadius: RADII.lg,
-      backgroundColor: colors.surface.base,
-      alignItems: 'center',
-    },
-    closeBtnText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        backdrop: {
+          ...StyleSheet.absoluteFillObject,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(0,0,0,0.5)',
+        },
+        sheet: {
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: colors.surface.card,
+          borderTopLeftRadius: RADII.lg,
+          borderTopRightRadius: RADII.lg,
+          paddingBottom: SPACING.xxl,
+        },
+        dragHandle: {
+          width: 40,
+          height: 4,
+          borderRadius: RADII.xs,
+          backgroundColor: colors.border,
+          alignSelf: 'center',
+          marginTop: SPACING.sm,
+          marginBottom: SPACING.md,
+        },
+        title: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          paddingHorizontal: SPACING.lg,
+          marginBottom: SPACING.sm,
+        },
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          gap: SPACING.md,
+        },
+        rowBorder: {
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        name: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        closeBtn: {
+          marginTop: SPACING.md,
+          marginHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          borderRadius: RADII.lg,
+          backgroundColor: colors.surface.base,
+          alignItems: 'center',
+        },
+        closeBtnText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
   const [participants, setParticipants] = useState<Participant[]>([]);
   const translateY = useRef(new Animated.Value(400)).current;
 
@@ -120,12 +128,14 @@ export function GroupParticipantsSheet({ visible, onClose, groupChannelId }: Gro
         id: p.id,
         display_name: (p.display_name as string | null) ?? 'Unknown',
         avatar_url: p.avatar_url as string | null,
-      })),
+      }))
     );
   }
 
   function handleClose() {
-    Animated.timing(translateY, { toValue: 400, duration: 200, useNativeDriver: true }).start(onClose);
+    Animated.timing(translateY, { toValue: 400, duration: 200, useNativeDriver: true }).start(
+      onClose
+    );
   }
 
   return (
@@ -140,7 +150,9 @@ export function GroupParticipantsSheet({ visible, onClose, groupChannelId }: Gro
         {participants.map((p, i) => (
           <View key={p.id} style={[styles.row, i > 0 && styles.rowBorder]}>
             <AvatarCircle size={36} imageUri={p.avatar_url} displayName={p.display_name} />
-            <Text style={styles.name} numberOfLines={1}>{p.display_name}</Text>
+            <Text style={styles.name} numberOfLines={1}>
+              {p.display_name}
+            </Text>
           </View>
         ))}
         <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.7}>
@@ -150,4 +162,3 @@ export function GroupParticipantsSheet({ visible, onClose, groupChannelId }: Gro
     </Modal>
   );
 }
-

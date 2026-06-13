@@ -50,9 +50,7 @@ export function useUpdateMyBio(): UseUpdateMyBioResult {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<FriendProfileSlot | null>(key);
       queryClient.setQueryData<FriendProfileSlot | null>(key, (old) =>
-        old && old.profile
-          ? { ...old, profile: { ...old.profile, bio: input.bio } }
-          : old,
+        old && old.profile ? { ...old, profile: { ...old.profile, bio: input.bio } } : old
       );
       return { previous };
     },
@@ -78,7 +76,7 @@ export function useUpdateMyBio(): UseUpdateMyBioResult {
         return { error: err instanceof Error ? err.message : 'updateBio failed' };
       }
     },
-    [session, mutation],
+    [session, mutation]
   );
 
   return { updateBio, saving: mutation.isPending };

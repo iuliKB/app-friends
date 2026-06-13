@@ -127,14 +127,12 @@ export function useStatus(): UseStatusResult {
         .eq('user_id', userId)
         .maybeSingle();
       if (error) throw error;
-      const row = data as
-        | {
-            effective_status: StatusValue | null;
-            context_tag: string | null;
-            status_expires_at: string;
-            last_active_at: string;
-          }
-        | null;
+      const row = data as {
+        effective_status: StatusValue | null;
+        context_tag: string | null;
+        status_expires_at: string;
+        last_active_at: string;
+      } | null;
       if (!row || !row.effective_status) return null;
       return {
         status: row.effective_status,
@@ -192,7 +190,7 @@ export function useStatus(): UseStatusResult {
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.status.own(userId ?? '') });
       const previous = queryClient.getQueryData<CurrentStatus | null>(
-        queryKeys.status.own(userId ?? ''),
+        queryKeys.status.own(userId ?? '')
       );
 
       const now = new Date();
@@ -207,7 +205,7 @@ export function useStatus(): UseStatusResult {
 
       queryClient.setQueryData<CurrentStatus | null>(
         queryKeys.status.own(userId ?? ''),
-        optimistic,
+        optimistic
       );
       // Mirror to useStatusStore (outside-React read path).
       useStatusStore.getState().setCurrentStatus(optimistic);
@@ -218,7 +216,7 @@ export function useStatus(): UseStatusResult {
       if (ctx?.previous !== undefined) {
         queryClient.setQueryData<CurrentStatus | null>(
           queryKeys.status.own(userId ?? ''),
-          ctx.previous,
+          ctx.previous
         );
         useStatusStore.getState().setCurrentStatus(ctx.previous as CurrentStatus | null);
       }
@@ -234,7 +232,7 @@ export function useStatus(): UseStatusResult {
       mood: StatusValue,
       tag: string | null,
       windowId: WindowId,
-      customExpiry?: Date,
+      customExpiry?: Date
     ): Promise<{ error: string | null }> => {
       if (!session) return { error: 'Not ready' };
       setSaving(true);
@@ -247,7 +245,7 @@ export function useStatus(): UseStatusResult {
         setSaving(false);
       }
     },
-    [session, setMutation],
+    [session, setMutation]
   );
 
   const touch = useCallback(async (): Promise<void> => {
@@ -264,9 +262,8 @@ export function useStatus(): UseStatusResult {
     if (!error) {
       useStatusStore.getState().updateLastActive(nowIso);
       // Also mirror into the cache so the next render reads the fresh value.
-      queryClient.setQueryData<CurrentStatus | null>(
-        queryKeys.status.own(userId),
-        (old) => (old ? { ...old, last_active_at: nowIso } : old),
+      queryClient.setQueryData<CurrentStatus | null>(queryKeys.status.own(userId), (old) =>
+        old ? { ...old, last_active_at: nowIso } : old
       );
     }
   }, [session, userId, queryClient]);
@@ -277,9 +274,9 @@ export function useStatus(): UseStatusResult {
     () =>
       computeHeartbeatState(
         currentStatus?.status_expires_at ?? null,
-        currentStatus?.last_active_at ?? null,
+        currentStatus?.last_active_at ?? null
       ),
-    [currentStatus?.status_expires_at, currentStatus?.last_active_at],
+    [currentStatus?.status_expires_at, currentStatus?.last_active_at]
   );
 
   return {

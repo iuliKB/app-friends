@@ -43,7 +43,7 @@ interface CachedVotesShape {
 export function useWishListVotes(
   groupChannelId: string,
   itemIds: string[],
-  birthdayPersonId?: string,
+  birthdayPersonId?: string
 ): UseWishListVotesResult {
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id ?? null;
@@ -70,7 +70,7 @@ export function useWishListVotes(
 
       const counts: Record<string, number> = {};
       const mine: string[] = [];
-      for (const row of ((data ?? []) as VoteRow[])) {
+      for (const row of (data ?? []) as VoteRow[]) {
         counts[row.item_id] = (counts[row.item_id] ?? 0) + 1;
         if (row.voter_id === userId) mine.push(row.item_id);
       }
@@ -100,13 +100,11 @@ export function useWishListVotes(
           .eq('voter_id', userId);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('wish_list_votes')
-          .insert({
-            item_id: itemId,
-            group_channel_id: groupChannelId,
-            voter_id: userId,
-          });
+        const { error } = await supabase.from('wish_list_votes').insert({
+          item_id: itemId,
+          group_channel_id: groupChannelId,
+          voter_id: userId,
+        });
         if (error) throw error;
       }
     },
@@ -133,7 +131,9 @@ export function useWishListVotes(
       if (ctx?.previous) queryClient.setQueryData(votesKey, ctx.previous);
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.polls.wishListVotes(groupChannelId) });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.polls.wishListVotes(groupChannelId),
+      });
       // Invalidate the birthday person's wish-list cache so aggregate vote counts
       // surface — when caller supplies birthdayPersonId. Fall back to the broader
       // friends prefix when unknown.

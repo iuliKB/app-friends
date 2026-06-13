@@ -56,11 +56,8 @@ const baseItem: ChatListItem = {
 function renderRow(overrides: Partial<ChatListItem> = {}) {
   return render(
     <ThemeProvider>
-      <ChatListRow
-        item={{ ...baseItem, ...overrides }}
-        onPress={jest.fn()}
-      />
-    </ThemeProvider>,
+      <ChatListRow item={{ ...baseItem, ...overrides }} onPress={jest.fn()} />
+    </ThemeProvider>
   );
 }
 
@@ -82,7 +79,7 @@ function findIonicons(getByTestId: ReturnType<typeof render>['UNSAFE_getAllByTyp
 type TextElement = { props: { children?: unknown; style?: unknown } };
 function findTextNodeWithChildren(
   allTexts: TextElement[],
-  childValue: unknown,
+  childValue: unknown
 ): TextElement | undefined {
   return allTexts.find((el) => {
     const c = el.props.children;
@@ -108,7 +105,9 @@ describe('ChatListRow — Phase 32 preview rendering', () => {
     expect(previewText).toBeTruthy();
     // An Ionicons element with name="image-outline" is present
     const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
-    const previewIcon = icons.find((el: { props: { name?: string } }) => el.props.name === 'image-outline');
+    const previewIcon = icons.find(
+      (el: { props: { name?: string } }) => el.props.name === 'image-outline'
+    );
     expect(previewIcon).toBeTruthy();
   });
 
@@ -123,7 +122,9 @@ describe('ChatListRow — Phase 32 preview rendering', () => {
     const previewText = findTextNodeWithChildren(allTexts, 'Poll: Pizza?');
     expect(previewText).toBeTruthy();
     const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
-    const previewIcon = icons.find((el: { props: { name?: string } }) => el.props.name === 'stats-chart-outline');
+    const previewIcon = icons.find(
+      (el: { props: { name?: string } }) => el.props.name === 'stats-chart-outline'
+    );
     expect(previewIcon).toBeTruthy();
   });
 
@@ -142,7 +143,9 @@ describe('ChatListRow — Phase 32 preview rendering', () => {
     const prefixText = findTextNodeWithChildren(allTexts, 'You: ');
     expect(prefixText).toBeTruthy();
     const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
-    const previewIcon = icons.find((el: { props: { name?: string } }) => el.props.name === 'checkbox-outline');
+    const previewIcon = icons.find(
+      (el: { props: { name?: string } }) => el.props.name === 'checkbox-outline'
+    );
     expect(previewIcon).toBeTruthy();
   });
 
@@ -165,7 +168,8 @@ describe('ChatListRow — Phase 32 preview rendering', () => {
       ? deletedText.props.style
       : [deletedText?.props?.style];
     const hasItalic = styleArr.some(
-      (s: unknown) => typeof s === 'object' && s !== null && (s as Record<string, unknown>).fontStyle === 'italic',
+      (s: unknown) =>
+        typeof s === 'object' && s !== null && (s as Record<string, unknown>).fontStyle === 'italic'
     );
     expect(hasItalic).toBe(true);
 
@@ -176,7 +180,7 @@ describe('ChatListRow — Phase 32 preview rendering', () => {
         el.props.name !== 'notifications-off-outline' &&
         el.props.name !== 'calendar-outline' &&
         el.props.name !== 'people-outline' &&
-        el.props.name !== 'gift-outline',
+        el.props.name !== 'gift-outline'
     );
     expect(previewIcon).toBeFalsy();
   });

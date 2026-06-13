@@ -17,6 +17,9 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 
+// Now import the screen after mocks are wired.
+import { ChatRoomScreen } from '../ChatRoomScreen';
+
 // Capture the most-recent useFocusEffect callback so we can run it manually.
 let lastFocusEffectCallback: (() => void | (() => void)) | null = null;
 
@@ -55,8 +58,7 @@ jest.mock('@/hooks/useChatMembers', () => ({
 }));
 
 jest.mock('@/stores/useAuthStore', () => ({
-  useAuthStore: (selector: (s: { session: null }) => unknown) =>
-    selector({ session: null }),
+  useAuthStore: (selector: (s: { session: null }) => unknown) => selector({ session: null }),
 }));
 
 jest.mock('@/lib/supabase', () => ({
@@ -91,17 +93,22 @@ jest.mock('@/components/chat/MessageBubble', () => ({
   shouldShowTimeSeparator: () => false,
 }));
 jest.mock('@/components/chat/ImageViewerModal', () => ({ ImageViewerModal: 'ImageViewerModal' }));
-jest.mock('@/components/chat/PollCreationSheet', () => ({ PollCreationSheet: 'PollCreationSheet' }));
-jest.mock('@/components/chat/ChatTodoPickerSheet', () => ({ ChatTodoPickerSheet: 'ChatTodoPickerSheet' }));
+jest.mock('@/components/chat/PollCreationSheet', () => ({
+  PollCreationSheet: 'PollCreationSheet',
+}));
+jest.mock('@/components/chat/ChatTodoPickerSheet', () => ({
+  ChatTodoPickerSheet: 'ChatTodoPickerSheet',
+}));
 jest.mock('@/components/chat/SendBar', () => ({ SendBar: 'SendBar' }));
 jest.mock('@/components/chat/PinnedPlanBanner', () => ({ PinnedPlanBanner: 'PinnedPlanBanner' }));
-jest.mock('@/components/chat/BirthdayWishListPanel', () => ({ BirthdayWishListPanel: 'BirthdayWishListPanel' }));
-jest.mock('@/components/chat/GroupParticipantsSheet', () => ({ GroupParticipantsSheet: 'GroupParticipantsSheet' }));
+jest.mock('@/components/chat/BirthdayWishListPanel', () => ({
+  BirthdayWishListPanel: 'BirthdayWishListPanel',
+}));
+jest.mock('@/components/chat/GroupParticipantsSheet', () => ({
+  GroupParticipantsSheet: 'GroupParticipantsSheet',
+}));
 jest.mock('@/components/common/ErrorDisplay', () => ({ ErrorDisplay: 'ErrorDisplay' }));
 jest.mock('@/components/common/SkeletonPulse', () => ({ SkeletonPulse: 'SkeletonPulse' }));
-
-// Now import the screen after mocks are wired.
-import { ChatRoomScreen } from '../ChatRoomScreen';
 
 describe('ChatRoomScreen useFocusEffect surface writer (Phase 30 Plan 04 — Task 2)', () => {
   beforeEach(() => {

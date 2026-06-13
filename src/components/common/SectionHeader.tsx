@@ -9,20 +9,24 @@ export interface SectionHeaderProps {
 
 export function SectionHeader({ title, rightAction }: SectionHeaderProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingTop: SPACING.xxl,
-      paddingBottom: SPACING.lg,
-    },
-    title: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingTop: SPACING.xxl,
+          paddingBottom: SPACING.lg,
+        },
+        title: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>

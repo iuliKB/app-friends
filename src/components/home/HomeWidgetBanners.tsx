@@ -15,40 +15,44 @@ interface HomeWidgetBannersProps {
 
 export function HomeWidgetBanners({ iouSummary, birthdays }: HomeWidgetBannersProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.xl,
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      overflow: 'hidden',
-    },
-    banner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      gap: SPACING.md,
-      height: 52,
-    },
-    bannerBorder: {
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    },
-    bannerPressed: {
-      backgroundColor: colors.surface.base,
-    },
-    icon: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 20,
-    },
-    label: {
-      flex: 1,
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.xl,
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          overflow: 'hidden',
+        },
+        banner: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          gap: SPACING.md,
+          height: 52,
+        },
+        bannerBorder: {
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        bannerPressed: {
+          backgroundColor: colors.surface.base,
+        },
+        icon: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 20,
+        },
+        label: {
+          flex: 1,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+      }),
+    [colors]
+  );
 
   const router = useRouter();
 
@@ -75,18 +79,26 @@ export function HomeWidgetBanners({ iouSummary, birthdays }: HomeWidgetBannersPr
         accessibilityLabel={`Birthdays: ${birthdayLabel}`}
       >
         <Text style={styles.icon}>🎂</Text>
-        <Text style={styles.label} numberOfLines={1}>{birthdayLabel}</Text>
+        <Text style={styles.label} numberOfLines={1}>
+          {birthdayLabel}
+        </Text>
         <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
       </Pressable>
 
       <Pressable
-        style={({ pressed }) => [styles.banner, styles.bannerBorder, pressed && styles.bannerPressed]}
+        style={({ pressed }) => [
+          styles.banner,
+          styles.bannerBorder,
+          pressed && styles.bannerPressed,
+        ]}
         onPress={() => router.push('/squad/expenses' as never)}
         accessibilityRole="button"
         accessibilityLabel={`IOUs: ${iouLabel}`}
       >
         <Text style={styles.icon}>💸</Text>
-        <Text style={styles.label} numberOfLines={1}>{iouLabel}</Text>
+        <Text style={styles.label} numberOfLines={1}>
+          {iouLabel}
+        </Text>
         <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
       </Pressable>
     </View>

@@ -22,6 +22,13 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+// useStatusStore: real implementation kept so we can observe setCurrentStatus
+// mirror writes. The `clear()` method lives on the real store; we assert it is
+// NOT invoked from useStatus.ts (moved to authBridge in Task 4).
+import { useStatusStore } from '@/stores/useStatusStore';
+
+import { useStatus } from '../useStatus';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -36,14 +43,9 @@ jest.mock('@/stores/useAuthStore', () => ({
     {
       subscribe: jest.fn(),
       getState: () => ({ session: { user: { id: 'u-self' } } }),
-    },
+    }
   ),
 }));
-
-// useStatusStore: real implementation kept so we can observe setCurrentStatus
-// mirror writes. The `clear()` method lives on the real store; we assert it is
-// NOT invoked from useStatus.ts (moved to authBridge in Task 4).
-import { useStatusStore } from '@/stores/useStatusStore';
 
 jest.mock('@/lib/expiryScheduler', () => ({
   scheduleExpiryNotification: jest.fn(() => Promise.resolve()),
@@ -66,8 +68,6 @@ jest.mock('@/lib/windows', () => ({
   computeWindowExpiry: () => new Date('2026-05-13T12:00:00Z'),
 }));
 
-import { useStatus } from '../useStatus';
-
 const EFFECTIVE_STATUS_ROW = {
   effective_status: 'free',
   context_tag: null,
@@ -86,8 +86,7 @@ function setupHydrateMock() {
       return {
         select: () => ({
           eq: () => ({
-            maybeSingle: () =>
-              Promise.resolve({ data: EFFECTIVE_STATUS_ROW, error: null }),
+            maybeSingle: () => Promise.resolve({ data: EFFECTIVE_STATUS_ROW, error: null }),
           }),
         }),
       };
@@ -134,9 +133,7 @@ describe('useStatus (migrated — hybrid useQuery+useMutation+useStatusStore mir
     expect(result.current.currentStatus?.status).toBe('free');
 
     // Mirror landed in useStatusStore — load-bearing for the notification dispatcher
-    await waitFor(() =>
-      expect(useStatusStore.getState().currentStatus?.status).toBe('free'),
-    );
+    await waitFor(() => expect(useStatusStore.getState().currentStatus?.status).toBe('free'));
   });
 
   it('setStatus optimistically writes the cache AND useStatusStore in onMutate', async () => {
@@ -203,8 +200,7 @@ describe('useStatus (migrated — hybrid useQuery+useMutation+useStatusStore mir
         return {
           select: () => ({
             eq: () => ({
-              maybeSingle: () =>
-                Promise.resolve({ data: EFFECTIVE_STATUS_ROW, error: null }),
+              maybeSingle: () => Promise.resolve({ data: EFFECTIVE_STATUS_ROW, error: null }),
             }),
           }),
         };
@@ -238,8 +234,7 @@ describe('useStatus (migrated — hybrid useQuery+useMutation+useStatusStore mir
     // Capture the pre-mutation snapshot the rollback should restore to.
     const before = client.getQueryData<any>(queryKeys.status.own('u-self'));
     expect(before).toBeDefined();
-    const beforeStatus =
-      (before as any)?.status ?? (before as any)?.effective_status;
+    const beforeStatus = (before as any)?.status ?? (before as any)?.effective_status;
 
     await act(async () => {
       await result.current.setStatus('busy', null, 'rest_of_day');
@@ -267,7 +262,7 @@ describe('useStatus (migrated — hybrid useQuery+useMutation+useStatusStore mir
     });
 
     const invalidatedKeys = invalidateSpy.mock.calls.map((c) =>
-      JSON.stringify((c[0] as { queryKey: unknown }).queryKey),
+      JSON.stringify((c[0] as { queryKey: unknown }).queryKey)
     );
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.status.own('u-self')));
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.home.friends('u-self')));

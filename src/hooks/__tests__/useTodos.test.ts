@@ -17,6 +17,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useTodos } from '../useTodos';
+
 const mockRpc = jest.fn();
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
@@ -34,8 +36,6 @@ jest.mock('@/stores/useAuthStore', () => ({
 }));
 
 jest.mock('@/lib/dateLocal', () => ({ todayLocal: () => '2026-05-13' }));
-
-import { useTodos } from '../useTodos';
 
 const MINE_ROW = {
   id: 't1',
@@ -119,10 +119,10 @@ describe('useTodos (migrated to TanStack Query)', () => {
 
     expect(completeResult?.error).toBe('oops');
     // After onError, the cache holds the snapshot (pre-mutate value).
-    const cached = client.getQueryData(queryKeys.todos.mine('2026-05-13')) as Array<{
+    const cached = client.getQueryData(queryKeys.todos.mine('2026-05-13')) as {
       id: string;
       completed_at: string | null;
-    }>;
+    }[];
     expect(cached?.[0]?.completed_at).toBeNull(); // reverted
   });
 
@@ -153,10 +153,10 @@ describe('useTodos (migrated to TanStack Query)', () => {
 
     // Read from the cache to confirm onMutate set the optimistic value and
     // onError did NOT roll back (since the UPDATE succeeded).
-    const cached = client.getQueryData(queryKeys.todos.mine('2026-05-13')) as Array<{
+    const cached = client.getQueryData(queryKeys.todos.mine('2026-05-13')) as {
       id: string;
       completed_at: string | null;
-    }>;
+    }[];
     expect(cached?.[0]?.completed_at).not.toBeNull();
   });
 
@@ -164,7 +164,8 @@ describe('useTodos (migrated to TanStack Query)', () => {
     mockRpc.mockImplementation((rpcName: string) => {
       if (rpcName === 'get_my_todos') return Promise.resolve({ data: [], error: null });
       if (rpcName === 'get_chat_todos') return Promise.resolve({ data: [CHAT_ROW], error: null });
-      if (rpcName === 'complete_chat_todo') return Promise.resolve({ data: 'msg-789', error: null });
+      if (rpcName === 'complete_chat_todo')
+        return Promise.resolve({ data: 'msg-789', error: null });
       return Promise.resolve({ data: null, error: null });
     });
 

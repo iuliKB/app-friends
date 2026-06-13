@@ -3,13 +3,7 @@
 // Tap → /plans/[id].
 
 import React, { useMemo } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
@@ -27,7 +21,11 @@ export default function MutualPlansScreen() {
   const friendId = (Array.isArray(params.id) ? params.id[0] : (params.id ?? '')) ?? '';
 
   const { plans, loading: plansLoading, error: plansError } = usePlans();
-  const { data: mutuals, isLoading: mutualsLoading, error: mutualsError } = useFriendMutuals(friendId);
+  const {
+    data: mutuals,
+    isLoading: mutualsLoading,
+    error: mutualsError,
+  } = useFriendMutuals(friendId);
   const { data: friendData } = useFriendProfile(friendId);
 
   const headerTitle = friendData?.profile?.display_name
@@ -77,7 +75,7 @@ export default function MutualPlansScreen() {
           justifyContent: 'center',
         },
       }),
-    [colors],
+    [colors]
   );
 
   const isLoading = plansLoading || mutualsLoading;
@@ -125,10 +123,7 @@ export default function MutualPlansScreen() {
           data={filteredPlans}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <PlanCard
-              plan={item}
-              onPress={() => localRouter.push(`/plans/${item.id}` as never)}
-            />
+            <PlanCard plan={item} onPress={() => localRouter.push(`/plans/${item.id}` as never)} />
           )}
         />
       )}

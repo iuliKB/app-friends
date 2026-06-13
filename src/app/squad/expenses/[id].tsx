@@ -15,56 +15,58 @@ export default function ExpenseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { detail, loading, error, refetch, settle, isCreator } = useExpenseDetail(id ?? '');
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.surface.base },
-    participantsLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-      marginTop: SPACING.xl,
-      marginBottom: SPACING.md,
-    },
-    errorText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-      padding: SPACING.lg,
-    },
-    skeletonRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: SPACING.md,
-      paddingHorizontal: SPACING.lg,
-      marginBottom: SPACING.sm,
-      opacity: 0.5,
-    },
-    skeletonAvatar: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 36,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 36,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderRadius: 18,
-      backgroundColor: colors.border,
-    },
-    skeletonName: {
-      flex: 1,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 16,
-      backgroundColor: colors.border,
-      marginLeft: SPACING.sm,
-      borderRadius: SPACING.xs,
-    },
-    skeletonBadge: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 70,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 24,
-      backgroundColor: colors.border,
-      borderRadius: SPACING.sm,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: { flex: 1, backgroundColor: colors.surface.base },
+        participantsLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+          paddingHorizontal: SPACING.lg,
+          marginTop: SPACING.xl,
+          marginBottom: SPACING.md,
+        },
+        errorText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.destructive,
+          padding: SPACING.lg,
+        },
+        skeletonRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: SPACING.md,
+          paddingHorizontal: SPACING.lg,
+          marginBottom: SPACING.sm,
+          opacity: 0.5,
+        },
+        skeletonAvatar: {
+          width: 36,
+
+          height: 36,
+
+          borderRadius: 18,
+          backgroundColor: colors.border,
+        },
+        skeletonName: {
+          flex: 1,
+
+          height: 16,
+          backgroundColor: colors.border,
+          marginLeft: SPACING.sm,
+          borderRadius: SPACING.xs,
+        },
+        skeletonBadge: {
+          width: 70,
+
+          height: 24,
+          backgroundColor: colors.border,
+          borderRadius: SPACING.sm,
+        },
+      }),
+    [colors]
+  );
 
   if (loading) {
     return (
@@ -86,9 +88,17 @@ export default function ExpenseDetailScreen() {
     return (
       <ScrollView
         style={styles.container}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={refetch} tintColor={colors.interactive.accent} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={false}
+            onRefresh={refetch}
+            tintColor={colors.interactive.accent}
+          />
+        }
       >
-        <Text style={styles.errorText}>{error ?? "Couldn't load expense. Pull down to refresh."}</Text>
+        <Text style={styles.errorText}>
+          {error ?? "Couldn't load expense. Pull down to refresh."}
+        </Text>
       </ScrollView>
     );
   }
@@ -98,7 +108,13 @@ export default function ExpenseDetailScreen() {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} tintColor={colors.interactive.accent} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={loading}
+          onRefresh={refetch}
+          tintColor={colors.interactive.accent}
+        />
+      }
     >
       <ExpenseHeroCard
         title={detail.title}

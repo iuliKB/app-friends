@@ -11,30 +11,34 @@ interface ChatSearchBarProps {
 export function ChatSearchBar({ value, onChangeText }: ChatSearchBarProps) {
   const { colors } = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.full,
-      borderWidth: 1,
-      borderColor: colors.border,
-      height: 44,
-      paddingHorizontal: SPACING.md,
-      gap: SPACING.sm,
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.sm,
-      marginBottom: SPACING.md,
-    },
-    input: {
-      flex: 1,
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingVertical: 0,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.full,
+          borderWidth: 1,
+          borderColor: colors.border,
+          height: 44,
+          paddingHorizontal: SPACING.md,
+          gap: SPACING.sm,
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.sm,
+          marginBottom: SPACING.md,
+        },
+        input: {
+          flex: 1,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+
+          paddingVertical: 0,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>

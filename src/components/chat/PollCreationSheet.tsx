@@ -22,102 +22,103 @@ interface PollCreationSheetProps {
 
 export function PollCreationSheet({ visible, onDismiss, onSend }: PollCreationSheetProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    backdrop: {
-      ...StyleSheet.absoluteFillObject,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    kavContainer: { flex: 1, justifyContent: 'flex-end' },
-    sheet: {
-      backgroundColor: colors.surface.card,
-      borderTopLeftRadius: RADII.lg,
-      borderTopRightRadius: RADII.lg,
-      paddingBottom: SPACING.xxl,
-      paddingHorizontal: SPACING.lg,
-    },
-    dragHandle: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 40,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 4,
-      borderRadius: RADII.xs,
-      backgroundColor: colors.border,
-      alignSelf: 'center',
-      marginTop: SPACING.sm,
-      marginBottom: SPACING.md,
-    },
-    header: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginBottom: SPACING.md,
-    },
-    input: {
-      backgroundColor: colors.surface.base,
-      borderRadius: RADII.md,
-      padding: SPACING.sm,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-      marginBottom: SPACING.md,
-    },
-    optionRow: { flexDirection: 'row', alignItems: 'center' },
-    optionInput: { flex: 1, marginRight: SPACING.xs },
-    removeButton: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minWidth: 44,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    addOptionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-      marginBottom: SPACING.sm,
-    },
-    addOptionLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.interactive.accent,
-      marginLeft: SPACING.xs,
-    },
-    buttonRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: SPACING.xl,
-    },
-    discardButton: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-      justifyContent: 'center',
-    },
-    discardLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-    },
-    sendButton: {
-      backgroundColor: colors.interactive.accent,
-      borderRadius: RADII.md,
-      paddingHorizontal: SPACING.lg,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    sendButtonDisabled: { backgroundColor: colors.surface.overlay },
-    sendLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.surface.base,
-    },
-    sendLabelDisabled: { color: colors.text.secondary },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        backdrop: {
+          ...StyleSheet.absoluteFillObject,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(0,0,0,0.5)',
+        },
+        kavContainer: { flex: 1, justifyContent: 'flex-end' },
+        sheet: {
+          backgroundColor: colors.surface.card,
+          borderTopLeftRadius: RADII.lg,
+          borderTopRightRadius: RADII.lg,
+          paddingBottom: SPACING.xxl,
+          paddingHorizontal: SPACING.lg,
+        },
+        dragHandle: {
+          width: 40,
+
+          height: 4,
+          borderRadius: RADII.xs,
+          backgroundColor: colors.border,
+          alignSelf: 'center',
+          marginTop: SPACING.sm,
+          marginBottom: SPACING.md,
+        },
+        header: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginBottom: SPACING.md,
+        },
+        input: {
+          backgroundColor: colors.surface.base,
+          borderRadius: RADII.md,
+          padding: SPACING.sm,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+          marginBottom: SPACING.md,
+        },
+        optionRow: { flexDirection: 'row', alignItems: 'center' },
+        optionInput: { flex: 1, marginRight: SPACING.xs },
+        removeButton: {
+          minWidth: 44,
+
+          minHeight: 44,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        addOptionRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+
+          minHeight: 44,
+          marginBottom: SPACING.sm,
+        },
+        addOptionLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.interactive.accent,
+          marginLeft: SPACING.xs,
+        },
+        buttonRow: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: SPACING.xl,
+        },
+        discardButton: {
+          minHeight: 44,
+          justifyContent: 'center',
+        },
+        discardLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+        },
+        sendButton: {
+          backgroundColor: colors.interactive.accent,
+          borderRadius: RADII.md,
+          paddingHorizontal: SPACING.lg,
+
+          minHeight: 44,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        sendButtonDisabled: { backgroundColor: colors.surface.overlay },
+        sendLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.surface.base,
+        },
+        sendLabelDisabled: { color: colors.text.secondary },
+      }),
+    [colors]
+  );
 
   const [question, setQuestion] = useState('');
   // Each option carries a stable id so React can key removable rows without index drift

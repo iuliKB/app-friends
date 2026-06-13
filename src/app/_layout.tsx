@@ -16,7 +16,15 @@ import {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
 } from '@expo-google-fonts/plus-jakarta-sans';
-import { ActivityIndicator, AppState, type AppStateStatus, Platform, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  AppState,
+  type AppStateStatus,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,7 +41,15 @@ import { createQueryClient } from '@/lib/queryClient';
 import { attachAuthBridge } from '@/lib/authBridge';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
-import { DARK, SPACING, FONT_SIZE, FONT_WEIGHT, FONT_FAMILY, ThemeProvider, useTheme } from '@/theme';
+import {
+  DARK,
+  SPACING,
+  FONT_SIZE,
+  FONT_WEIGHT,
+  FONT_FAMILY,
+  ThemeProvider,
+  useTheme,
+} from '@/theme';
 import { useStatusStore } from '@/stores/useStatusStore';
 import { computeWindowExpiry, nextLargerWindow } from '@/lib/windows';
 import { computeHeartbeatState } from '@/lib/heartbeat';
@@ -42,7 +58,7 @@ import type { WindowId } from '@/types/app';
 
 SplashScreen.setOptions({
   duration: 400,
-  fade: true,   // iOS only — Android fade is always present
+  fade: true, // iOS only — Android fade is always present
 });
 SplashScreen.preventAutoHideAsync();
 
@@ -167,9 +183,7 @@ async function handleNotificationResponse(
 
     // D-25: resolve mood from lowercase action identifiers (see notifications-init.ts).
     const mood =
-      action === 'free' ? 'free' :
-      action === 'busy' ? 'busy' :
-      action === 'maybe' ? 'maybe' : null;
+      action === 'free' ? 'free' : action === 'busy' ? 'busy' : action === 'maybe' ? 'maybe' : null;
     if (!mood) return;
 
     // D-25 / MORN-06: tap-time DEAD check. If user is already ALIVE or FADING, no-op.
@@ -232,10 +246,7 @@ function RootLayoutStack({
     >
       <Stack.Protected guard={!!session && !needsProfileSetup}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="plan-create"
-          options={{ presentation: 'modal', headerShown: false }}
-        />
+        <Stack.Screen name="plan-create" options={{ presentation: 'modal', headerShown: false }} />
         <Stack.Screen name="plans" options={{ headerShown: false }} />
         <Stack.Screen name="chat" options={{ headerShown: false }} />
       </Stack.Protected>
@@ -284,7 +295,7 @@ export default function RootLayout() {
       storage: AsyncStorage,
       key: 'campfire-query-cache-v1',
       throttleTime: 1000,
-    }),
+    })
   );
   const APP_VERSION = Constants.expoConfig?.version ?? 'dev';
 
@@ -305,7 +316,7 @@ export default function RootLayout() {
   // onlineManager — refetch on reconnect via NetInfo.
   useEffect(() => {
     const unsubscribe = onlineManager.setEventListener((setOnline) =>
-      NetInfo.addEventListener((state) => setOnline(!!state.isConnected)),
+      NetInfo.addEventListener((state) => setOnline(!!state.isConnected))
     );
     return unsubscribe;
   }, []);
@@ -398,12 +409,7 @@ export default function RootLayout() {
         colors={[DARK.splash.gradientStart, DARK.splash.gradientEnd]}
         style={styles.splash}
       >
-        <Ionicons
-          name="flame"
-          size={64}
-          color={DARK.splash.text}
-          style={styles.splashEmoji}
-        />
+        <Ionicons name="flame" size={64} color={DARK.splash.text} style={styles.splashEmoji} />
         <Text style={styles.splashTitle}>Campfire</Text>
         <ActivityIndicator color={DARK.splash.text} style={styles.splashLoader} />
       </LinearGradient>

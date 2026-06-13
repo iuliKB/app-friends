@@ -22,37 +22,41 @@ export function EmptyState({
   onCta,
 }: EmptyStateProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: SPACING.xxl,
-    },
-    emoji: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 48, // no exact token — emoji display size
-      textAlign: 'center',
-    },
-    heading: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginTop: SPACING.lg,
-      textAlign: 'center',
-    },
-    body: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.sm,
-    },
-    ctaWrapper: {
-      marginTop: SPACING.xl,
-      width: '100%',
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: SPACING.xxl,
+        },
+        emoji: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 48, // no exact token — emoji display size
+          textAlign: 'center',
+        },
+        heading: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginTop: SPACING.lg,
+          textAlign: 'center',
+        },
+        body: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.sm,
+        },
+        ctaWrapper: {
+          marginTop: SPACING.xl,
+          width: '100%',
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>

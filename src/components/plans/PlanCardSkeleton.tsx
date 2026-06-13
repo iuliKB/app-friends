@@ -17,7 +17,7 @@ export function PlanCardSkeleton() {
           padding: SPACING.lg,
         },
       }),
-    [colors],
+    [colors]
   );
 
   return (

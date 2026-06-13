@@ -140,13 +140,12 @@ export function useExpenseDetail(expenseId: string): ExpenseDetailData {
       queryClient.setQueryData<ExpenseDetail | null>(detailKey, (old) => {
         if (!old) return old;
         const nextParticipants = old.participants.map((p) =>
-          p.userId === participantUserId ? { ...p, isSettled: true } : p,
+          p.userId === participantUserId ? { ...p, isSettled: true } : p
         );
         return {
           ...old,
           participants: nextParticipants,
-          allSettled:
-            nextParticipants.length > 0 && nextParticipants.every((p) => p.isSettled),
+          allSettled: nextParticipants.length > 0 && nextParticipants.every((p) => p.isSettled),
         };
       });
       return { previous };
@@ -176,9 +175,7 @@ export function useExpenseDetail(expenseId: string): ExpenseDetailData {
     settle: async (participantUserId: string) => {
       try {
         await settleMutation.mutateAsync(participantUserId);
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-          () => {},
-        );
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       } catch (_err) {
         // Error already surfaces via the cache rollback; consumer's existing
         // error UI reads from `error` field on next render.

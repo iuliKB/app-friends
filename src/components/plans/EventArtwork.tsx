@@ -28,9 +28,9 @@ const COVER_GRADIENTS: readonly GradientPair[] = [
 const MONOGRAM_COLOR = '#B9FF3B';
 
 export interface EventDateLabels {
-  date: string;    // "Sat 15 May"
-  short: string;   // "Sat 15"
-  time: string;    // "7:30 PM"
+  date: string; // "Sat 15 May"
+  short: string; // "Sat 15"
+  time: string; // "7:30 PM"
   relative: string; // "tomorrow", "in 3d"
 }
 
@@ -92,7 +92,6 @@ export function EventArtwork({
           justifyContent: 'center',
         },
         monogram: {
-          // eslint-disable-next-line campfire/no-hardcoded-styles
           fontSize: monogramSize,
           fontFamily: FONT_FAMILY.display.bold,
           color: MONOGRAM_COLOR,

@@ -14,6 +14,8 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useHabits } from '../useHabits';
+
 // Supabase mock — chainable rpc that resolves with rows on first call and a
 // configurable next-call result for the mutation. channel/removeChannel are
 // kept so any incidental call (defense in depth) doesn't blow up.
@@ -41,21 +43,21 @@ jest.mock('@/lib/realtimeBridge', () => ({
   _resetRealtimeBridgeForTests: jest.fn(),
 }));
 
-import { useHabits } from '../useHabits';
-
-function makeRow(overrides: Partial<{
-  habit_id: string;
-  title: string;
-  cadence: 'daily' | 'weekly' | 'n_per_week';
-  weekly_target: number | null;
-  is_solo: boolean;
-  members_total: number;
-  accepted_total: number;
-  completed_today: number;
-  did_me_check_in_today: boolean;
-  last_checkin_date_local: string | null;
-  current_week_completions: number;
-}> = {}) {
+function makeRow(
+  overrides: Partial<{
+    habit_id: string;
+    title: string;
+    cadence: 'daily' | 'weekly' | 'n_per_week';
+    weekly_target: number | null;
+    is_solo: boolean;
+    members_total: number;
+    accepted_total: number;
+    completed_today: number;
+    did_me_check_in_today: boolean;
+    last_checkin_date_local: string | null;
+    current_week_completions: number;
+  }> = {}
+) {
   return {
     habit_id: 'h1',
     title: 'Run',
@@ -95,7 +97,7 @@ describe('useHabits (migrated to TanStack Query)', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(mockRpc).toHaveBeenCalledWith(
       'get_habits_overview',
-      expect.objectContaining({ p_date_local: '2026-05-13' }),
+      expect.objectContaining({ p_date_local: '2026-05-13' })
     );
     expect(result.current.habits).toEqual(rows);
   });
@@ -117,11 +119,11 @@ describe('useHabits (migrated to TanStack Query)', () => {
     });
 
     await waitFor(() => {
-      const cached = client.getQueryData(queryKeys.habits.overview('2026-05-13')) as Array<{
+      const cached = client.getQueryData(queryKeys.habits.overview('2026-05-13')) as {
         habit_id: string;
         did_me_check_in_today: boolean;
         completed_today: number;
-      }>;
+      }[];
       expect(cached?.[0]?.did_me_check_in_today).toBe(true);
       expect(cached?.[0]?.completed_today).toBe(1);
     });
@@ -140,11 +142,11 @@ describe('useHabits (migrated to TanStack Query)', () => {
       await result.current.toggleToday('h1');
     });
 
-    const cached = client.getQueryData(queryKeys.habits.overview('2026-05-13')) as Array<{
+    const cached = client.getQueryData(queryKeys.habits.overview('2026-05-13')) as {
       habit_id: string;
       did_me_check_in_today: boolean;
       completed_today: number;
-    }>;
+    }[];
     expect(cached?.[0]?.did_me_check_in_today).toBe(false);
     expect(cached?.[0]?.completed_today).toBe(0);
   });
@@ -154,11 +156,7 @@ describe('useHabits (migrated to TanStack Query)', () => {
     const { wrapper } = createTestQueryClient();
     const { unmount } = renderHook(() => useHabits(), { wrapper });
     expect(mock_subscribeHabitCheckins).toHaveBeenCalledTimes(1);
-    expect(mock_subscribeHabitCheckins).toHaveBeenCalledWith(
-      expect.anything(),
-      'u1',
-      '2026-05-13',
-    );
+    expect(mock_subscribeHabitCheckins).toHaveBeenCalledWith(expect.anything(), 'u1', '2026-05-13');
     unmount();
     expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
   });

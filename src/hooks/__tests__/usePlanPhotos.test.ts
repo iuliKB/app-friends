@@ -13,6 +13,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { usePlanPhotos } from '../usePlanPhotos';
+
 const mockFrom = jest.fn();
 const mockStorageFrom = jest.fn();
 const mockRpc = jest.fn();
@@ -34,8 +36,6 @@ jest.mock('@/stores/useAuthStore', () => ({
 jest.mock('@/lib/uploadPlanPhoto', () => ({
   uploadPlanPhoto: jest.fn(),
 }));
-
-import { usePlanPhotos } from '../usePlanPhotos';
 
 const PLAN_ID = 'p1';
 const PHOTO_ROW = {
@@ -120,9 +120,9 @@ describe('usePlanPhotos (migrated to TanStack Query)', () => {
 
     // The optimistic filter removed the row; onSettled invalidate then refetches
     // but the test query client has staleTime Infinity so the refetch is suppressed.
-    const cached = client.getQueryData(
-      queryKeys.plans.photos(PLAN_ID),
-    ) as Array<{ id: string }> | undefined;
+    const cached = client.getQueryData(queryKeys.plans.photos(PLAN_ID)) as
+      | { id: string }[]
+      | undefined;
     expect((cached ?? []).find((p) => p.id === 'ph1')).toBeUndefined();
   });
 });

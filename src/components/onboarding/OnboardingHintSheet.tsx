@@ -1,11 +1,5 @@
 import React, { useEffect, useRef, useMemo } from 'react';
-import {
-  Animated,
-  Modal,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, Modal, StyleSheet, Text, View } from 'react-native';
 import { useTheme, SPACING, RADII, FONT_FAMILY, FONT_SIZE } from '@/theme';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 
@@ -85,7 +79,7 @@ export function OnboardingHintSheet({ visible, onDismiss }: OnboardingHintSheetP
           width: '100%',
         },
       }),
-    [colors],
+    [colors]
   );
 
   return (

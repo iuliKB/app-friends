@@ -76,7 +76,7 @@ export default function SharedPhotosScreen() {
         allPhotos: g.photos,
         data: chunkPhotos(g.photos),
       })),
-    [filteredGroups],
+    [filteredGroups]
   );
 
   const styles = useMemo(
@@ -142,7 +142,7 @@ export default function SharedPhotosScreen() {
           height: CELL_SIZE,
         },
       }),
-    [colors],
+    [colors]
   );
 
   if (isLoading && groups.length === 0) {
@@ -161,11 +161,7 @@ export default function SharedPhotosScreen() {
       <>
         <Stack.Screen options={{ title: 'Shared photos' }} />
         <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
-          <ErrorDisplay
-            mode="screen"
-            message="Couldn't load shared photos."
-            onRetry={refetch}
-          />
+          <ErrorDisplay mode="screen" message="Couldn't load shared photos." onRetry={refetch} />
         </View>
       </>
     );

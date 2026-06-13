@@ -46,9 +46,15 @@ function extractDomain(url: string): string {
 
 const EXPAND_ANIMATION = {
   duration: 220,
-  create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+  create: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
   update: { type: LayoutAnimation.Types.easeInEaseOut },
-  delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+  delete: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
 } as const;
 
 export function BirthdayWishListPanel({
@@ -64,305 +70,307 @@ export function BirthdayWishListPanel({
 
   const { items, loading, toggleClaim } = useFriendWishList(birthdayPersonId);
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      backgroundColor: colors.surface.card,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.border,
-    },
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          backgroundColor: colors.surface.card,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: colors.border,
+        },
 
-    // ── Header ────────────────────────────────────────────────────────────────
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      gap: SPACING.sm,
-    },
-    headerPressed: {
-      opacity: 0.7,
-    },
-    headerText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      flex: 1,
-    },
-    dateChip: {
-      backgroundColor: colors.surface.base,
-      borderRadius: RADII.full,
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
-    },
-    dateChipText: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
+        // ── Header ────────────────────────────────────────────────────────────────
+        header: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          gap: SPACING.sm,
+        },
+        headerPressed: {
+          opacity: 0.7,
+        },
+        headerText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          flex: 1,
+        },
+        dateChip: {
+          backgroundColor: colors.surface.base,
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+        },
+        dateChipText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
 
-    // ── Body ─────────────────────────────────────────────────────────────────
-    body: {
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.border,
-      paddingBottom: SPACING.md,
-    },
+        // ── Body ─────────────────────────────────────────────────────────────────
+        body: {
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
+          paddingBottom: SPACING.md,
+        },
 
-    // ── Birthday info row (date + age chip) ───────────────────────────────────
-    birthdayInfoRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-    },
-    birthdayInfoText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    ageChip: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(185,255,59,0.12)',
-      borderRadius: RADII.full,
-      paddingHorizontal: SPACING.sm,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingVertical: 3,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: colors.interactive.accent,
-    },
-    ageChipText: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.interactive.accent,
-    },
+        // ── Birthday info row (date + age chip) ───────────────────────────────────
+        birthdayInfoRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+        },
+        birthdayInfoText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        ageChip: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(185,255,59,0.12)',
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.sm,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          paddingVertical: 3,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.interactive.accent,
+        },
+        ageChipText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.interactive.accent,
+        },
 
-    // ── Wish list section header ──────────────────────────────────────────────
-    wishListHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xs,
-      paddingBottom: SPACING.sm,
-      gap: SPACING.sm,
-    },
-    wishListLabel: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      textTransform: 'uppercase',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      letterSpacing: 0.8,
-      flex: 1,
-    },
-    count: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    createPollBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.xs,
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
-      borderRadius: RADII.full,
-      backgroundColor: colors.surface.base,
-    },
-    createPollBtnText: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-    },
+        // ── Wish list section header ──────────────────────────────────────────────
+        wishListHeader: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.xs,
+          paddingBottom: SPACING.sm,
+          gap: SPACING.sm,
+        },
+        wishListLabel: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
 
-    // ── Loading / empty ───────────────────────────────────────────────────────
-    loadingRow: {
-      paddingVertical: SPACING.lg,
-      alignItems: 'center',
-    },
-    emptyText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-    },
+          textTransform: 'uppercase',
 
-    // ── Scrollable items list ─────────────────────────────────────────────────
-    itemsScroll: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      maxHeight: 280,
-    },
-    itemsList: {
-      paddingHorizontal: SPACING.lg,
-      gap: SPACING.sm,
-      paddingBottom: SPACING.xs,
-    },
+          letterSpacing: 0.8,
+          flex: 1,
+        },
+        count: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        createPollBtn: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+          borderRadius: RADII.full,
+          backgroundColor: colors.surface.base,
+        },
+        createPollBtnText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+        },
 
-    // ── Item card ─────────────────────────────────────────────────────────────
-    row: {
-      backgroundColor: colors.surface.overlay,
-      borderRadius: RADII.lg,
-      padding: SPACING.md,
-      gap: SPACING.sm,
-      borderWidth: StyleSheet.hairlineWidth,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderColor: 'rgba(255,255,255,0.07)',
-    },
-    rowSelected: {
-      borderColor: colors.interactive.accent,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(185,255,59,0.06)',
-    },
-    rowDisabled: {
-      opacity: 0.38,
-    },
-    itemContent: {
-      gap: SPACING.xs,
-    },
-    itemTitle: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.medium,
-      color: colors.text.primary,
-    },
-    itemUrl: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.accent,
-    },
-    itemNotes: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
+        // ── Loading / empty ───────────────────────────────────────────────────────
+        loadingRow: {
+          paddingVertical: SPACING.lg,
+          alignItems: 'center',
+        },
+        emptyText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+        },
 
-    // ── Poll mode: selection row ──────────────────────────────────────────────
-    selectionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-    },
-    selectionCircle: {
-      width: 20,
-      height: 20,
-      borderRadius: RADII.full,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderWidth: 1.5,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    selectionCircleActive: {
-      backgroundColor: colors.interactive.accent,
-      borderColor: colors.interactive.accent,
-    },
+        // ── Scrollable items list ─────────────────────────────────────────────────
+        itemsScroll: {
+          maxHeight: 280,
+        },
+        itemsList: {
+          paddingHorizontal: SPACING.lg,
+          gap: SPACING.sm,
+          paddingBottom: SPACING.xs,
+        },
 
-    // ── Claimed badge pill ────────────────────────────────────────────────────
-    claimedBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.xs,
-      alignSelf: 'flex-start' as const,
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.full,
-      paddingHorizontal: SPACING.sm,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingVertical: 3,
-    },
-    claimedBadgeOwn: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(185,255,59,0.10)',
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: colors.interactive.accent,
-    },
-    claimedBadgeText: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    claimedBadgeTextOwn: {
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.interactive.accent,
-    },
+        // ── Item card ─────────────────────────────────────────────────────────────
+        row: {
+          backgroundColor: colors.surface.overlay,
+          borderRadius: RADII.lg,
+          padding: SPACING.md,
+          gap: SPACING.sm,
+          borderWidth: StyleSheet.hairlineWidth,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          borderColor: 'rgba(255,255,255,0.07)',
+        },
+        rowSelected: {
+          borderColor: colors.interactive.accent,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(185,255,59,0.06)',
+        },
+        rowDisabled: {
+          opacity: 0.38,
+        },
+        itemContent: {
+          gap: SPACING.xs,
+        },
+        itemTitle: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.medium,
+          color: colors.text.primary,
+        },
+        itemUrl: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.accent,
+        },
+        itemNotes: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
 
-    // ── Actions row (claim only) ──────────────────────────────────────────────
-    actions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingTop: SPACING.xs,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.border,
-    },
-    claimBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.xs,
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm,
-      borderRadius: RADII.full,
-      backgroundColor: colors.surface.card,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 36,
-    },
-    claimBtnActive: {
-      backgroundColor: colors.interactive.accent,
-    },
-    claimBtnDisabled: {
-      opacity: 0.4,
-    },
-    claimBtnText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-    },
-    claimBtnTextActive: {
-      color: colors.surface.base,
-    },
+        // ── Poll mode: selection row ──────────────────────────────────────────────
+        selectionRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+        },
+        selectionCircle: {
+          width: 20,
+          height: 20,
+          borderRadius: RADII.full,
 
-    // ── Poll confirm row ──────────────────────────────────────────────────────
-    pollConfirmRow: {
-      flexDirection: 'row',
-      gap: SPACING.sm,
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.sm,
-    },
-    cancelPollBtn: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: SPACING.sm,
-      borderRadius: RADII.full,
-      backgroundColor: colors.surface.base,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 40,
-    },
-    cancelPollText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-    },
-    confirmPollBtn: {
-      flex: 2,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: SPACING.xs,
-      paddingVertical: SPACING.sm,
-      borderRadius: RADII.full,
-      backgroundColor: colors.interactive.accent,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 40,
-    },
-    confirmPollBtnDisabled: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      opacity: 0.35,
-    },
-    confirmPollText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.surface.base,
-    },
-  }), [colors]);
+          borderWidth: 1.5,
+          borderColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        selectionCircleActive: {
+          backgroundColor: colors.interactive.accent,
+          borderColor: colors.interactive.accent,
+        },
+
+        // ── Claimed badge pill ────────────────────────────────────────────────────
+        claimedBadge: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+          alignSelf: 'flex-start' as const,
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.sm,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          paddingVertical: 3,
+        },
+        claimedBadgeOwn: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(185,255,59,0.10)',
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.interactive.accent,
+        },
+        claimedBadgeText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        claimedBadgeTextOwn: {
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.interactive.accent,
+        },
+
+        // ── Actions row (claim only) ──────────────────────────────────────────────
+        actions: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingTop: SPACING.xs,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
+        },
+        claimBtn: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+          paddingHorizontal: SPACING.md,
+          paddingVertical: SPACING.sm,
+          borderRadius: RADII.full,
+          backgroundColor: colors.surface.card,
+
+          minHeight: 36,
+        },
+        claimBtnActive: {
+          backgroundColor: colors.interactive.accent,
+        },
+        claimBtnDisabled: {
+          opacity: 0.4,
+        },
+        claimBtnText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+        },
+        claimBtnTextActive: {
+          color: colors.surface.base,
+        },
+
+        // ── Poll confirm row ──────────────────────────────────────────────────────
+        pollConfirmRow: {
+          flexDirection: 'row',
+          gap: SPACING.sm,
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.sm,
+        },
+        cancelPollBtn: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingVertical: SPACING.sm,
+          borderRadius: RADII.full,
+          backgroundColor: colors.surface.base,
+
+          minHeight: 40,
+        },
+        cancelPollText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+        },
+        confirmPollBtn: {
+          flex: 2,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.xs,
+          paddingVertical: SPACING.sm,
+          borderRadius: RADII.full,
+          backgroundColor: colors.interactive.accent,
+
+          minHeight: 40,
+        },
+        confirmPollBtnDisabled: {
+          opacity: 0.35,
+        },
+        confirmPollText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.surface.base,
+        },
+      }),
+    [colors]
+  );
 
   const name = birthdayPersonName ?? 'Their';
 
@@ -417,22 +425,19 @@ export function BirthdayWishListPanel({
   }
 
   function handleCreatePoll() {
-    const selectedTitles = items
-      .filter((i) => selectedItemIds.has(i.id))
-      .map((i) => i.title);
+    const selectedTitles = items.filter((i) => selectedItemIds.has(i.id)).map((i) => i.title);
     onStartGiftPoll?.(`What should we gift ${name}?`, selectedTitles);
     exitPollMode();
     LayoutAnimation.configureNext(EXPAND_ANIMATION);
     setExpanded(false);
   }
 
-  const dateLabel = birthdayInfo
-    ? formatBirthdayDate(birthdayInfo.month, birthdayInfo.day)
-    : null;
+  const dateLabel = birthdayInfo ? formatBirthdayDate(birthdayInfo.month, birthdayInfo.day) : null;
 
-  const ageLabel = birthdayInfo?.year !== null && birthdayInfo
-    ? formatTurningAge(birthdayInfo.year!, birthdayInfo.month, birthdayInfo.day)
-    : null;
+  const ageLabel =
+    birthdayInfo?.year !== null && birthdayInfo
+      ? formatTurningAge(birthdayInfo.year!, birthdayInfo.month, birthdayInfo.day)
+      : null;
 
   return (
     <View style={styles.container}>
@@ -463,9 +468,7 @@ export function BirthdayWishListPanel({
           {birthdayInfo && (
             <View style={styles.birthdayInfoRow}>
               <Ionicons name="calendar-outline" size={14} color={colors.text.secondary} />
-              {dateLabel && (
-                <Text style={styles.birthdayInfoText}>{dateLabel}</Text>
-              )}
+              {dateLabel && <Text style={styles.birthdayInfoText}>{dateLabel}</Text>}
               {ageLabel && (
                 <View style={styles.ageChip}>
                   <Text style={styles.ageChipText}>{ageLabel}</Text>
@@ -529,34 +532,63 @@ export function BirthdayWishListPanel({
                       {pollMode ? (
                         /* Poll mode: checkbox + title only */
                         <View style={styles.selectionRow}>
-                          <View style={[styles.selectionCircle, isSelected && styles.selectionCircleActive]}>
+                          <View
+                            style={[
+                              styles.selectionCircle,
+                              isSelected && styles.selectionCircleActive,
+                            ]}
+                          >
                             {isSelected && (
                               <Ionicons name="checkmark" size={12} color={colors.surface.base} />
                             )}
                           </View>
-                          <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
+                          <Text style={styles.itemTitle} numberOfLines={2}>
+                            {item.title}
+                          </Text>
                         </View>
                       ) : (
                         /* Normal mode: full card */
                         <>
                           <View style={styles.itemContent}>
-                            <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
+                            <Text style={styles.itemTitle} numberOfLines={2}>
+                              {item.title}
+                            </Text>
                             {item.url ? (
                               <Text style={styles.itemUrl} numberOfLines={1}>
                                 {extractDomain(item.url)}
                               </Text>
                             ) : null}
                             {item.notes ? (
-                              <Text style={styles.itemNotes} numberOfLines={2}>{item.notes}</Text>
+                              <Text style={styles.itemNotes} numberOfLines={2}>
+                                {item.notes}
+                              </Text>
                             ) : null}
                             {item.isClaimed && (
-                              <View style={[styles.claimedBadge, item.isClaimedByMe && styles.claimedBadgeOwn]}>
+                              <View
+                                style={[
+                                  styles.claimedBadge,
+                                  item.isClaimedByMe && styles.claimedBadgeOwn,
+                                ]}
+                              >
                                 <Ionicons
-                                  name={item.isClaimedByMe ? 'checkmark-circle-outline' : 'bag-handle-outline'}
+                                  name={
+                                    item.isClaimedByMe
+                                      ? 'checkmark-circle-outline'
+                                      : 'bag-handle-outline'
+                                  }
                                   size={11}
-                                  color={item.isClaimedByMe ? colors.interactive.accent : colors.text.secondary}
+                                  color={
+                                    item.isClaimedByMe
+                                      ? colors.interactive.accent
+                                      : colors.text.secondary
+                                  }
                                 />
-                                <Text style={[styles.claimedBadgeText, item.isClaimedByMe && styles.claimedBadgeTextOwn]}>
+                                <Text
+                                  style={[
+                                    styles.claimedBadgeText,
+                                    item.isClaimedByMe && styles.claimedBadgeTextOwn,
+                                  ]}
+                                >
                                   {item.isClaimedByMe
                                     ? "You're buying this"
                                     : item.claimerName
@@ -576,14 +608,27 @@ export function BirthdayWishListPanel({
                               ]}
                               onPress={() => void toggleClaim(item.id, item.isClaimedByMe)}
                               disabled={item.isClaimed && !item.isClaimedByMe}
-                              accessibilityLabel={item.isClaimedByMe ? 'Cancel claim' : "I'll buy this"}
+                              accessibilityLabel={
+                                item.isClaimedByMe ? 'Cancel claim' : "I'll buy this"
+                              }
                             >
                               <Ionicons
-                                name={item.isClaimedByMe ? 'checkmark-circle-outline' : 'bag-handle-outline'}
+                                name={
+                                  item.isClaimedByMe
+                                    ? 'checkmark-circle-outline'
+                                    : 'bag-handle-outline'
+                                }
                                 size={14}
-                                color={item.isClaimedByMe ? colors.surface.base : colors.text.secondary}
+                                color={
+                                  item.isClaimedByMe ? colors.surface.base : colors.text.secondary
+                                }
                               />
-                              <Text style={[styles.claimBtnText, item.isClaimedByMe && styles.claimBtnTextActive]}>
+                              <Text
+                                style={[
+                                  styles.claimBtnText,
+                                  item.isClaimedByMe && styles.claimBtnTextActive,
+                                ]}
+                              >
                                 {item.isClaimedByMe ? "I'll buy" : 'Claim'}
                               </Text>
                             </Pressable>

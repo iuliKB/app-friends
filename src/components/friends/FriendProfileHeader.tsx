@@ -29,13 +29,13 @@ import type { StatusValue } from '@/types/app';
 const BIG_AVATAR_SIZE = 140;
 const COLLAPSED_AVATAR_SIZE = 32;
 const HEADER_HEIGHT = 280;
-const COLLAPSE_END = 160;   // = HEADER_HEIGHT - 120; where avatar finishes collapsing
-const WASH_FADE_END = 220;  // = HEADER_HEIGHT - 60; wash fades earlier so nav title stays clean
-// eslint-disable-next-line campfire/no-hardcoded-styles
+const COLLAPSE_END = 160; // = HEADER_HEIGHT - 120; where avatar finishes collapsing
+const WASH_FADE_END = 220; // = HEADER_HEIGHT - 60; wash fades earlier so nav title stays clean
+
 const COLLAPSED_SCALE = COLLAPSED_AVATAR_SIZE / BIG_AVATAR_SIZE; // 0.2286 per UI-SPEC line 259
 
 interface FriendProfileHeaderProps {
-  scrollY: SharedValue<number>;     // owned by parent screen so Stack.Screen headerTitle can read it
+  scrollY: SharedValue<number>; // owned by parent screen so Stack.Screen headerTitle can read it
   displayName: string;
   username: string;
   avatarUrl: string | null;
@@ -76,8 +76,17 @@ export function FriendProfileHeader({
     return {
       opacity: interpolate(scrollY.value, [0, 120, COLLAPSE_END], [1, 1, 0], Extrapolation.CLAMP),
       transform: [
-        { scale: interpolate(scrollY.value, [0, COLLAPSE_END], [1, COLLAPSED_SCALE], Extrapolation.CLAMP) },
-        { translateY: interpolate(scrollY.value, [0, COLLAPSE_END], [0, -100], Extrapolation.CLAMP) },
+        {
+          scale: interpolate(
+            scrollY.value,
+            [0, COLLAPSE_END],
+            [1, COLLAPSED_SCALE],
+            Extrapolation.CLAMP
+          ),
+        },
+        {
+          translateY: interpolate(scrollY.value, [0, COLLAPSE_END], [0, -100], Extrapolation.CLAMP),
+        },
       ],
     };
   }, [reducedMotion]);
@@ -121,9 +130,9 @@ export function FriendProfileHeader({
           textAlign: 'center',
           // eslint-disable-next-line campfire/no-hardcoded-styles
           textShadowColor: 'rgba(0,0,0,0.30)', // UI-SPEC drop-shadow for legibility over blurred wash
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           textShadowOffset: { width: 0, height: 1 },
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           textShadowRadius: 2,
         },
         username: {
@@ -136,7 +145,7 @@ export function FriendProfileHeader({
           marginTop: SPACING.xs,
         },
       }),
-    [colors],
+    [colors]
   );
 
   return (

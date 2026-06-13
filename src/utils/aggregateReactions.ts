@@ -2,7 +2,7 @@ import type { MessageReaction } from '@/types/chat';
 
 export function aggregateReactions(
   rawReactions: { emoji: string; user_id: string }[],
-  currentUserId: string,
+  currentUserId: string
 ): MessageReaction[] {
   const map = new Map<string, { count: number; reacted_by_me: boolean }>();
   for (const r of rawReactions) {

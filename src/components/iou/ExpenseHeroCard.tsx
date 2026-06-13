@@ -26,63 +26,67 @@ export function ExpenseHeroCard({
   allSettled,
 }: ExpenseHeroCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    settledBanner: {
-      backgroundColor: colors.status.free,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 48,
-      borderRadius: RADII.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.lg,
-    },
-    settledBannerText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: '#ffffff',
-    },
-    card: {
-      backgroundColor: colors.surface.card,
-      padding: SPACING.lg,
-      borderRadius: RADII.lg,
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.lg,
-    },
-    title: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    total: {
-      fontSize: FONT_SIZE.xxl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginTop: SPACING.xs,
-    },
-    metaRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      marginTop: SPACING.sm,
-    },
-    metaText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    metaSeparator: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    skeletonCard: {
-      opacity: 0.5,
-    },
-    skeletonBox: {
-      backgroundColor: colors.border,
-      borderRadius: RADII.md,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        settledBanner: {
+          backgroundColor: colors.status.free,
+
+          height: 48,
+          borderRadius: RADII.md,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.lg,
+        },
+        settledBannerText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: '#ffffff',
+        },
+        card: {
+          backgroundColor: colors.surface.card,
+          padding: SPACING.lg,
+          borderRadius: RADII.lg,
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.lg,
+        },
+        title: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        total: {
+          fontSize: FONT_SIZE.xxl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginTop: SPACING.xs,
+        },
+        metaRow: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          marginTop: SPACING.sm,
+        },
+        metaText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        metaSeparator: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        skeletonCard: {
+          opacity: 0.5,
+        },
+        skeletonBox: {
+          backgroundColor: colors.border,
+          borderRadius: RADII.md,
+        },
+      }),
+    [colors]
+  );
 
   const dateString = new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -116,29 +120,33 @@ export function ExpenseHeroCard({
 
 export function ExpenseHeroCardSkeleton() {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      padding: SPACING.lg,
-      borderRadius: RADII.lg,
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.lg,
-    },
-    skeletonCard: {
-      opacity: 0.5,
-    },
-    skeletonBox: {
-      backgroundColor: colors.border,
-      borderRadius: RADII.md,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          padding: SPACING.lg,
+          borderRadius: RADII.lg,
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.lg,
+        },
+        skeletonCard: {
+          opacity: 0.5,
+        },
+        skeletonBox: {
+          backgroundColor: colors.border,
+          borderRadius: RADII.md,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={[styles.card, styles.skeletonCard]}>
-      {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+      {}
       <View style={[styles.skeletonBox, { width: 200, height: 20 }]} />
-      {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+      {}
       <View style={[styles.skeletonBox, { width: 120, height: 28, marginTop: SPACING.sm }]} />
-      {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+      {}
       <View style={[styles.skeletonBox, { width: 240, height: 16, marginTop: SPACING.sm }]} />
     </View>
   );

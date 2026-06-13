@@ -54,11 +54,11 @@ export function GalleryViewerModal({
   const currentPhoto = photos[currentIndex];
 
   const onViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
+    ({ viewableItems }: { viewableItems: { index: number | null }[] }) => {
       const first = viewableItems[0];
       if (first?.index != null) setCurrentIndex(first.index);
     },
-    [],
+    []
   );
 
   async function handleSave() {
@@ -73,7 +73,7 @@ export function GalleryViewerModal({
           [
             { text: 'Open Settings', onPress: () => Linking.openSettings() },
             { text: 'Cancel', style: 'cancel' },
-          ],
+          ]
         );
         return;
       }
@@ -119,9 +119,9 @@ export function GalleryViewerModal({
         btnTopRight: {
           position: 'absolute' as const,
           right: SPACING.lg,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           minWidth: 44,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           minHeight: 44,
           justifyContent: 'center' as const,
           alignItems: 'center' as const,
@@ -162,15 +162,14 @@ export function GalleryViewerModal({
           gap: SPACING.lg,
         },
         overlayBtn: {
-          // eslint-disable-next-line campfire/no-hardcoded-styles
           minWidth: 44,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           minHeight: 44,
           justifyContent: 'center' as const,
           alignItems: 'center' as const,
         },
       }),
-    [colors],
+    [colors]
   );
 
   const btnTop = insets.top + SPACING.xl;
@@ -253,7 +252,7 @@ export function GalleryViewerModal({
               style={[styles.overlayBtn, saving && styles.btnDisabled]}
               accessibilityLabel="Save to camera roll"
             >
-              {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+              {}
               <Ionicons name="download-outline" size={24} color="#fff" />
             </TouchableOpacity>
             {currentPhoto.uploaderId === currentUserId && (

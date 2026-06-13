@@ -13,57 +13,61 @@ interface SearchResultCardProps {
 
 export function SearchResultCard({ profile, status, onAddFriend, isSelf }: SearchResultCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-    },
-    info: {
-      flex: 1,
-      marginLeft: SPACING.lg,
-    },
-    displayName: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    username: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    addButton: {
-      height: 36,
-      paddingHorizontal: SPACING.lg,
-      borderRadius: RADII.md,
-      backgroundColor: colors.interactive.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    addButtonText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.surface.base,
-    },
-    pendingButton: {
-      height: 36,
-      paddingHorizontal: SPACING.lg,
-      borderRadius: RADII.md,
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    pendingButtonText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+        },
+        info: {
+          flex: 1,
+          marginLeft: SPACING.lg,
+        },
+        displayName: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        username: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        addButton: {
+          height: 36,
+          paddingHorizontal: SPACING.lg,
+          borderRadius: RADII.md,
+          backgroundColor: colors.interactive.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        addButtonText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.surface.base,
+        },
+        pendingButton: {
+          height: 36,
+          paddingHorizontal: SPACING.lg,
+          borderRadius: RADII.md,
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        pendingButtonText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>

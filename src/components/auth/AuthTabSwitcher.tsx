@@ -9,34 +9,38 @@ interface AuthTabSwitcherProps {
 
 export function AuthTabSwitcher({ activeTab, onTabChange }: AuthTabSwitcherProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      padding: SPACING.xs,
-      marginHorizontal: SPACING.lg,
-    },
-    tab: {
-      flex: 1,
-      height: 40, // no exact token — not flagged by rule
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: RADII.md,
-    },
-    activeTab: {
-      backgroundColor: colors.interactive.accent,
-    },
-    tabText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-    },
-    activeTabText: {
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.surface.base,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          padding: SPACING.xs,
+          marginHorizontal: SPACING.lg,
+        },
+        tab: {
+          flex: 1,
+          height: 40, // no exact token — not flagged by rule
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: RADII.md,
+        },
+        activeTab: {
+          backgroundColor: colors.interactive.accent,
+        },
+        tabText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+        },
+        activeTabText: {
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.surface.base,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>

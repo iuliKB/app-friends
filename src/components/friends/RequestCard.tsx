@@ -38,69 +38,73 @@ export function RequestCard({ request, onAccept, onDecline, loading }: RequestCa
   const { colors } = useTheme();
   const profile = request.profiles;
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.lg,
-    },
-    topRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    info: {
-      flex: 1,
-      marginLeft: SPACING.lg,
-    },
-    displayName: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.primary,
-    },
-    username: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    timestamp: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    buttonRow: {
-      flexDirection: 'row',
-      gap: SPACING.sm,
-      marginTop: SPACING.sm,
-    },
-    acceptButton: {
-      height: 36,
-      paddingHorizontal: SPACING.lg,
-      borderRadius: RADII.md,
-      backgroundColor: colors.interactive.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    acceptText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.surface.base,
-    },
-    declineButton: {
-      height: 36,
-      paddingHorizontal: SPACING.lg,
-      borderRadius: RADII.md,
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    declineText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.lg,
+        },
+        topRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        info: {
+          flex: 1,
+          marginLeft: SPACING.lg,
+        },
+        displayName: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.primary,
+        },
+        username: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        timestamp: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        buttonRow: {
+          flexDirection: 'row',
+          gap: SPACING.sm,
+          marginTop: SPACING.sm,
+        },
+        acceptButton: {
+          height: 36,
+          paddingHorizontal: SPACING.lg,
+          borderRadius: RADII.md,
+          backgroundColor: colors.interactive.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        acceptText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.surface.base,
+        },
+        declineButton: {
+          height: 36,
+          paddingHorizontal: SPACING.lg,
+          borderRadius: RADII.md,
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        declineText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>

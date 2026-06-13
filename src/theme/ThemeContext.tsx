@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  ReactNode,
+} from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS as DARK } from './colors';
@@ -34,7 +42,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback((t: ThemePreference) => {
     setThemeState(t);
     AsyncStorage.setItem(STORAGE_KEY, t).catch(() =>
-      console.warn('[ThemeProvider] Failed to persist theme preference'),
+      console.warn('[ThemeProvider] Failed to persist theme preference')
     );
   }, []);
 
@@ -44,14 +52,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ colors, isDark, theme, setTheme }),
-    [colors, isDark, theme, setTheme],
+    [colors, isDark, theme, setTheme]
   );
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {

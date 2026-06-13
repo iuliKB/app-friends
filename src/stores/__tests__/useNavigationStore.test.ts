@@ -30,7 +30,7 @@ describe('useNavigationStore (Phase 30 Plan 01)', () => {
     expect(useNavigationStore.getState().currentSurface).toBe('tabs');
   });
 
-  it("NavigationSurface type accepts the 5 canonical literals", () => {
+  it('NavigationSurface type accepts the 5 canonical literals', () => {
     // Compile-time check — these assignments must typecheck.
     const tabs: NavigationSurface = 'tabs';
     const chat: NavigationSurface = 'chat';

@@ -16,6 +16,8 @@ import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 import type { ChatListItem } from '@/types/chat';
 
+import { useChatList } from '../useChatList';
+
 // Supabase mock — chainable .from() with select/eq/or/in/not/order returning
 // promised data so the queryFn's awaited reads resolve cleanly.
 function makeChain(rows: any[] = [], err: any = null) {
@@ -63,8 +65,6 @@ jest.mock('@/lib/realtimeBridge', () => ({
   subscribeChatList: (...args: unknown[]) => mockSubscribeChatList(...args),
   _resetRealtimeBridgeForTests: jest.fn(),
 }));
-
-import { useChatList } from '../useChatList';
 
 describe('useChatList (migrated to TanStack Query)', () => {
   beforeEach(() => {

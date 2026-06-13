@@ -14,6 +14,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useWishListVotes } from '../useWishListVotes';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -25,8 +27,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u-self' } } }),
 }));
-
-import { useWishListVotes } from '../useWishListVotes';
 
 function setupVotesMock(initialRows: { item_id: string; voter_id: string }[]) {
   mockFrom.mockImplementation((table: string) => {

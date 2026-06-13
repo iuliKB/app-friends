@@ -2,7 +2,16 @@
 // Route: /squad/expenses/create
 // Uses useExpenseCreate hook for all form state and RPC submission.
 
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING } from '@/theme';
@@ -20,72 +29,76 @@ export default function ExpenseCreateScreen() {
   const { group_channel_id } = useLocalSearchParams<{ group_channel_id?: string }>();
   const form = useExpenseCreate({ groupChannelId: group_channel_id });
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.surface.base },
-    content: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
-    sectionLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      marginBottom: SPACING.sm,
-    },
-    sectionGap: { marginTop: SPACING.xl },
-    textInput: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      padding: SPACING.lg,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    friendRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: SPACING.md,
-      gap: SPACING.sm,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-    },
-    friendName: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    customSection: { marginTop: SPACING.lg },
-    customRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: SPACING.sm,
-      gap: SPACING.md,
-    },
-    customName: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    customAmountInput: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      padding: SPACING.md,
-      fontSize: FONT_SIZE.md,
-      color: colors.text.primary,
-      borderWidth: 1,
-      borderColor: colors.border,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 100,
-    },
-    errorText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-      marginTop: SPACING.md,
-    },
-    buttonGap: { marginTop: SPACING.xl },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: { flex: 1, backgroundColor: colors.surface.base },
+        content: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
+        sectionLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+          marginBottom: SPACING.sm,
+        },
+        sectionGap: { marginTop: SPACING.xl },
+        textInput: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.md,
+          padding: SPACING.lg,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        friendRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: SPACING.md,
+          gap: SPACING.sm,
+
+          minHeight: 44,
+        },
+        friendName: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        customSection: { marginTop: SPACING.lg },
+        customRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: SPACING.sm,
+          gap: SPACING.md,
+        },
+        customName: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        customAmountInput: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.md,
+          padding: SPACING.md,
+          fontSize: FONT_SIZE.md,
+          color: colors.text.primary,
+          borderWidth: 1,
+          borderColor: colors.border,
+
+          width: 100,
+        },
+        errorText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.destructive,
+          marginTop: SPACING.md,
+        },
+        buttonGap: { marginTop: SPACING.xl },
+      }),
+    [colors]
+  );
 
   return (
     <ScrollView
@@ -119,7 +132,12 @@ export default function ExpenseCreateScreen() {
       {form.friendsLoading ? (
         <ActivityIndicator color={colors.interactive.accent} />
       ) : form.friends.length === 0 ? (
-        <EmptyState icon="people-outline" iconType="ionicons" heading="No friends yet" body="Add friends to split expenses with them" />
+        <EmptyState
+          icon="people-outline"
+          iconType="ionicons"
+          heading="No friends yet"
+          body="Add friends to split expenses with them"
+        />
       ) : (
         <FlatList
           data={form.friends}
@@ -135,7 +153,11 @@ export default function ExpenseCreateScreen() {
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: selected }}
               >
-                <AvatarCircle size={36} imageUri={item.avatar_url} displayName={item.display_name} />
+                <AvatarCircle
+                  size={36}
+                  imageUri={item.avatar_url}
+                  displayName={item.display_name}
+                />
                 <Text style={styles.friendName}>{item.display_name}</Text>
                 <Ionicons
                   name={selected ? 'checkbox' : 'square-outline'}
@@ -160,12 +182,16 @@ export default function ExpenseCreateScreen() {
             if (!friend) return null;
             return (
               <View key={friendId} style={styles.customRow}>
-                <Text style={styles.customName} numberOfLines={1}>{friend.display_name}</Text>
+                <Text style={styles.customName} numberOfLines={1}>
+                  {friend.display_name}
+                </Text>
                 <TextInput
                   style={styles.customAmountInput}
-                  value={form.customAmounts[friendId]
-                    ? formatCentsDisplay(parseInt(form.customAmounts[friendId] ?? '0', 10))
-                    : ''}
+                  value={
+                    form.customAmounts[friendId]
+                      ? formatCentsDisplay(parseInt(form.customAmounts[friendId] ?? '0', 10))
+                      : ''
+                  }
                   onChangeText={(text) => form.setCustomAmount(friendId, parseCentsFromInput(text))}
                   placeholder="$0.00"
                   placeholderTextColor={colors.text.secondary}
@@ -179,15 +205,15 @@ export default function ExpenseCreateScreen() {
       )}
 
       {/* Submit error */}
-      {form.submitError ? (
-        <Text style={styles.errorText}>{form.submitError}</Text>
-      ) : null}
+      {form.submitError ? <Text style={styles.errorText}>{form.submitError}</Text> : null}
 
       {/* Submit button */}
       <View style={styles.buttonGap}>
         <PrimaryButton
           title="Create Expense"
-          onPress={() => { void form.submit(); }}
+          onPress={() => {
+            void form.submit();
+          }}
           loading={form.submitting}
           disabled={!form.canSubmit || form.submitting}
         />

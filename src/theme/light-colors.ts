@@ -1,13 +1,13 @@
 export const LIGHT = {
   // Text
   text: {
-    primary: '#1A1D23',      // deep charcoal — 16.9:1 on white (AAA)
-    secondary: '#64748B',    // slate-500 — 4.8:1 on white (AA)
+    primary: '#1A1D23', // deep charcoal — 16.9:1 on white (AAA)
+    secondary: '#64748B', // slate-500 — 4.8:1 on white (AA)
   },
 
   // Surfaces
   surface: {
-    base: '#F5F6F8',         // neutral off-white — cards pop, not cold/blue
+    base: '#F5F6F8', // neutral off-white — cards pop, not cold/blue
     card: '#FFFFFF',
     overlay: 'rgba(0,0,0,0.06)',
   },

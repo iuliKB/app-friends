@@ -24,28 +24,32 @@ export function OAuthButton({ provider, onPress, loading = false }: OAuthButtonP
   const { colors } = useTheme();
   const config = PROVIDER_CONFIG[provider];
 
-  const styles = useMemo(() => StyleSheet.create({
-    button: {
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: RADII.lg,
-      height: 52, // no exact token — matches FormField minHeight
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    content: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: SPACING.sm,
-    },
-    text: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        button: {
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: RADII.lg,
+          height: 52, // no exact token — matches FormField minHeight
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        content: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.sm,
+        },
+        text: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <TouchableOpacity

@@ -14,7 +14,7 @@ export const COLORS = {
 
   // Interactive
   interactive: {
-    accent: '#B9FF3B',       // neon green primary
+    accent: '#B9FF3B', // neon green primary
     destructive: '#F87171',
   },
 

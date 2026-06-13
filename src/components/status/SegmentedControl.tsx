@@ -13,37 +13,44 @@ interface SegmentProps {
 export function SegmentedControl({ value, onValueChange, saving }: SegmentProps) {
   const { colors } = useTheme();
 
-  const SEGMENTS: { label: string; value: StatusValue; color: string }[] = useMemo(() => [
-    { label: 'Free', value: 'free', color: colors.status.free },
-    { label: 'Busy', value: 'busy', color: colors.status.busy },
-    { label: 'Maybe', value: 'maybe', color: colors.status.maybe },
-  ], [colors]);
+  const SEGMENTS: { label: string; value: StatusValue; color: string }[] = useMemo(
+    () => [
+      { label: 'Free', value: 'free', color: colors.status.free },
+      { label: 'Busy', value: 'busy', color: colors.status.busy },
+      { label: 'Maybe', value: 'maybe', color: colors.status.maybe },
+    ],
+    [colors]
+  );
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      padding: SPACING.xs,
-      height: 44,
-      marginHorizontal: SPACING.lg,
-    },
-    segment: {
-      flex: 1,
-      borderRadius: RADII.sm,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    label: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.regular,
-      color: colors.text.secondary,
-    },
-    activeLabel: {
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.surface.base,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.md,
+          padding: SPACING.xs,
+          height: 44,
+          marginHorizontal: SPACING.lg,
+        },
+        segment: {
+          flex: 1,
+          borderRadius: RADII.sm,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        label: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.regular,
+          color: colors.text.secondary,
+        },
+        activeLabel: {
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.surface.base,
+        },
+      }),
+    [colors]
+  );
 
   async function handlePress(segValue: StatusValue) {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

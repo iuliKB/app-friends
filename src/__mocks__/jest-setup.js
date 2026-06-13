@@ -15,7 +15,10 @@ const TurboModuleRegistry = {
     const mocks = {
       DeviceInfo: {
         getConstants: () => ({
-          Dimensions: { window: { width: 375, height: 812, scale: 2, fontScale: 1 }, screen: { width: 375, height: 812, scale: 2, fontScale: 1 } },
+          Dimensions: {
+            window: { width: 375, height: 812, scale: 2, fontScale: 1 },
+            screen: { width: 375, height: 812, scale: 2, fontScale: 1 },
+          },
         }),
       },
       PlatformConstants: {
@@ -40,7 +43,9 @@ global.TurboModuleRegistry = TurboModuleRegistry;
 
 // Also patch it on the require side — react-native imports it from the module
 try {
-  const { TurboModuleRegistry: RNTurbo } = require('react-native/Libraries/TurboModule/TurboModuleRegistry');
+  const {
+    TurboModuleRegistry: RNTurbo,
+  } = require('react-native/Libraries/TurboModule/TurboModuleRegistry');
 } catch (_) {
   // ok if not found
 }

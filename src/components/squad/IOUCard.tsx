@@ -18,71 +18,72 @@ interface IOUCardProps {
 
 export function IOUCard({ summary }: IOUCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      paddingVertical: SPACING.xxl,
-      paddingHorizontal: SPACING.xl,
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.xl,
-    },
-    cardPressed: {
-      opacity: 0.85,
-    },
-    title: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    balanceAmount: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 24, // FONT_SIZE.xxl — display-size balance, matches IOUCard spec
-      fontFamily: FONT_FAMILY.display.semibold,
-      marginTop: SPACING.sm,
-    },
-    unsettledLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    emptyText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.sm,
-    },
-    skeletonCard: {
-      opacity: 0.5,
-    },
-    skeletonTitle: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 60,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 16,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-    },
-    skeletonAmount: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 160,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 40,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-      marginTop: SPACING.sm,
-    },
-    skeletonSublabel: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 80,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 14,
-      borderRadius: RADII.md,
-      backgroundColor: colors.border,
-      marginTop: SPACING.xs,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          paddingVertical: SPACING.xxl,
+          paddingHorizontal: SPACING.xl,
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.xl,
+        },
+        cardPressed: {
+          opacity: 0.85,
+        },
+        title: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        balanceAmount: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 24, // FONT_SIZE.xxl — display-size balance, matches IOUCard spec
+          fontFamily: FONT_FAMILY.display.semibold,
+          marginTop: SPACING.sm,
+        },
+        unsettledLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        emptyText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.sm,
+        },
+        skeletonCard: {
+          opacity: 0.5,
+        },
+        skeletonTitle: {
+          width: 60,
+
+          height: 16,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+        },
+        skeletonAmount: {
+          width: 160,
+
+          height: 40,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+          marginTop: SPACING.sm,
+        },
+        skeletonSublabel: {
+          width: 80,
+
+          height: 14,
+          borderRadius: RADII.md,
+          backgroundColor: colors.border,
+          marginTop: SPACING.xs,
+        },
+      }),
+    [colors]
+  );
 
   const router = useRouter();
   const { netCents, unsettledCount, loading } = summary;
@@ -102,8 +103,7 @@ export function IOUCard({ summary }: IOUCardProps) {
   const absAmount = formatCentsDisplay(Math.abs(netCents));
   const balanceColor = isPositive ? colors.status.free : colors.interactive.destructive;
   const balanceLabel = isPositive ? `You're owed ${absAmount}` : `You owe ${absAmount}`;
-  const unsettledLabel =
-    unsettledCount === 1 ? '1 unsettled' : `${unsettledCount} unsettled`;
+  const unsettledLabel = unsettledCount === 1 ? '1 unsettled' : `${unsettledCount} unsettled`;
 
   return (
     <Pressable
@@ -111,9 +111,7 @@ export function IOUCard({ summary }: IOUCardProps) {
       onPress={() => router.push('/squad/expenses' as never)}
       accessibilityRole="button"
       accessibilityLabel={
-        hasActivity
-          ? `IOUs. ${balanceLabel}. ${unsettledLabel}`
-          : 'IOUs. All settled up!'
+        hasActivity ? `IOUs. ${balanceLabel}. ${unsettledLabel}` : 'IOUs. All settled up!'
       }
     >
       <Text style={styles.title}>IOUs</Text>
@@ -122,9 +120,7 @@ export function IOUCard({ summary }: IOUCardProps) {
         <Text style={styles.emptyText}>All settled up!</Text>
       ) : (
         <>
-          <Text style={[styles.balanceAmount, { color: balanceColor }]}>
-            {balanceLabel}
-          </Text>
+          <Text style={[styles.balanceAmount, { color: balanceColor }]}>{balanceLabel}</Text>
           <Text style={styles.unsettledLabel}>{unsettledLabel}</Text>
         </>
       )}

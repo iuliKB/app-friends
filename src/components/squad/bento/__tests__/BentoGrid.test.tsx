@@ -48,8 +48,7 @@ jest.mock('@/lib/supabase', () => ({
 }));
 
 jest.mock('@/stores/useAuthStore', () => ({
-  useAuthStore: (selector: (s: { session: null }) => unknown) =>
-    selector({ session: null }),
+  useAuthStore: (selector: (s: { session: null }) => unknown) => selector({ session: null }),
 }));
 
 const stubIOU: IOUSummaryData = {

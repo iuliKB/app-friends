@@ -48,9 +48,7 @@ interface ChatFlat {
 }
 
 type ListItem = MyTodoRow | ChatFlat;
-type SectionData =
-  | { kind: 'mine'; data: MyTodoRow[] }
-  | { kind: 'chat'; data: ChatFlat[] };
+type SectionData = { kind: 'mine'; data: MyTodoRow[] } | { kind: 'chat'; data: ChatFlat[] };
 type SectionShape = SectionData & { title: 'Mine' | 'From chats' };
 
 function daysUntilLocal(dateLocal: string): number {
@@ -110,7 +108,7 @@ function MetricTile({ label, count, tone }: MetricTileProps) {
           borderWidth: 1,
           paddingHorizontal: SPACING.md,
           paddingVertical: SPACING.md,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           minHeight: 84,
           justifyContent: 'space-between',
         },
@@ -131,12 +129,7 @@ function MetricTile({ label, count, tone }: MetricTileProps) {
   );
 
   return (
-    <View
-      style={[
-        styles.tile,
-        { backgroundColor: tileBg, borderColor: tileBorder },
-      ]}
-    >
+    <View style={[styles.tile, { backgroundColor: tileBg, borderColor: tileBorder }]}>
       <Text style={styles.eyebrow}>{label}</Text>
       <Text style={[styles.hero, { color: heroColor }]}>{count}</Text>
     </View>
@@ -236,8 +229,7 @@ export default function TodosIndexScreen() {
   const metrics = useMemo(() => {
     const activeMine = mine.filter((t) => !t.completed_at);
     const overdueCount =
-      activeMine.filter((t) => t.is_overdue).length +
-      fromChats.filter((c) => c.is_overdue).length;
+      activeMine.filter((t) => t.is_overdue).length + fromChats.filter((c) => c.is_overdue).length;
     const todayCount =
       activeMine.filter((t) => t.is_due_today).length +
       fromChats.filter((c) => c.is_due_today).length;
@@ -316,7 +308,6 @@ export default function TodosIndexScreen() {
           paddingBottom: SPACING.md,
         },
         separator: {
-          // eslint-disable-next-line campfire/no-hardcoded-styles
           height: 1,
           backgroundColor: colors.border,
           marginHorizontal: SPACING.lg,
@@ -362,9 +353,7 @@ export default function TodosIndexScreen() {
           />
         </TouchableOpacity>
         {expanded && isMine && mine.length === 0 && (
-          <Text style={styles.sectionEmptyBody}>
-            Nothing on your list. Tap + to add one.
-          </Text>
+          <Text style={styles.sectionEmptyBody}>Nothing on your list. Tap + to add one.</Text>
         )}
         {expanded && !isMine && fromChats.length === 0 && (
           <Text style={styles.sectionEmptyBody}>
@@ -434,11 +423,7 @@ export default function TodosIndexScreen() {
         renderItem={({ item, section }) => {
           if (section.kind === 'mine') {
             return (
-              <TodoRow
-                todo={item as MyTodoRow}
-                onToggle={completeTodo}
-                onPress={handleRowPress}
-              />
+              <TodoRow todo={item as MyTodoRow} onToggle={completeTodo} onPress={handleRowPress} />
             );
           }
           const flat = item as ChatFlat;

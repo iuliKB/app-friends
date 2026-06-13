@@ -36,7 +36,7 @@ export function ChatListScreen() {
   // useChatStore.setChatList; the store is stripped in Wave 8.
   function updateChatList(updater: (items: ChatListItem[]) => ChatListItem[]) {
     queryClient.setQueryData<ChatListItem[]>(queryKeys.chat.list(userId), (old) =>
-      updater(old ?? []),
+      updater(old ?? [])
     );
   }
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,9 +73,10 @@ export function ChatListScreen() {
     const userId = session?.user?.id;
     if (!userId) return;
 
-    const message = item.type === 'group'
-      ? `Leave "${item.title}"? You'll stop receiving messages from this group.`
-      : `Remove "${item.title}" from your chat list?`;
+    const message =
+      item.type === 'group'
+        ? `Leave "${item.title}"? You'll stop receiving messages from this group.`
+        : `Remove "${item.title}" from your chat list?`;
 
     Alert.alert('Delete conversation', message, [
       { text: 'Cancel', style: 'cancel' },
@@ -97,8 +98,14 @@ export function ChatListScreen() {
               .eq('user_id', userId);
           } else {
             await supabase.from('chat_preferences').upsert(
-              { user_id: userId, chat_type: item.type, chat_id: item.id, is_hidden: true, updated_at: new Date().toISOString() },
-              { onConflict: 'user_id,chat_type,chat_id' },
+              {
+                user_id: userId,
+                chat_type: item.type,
+                chat_id: item.id,
+                is_hidden: true,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id,chat_type,chat_id' }
             );
           }
         },
@@ -113,22 +120,26 @@ export function ChatListScreen() {
     await AsyncStorage.setItem(`chat:muted:${item.id}`, '1');
     updateChatList((items) =>
       items.map((c) =>
-        c.id === item.id ? { ...c, isMuted: true, hasUnread: false, unreadCount: 0 } : c,
-      ),
+        c.id === item.id ? { ...c, isMuted: true, hasUnread: false, unreadCount: 0 } : c
+      )
     );
 
     await supabase.from('chat_preferences').upsert(
-      { user_id: userId, chat_type: item.type, chat_id: item.id, is_muted: true, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,chat_type,chat_id' },
+      {
+        user_id: userId,
+        chat_type: item.type,
+        chat_id: item.id,
+        is_muted: true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,chat_type,chat_id' }
     );
   }
 
   function handleMarkRead(item: ChatListItem) {
     AsyncStorage.setItem(`chat:last_read:${item.id}`, new Date().toISOString());
     updateChatList((items) =>
-      items.map((c) =>
-        c.id === item.id ? { ...c, hasUnread: false, unreadCount: 0 } : c,
-      ),
+      items.map((c) => (c.id === item.id ? { ...c, hasUnread: false, unreadCount: 0 } : c))
     );
   }
 
@@ -144,9 +155,7 @@ export function ChatListScreen() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       items = items.filter(
-        (i) =>
-          i.title.toLowerCase().includes(q) ||
-          i.lastMessage.toLowerCase().includes(q),
+        (i) => i.title.toLowerCase().includes(q) || i.lastMessage.toLowerCase().includes(q)
       );
     }
 
@@ -176,43 +185,47 @@ export function ChatListScreen() {
     return filteredList.length > 0 ? [{ key: 'all', title: '', data: filteredList }] : [];
   }, [filteredList, activeTab]);
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    list: {
-      flex: 1,
-    },
-    separator: {
-      height: 1,
-      backgroundColor: colors.border,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginLeft: 76,
-    },
-    emptyList: {
-      flex: 1,
-    },
-    headerWrapper: {
-      paddingTop: SPACING.sm,
-      paddingHorizontal: SPACING.lg,
-    },
-    sectionHeader: {
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.md,
-      paddingBottom: SPACING.xs,
-      backgroundColor: colors.surface.base,
-    },
-    sectionTitle: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      textTransform: 'uppercase',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      letterSpacing: 0.8,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        list: {
+          flex: 1,
+        },
+        separator: {
+          height: 1,
+          backgroundColor: colors.border,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          marginLeft: 76,
+        },
+        emptyList: {
+          flex: 1,
+        },
+        headerWrapper: {
+          paddingTop: SPACING.sm,
+          paddingHorizontal: SPACING.lg,
+        },
+        sectionHeader: {
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.md,
+          paddingBottom: SPACING.xs,
+          backgroundColor: colors.surface.base,
+        },
+        sectionTitle: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+
+          textTransform: 'uppercase',
+
+          letterSpacing: 0.8,
+        },
+      }),
+    [colors]
+  );
 
   const listHeader = (
     <>
@@ -247,11 +260,7 @@ export function ChatListScreen() {
   if (error) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
-        <ErrorDisplay
-          mode="screen"
-          message="Couldn't load your chats."
-          onRetry={handleRefresh}
-        />
+        <ErrorDisplay mode="screen" message="Couldn't load your chats." onRetry={handleRefresh} />
       </View>
     );
   }

@@ -91,7 +91,7 @@ export function useExpensesWithFriend(friendId: string): ExpensesWithFriendData 
         const groupMembers = allMembers.filter((m) => m.iou_group_id === groupId);
         settledMap.set(
           groupId,
-          groupMembers.length > 0 && groupMembers.every((m) => m.settled_at !== null),
+          groupMembers.length > 0 && groupMembers.every((m) => m.settled_at !== null)
         );
       }
 

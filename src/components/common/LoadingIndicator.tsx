@@ -8,11 +8,7 @@ interface LoadingIndicatorProps {
   style?: ViewStyle;
 }
 
-export function LoadingIndicator({
-  color,
-  size = 'large',
-  style,
-}: LoadingIndicatorProps) {
+export function LoadingIndicator({ color, size = 'large', style }: LoadingIndicatorProps) {
   const { colors } = useTheme();
   const resolvedColor = color ?? colors.text.secondary;
 

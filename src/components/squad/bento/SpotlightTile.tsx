@@ -19,7 +19,7 @@ const ICON_BY_ACCENT: Record<SpotlightItem['accent'], keyof typeof Ionicons.glyp
   money: 'cash-outline',
   flame: 'flame-outline',
   habit: 'checkmark-done-outline', // Phase 29.1 — habit-urgent spotlight
-  todo: 'list-outline',             // Phase 29.1 — todo-urgent spotlight
+  todo: 'list-outline', // Phase 29.1 — todo-urgent spotlight
   neutral: 'sparkles-outline',
 };
 

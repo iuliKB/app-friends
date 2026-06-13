@@ -31,12 +31,7 @@ const stubItem: ChatTodoItem = {
 function renderRow(props: Partial<React.ComponentProps<typeof ChatTodoListRow>> = {}) {
   return render(
     <ThemeProvider>
-      <ChatTodoListRow
-        item={stubItem}
-        listTitle="Trip prep"
-        onToggle={jest.fn()}
-        {...props}
-      />
+      <ChatTodoListRow item={stubItem} listTitle="Trip prep" onToggle={jest.fn()} {...props} />
     </ThemeProvider>
   );
 }

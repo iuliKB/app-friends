@@ -24,13 +24,17 @@ export function UsernameField({
   const [availability, setAvailability] = useState<AvailabilityState>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const styles = useMemo(() => StyleSheet.create({
-    availability: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      marginTop: SPACING.xs,
-    },
-  }), []);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        availability: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          marginTop: SPACING.xs,
+        },
+      }),
+    []
+  );
 
   useEffect(() => {
     if (debounceRef.current) {

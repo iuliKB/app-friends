@@ -40,7 +40,7 @@ const TABS = ['Friends', 'Memories', 'Activity'] as const;
 
 type FriendBucket = 'free' | 'maybe' | 'busy' | 'inactive';
 
-const BUCKET_ORDER: ReadonlyArray<{ key: FriendBucket; title: string }> = [
+const BUCKET_ORDER: readonly { key: FriendBucket; title: string }[] = [
   { key: 'free', title: 'Free' },
   { key: 'maybe', title: 'Maybe' },
   { key: 'busy', title: 'Busy' },
@@ -105,9 +105,7 @@ export default function SquadScreen() {
     const q = searchQuery.trim().toLowerCase();
     const filtered = q
       ? friends.filter(
-          (f) =>
-            f.display_name.toLowerCase().includes(q) ||
-            f.username.toLowerCase().includes(q)
+          (f) => f.display_name.toLowerCase().includes(q) || f.username.toLowerCase().includes(q)
         )
       : friends;
 
@@ -205,7 +203,11 @@ export default function SquadScreen() {
       // guarantees the sheet still closes if openChat throws.
       await openChat(
         router,
-        { kind: 'dmFriend', friendId: selectedFriend.friend_id, friendName: selectedFriend.display_name },
+        {
+          kind: 'dmFriend',
+          friendId: selectedFriend.friend_id,
+          friendName: selectedFriend.display_name,
+        },
         { onLoadingChange: setLoadingDM }
       );
     } finally {
@@ -320,7 +322,7 @@ export default function SquadScreen() {
           fontFamily: FONT_FAMILY.display.semibold,
           color: colors.text.secondary,
           textTransform: 'uppercase',
-          letterSpacing: 0.5, // eslint-disable-line campfire/no-hardcoded-styles
+          letterSpacing: 0.5,
         },
         sectionHeaderCount: {
           fontSize: FONT_SIZE.sm,

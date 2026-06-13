@@ -35,35 +35,39 @@ export function EmojiTagPicker({
 }: EmojiTagPickerProps) {
   const { colors } = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    sectionLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginBottom: SPACING.sm,
-      paddingHorizontal: SPACING.lg,
-    },
-    row: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: SPACING.sm,
-      paddingHorizontal: SPACING.lg,
-      marginTop: SPACING.xl,
-    },
-    button: {
-      width: 44,
-      height: 44,
-      borderRadius: 22, // no exact token — circular with equal width/height
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    emoji: {
-      fontSize: FONT_SIZE.xxl,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        sectionLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginBottom: SPACING.sm,
+          paddingHorizontal: SPACING.lg,
+        },
+        row: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: SPACING.sm,
+          paddingHorizontal: SPACING.lg,
+          marginTop: SPACING.xl,
+        },
+        button: {
+          width: 44,
+          height: 44,
+          borderRadius: 22, // no exact token — circular with equal width/height
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        emoji: {
+          fontSize: FONT_SIZE.xxl,
+        },
+      }),
+    [colors]
+  );
 
   function getStatusBorderColor(status: StatusValue | null): string {
     switch (status) {

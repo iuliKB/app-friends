@@ -321,150 +321,154 @@ export default function AuthScreen() {
     }
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    keyboardView: {
-      flex: 1,
-      backgroundColor: 'transparent',
-    },
-    scroll: {
-      flex: 1,
-    },
-    scrollContent: {
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.xxl,
-    },
-    header: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingTop: 64, // no exact token
-      paddingBottom: SPACING.xxl,
-      alignItems: 'center',
-    },
-    headerEmoji: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 32, // no exact token
-    },
-    headerTitle: {
-      fontSize: FONT_SIZE.display,
-      fontFamily: FONT_FAMILY.display.bold,
-      color: colors.text.primary,
-      marginTop: SPACING.xs,
-    },
-    headerTagline: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.sm,
-    },
-    form: {
-      marginTop: SPACING.xl,
-    },
-    fieldGap: {
-      height: SPACING.lg,
-    },
-    buttonTop: {
-      marginTop: SPACING.xl,
-    },
-    generalError: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-      marginTop: SPACING.sm,
-      textAlign: 'center',
-    },
-    dividerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: SPACING.xl,
-    },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: colors.border,
-    },
-    dividerText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginHorizontal: SPACING.md,
-    },
-    oauthButtons: {
-      gap: SPACING.sm,
-    },
-    oauthGap: {
-      height: SPACING.sm,
-    },
-    bottomLink: {
-      marginTop: SPACING.lg,
-      alignItems: 'center',
-    },
-    bottomLinkText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-    },
-    bottomLinkAction: {
-      color: colors.interactive.accent,
-    },
-    forgotPasswordContainer: {
-      alignSelf: 'flex-end',
-      paddingVertical: SPACING.xl,
-    },
-    forgotPasswordText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.accent,
-    },
-    resetHeading: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginBottom: SPACING.lg,
-    },
-    backToSignInContainer: {
-      alignItems: 'center',
-      paddingTop: SPACING.lg,
-      paddingVertical: SPACING.xl,
-    },
-    backToSignInText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.accent,
-    },
-    resetSuccessContainer: {
-      alignItems: 'center',
-      paddingVertical: SPACING.xl,
-    },
-    resetSuccessHeading: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginTop: SPACING.lg,
-      marginBottom: SPACING.sm,
-    },
-    resetSuccessBody: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-    },
-    tosContainer: {
-      marginTop: SPACING.lg,
-      alignItems: 'center',
-      paddingHorizontal: SPACING.md,
-    },
-    tosText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      lineHeight: FONT_SIZE.md * 1.4,
-    },
-    tosLink: {
-      color: colors.interactive.accent,
-      textDecorationLine: 'underline',
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        keyboardView: {
+          flex: 1,
+          backgroundColor: 'transparent',
+        },
+        scroll: {
+          flex: 1,
+        },
+        scrollContent: {
+          paddingHorizontal: SPACING.lg,
+          paddingBottom: SPACING.xxl,
+        },
+        header: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          paddingTop: 64, // no exact token
+          paddingBottom: SPACING.xxl,
+          alignItems: 'center',
+        },
+        headerEmoji: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 32, // no exact token
+        },
+        headerTitle: {
+          fontSize: FONT_SIZE.display,
+          fontFamily: FONT_FAMILY.display.bold,
+          color: colors.text.primary,
+          marginTop: SPACING.xs,
+        },
+        headerTagline: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.sm,
+        },
+        form: {
+          marginTop: SPACING.xl,
+        },
+        fieldGap: {
+          height: SPACING.lg,
+        },
+        buttonTop: {
+          marginTop: SPACING.xl,
+        },
+        generalError: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.destructive,
+          marginTop: SPACING.sm,
+          textAlign: 'center',
+        },
+        dividerRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginVertical: SPACING.xl,
+        },
+        dividerLine: {
+          flex: 1,
+          height: 1,
+          backgroundColor: colors.border,
+        },
+        dividerText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginHorizontal: SPACING.md,
+        },
+        oauthButtons: {
+          gap: SPACING.sm,
+        },
+        oauthGap: {
+          height: SPACING.sm,
+        },
+        bottomLink: {
+          marginTop: SPACING.lg,
+          alignItems: 'center',
+        },
+        bottomLinkText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+        },
+        bottomLinkAction: {
+          color: colors.interactive.accent,
+        },
+        forgotPasswordContainer: {
+          alignSelf: 'flex-end',
+          paddingVertical: SPACING.xl,
+        },
+        forgotPasswordText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.accent,
+        },
+        resetHeading: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginBottom: SPACING.lg,
+        },
+        backToSignInContainer: {
+          alignItems: 'center',
+          paddingTop: SPACING.lg,
+          paddingVertical: SPACING.xl,
+        },
+        backToSignInText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.accent,
+        },
+        resetSuccessContainer: {
+          alignItems: 'center',
+          paddingVertical: SPACING.xl,
+        },
+        resetSuccessHeading: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginTop: SPACING.lg,
+          marginBottom: SPACING.sm,
+        },
+        resetSuccessBody: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+        },
+        tosContainer: {
+          marginTop: SPACING.lg,
+          alignItems: 'center',
+          paddingHorizontal: SPACING.md,
+        },
+        tosText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          lineHeight: FONT_SIZE.md * 1.4,
+        },
+        tosLink: {
+          color: colors.interactive.accent,
+          textDecorationLine: 'underline',
+        },
+      }),
+    [colors]
+  );
 
   return (
     <LinearGradient
@@ -474,236 +478,240 @@ export default function AuthScreen() {
       end={colors.authGradient.end}
       style={{ flex: 1 }}
     >
-    <KeyboardAvoidingView
-      style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Ionicons name="flame" size={40} color={colors.interactive.accent} />
-          <Text style={styles.headerTitle}>Campfire</Text>
-          <Text style={styles.headerTagline}>Your friends, one app.</Text>
-        </View>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Ionicons name="flame" size={40} color={colors.interactive.accent} />
+            <Text style={styles.headerTitle}>Campfire</Text>
+            <Text style={styles.headerTagline}>Your friends, one app.</Text>
+          </View>
 
-        {/* Tab Switcher — hidden when in reset mode */}
-        {authMode === 'login' && (
-          <AuthTabSwitcher activeTab={activeTab} onTabChange={handleTabChange} />
-        )}
+          {/* Tab Switcher — hidden when in reset mode */}
+          {authMode === 'login' && (
+            <AuthTabSwitcher activeTab={activeTab} onTabChange={handleTabChange} />
+          )}
 
-        {/* Email Form / Reset Form */}
-        <View style={styles.form}>
-          <Animated.View style={{ opacity: formOpacity }}>
-            {authMode === 'login' && (
-              <>
-                <FormField
-                  ref={emailRef}
-                  label="Email address"
-                  value={email}
-                  onChangeText={setEmail}
-                  error={emailError}
-                  placeholder="you@example.com"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  textContentType="emailAddress"
-                  autoComplete="email"
-                  returnKeyType="next"
-                  blurOnSubmit={false}
-                  onSubmitEditing={() => passwordRef.current?.focus()}
-                />
-                <View style={styles.fieldGap} />
-                <FormField
-                  ref={passwordRef}
-                  label="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  error={passwordError}
-                  placeholder="••••••••"
-                  secureTextEntry
-                  textContentType={activeTab === 'signup' ? 'newPassword' : 'password'}
-                  autoComplete={activeTab === 'signup' ? 'password-new' : 'password'}
-                  returnKeyType={activeTab === 'signup' ? 'next' : 'go'}
-                  blurOnSubmit={activeTab !== 'signup'}
-                  onSubmitEditing={() => {
-                    if (activeTab === 'signup') {
-                      confirmRef.current?.focus();
-                    } else {
-                      handleEmailAuth();
-                    }
-                  }}
-                />
-                {activeTab === 'signup' && (
+          {/* Email Form / Reset Form */}
+          <View style={styles.form}>
+            <Animated.View style={{ opacity: formOpacity }}>
+              {authMode === 'login' && (
+                <>
+                  <FormField
+                    ref={emailRef}
+                    label="Email address"
+                    value={email}
+                    onChangeText={setEmail}
+                    error={emailError}
+                    placeholder="you@example.com"
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
+                    autoComplete="email"
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => passwordRef.current?.focus()}
+                  />
+                  <View style={styles.fieldGap} />
+                  <FormField
+                    ref={passwordRef}
+                    label="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    error={passwordError}
+                    placeholder="••••••••"
+                    secureTextEntry
+                    textContentType={activeTab === 'signup' ? 'newPassword' : 'password'}
+                    autoComplete={activeTab === 'signup' ? 'password-new' : 'password'}
+                    returnKeyType={activeTab === 'signup' ? 'next' : 'go'}
+                    blurOnSubmit={activeTab !== 'signup'}
+                    onSubmitEditing={() => {
+                      if (activeTab === 'signup') {
+                        confirmRef.current?.focus();
+                      } else {
+                        handleEmailAuth();
+                      }
+                    }}
+                  />
+                  {activeTab === 'signup' && (
+                    <>
+                      <PasswordStrengthMeter password={password} />
+                      <View style={styles.fieldGap} />
+                      <FormField
+                        ref={confirmRef}
+                        label="Confirm password"
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        error={confirmPasswordError}
+                        placeholder="••••••••"
+                        secureTextEntry
+                        textContentType="newPassword"
+                        autoComplete="password-new"
+                        returnKeyType="go"
+                        onSubmitEditing={handleEmailAuth}
+                      />
+                    </>
+                  )}
+
+                  {/* Forgot password link — login tab only */}
+                  {activeTab === 'login' && (
+                    <TouchableOpacity
+                      onPress={handleForgotPassword}
+                      style={styles.forgotPasswordContainer}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {!!generalError && (
+                    <Text
+                      style={styles.generalError}
+                      accessibilityRole="alert"
+                      accessibilityLiveRegion="polite"
+                    >
+                      {generalError}
+                    </Text>
+                  )}
+
+                  <View style={styles.buttonTop}>
+                    <PrimaryButton
+                      title={activeTab === 'login' ? 'Sign In' : 'Create Account'}
+                      onPress={handleEmailAuth}
+                      loading={loading}
+                      disabled={loading}
+                    />
+                  </View>
+
+                  {/* ToS/Privacy disclaimer — sign-up tab only */}
+                  {activeTab === 'signup' && (
+                    <View style={styles.tosContainer}>
+                      <Text style={styles.tosText}>
+                        {'By creating an account you agree to our '}
+                        <Text
+                          style={styles.tosLink}
+                          onPress={() => WebBrowser.openBrowserAsync(TOS_URL)}
+                        >
+                          Terms of Service
+                        </Text>
+                        {' and '}
+                        <Text
+                          style={styles.tosLink}
+                          onPress={() => WebBrowser.openBrowserAsync(PRIVACY_URL)}
+                        >
+                          Privacy Policy
+                        </Text>
+                        {'.'}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+
+              {authMode === 'reset' && (
+                <View>
+                  <Text style={styles.resetHeading}>Reset your password</Text>
+                  <FormField
+                    label="Email address"
+                    value={resetEmail}
+                    onChangeText={setResetEmail}
+                    placeholder="you@example.com"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    textContentType="emailAddress"
+                    autoComplete="email"
+                    returnKeyType="go"
+                    onSubmitEditing={handleSendResetLink}
+                  />
+                  {!!resetError && <ErrorDisplay mode="inline" message={resetError} />}
+                  <PrimaryButton
+                    title="Send reset link"
+                    onPress={handleSendResetLink}
+                    loading={resetLoading}
+                  />
+                  <TouchableOpacity
+                    onPress={handleBackToSignIn}
+                    style={styles.backToSignInContainer}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.backToSignInText}>Back to sign in</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {authMode === 'reset-sent' && (
+                <View style={styles.resetSuccessContainer}>
+                  <Ionicons name="checkmark-circle" size={48} color={colors.interactive.accent} />
+                  <Text style={styles.resetSuccessHeading}>Check your email</Text>
+                  <Text style={styles.resetSuccessBody}>
+                    We sent a password reset link to {resetEmail}.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handleBackToSignIn}
+                    style={styles.backToSignInContainer}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.backToSignInText}>Back to sign in</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </Animated.View>
+          </View>
+
+          {/* OAuth section — only when in standard login mode */}
+          {authMode === 'login' && (
+            <>
+              {/* OAuth Divider */}
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or continue with</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* OAuth Buttons */}
+              <View style={styles.oauthButtons}>
+                <OAuthButton provider="google" onPress={signInWithGoogle} loading={googleLoading} />
+                {Platform.OS === 'ios' && (
                   <>
-                    <PasswordStrengthMeter password={password} />
-                    <View style={styles.fieldGap} />
-                    <FormField
-                      ref={confirmRef}
-                      label="Confirm password"
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      error={confirmPasswordError}
-                      placeholder="••••••••"
-                      secureTextEntry
-                      textContentType="newPassword"
-                      autoComplete="password-new"
-                      returnKeyType="go"
-                      onSubmitEditing={handleEmailAuth}
+                    <View style={styles.oauthGap} />
+                    <OAuthButton
+                      provider="apple"
+                      onPress={signInWithApple}
+                      loading={appleLoading}
                     />
                   </>
                 )}
+              </View>
 
-                {/* Forgot password link — login tab only */}
-                {activeTab === 'login' && (
-                  <TouchableOpacity
-                    onPress={handleForgotPassword}
-                    style={styles.forgotPasswordContainer}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-                  </TouchableOpacity>
-                )}
-
-                {!!generalError && (
-                  <Text
-                    style={styles.generalError}
-                    accessibilityRole="alert"
-                    accessibilityLiveRegion="polite"
-                  >
-                    {generalError}
-                  </Text>
-                )}
-
-                <View style={styles.buttonTop}>
-                  <PrimaryButton
-                    title={activeTab === 'login' ? 'Sign In' : 'Create Account'}
-                    onPress={handleEmailAuth}
-                    loading={loading}
-                    disabled={loading}
-                  />
-                </View>
-
-                {/* ToS/Privacy disclaimer — sign-up tab only */}
-                {activeTab === 'signup' && (
-                  <View style={styles.tosContainer}>
-                    <Text style={styles.tosText}>
-                      {'By creating an account you agree to our '}
-                      <Text
-                        style={styles.tosLink}
-                        onPress={() => WebBrowser.openBrowserAsync(TOS_URL)}
-                      >
-                        Terms of Service
-                      </Text>
-                      {' and '}
-                      <Text
-                        style={styles.tosLink}
-                        onPress={() => WebBrowser.openBrowserAsync(PRIVACY_URL)}
-                      >
-                        Privacy Policy
-                      </Text>
-                      {'.'}
+              {/* Bottom Link */}
+              <View style={styles.bottomLink}>
+                {activeTab === 'login' ? (
+                  <Text style={styles.bottomLinkText}>
+                    {"Don't have an account? "}
+                    <Text style={styles.bottomLinkAction} onPress={() => handleTabChange('signup')}>
+                      Create one
                     </Text>
-                  </View>
+                  </Text>
+                ) : (
+                  <Text style={styles.bottomLinkText}>
+                    {'Already have an account? '}
+                    <Text style={styles.bottomLinkAction} onPress={() => handleTabChange('login')}>
+                      Sign in
+                    </Text>
+                  </Text>
                 )}
-              </>
-            )}
-
-            {authMode === 'reset' && (
-              <View>
-                <Text style={styles.resetHeading}>Reset your password</Text>
-                <FormField
-                  label="Email address"
-                  value={resetEmail}
-                  onChangeText={setResetEmail}
-                  placeholder="you@example.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  textContentType="emailAddress"
-                  autoComplete="email"
-                  returnKeyType="go"
-                  onSubmitEditing={handleSendResetLink}
-                />
-                {!!resetError && <ErrorDisplay mode="inline" message={resetError} />}
-                <PrimaryButton
-                  title="Send reset link"
-                  onPress={handleSendResetLink}
-                  loading={resetLoading}
-                />
-                <TouchableOpacity
-                  onPress={handleBackToSignIn}
-                  style={styles.backToSignInContainer}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.backToSignInText}>Back to sign in</Text>
-                </TouchableOpacity>
               </View>
-            )}
-
-            {authMode === 'reset-sent' && (
-              <View style={styles.resetSuccessContainer}>
-                <Ionicons name="checkmark-circle" size={48} color={colors.interactive.accent} />
-                <Text style={styles.resetSuccessHeading}>Check your email</Text>
-                <Text style={styles.resetSuccessBody}>
-                  We sent a password reset link to {resetEmail}.
-                </Text>
-                <TouchableOpacity
-                  onPress={handleBackToSignIn}
-                  style={styles.backToSignInContainer}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.backToSignInText}>Back to sign in</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </Animated.View>
-        </View>
-
-        {/* OAuth section — only when in standard login mode */}
-        {authMode === 'login' && (
-          <>
-            {/* OAuth Divider */}
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or continue with</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* OAuth Buttons */}
-            <View style={styles.oauthButtons}>
-              <OAuthButton provider="google" onPress={signInWithGoogle} loading={googleLoading} />
-              {Platform.OS === 'ios' && (
-                <>
-                  <View style={styles.oauthGap} />
-                  <OAuthButton provider="apple" onPress={signInWithApple} loading={appleLoading} />
-                </>
-              )}
-            </View>
-
-            {/* Bottom Link */}
-            <View style={styles.bottomLink}>
-              {activeTab === 'login' ? (
-                <Text style={styles.bottomLinkText}>
-                  {"Don't have an account? "}
-                  <Text style={styles.bottomLinkAction} onPress={() => handleTabChange('signup')}>
-                    Create one
-                  </Text>
-                </Text>
-              ) : (
-                <Text style={styles.bottomLinkText}>
-                  {'Already have an account? '}
-                  <Text style={styles.bottomLinkAction} onPress={() => handleTabChange('login')}>
-                    Sign in
-                  </Text>
-                </Text>
-              )}
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+            </>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 }

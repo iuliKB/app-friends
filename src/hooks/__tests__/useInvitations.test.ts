@@ -14,6 +14,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useInvitations } from '../useInvitations';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -29,8 +31,6 @@ jest.mock('@/stores/useAuthStore', () => ({
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
 }));
-
-import { useInvitations } from '../useInvitations';
 
 function setupInvitationsMock() {
   // Pre-migration step-1: plan_members where user_id=eq self, rsvp='invited'
@@ -129,14 +129,10 @@ describe('useInvitations (migrated to TanStack Query)', () => {
     });
 
     const invalidatedKeys = invalidateSpy.mock.calls.map((c) =>
-      JSON.stringify((c[0] as { queryKey: unknown }).queryKey),
+      JSON.stringify((c[0] as { queryKey: unknown }).queryKey)
     );
-    expect(invalidatedKeys).toContain(
-      JSON.stringify(queryKeys.status.invitations('u-self')),
-    );
-    expect(invalidatedKeys).toContain(
-      JSON.stringify(queryKeys.home.invitationCount('u-self')),
-    );
+    expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.status.invitations('u-self')));
+    expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.home.invitationCount('u-self')));
   });
 
   it('decline invalidates status.invitations + home.invitationCount on settle', async () => {
@@ -153,13 +149,9 @@ describe('useInvitations (migrated to TanStack Query)', () => {
     });
 
     const invalidatedKeys = invalidateSpy.mock.calls.map((c) =>
-      JSON.stringify((c[0] as { queryKey: unknown }).queryKey),
+      JSON.stringify((c[0] as { queryKey: unknown }).queryKey)
     );
-    expect(invalidatedKeys).toContain(
-      JSON.stringify(queryKeys.status.invitations('u-self')),
-    );
-    expect(invalidatedKeys).toContain(
-      JSON.stringify(queryKeys.home.invitationCount('u-self')),
-    );
+    expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.status.invitations('u-self')));
+    expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.home.invitationCount('u-self')));
   });
 });

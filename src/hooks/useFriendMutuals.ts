@@ -55,10 +55,7 @@ export function useFriendMutuals(friendId: string): UseFriendMutualsResult {
       if (!userId) return null;
 
       // Step 1: caller's plan IDs
-      const callerRes = await supabase
-        .from('plan_members')
-        .select('plan_id')
-        .eq('user_id', userId);
+      const callerRes = await supabase.from('plan_members').select('plan_id').eq('user_id', userId);
       if (callerRes.error) throw callerRes.error;
       const callerPlanIds = (callerRes.data ?? []).map((m: { plan_id: string }) => m.plan_id);
 
@@ -70,7 +67,7 @@ export function useFriendMutuals(friendId: string): UseFriendMutualsResult {
           queryClient.getQueryData<FriendOfFriendRow[]>(queryKeys.friends.ofFriend(friendId)) ?? [];
         const myFriendIds = new Set(myFriends.map((f) => f.friend_id));
         const mutualFriendsCount = friendsOfFriend.filter((f) =>
-          myFriendIds.has(f.friend_id),
+          myFriendIds.has(f.friend_id)
         ).length;
         return { mutualPlansCount: 0, mutualFriendsCount, sharedPhotosCount: 0, sharedPlanIds: [] };
       }
@@ -102,9 +99,7 @@ export function useFriendMutuals(friendId: string): UseFriendMutualsResult {
       const friendsOfFriend =
         queryClient.getQueryData<FriendOfFriendRow[]>(queryKeys.friends.ofFriend(friendId)) ?? [];
       const myFriendIds = new Set(myFriends.map((f) => f.friend_id));
-      const mutualFriendsCount = friendsOfFriend.filter((f) =>
-        myFriendIds.has(f.friend_id),
-      ).length;
+      const mutualFriendsCount = friendsOfFriend.filter((f) => myFriendIds.has(f.friend_id)).length;
 
       return { mutualPlansCount, mutualFriendsCount, sharedPhotosCount, sharedPlanIds };
     },

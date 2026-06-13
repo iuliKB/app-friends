@@ -11,7 +11,12 @@ import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
-import { getIconPalette, ROW_ICON_SIZE, ROW_ICON_GLYPH_SIZE, type IconTint } from './friendIconPalette';
+import {
+  getIconPalette,
+  ROW_ICON_SIZE,
+  ROW_ICON_GLYPH_SIZE,
+  type IconTint,
+} from './friendIconPalette';
 
 interface ProfileInfoRowProps {
   iconTint: IconTint;
@@ -85,7 +90,7 @@ export function ProfileInfoRow({
           marginLeft: SPACING.lg + ROW_ICON_SIZE + SPACING.md,
         },
       }),
-    [colors, palette],
+    [colors, palette]
   );
 
   const rowContent = (

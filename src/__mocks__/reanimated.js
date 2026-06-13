@@ -21,9 +21,21 @@ module.exports = {
   View: animatedDefault.View,
   Text: animatedDefault.Text,
   useSharedValue: jest.fn((v) => ({ value: v })),
-  useAnimatedStyle: jest.fn((fn) => { try { return fn(); } catch { return {}; } }),
+  useAnimatedStyle: jest.fn((fn) => {
+    try {
+      return fn();
+    } catch {
+      return {};
+    }
+  }),
   useAnimatedScrollHandler: jest.fn(() => jest.fn()),
-  useDerivedValue: jest.fn((fn) => { try { return { value: fn() }; } catch { return { value: 0 }; } }),
+  useDerivedValue: jest.fn((fn) => {
+    try {
+      return { value: fn() };
+    } catch {
+      return { value: 0 };
+    }
+  }),
   withSpring: jest.fn((v) => v),
   withTiming: jest.fn((v) => v),
   interpolate: jest.fn((value, inputRange, outputRange) => outputRange[0]),

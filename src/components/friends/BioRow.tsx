@@ -88,7 +88,7 @@ export function BioRow({ bio, isLast }: BioRowProps) {
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           lineHeight: 24, // UI-SPEC §Typography — bio paragraph line height
         },
         hairline: {
@@ -97,7 +97,7 @@ export function BioRow({ bio, isLast }: BioRowProps) {
           marginLeft: SPACING.lg + ROW_ICON_SIZE + SPACING.md,
         },
       }),
-    [colors, palette],
+    [colors, palette]
   );
 
   const labelRow = (

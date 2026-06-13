@@ -1,15 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  useTheme,
-  SPACING,
-  FONT_SIZE,
-  FONT_FAMILY,
-  RADII,
-  SHADOWS,
-  ANIMATION,
-} from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, SHADOWS, ANIMATION } from '@/theme';
 import { AvatarStack } from '@/components/plans/AvatarStack';
 import { EventArtwork, formatEventLabels } from '@/components/plans/EventArtwork';
 import type { PlanWithMembers } from '@/types/plans';

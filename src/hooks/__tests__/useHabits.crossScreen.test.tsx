@@ -13,6 +13,8 @@ import React from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 
+import { useHabits } from '../useHabits';
+
 const mockRpc = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -34,21 +36,21 @@ jest.mock('@/lib/realtimeBridge', () => ({
   _resetRealtimeBridgeForTests: jest.fn(),
 }));
 
-import { useHabits } from '../useHabits';
-
-function makeRow(overrides: Partial<{
-  habit_id: string;
-  title: string;
-  cadence: 'daily' | 'weekly' | 'n_per_week';
-  weekly_target: number | null;
-  is_solo: boolean;
-  members_total: number;
-  accepted_total: number;
-  completed_today: number;
-  did_me_check_in_today: boolean;
-  last_checkin_date_local: string | null;
-  current_week_completions: number;
-}> = {}) {
+function makeRow(
+  overrides: Partial<{
+    habit_id: string;
+    title: string;
+    cadence: 'daily' | 'weekly' | 'n_per_week';
+    weekly_target: number | null;
+    is_solo: boolean;
+    members_total: number;
+    accepted_total: number;
+    completed_today: number;
+    did_me_check_in_today: boolean;
+    last_checkin_date_local: string | null;
+    current_week_completions: number;
+  }> = {}
+) {
   return {
     habit_id: 'h1',
     title: 'Run',

@@ -16,6 +16,9 @@
 
 import { Alert } from 'react-native';
 
+import { supabase } from '@/lib/supabase';
+import { openChat } from '../openChat';
+
 jest.mock('@/lib/supabase', () => {
   const rpc = jest.fn();
   return {
@@ -24,9 +27,6 @@ jest.mock('@/lib/supabase', () => {
     },
   };
 });
-
-import { supabase } from '@/lib/supabase';
-import { openChat } from '../openChat';
 
 const mockRpc = supabase.rpc as jest.Mock;
 
@@ -170,7 +170,7 @@ describe('openChat (Phase 30 Plan 02)', () => {
     expect(onLoadingChangeError).toHaveBeenNthCalledWith(2, false);
   });
 
-  it("Test 9: friendName with spaces and special chars is URL-encoded", async () => {
+  it('Test 9: friendName with spaces and special chars is URL-encoded', async () => {
     mockRpc.mockResolvedValueOnce({ data: 'ch-q', error: null });
     const router = makeRouter();
     await openChat(router as never, {
@@ -183,7 +183,7 @@ describe('openChat (Phase 30 Plan 02)', () => {
     );
   });
 
-  it("Test 10: synchronous variants (dmChannel, plan, group) do NOT call onLoadingChange", async () => {
+  it('Test 10: synchronous variants (dmChannel, plan, group) do NOT call onLoadingChange', async () => {
     const onLoadingChange = jest.fn();
     const router = makeRouter();
 

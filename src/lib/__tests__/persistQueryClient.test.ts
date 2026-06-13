@@ -84,16 +84,17 @@ describe('persistQueryClient dehydrate/hydrate symmetry (TSQ-04)', () => {
     const persistedKeys = dehydrated.queries.map((q) => q.queryKey);
     // Habits SHOULD be persisted
     expect(persistedKeys).toEqual(
-      expect.arrayContaining([queryKeys.habits.overview('2026-05-13') as unknown as readonly unknown[]]),
+      expect.arrayContaining([
+        queryKeys.habits.overview('2026-05-13') as unknown as readonly unknown[],
+      ])
     );
     // Chat SHOULD NOT be persisted
     expect(persistedKeys.some((k) => (k as readonly unknown[])[0] === 'chat')).toBe(false);
     // plan photos SHOULD NOT be persisted
     expect(
       persistedKeys.some(
-        (k) =>
-          (k as readonly unknown[])[0] === 'plans' && (k as readonly unknown[])[1] === 'photos',
-      ),
+        (k) => (k as readonly unknown[])[0] === 'plans' && (k as readonly unknown[])[1] === 'photos'
+      )
     ).toBe(false);
   });
 });

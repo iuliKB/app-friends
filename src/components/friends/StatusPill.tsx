@@ -32,23 +32,27 @@ export function StatusPill({
 }: StatusPillProps) {
   const { colors } = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    pill: {
-      height: 24,
-      paddingHorizontal: SPACING.sm,
-      borderRadius: RADII.lg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    fadingPill: {
-      opacity: 0.6,
-    },
-    label: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.surface.base,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        pill: {
+          height: 24,
+          paddingHorizontal: SPACING.sm,
+          borderRadius: RADII.lg,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        fadingPill: {
+          opacity: 0.6,
+        },
+        label: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.surface.base,
+        },
+      }),
+    [colors]
+  );
 
   // Legacy path: caller did not pass heartbeat fields → bare mood pill.
   const hasHeartbeatData = status_expires_at !== undefined && last_active_at !== undefined;

@@ -62,9 +62,7 @@ export function useFriendWishList(friendId: string): UseFriendWishListResult {
       const claimRows = claimsResult.data ?? [];
 
       const claimedByMe = new Set(
-        claimRows
-          .filter((c) => (c.claimer_id as string) === userId)
-          .map((c) => c.item_id as string),
+        claimRows.filter((c) => (c.claimer_id as string) === userId).map((c) => c.item_id as string)
       );
       const claimedByAnyone = new Set(claimRows.map((c) => c.item_id as string));
 
@@ -73,7 +71,7 @@ export function useFriendWishList(friendId: string): UseFriendWishListResult {
         ...new Set(
           claimRows
             .filter((c) => (c.claimer_id as string) !== userId)
-            .map((c) => c.claimer_id as string),
+            .map((c) => c.claimer_id as string)
         ),
       ];
       const claimerNames: Record<string, string> = {};
@@ -131,7 +129,7 @@ export function useFriendWishList(friendId: string): UseFriendWishListResult {
       }
       void queryClient.invalidateQueries({ queryKey: listKey });
     },
-    [userId, queryClient, listKey],
+    [userId, queryClient, listKey]
   );
 
   return {

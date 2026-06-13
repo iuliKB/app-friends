@@ -1,15 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  useTheme,
-  SPACING,
-  FONT_SIZE,
-  FONT_FAMILY,
-  RADII,
-  SHADOWS,
-  ANIMATION,
-} from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, SHADOWS, ANIMATION } from '@/theme';
 import { AvatarStack } from '@/components/plans/AvatarStack';
 import { EventArtwork, formatEventLabels } from '@/components/plans/EventArtwork';
 import type { PlanWithMembers } from '@/types/plans';
@@ -120,7 +112,11 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
       accessibilityLabel={a11yLabel}
     >
       <Animated.View
-        style={[styles.card, isDark ? SHADOWS.card : SHADOWS.swipeCard, { transform: [{ scale: cardScaleAnim }] }]}
+        style={[
+          styles.card,
+          isDark ? SHADOWS.card : SHADOWS.swipeCard,
+          { transform: [{ scale: cardScaleAnim }] },
+        ]}
       >
         <View style={styles.artColumn}>
           <EventArtwork
@@ -137,9 +133,7 @@ export function EventListCard({ plan, onPress }: EventListCardProps) {
             <Text style={styles.title} numberOfLines={1}>
               {plan.title}
             </Text>
-            {going.length > 0 ? (
-              <AvatarStack members={going} maxVisible={3} size={20} />
-            ) : null}
+            {going.length > 0 ? <AvatarStack members={going} maxVisible={3} size={20} /> : null}
           </View>
 
           {labels ? (

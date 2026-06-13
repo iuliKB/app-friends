@@ -15,6 +15,9 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 
+import { useHomeScreen } from '../useHomeScreen';
+import { useHomeStore } from '@/stores/useHomeStore';
+
 const mockRpc = jest.fn();
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
@@ -37,9 +40,6 @@ jest.mock('@/lib/realtimeBridge', () => ({
   subscribeHomeStatuses: (...args: unknown[]) => mock_subscribeHomeStatuses(...args),
   _resetRealtimeBridgeForTests: jest.fn(),
 }));
-
-import { useHomeScreen } from '../useHomeScreen';
-import { useHomeStore } from '@/stores/useHomeStore';
 
 const FRIEND_ROWS = [
   {
@@ -112,11 +112,7 @@ describe('useHomeScreen (migrated to TanStack Query)', () => {
     renderHook(() => useHomeScreen(), { wrapper });
 
     await waitFor(() =>
-      expect(mock_subscribeHomeStatuses).toHaveBeenCalledWith(
-        expect.anything(),
-        'u1',
-        ['f1', 'f2'],
-      ),
+      expect(mock_subscribeHomeStatuses).toHaveBeenCalledWith(expect.anything(), 'u1', ['f1', 'f2'])
     );
   });
 

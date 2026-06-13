@@ -46,42 +46,46 @@ interface PlanCardProps {
 
 export function PlanCard({ plan, onPress }: PlanCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      padding: SPACING.lg,
-    },
-    title: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginBottom: SPACING.xs,
-    },
-    timeLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      marginBottom: SPACING.xs,
-    },
-    location: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginBottom: SPACING.xs,
-    },
-    rsvpSummary: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      marginBottom: SPACING.sm,
-    },
-    avatarStackContainer: {
-      marginTop: SPACING.xs,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          padding: SPACING.lg,
+        },
+        title: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginBottom: SPACING.xs,
+        },
+        timeLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+          marginBottom: SPACING.xs,
+        },
+        location: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginBottom: SPACING.xs,
+        },
+        rsvpSummary: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+          marginBottom: SPACING.sm,
+        },
+        avatarStackContainer: {
+          marginTop: SPACING.xs,
+        },
+      }),
+    [colors]
+  );
 
   const timeLabel = formatPlanTime(plan.scheduled_for);
   const rsvpSummary = getRsvpSummary(plan);

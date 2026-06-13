@@ -135,172 +135,172 @@ export function AddFriend() {
     }
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    tabSwitcher: {
-      flexDirection: 'row',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      padding: SPACING.xs,
-      marginHorizontal: SPACING.lg,
-      marginTop: SPACING.lg,
-    },
-    tab: {
-      flex: 1,
-      height: 40,
-      borderRadius: RADII.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    activeTab: {
-      backgroundColor: colors.border,
-    },
-    tabText: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-    },
-    activeTabText: {
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-    },
-    searchInputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      height: 52,
-      marginTop: SPACING.lg,
-      marginHorizontal: SPACING.lg,
-      paddingLeft: SPACING.md,
-    },
-    searchIcon: {
-      marginRight: SPACING.sm,
-    },
-    searchInput: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.primary,
-      height: '100%',
-    },
-    placeholderContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingTop: SPACING.xxl,
-    },
-    placeholderText: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.lg,
-      textAlign: 'center',
-    },
-    noResultsText: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      paddingTop: SPACING.xxl,
-      paddingHorizontal: SPACING.lg,
-    },
-    qrContainer: {
-      flex: 1,
-    },
-    qrErrorContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: SPACING.xl,
-    },
-    qrErrorText: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.interactive.destructive,
-      textAlign: 'center',
-      marginTop: SPACING.lg,
-    },
-    scannedCardContainer: {
-      padding: SPACING.lg,
-      alignItems: 'stretch',
-    },
-    scannedCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.xl,
-      padding: SPACING.lg,
-    },
-    scannedInfo: {
-      flex: 1,
-      marginLeft: SPACING.md,
-    },
-    scannedDisplayName: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-    },
-    scannedUsername: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    selfScanText: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.lg,
-    },
-    addFriendButton: {
-      marginTop: SPACING.md,
-    },
-    pendingButton: {
-      marginTop: SPACING.md,
-      height: 52,
-      borderRadius: RADII.lg,
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    pendingButtonText: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-    },
-    scanAgainButton: {
-      marginTop: SPACING.sm,
-      height: 52,
-      borderRadius: RADII.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    scanAgainText: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        tabSwitcher: {
+          flexDirection: 'row',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          padding: SPACING.xs,
+          marginHorizontal: SPACING.lg,
+          marginTop: SPACING.lg,
+        },
+        tab: {
+          flex: 1,
+          height: 40,
+          borderRadius: RADII.md,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        activeTab: {
+          backgroundColor: colors.border,
+        },
+        tabText: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+        },
+        activeTabText: {
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+        },
+        searchInputContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          height: 52,
+          marginTop: SPACING.lg,
+          marginHorizontal: SPACING.lg,
+          paddingLeft: SPACING.md,
+        },
+        searchIcon: {
+          marginRight: SPACING.sm,
+        },
+        searchInput: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.primary,
+          height: '100%',
+        },
+        placeholderContainer: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingTop: SPACING.xxl,
+        },
+        placeholderText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.lg,
+          textAlign: 'center',
+        },
+        noResultsText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          paddingTop: SPACING.xxl,
+          paddingHorizontal: SPACING.lg,
+        },
+        qrContainer: {
+          flex: 1,
+        },
+        qrErrorContainer: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: SPACING.xl,
+        },
+        qrErrorText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.interactive.destructive,
+          textAlign: 'center',
+          marginTop: SPACING.lg,
+        },
+        scannedCardContainer: {
+          padding: SPACING.lg,
+          alignItems: 'stretch',
+        },
+        scannedCard: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.xl,
+          padding: SPACING.lg,
+        },
+        scannedInfo: {
+          flex: 1,
+          marginLeft: SPACING.md,
+        },
+        scannedDisplayName: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+        },
+        scannedUsername: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        selfScanText: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.lg,
+        },
+        addFriendButton: {
+          marginTop: SPACING.md,
+        },
+        pendingButton: {
+          marginTop: SPACING.md,
+          height: 52,
+          borderRadius: RADII.lg,
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        pendingButtonText: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+        },
+        scanAgainButton: {
+          marginTop: SPACING.sm,
+          height: 52,
+          borderRadius: RADII.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        scanAgainText: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   if (error) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.surface.base }}>
-        <ErrorDisplay
-          mode="screen"
-          message="Couldn't load results."
-          onRetry={refetch}
-        />
+        <ErrorDisplay mode="screen" message="Couldn't load results." onRetry={refetch} />
       </View>
     );
   }

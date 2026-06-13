@@ -65,139 +65,142 @@ export function ChatListRow({ item, onPress, onMarkRead, onMute, onDelete }: Cha
     onDelete?.();
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      backgroundColor: colors.surface.base,
-      minHeight: 72,
-    },
-    avatarWrapper: {
-      marginRight: SPACING.md,
-    },
-    iconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: RADII.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    planIcon: {
-      backgroundColor: colors.interactive.accent,
-    },
-    groupIcon: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: '#9333EA',
-    },
-    birthdayIcon: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: '#F97316',
-    },
-    content: {
-      flex: 1,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      gap: 3,
-    },
-    row1: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    name: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      flex: 1,
-      marginRight: SPACING.sm,
-    },
-    nameUnread: {
-      fontFamily: FONT_FAMILY.display.bold,
-    },
-    timestamp: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      flexShrink: 0,
-    },
-    mutedIcon: {
-      flexShrink: 0,
-      opacity: 0.5,
-    },
-    row2: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    previewWrap: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flex: 1,
-      marginRight: SPACING.sm,
-    },
-    previewIcon: {
-      marginRight: SPACING.xs,
-    },
-    previewItalic: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontStyle: 'italic',
-    },
-    preview: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    previewUnread: {
-      color: colors.text.primary,
-      fontFamily: FONT_FAMILY.body.medium,
-    },
-    unreadBadge: {
-      minWidth: 20,
-      height: 20,
-      borderRadius: RADII.full,
-      backgroundColor: colors.interactive.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: SPACING.xs,
-      flexShrink: 0,
-    },
-    unreadBadgeText: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.bold,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      color: '#0E0F11',
-    },
-    rightActions: {
-      flexDirection: 'row',
-    },
-    actionButton: {
-      width: 72,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: SPACING.xs,
-    },
-    muteButton: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: '#78716C',
-    },
-    readButton: {
-      backgroundColor: colors.interactive.accent,
-    },
-    deleteButton: {
-      backgroundColor: colors.interactive.destructive,
-    },
-    actionLabel: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      color: '#fff',
-    },
-    actionLabelDark: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      color: '#0E0F11',
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          backgroundColor: colors.surface.base,
+          minHeight: 72,
+        },
+        avatarWrapper: {
+          marginRight: SPACING.md,
+        },
+        iconContainer: {
+          width: 48,
+          height: 48,
+          borderRadius: RADII.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        planIcon: {
+          backgroundColor: colors.interactive.accent,
+        },
+        groupIcon: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: '#9333EA',
+        },
+        birthdayIcon: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: '#F97316',
+        },
+        content: {
+          flex: 1,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          gap: 3,
+        },
+        row1: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        },
+        name: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          flex: 1,
+          marginRight: SPACING.sm,
+        },
+        nameUnread: {
+          fontFamily: FONT_FAMILY.display.bold,
+        },
+        timestamp: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          flexShrink: 0,
+        },
+        mutedIcon: {
+          flexShrink: 0,
+          opacity: 0.5,
+        },
+        row2: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        },
+        previewWrap: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          flex: 1,
+          marginRight: SPACING.sm,
+        },
+        previewIcon: {
+          marginRight: SPACING.xs,
+        },
+        previewItalic: {
+          fontStyle: 'italic',
+        },
+        preview: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        previewUnread: {
+          color: colors.text.primary,
+          fontFamily: FONT_FAMILY.body.medium,
+        },
+        unreadBadge: {
+          minWidth: 20,
+          height: 20,
+          borderRadius: RADII.full,
+          backgroundColor: colors.interactive.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: SPACING.xs,
+          flexShrink: 0,
+        },
+        unreadBadgeText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.bold,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          color: '#0E0F11',
+        },
+        rightActions: {
+          flexDirection: 'row',
+        },
+        actionButton: {
+          width: 72,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.xs,
+        },
+        muteButton: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: '#78716C',
+        },
+        readButton: {
+          backgroundColor: colors.interactive.accent,
+        },
+        deleteButton: {
+          backgroundColor: colors.interactive.destructive,
+        },
+        actionLabel: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          color: '#fff',
+        },
+        actionLabelDark: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          color: '#0E0F11',
+        },
+      }),
+    [colors]
+  );
 
   const timestamp = formatTimestamp(item.lastMessageAt);
   const badgeLabel = item.unreadCount > 99 ? '99+' : String(item.unreadCount);
@@ -247,8 +250,14 @@ export function ChatListRow({ item, onPress, onMarkRead, onMute, onDelete }: Cha
               <Ionicons name="calendar-outline" size={22} color="#0E0F11" />
             </View>
           ) : item.type === 'group' ? (
-            <View style={[styles.iconContainer, isBirthday ? styles.birthdayIcon : styles.groupIcon]}>
-              <Ionicons name={isBirthday ? 'gift-outline' : 'people-outline'} size={22} color="#fff" />
+            <View
+              style={[styles.iconContainer, isBirthday ? styles.birthdayIcon : styles.groupIcon]}
+            >
+              <Ionicons
+                name={isBirthday ? 'gift-outline' : 'people-outline'}
+                size={22}
+                color="#fff"
+              />
             </View>
           ) : (
             <AvatarCircle size={48} imageUri={item.avatarUrl} displayName={item.title} />
@@ -282,7 +291,13 @@ export function ChatListRow({ item, onPress, onMarkRead, onMute, onDelete }: Cha
               >
                 {item.lastMessageSenderName ? `${item.lastMessageSenderName}: ` : ''}
                 {item.lastMessageKind === 'deleted' ? (
-                  <Text style={[styles.preview, item.hasUnread && styles.previewUnread, styles.previewItalic]}>
+                  <Text
+                    style={[
+                      styles.preview,
+                      item.hasUnread && styles.previewUnread,
+                      styles.previewItalic,
+                    ]}
+                  >
                     {item.lastMessage}
                   </Text>
                 ) : (

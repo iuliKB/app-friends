@@ -14,6 +14,8 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useChatDmPreferences } from '../useChatDmPreferences';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: { from: (...args: unknown[]) => mockFrom(...args) },
@@ -24,8 +26,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: typeof mockSession }) => unknown) =>
     selector({ session: mockSession }),
 }));
-
-import { useChatDmPreferences } from '../useChatDmPreferences';
 
 function wrap(client: QueryClient) {
   return ({ children }: { children: React.ReactNode }) =>

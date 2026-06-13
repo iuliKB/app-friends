@@ -14,6 +14,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useMyWishList } from '../useMyWishList';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -25,8 +27,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u-self' } } }),
 }));
-
-import { useMyWishList } from '../useMyWishList';
 
 const ROW = {
   id: 'w1',
@@ -74,8 +74,7 @@ describe('useMyWishList (migrated to TanStack Query)', () => {
             eq: () => ({
               order: () => {
                 listCallCount++;
-                if (listCallCount === 1)
-                  return Promise.resolve({ data: [ROW], error: null });
+                if (listCallCount === 1) return Promise.resolve({ data: [ROW], error: null });
                 return new Promise(() => {}); // hang
               },
             }),
@@ -104,11 +103,9 @@ describe('useMyWishList (migrated to TanStack Query)', () => {
     });
     expect(outcome?.error?.message).toBe('delete denied');
 
-    const cached = client.getQueryData(
-      queryKeys.friends.wishList('u-self'),
-    ) as WishListItemArray;
+    const cached = client.getQueryData(queryKeys.friends.wishList('u-self')) as WishListItemArray;
     expect(cached?.[0]?.id).toBe('w1'); // rolled back to original
   });
 });
 
-type WishListItemArray = Array<{ id: string; title: string }>;
+type WishListItemArray = { id: string; title: string }[];

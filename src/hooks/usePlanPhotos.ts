@@ -80,9 +80,7 @@ export function usePlanPhotos(planId: string): {
       const { data: signedData } = await supabase.storage
         .from('plan-gallery')
         .createSignedUrls(paths, 3600);
-      const signedMap = new Map(
-        (signedData ?? []).map((s) => [s.path, s.signedUrl]),
-      );
+      const signedMap = new Map((signedData ?? []).map((s) => [s.path, s.signedUrl]));
 
       const assembled: PlanPhotoWithUploader[] = photoRows.map((r) => {
         const profile = profileMap.get(r.uploader_id as string);
@@ -110,9 +108,7 @@ export function usePlanPhotos(planId: string): {
   // both this hook's cache and the aggregate (Memories) cache.
   // @mutationShape: no-optimistic
   const uploadMutation = useMutation({
-    mutationFn: async (
-      localUri: string,
-    ): Promise<{ outcome: UploadError }> => {
+    mutationFn: async (localUri: string): Promise<{ outcome: UploadError }> => {
       if (!userId) return { outcome: 'upload_failed' };
 
       const storagePath = await uploadPlanPhoto(planId, userId, localUri);
@@ -132,7 +128,7 @@ export function usePlanPhotos(planId: string): {
           console.error(
             '[usePlanPhotos] Orphan cleanup failed for path:',
             storagePath,
-            cleanupError.message,
+            cleanupError.message
           );
         }
         if (rpcError.code === 'P0001') return { outcome: 'photo_cap_exceeded' }; // D-10
@@ -169,7 +165,7 @@ export function usePlanPhotos(planId: string): {
       if (storageError) {
         console.error(
           '[usePlanPhotos] Storage delete failed (row already deleted):',
-          storageError.message,
+          storageError.message
         );
       }
     },
@@ -178,12 +174,12 @@ export function usePlanPhotos(planId: string): {
       await queryClient.cancelQueries({ queryKey: queryKeys.plans.photos(planId) });
       await queryClient.cancelQueries({ queryKey: allKey });
       const previousList = queryClient.getQueryData<PlanPhotoWithUploader[]>(
-        queryKeys.plans.photos(planId),
+        queryKeys.plans.photos(planId)
       );
       const previousAggregate = queryClient.getQueryData(allKey);
       queryClient.setQueryData<PlanPhotoWithUploader[]>(
         queryKeys.plans.photos(planId),
-        (old) => old?.filter((p) => p.id !== input.photoId) ?? [],
+        (old) => old?.filter((p) => p.id !== input.photoId) ?? []
       );
       return { previousList, previousAggregate };
     },
@@ -192,10 +188,7 @@ export function usePlanPhotos(planId: string): {
         queryClient.setQueryData(queryKeys.plans.photos(planId), ctx.previousList);
       }
       if (ctx?.previousAggregate) {
-        queryClient.setQueryData(
-          queryKeys.plans.allPhotos(userId ?? ''),
-          ctx.previousAggregate,
-        );
+        queryClient.setQueryData(queryKeys.plans.allPhotos(userId ?? ''), ctx.previousAggregate);
       }
     },
     onSettled: () => {

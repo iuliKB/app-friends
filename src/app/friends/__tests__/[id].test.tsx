@@ -17,6 +17,11 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 
+// Note: react-native-reanimated and expo-haptics are auto-mocked via jest.config.js
+// moduleNameMapper — no explicit jest.mock() calls needed here.
+
+import FriendProfileScreen from '../[id]';
+
 // Mock native modules that require native bridges
 jest.mock('expo-image', () => ({
   Image: 'Image',
@@ -41,7 +46,11 @@ jest.mock('@/components/friends/FriendProfileHeader', () => {
   const React = require('react');
   const { TouchableOpacity } = require('react-native');
   return {
-    FriendProfileHeader: ({ onAvatarPress, avatarUrl, displayName }: {
+    FriendProfileHeader: ({
+      onAvatarPress,
+      avatarUrl,
+      displayName,
+    }: {
       onAvatarPress?: () => void;
       avatarUrl?: string | null;
       displayName?: string;
@@ -69,9 +78,11 @@ jest.mock('@/components/chat/ImageViewerModal', () => {
       React.createElement(
         Modal,
         { visible, testID: 'image-viewer-modal' },
-        React.createElement(TouchableOpacity, { onPress: onClose, accessibilityLabel: 'Close image viewer' },
-          React.createElement(Text, null, 'Close'),
-        ),
+        React.createElement(
+          TouchableOpacity,
+          { onPress: onClose, accessibilityLabel: 'Close image viewer' },
+          React.createElement(Text, null, 'Close')
+        )
       ),
   };
 });
@@ -79,7 +90,15 @@ jest.mock('@/components/common/AvatarCircle', () => {
   const React = require('react');
   const { TouchableOpacity, View } = require('react-native');
   return {
-    AvatarCircle: ({ onPress, displayName, size }: { onPress?: () => void; displayName: string; size?: number }) => {
+    AvatarCircle: ({
+      onPress,
+      displayName,
+      size,
+    }: {
+      onPress?: () => void;
+      displayName: string;
+      size?: number;
+    }) => {
       if (onPress) {
         return React.createElement(TouchableOpacity, {
           onPress,
@@ -101,9 +120,11 @@ jest.mock('@/components/friends/GroupedInsetSection', () => {
   const { View, Text } = require('react-native');
   return {
     GroupedInsetSection: ({ title, children }: { title: string; children: React.ReactNode }) =>
-      React.createElement(View, { testID: `section-${title}` },
+      React.createElement(
+        View,
+        { testID: `section-${title}` },
         React.createElement(Text, null, title),
-        children,
+        children
       ),
   };
 });
@@ -111,10 +132,20 @@ jest.mock('@/components/friends/ProfileInfoRow', () => {
   const React = require('react');
   const { View, Text, TouchableOpacity } = require('react-native');
   return {
-    ProfileInfoRow: ({ label, value, onPress }: { label: string; value?: string; onPress?: () => void }) => {
-      const content = React.createElement(View, null,
+    ProfileInfoRow: ({
+      label,
+      value,
+      onPress,
+    }: {
+      label: string;
+      value?: string;
+      onPress?: () => void;
+    }) => {
+      const content = React.createElement(
+        View,
+        null,
         React.createElement(Text, null, label),
-        value ? React.createElement(Text, null, value) : null,
+        value ? React.createElement(Text, null, value) : null
       );
       if (onPress) {
         return React.createElement(TouchableOpacity, { onPress }, content);
@@ -128,9 +159,11 @@ jest.mock('@/components/friends/BioRow', () => {
   const { View, Text } = require('react-native');
   return {
     BioRow: ({ bio }: { bio: string }) =>
-      React.createElement(View, null,
+      React.createElement(
+        View,
+        null,
         React.createElement(Text, null, 'Bio'),
-        React.createElement(Text, null, bio),
+        React.createElement(Text, null, bio)
       ),
   };
 });
@@ -138,22 +171,35 @@ jest.mock('@/components/friends/QuickActionsRow', () => {
   const React = require('react');
   const { View, TouchableOpacity, Text } = require('react-native');
   return {
-    QuickActionsRow: ({ onMessage, onPhotos, onMore, friendFirstName }: {
+    QuickActionsRow: ({
+      onMessage,
+      onPhotos,
+      onMore,
+      friendFirstName,
+    }: {
       onMessage: () => void;
       onPhotos: () => void;
       onMore: () => void;
       friendFirstName: string;
     }) =>
-      React.createElement(View, { testID: 'quick-actions-row' },
-        React.createElement(TouchableOpacity, { onPress: onMessage, accessibilityLabel: `Message ${friendFirstName}` },
-          React.createElement(Text, null, 'Message'),
+      React.createElement(
+        View,
+        { testID: 'quick-actions-row' },
+        React.createElement(
+          TouchableOpacity,
+          { onPress: onMessage, accessibilityLabel: `Message ${friendFirstName}` },
+          React.createElement(Text, null, 'Message')
         ),
-        React.createElement(TouchableOpacity, { onPress: onPhotos },
-          React.createElement(Text, null, 'Photos'),
+        React.createElement(
+          TouchableOpacity,
+          { onPress: onPhotos },
+          React.createElement(Text, null, 'Photos')
         ),
-        React.createElement(TouchableOpacity, { onPress: onMore },
-          React.createElement(Text, null, 'More'),
-        ),
+        React.createElement(
+          TouchableOpacity,
+          { onPress: onMore },
+          React.createElement(Text, null, 'More')
+        )
       ),
   };
 });
@@ -165,9 +211,7 @@ jest.mock('@/components/common/PrimaryButton', () => {
   const { TouchableOpacity, Text } = require('react-native');
   return {
     PrimaryButton: ({ title, onPress }: { title: string; onPress: () => void }) =>
-      React.createElement(TouchableOpacity, { onPress },
-        React.createElement(Text, null, title),
-      ),
+      React.createElement(TouchableOpacity, { onPress }, React.createElement(Text, null, title)),
   };
 });
 jest.mock('@/components/squad/WishListItem', () => ({
@@ -178,9 +222,7 @@ jest.mock('@/components/common/ErrorDisplay', () => {
   const { View, Text } = require('react-native');
   return {
     ErrorDisplay: ({ message }: { message: string }) =>
-      React.createElement(View, null,
-        React.createElement(Text, null, message),
-      ),
+      React.createElement(View, null, React.createElement(Text, null, message)),
   };
 });
 
@@ -293,11 +335,6 @@ jest.mock('@tanstack/react-query', () => ({
     isPending: false,
   }),
 }));
-
-// Note: react-native-reanimated and expo-haptics are auto-mocked via jest.config.js
-// moduleNameMapper — no explicit jest.mock() calls needed here.
-
-import FriendProfileScreen from '../[id]';
 
 // ─── Default mock data ────────────────────────────────────────────────────────
 
@@ -459,7 +496,7 @@ test('REQ-FP-06 Message button: calls openChat with dmFriend params', async () =
       kind: 'dmFriend',
       friendId: 'friend-1',
       friendName: 'Alice Smith',
-    }),
+    })
   );
 });
 
@@ -471,9 +508,7 @@ test('REQ-FP-06 More button: calls showActionSheet with single Remove Friend des
 
   expect(mockShowActionSheet).toHaveBeenCalledWith(
     'Alice Smith',
-    expect.arrayContaining([
-      expect.objectContaining({ label: 'Remove Friend', destructive: true }),
-    ]),
+    expect.arrayContaining([expect.objectContaining({ label: 'Remove Friend', destructive: true })])
   );
   // Only 1 item in the array (helper auto-appends Cancel)
   const callArgs = mockShowActionSheet.mock.calls[0];
@@ -588,5 +623,7 @@ test('Error state: renders ErrorDisplay when error present', () => {
   render(<FriendProfileScreen />);
 
   // Should show the error message
-  expect(screen.getByText("Couldn't load profile. Check your connection and try again.")).toBeTruthy();
+  expect(
+    screen.getByText("Couldn't load profile. Check your connection and try again.")
+  ).toBeTruthy();
 });

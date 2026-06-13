@@ -24,10 +24,8 @@ export function useRefreshOnFocus(queryKey?: QueryKey) {
         return;
       }
       void queryClient.refetchQueries(
-        queryKey
-          ? { queryKey, stale: true, type: 'active' }
-          : { stale: true, type: 'active' },
+        queryKey ? { queryKey, stale: true, type: 'active' } : { stale: true, type: 'active' }
       );
-    }, [queryClient, queryKey]),
+    }, [queryClient, queryKey])
   );
 }

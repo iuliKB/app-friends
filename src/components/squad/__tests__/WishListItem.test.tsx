@@ -35,7 +35,7 @@ function renderItem(props: Partial<React.ComponentProps<typeof WishListItem>> = 
         onToggleClaim={onToggleClaim}
         {...props}
       />
-    </ThemeProvider>,
+    </ThemeProvider>
   );
   return { ...result, onToggleClaim };
 }

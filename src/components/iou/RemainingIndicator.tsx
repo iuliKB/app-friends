@@ -15,19 +15,23 @@ interface RemainingIndicatorProps {
 
 export function RemainingIndicator({ totalCents, allocatedCents }: RemainingIndicatorProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    text: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      marginTop: SPACING.sm,
-    },
-    secondary: {
-      color: colors.text.secondary,
-    },
-    destructive: {
-      color: colors.interactive.destructive,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        text: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          marginTop: SPACING.sm,
+        },
+        secondary: {
+          color: colors.text.secondary,
+        },
+        destructive: {
+          color: colors.interactive.destructive,
+        },
+      }),
+    [colors]
+  );
 
   const remaining = totalCents - allocatedCents;
 

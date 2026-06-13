@@ -68,19 +68,28 @@ export function useHabitDetail(habitId: string): HabitDetailData {
       if (memberErr) throw memberErr;
       if (checkinErr) throw checkinErr;
 
-      type MemberRow = { habit_id: string; user_id: string; accepted_at: string | null; joined_at: string };
+      type MemberRow = {
+        habit_id: string;
+        user_id: string;
+        accepted_at: string | null;
+        joined_at: string;
+      };
       type ProfileRow = { id: string; display_name: string | null; avatar_url: string | null };
-      const memberRowsTyped = ((memberRows ?? []) as unknown) as MemberRow[];
-      let profilesById: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      const memberRowsTyped = (memberRows ?? []) as unknown as MemberRow[];
+      let profilesById: Record<string, { display_name: string | null; avatar_url: string | null }> =
+        {};
       if (memberRowsTyped.length > 0) {
         const userIds = memberRowsTyped.map((m) => m.user_id);
         const { data: profileRows, error: profErr } = await supabase
-          .from('profiles').select('id, display_name, avatar_url').in('id', userIds);
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', userIds);
         if (profErr) throw profErr;
         profilesById = Object.fromEntries(
-          (((profileRows ?? []) as unknown) as ProfileRow[]).map((p) => [
-            p.id, { display_name: p.display_name, avatar_url: p.avatar_url },
-          ]),
+          ((profileRows ?? []) as unknown as ProfileRow[]).map((p) => [
+            p.id,
+            { display_name: p.display_name, avatar_url: p.avatar_url },
+          ])
         );
       }
       const members: HabitDetailMember[] = memberRowsTyped.map((r) => ({
@@ -93,9 +102,9 @@ export function useHabitDetail(habitId: string): HabitDetailData {
       }));
 
       return {
-        habit: ((habitRow as unknown) as Habit | null) ?? null,
+        habit: (habitRow as unknown as Habit | null) ?? null,
         members,
-        checkins: ((checkinRows ?? []) as unknown) as HabitCheckin[],
+        checkins: (checkinRows ?? []) as unknown as HabitCheckin[],
       };
     },
     enabled: !!userId && !!habitId,

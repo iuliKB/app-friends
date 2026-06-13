@@ -10,10 +10,10 @@ interface WishListItemProps {
   title: string;
   url: string | null;
   notes: string | null;
-  isClaimed: boolean;        // true if any friend has claimed this item
-  isClaimedByMe: boolean;    // true if current user claimed it
+  isClaimed: boolean; // true if any friend has claimed this item
+  isClaimedByMe: boolean; // true if current user claimed it
   onToggleClaim?: () => void;
-  readOnly?: boolean;        // true when viewing own wish list (profile edit)
+  readOnly?: boolean; // true when viewing own wish list (profile edit)
 }
 
 export function WishListItem({
@@ -26,58 +26,62 @@ export function WishListItem({
   readOnly = false,
 }: WishListItemProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      backgroundColor: colors.surface.base,
-      gap: SPACING.md,
-    },
-    textGroup: {
-      flex: 1,
-    },
-    title: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    url: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.accent,
-      marginTop: SPACING.xs,
-    },
-    notes: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    claimButton: {
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.xs,
-      borderRadius: RADII.md,
-      backgroundColor: colors.surface.card,
-      alignSelf: 'flex-start',
-      marginTop: SPACING.xs,
-    },
-    claimButtonActive: {
-      backgroundColor: colors.interactive.accent,
-    },
-    claimText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    claimTextActive: {
-      color: colors.surface.base,
-    },
-    claimTextClaimed: {
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          backgroundColor: colors.surface.base,
+          gap: SPACING.md,
+        },
+        textGroup: {
+          flex: 1,
+        },
+        title: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        url: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.accent,
+          marginTop: SPACING.xs,
+        },
+        notes: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        claimButton: {
+          paddingHorizontal: SPACING.md,
+          paddingVertical: SPACING.xs,
+          borderRadius: RADII.md,
+          backgroundColor: colors.surface.card,
+          alignSelf: 'flex-start',
+          marginTop: SPACING.xs,
+        },
+        claimButtonActive: {
+          backgroundColor: colors.interactive.accent,
+        },
+        claimText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        claimTextActive: {
+          color: colors.surface.base,
+        },
+        claimTextClaimed: {
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -103,10 +107,7 @@ export function WishListItem({
       {!readOnly && onToggleClaim ? (
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <Pressable
-            style={[
-              styles.claimButton,
-              isClaimedByMe && styles.claimButtonActive,
-            ]}
+            style={[styles.claimButton, isClaimedByMe && styles.claimButtonActive]}
             onPressIn={() =>
               Animated.spring(scaleAnim, {
                 toValue: 0.96,

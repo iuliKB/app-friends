@@ -96,9 +96,7 @@ export function HabitsTile({ habits }: HabitsTileProps) {
         <Text
           style={[
             styles.bigNumber,
-            doneCount > 0
-              ? { color: TILE_ACCENTS.habits }
-              : styles.bigNumberMuted,
+            doneCount > 0 ? { color: TILE_ACCENTS.habits } : styles.bigNumberMuted,
           ]}
         >
           {doneCount}

@@ -17,40 +17,43 @@ const SEGMENTS: { label: string; value: ViewPreference; icon: string }[] = [
 
 export function RadarViewToggle({ value, onValueChange }: RadarViewToggleProps) {
   const { colors, isDark } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-      padding: SPACING.xs,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 44,
-      marginHorizontal: SPACING.lg,
-    },
-    segment: {
-      flex: 1,
-      borderRadius: RADII.sm,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: SPACING.xs,
-    },
-    activeSegment: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(77, 124, 0, 0.10)',
-    },
-    label: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    activeLabel: {
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.interactive.accent,
-    },
-  }), [colors, isDark]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.md,
+          borderWidth: 1,
+          borderColor: colors.border,
+          padding: SPACING.xs,
+
+          height: 44,
+          marginHorizontal: SPACING.lg,
+        },
+        segment: {
+          flex: 1,
+          borderRadius: RADII.sm,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.xs,
+        },
+        activeSegment: {
+          backgroundColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(77, 124, 0, 0.10)',
+        },
+        label: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        activeLabel: {
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.interactive.accent,
+        },
+      }),
+    [colors, isDark]
+  );
 
   async function handlePress(segValue: ViewPreference) {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -72,11 +75,11 @@ export function RadarViewToggle({ value, onValueChange }: RadarViewToggleProps) 
             accessibilityLabel={`${seg.label} view`}
           >
             <Ionicons
-            name={seg.icon as React.ComponentProps<typeof Ionicons>['name']}
-            size={14}
-            color={isActive ? colors.interactive.accent : colors.text.secondary}
-          />
-          <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
+              name={seg.icon as React.ComponentProps<typeof Ionicons>['name']}
+              size={14}
+              color={isActive ? colors.interactive.accent : colors.text.secondary}
+            />
+            <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
           </TouchableOpacity>
         );
       })}

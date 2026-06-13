@@ -36,7 +36,7 @@ export function useIOUSummary(): IOUSummaryData {
     queryFn: async (): Promise<IOUSummaryRow[]> => {
       const { data, error } = await supabase.rpc('get_iou_summary');
       if (error) throw error;
-      return ((data ?? []) as unknown) as IOUSummaryRow[];
+      return (data ?? []) as unknown as IOUSummaryRow[];
     },
     enabled: !!userId,
   });

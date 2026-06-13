@@ -23,10 +23,7 @@ interface CompactFriendRowProps {
 export function CompactFriendRow({ friend, onPress }: CompactFriendRowProps) {
   const { colors } = useTheme();
 
-  const heartbeatState = computeHeartbeatState(
-    friend.status_expires_at,
-    friend.last_active_at
-  );
+  const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
   const isAlive = heartbeatState === 'alive';
   const isDead = heartbeatState === 'dead';
 
@@ -38,9 +35,7 @@ export function CompactFriendRow({ friend, onPress }: CompactFriendRowProps) {
   } else if (heartbeatState === 'fading') {
     statusLabel = `${MOOD_LABEL[friend.status]} · ${formatDistanceToNow(friend.last_active_at)}`;
   } else {
-    const windowLabel = friend.status_expires_at
-      ? formatWindowLabel(friend.status_expires_at)
-      : '';
+    const windowLabel = friend.status_expires_at ? formatWindowLabel(friend.status_expires_at) : '';
     const segments: string[] = [MOOD_LABEL[friend.status]];
     if (friend.context_tag) segments.push(String(friend.context_tag));
     if (windowLabel) segments.push(windowLabel);
@@ -53,7 +48,7 @@ export function CompactFriendRow({ friend, onPress }: CompactFriendRowProps) {
         row: {
           flexDirection: 'row',
           alignItems: 'center',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           minHeight: 64,
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
@@ -69,11 +64,11 @@ export function CompactFriendRow({ friend, onPress }: CompactFriendRowProps) {
           position: 'absolute',
           bottom: 0,
           right: 0,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           width: 12,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           height: 12,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           borderRadius: 6,
           borderWidth: 2,
           borderColor: colors.surface.base,
@@ -112,18 +107,13 @@ export function CompactFriendRow({ friend, onPress }: CompactFriendRowProps) {
           imageUri={friend.avatar_url}
           displayName={friend.display_name}
         />
-        {!isDead && (
-          <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-        )}
+        {!isDead && <View style={[styles.statusDot, { backgroundColor: statusColor }]} />}
       </View>
       <View style={styles.textColumn}>
         <Text style={[styles.name, isDead && styles.nameDead]} numberOfLines={1}>
           {friend.display_name}
         </Text>
-        <Text
-          style={[styles.statusLabel, { color: statusColor }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.statusLabel, { color: statusColor }]} numberOfLines={1}>
           {statusLabel}
         </Text>
       </View>

@@ -39,7 +39,7 @@ export interface PollState {
 // subscribePollVotes channel supersedes the pre-migration prop-drilled event.
 export function usePoll(
   pollId: string | null,
-  _lastPollVoteEvent?: { pollId: string; timestamp: number } | null,
+  _lastPollVoteEvent?: { pollId: string; timestamp: number } | null
 ): {
   pollState: PollState | null;
   loading: boolean;
@@ -85,11 +85,13 @@ export function usePoll(
         if (v.user_id === currentUserId) myVotedOptionId = v.option_id;
       }
 
-      const options: PollOption[] = ((optionsData ?? []) as {
-        id: string;
-        label: string;
-        position: number;
-      }[]).map((o) => ({
+      const options: PollOption[] = (
+        (optionsData ?? []) as {
+          id: string;
+          label: string;
+          position: number;
+        }[]
+      ).map((o) => ({
         id: o.id,
         label: o.label,
         position: o.position,
@@ -141,7 +143,7 @@ export function usePoll(
         .from('poll_votes')
         .upsert(
           { poll_id: pollId, option_id: input.optionId, user_id: currentUserId },
-          { onConflict: 'poll_id,user_id' },
+          { onConflict: 'poll_id,user_id' }
         );
       if (upsertError) throw upsertError;
     },
@@ -161,11 +163,12 @@ export function usePoll(
         return {
           ...old,
           myVotedOptionId: newOptionId,
-          totalVotes: hadVote && !willHaveVote
-            ? Math.max(0, old.totalVotes - 1)
-            : !hadVote && willHaveVote
-              ? old.totalVotes + 1
-              : old.totalVotes,
+          totalVotes:
+            hadVote && !willHaveVote
+              ? Math.max(0, old.totalVotes - 1)
+              : !hadVote && willHaveVote
+                ? old.totalVotes + 1
+                : old.totalVotes,
           options: old.options.map((o) => {
             if (o.id === oldOptionId) return { ...o, votes: Math.max(0, o.votes - 1) };
             if (o.id === newOptionId) return { ...o, votes: o.votes + 1 };

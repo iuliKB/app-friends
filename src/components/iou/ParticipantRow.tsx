@@ -31,79 +31,78 @@ export function ParticipantRow({
   settleLoading,
 }: ParticipantRowProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: SPACING.md,
-      paddingHorizontal: SPACING.lg,
-      backgroundColor: colors.surface.card,
-      marginBottom: SPACING.sm,
-      borderRadius: RADII.md,
-    },
-    info: {
-      flex: 1,
-      marginLeft: SPACING.sm,
-    },
-    name: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    share: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    settleButton: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-      backgroundColor: colors.interactive.accent,
-      paddingHorizontal: SPACING.lg,
-      borderRadius: RADII.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    settleButtonLabel: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: '#ffffff',
-    },
-    badge: {
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
-      borderRadius: RADII.md,
-    },
-    settledBadge: {
-      backgroundColor: colors.status.free,
-    },
-    unsettledBadge: {
-      backgroundColor: colors.border,
-    },
-    badgeText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-    },
-    settledText: {
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: '#ffffff',
-    },
-    unsettledText: {
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: SPACING.md,
+          paddingHorizontal: SPACING.lg,
+          backgroundColor: colors.surface.card,
+          marginBottom: SPACING.sm,
+          borderRadius: RADII.md,
+        },
+        info: {
+          flex: 1,
+          marginLeft: SPACING.sm,
+        },
+        name: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        share: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        settleButton: {
+          minHeight: 44,
+          backgroundColor: colors.interactive.accent,
+          paddingHorizontal: SPACING.lg,
+          borderRadius: RADII.md,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        settleButtonLabel: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: '#ffffff',
+        },
+        badge: {
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+          borderRadius: RADII.md,
+        },
+        settledBadge: {
+          backgroundColor: colors.status.free,
+        },
+        unsettledBadge: {
+          backgroundColor: colors.border,
+        },
+        badgeText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+        },
+        settledText: {
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: '#ffffff',
+        },
+        unsettledText: {
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   const showSettleButton = isCreator && !isPayerRow && !isSettled;
 
   return (
     <View style={styles.row}>
-      <AvatarCircle
-        size={36}
-        imageUri={avatarUrl}
-        displayName={displayName}
-      />
+      <AvatarCircle size={36} imageUri={avatarUrl} displayName={displayName} />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>
           {displayName}

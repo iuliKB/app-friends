@@ -18,6 +18,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useUpdateMyBio } from '../useUpdateMyBio';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: { from: (...args: unknown[]) => mockFrom(...args) },
@@ -30,11 +32,9 @@ jest.mock('@/stores/useAuthStore', () => ({
     {
       subscribe: jest.fn(),
       getState: () => ({ session: { user: { id: 'u-self' } } }),
-    },
+    }
   ),
 }));
-
-import { useUpdateMyBio } from '../useUpdateMyBio';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -48,8 +48,7 @@ const INITIAL_CACHE = {
 function makeMockFrom(opts: { error?: string | null } = {}) {
   return mockFrom.mockImplementation((_table: string) => ({
     update: () => ({
-      eq: () =>
-        Promise.resolve({ error: opts.error ? new Error(opts.error) : null }),
+      eq: () => Promise.resolve({ error: opts.error ? new Error(opts.error) : null }),
     }),
   }));
 }
@@ -119,9 +118,7 @@ describe('useUpdateMyBio', () => {
     });
 
     await waitFor(() => {
-      expect(invalidateSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ queryKey: key }),
-      );
+      expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: key }));
     });
   });
 
@@ -140,9 +137,7 @@ describe('useUpdateMyBio', () => {
     });
 
     await waitFor(() => {
-      expect(invalidateSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ queryKey: key }),
-      );
+      expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: key }));
     });
   });
 
@@ -165,9 +160,7 @@ describe('useUpdateMyBio', () => {
       await result.current.updateBio(null);
     });
 
-    expect(capturedPayload).toEqual(
-      expect.objectContaining({ bio: null }),
-    );
+    expect(capturedPayload).toEqual(expect.objectContaining({ bio: null }));
   });
 
   it('Test 5: saving is true while mutation is in flight, false after settle', async () => {

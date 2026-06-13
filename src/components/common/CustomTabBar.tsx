@@ -3,15 +3,15 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme, FONT_SIZE, FONT_FAMILY } from '@/theme';
+import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
+import { useInvitationCount } from '@/hooks/useInvitationCount';
+import { useNavigationStore } from '@/stores/useNavigationStore';
 
 // Height of the tab bar pill and its gap above the bottom safe area inset.
 // Used by screens with absolute-positioned elements (e.g. FAB) to clear the tab bar.
 export const TAB_BAR_HEIGHT = 64;
 export const TAB_BAR_BOTTOM_GAP = 12;
-import { useTheme, FONT_SIZE, FONT_FAMILY } from '@/theme';
-import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
-import { useInvitationCount } from '@/hooks/useInvitationCount';
-import { useNavigationStore } from '@/stores/useNavigationStore';
 
 const TAB_LABELS: Record<string, string> = {
   index: 'Home',
@@ -37,89 +37,93 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { count: pendingCount } = usePendingRequestsCount();
   const { count: invitationCount } = useInvitationCount();
 
-  const styles = useMemo(() => StyleSheet.create({
-    wrapper: {
-      position: 'absolute',
-      left: 16,
-      right: 16,
-    },
-    bar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: isDark ? 'rgba(21, 23, 28, 0.92)' : 'rgba(255, 255, 255, 0.92)',
-      borderRadius: 28,
-      borderWidth: 1,
-      borderColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(0, 0, 0, 0.08)',
-      borderTopColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(0, 0, 0, 0.08)',
-      height: 64,
-      paddingHorizontal: 8,
-      overflow: 'visible',
-    },
-    tab: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 5,
-      height: '100%',
-    },
-    iconWrapper: {
-      position: 'relative',
-    },
-    centerWrapper: {
-      width: 68,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    centerButton: {
-      width: 54,
-      height: 54,
-      borderRadius: 27,
-      // Light mode: keep #B9FF3B (neon lime) as bg — icon is #0E0F11 (15.9:1 contrast).
-      // colors.interactive.accent is #4D7C00 in light (too dark for the dark icon).
-      backgroundColor: isDark ? colors.interactive.accent : '#B9FF3B',
-      alignItems: 'center',
-      justifyContent: 'center',
-      transform: [{ translateY: -20 }],
-      shadowColor: isDark ? colors.interactive.accent : 'rgba(0,0,0,0.18)',
-      shadowOffset: { width: 0, height: isDark ? 0 : 4 },
-      shadowOpacity: isDark ? 0.45 : 1,
-      shadowRadius: isDark ? 14 : 8,
-      elevation: 8,
-    },
-    dot: {
-      width: 4,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: colors.interactive.accent,
-    },
-    label: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: 2,
-    },
-    labelActive: {
-      color: colors.interactive.accent,
-      fontFamily: FONT_FAMILY.body.semibold,
-    },
-    badge: {
-      position: 'absolute',
-      top: -4,
-      right: -8,
-      backgroundColor: colors.interactive.destructive,
-      borderRadius: 8,
-      minWidth: 16,
-      height: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: 3,
-    },
-    badgeText: {
-      color: '#fff',
-      fontSize: 10,
-      fontWeight: '700',
-    },
-  }), [colors, isDark]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        wrapper: {
+          position: 'absolute',
+          left: 16,
+          right: 16,
+        },
+        bar: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: isDark ? 'rgba(21, 23, 28, 0.92)' : 'rgba(255, 255, 255, 0.92)',
+          borderRadius: 28,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+          borderTopColor: isDark ? 'rgba(185, 255, 59, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+          height: 64,
+          paddingHorizontal: 8,
+          overflow: 'visible',
+        },
+        tab: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 5,
+          height: '100%',
+        },
+        iconWrapper: {
+          position: 'relative',
+        },
+        centerWrapper: {
+          width: 68,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        centerButton: {
+          width: 54,
+          height: 54,
+          borderRadius: 27,
+          // Light mode: keep #B9FF3B (neon lime) as bg — icon is #0E0F11 (15.9:1 contrast).
+          // colors.interactive.accent is #4D7C00 in light (too dark for the dark icon).
+          backgroundColor: isDark ? colors.interactive.accent : '#B9FF3B',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: [{ translateY: -20 }],
+          shadowColor: isDark ? colors.interactive.accent : 'rgba(0,0,0,0.18)',
+          shadowOffset: { width: 0, height: isDark ? 0 : 4 },
+          shadowOpacity: isDark ? 0.45 : 1,
+          shadowRadius: isDark ? 14 : 8,
+          elevation: 8,
+        },
+        dot: {
+          width: 4,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: colors.interactive.accent,
+        },
+        label: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: 2,
+        },
+        labelActive: {
+          color: colors.interactive.accent,
+          fontFamily: FONT_FAMILY.body.semibold,
+        },
+        badge: {
+          position: 'absolute',
+          top: -4,
+          right: -8,
+          backgroundColor: colors.interactive.destructive,
+          borderRadius: 8,
+          minWidth: 16,
+          height: 16,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: 3,
+        },
+        badgeText: {
+          color: '#fff',
+          fontSize: 10,
+          fontWeight: '700',
+        },
+      }),
+    [colors, isDark]
+  );
 
   const surface = useNavigationStore((s) => s.currentSurface);
   if (surface !== 'tabs') return null;

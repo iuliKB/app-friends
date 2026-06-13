@@ -85,7 +85,7 @@ export function useExpenseCreate(opts?: { groupChannelId?: string | null }): Exp
   const totalCents = parseInt(rawDigits || '0', 10);
   const allocatedCents = Object.values(customAmounts).reduce(
     (sum, v) => sum + parseInt(v || '0', 10),
-    0,
+    0
   );
 
   // Friends list — useQuery branched on group-scope. The picker needs a richer
@@ -93,11 +93,9 @@ export function useExpenseCreate(opts?: { groupChannelId?: string | null }): Exp
   // (FriendRow[]) and chat.members caches; use a hook-local key under the friends
   // prefix so it's still cleared by friends.all() prefix invalidation but doesn't
   // collide with useFriends's cache.
-  const friendsKey = (
-    groupChannelId
-      ? ([...queryKeys.friends.all(), 'expenseCreatePicker', 'group', groupChannelId] as const)
-      : ([...queryKeys.friends.all(), 'expenseCreatePicker', 'all', userId ?? ''] as const)
-  );
+  const friendsKey = groupChannelId
+    ? ([...queryKeys.friends.all(), 'expenseCreatePicker', 'group', groupChannelId] as const)
+    : ([...queryKeys.friends.all(), 'expenseCreatePicker', 'all', userId ?? ''] as const);
 
   const friendsQuery = useQuery({
     queryKey: friendsKey,
@@ -235,9 +233,7 @@ export function useExpenseCreate(opts?: { groupChannelId?: string | null }): Exp
     if (!ids.includes(userId)) ids.push(userId);
 
     const customCents =
-      splitMode === 'custom'
-        ? ids.map((id) => parseInt(customAmounts[id] || '0', 10))
-        : null;
+      splitMode === 'custom' ? ids.map((id) => parseInt(customAmounts[id] || '0', 10)) : null;
 
     try {
       const groupId = await submitMutation.mutateAsync({

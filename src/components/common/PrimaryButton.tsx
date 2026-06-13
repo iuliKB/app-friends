@@ -16,23 +16,27 @@ export function PrimaryButton({
   disabled = false,
 }: PrimaryButtonProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    button: {
-      backgroundColor: colors.interactive.accent,
-      height: 52,
-      borderRadius: RADII.lg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    disabled: {
-      opacity: 0.5,
-    },
-    text: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.surface.base,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        button: {
+          backgroundColor: colors.interactive.accent,
+          height: 52,
+          borderRadius: RADII.lg,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        disabled: {
+          opacity: 0.5,
+        },
+        text: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.surface.base,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <TouchableOpacity

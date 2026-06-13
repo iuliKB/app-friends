@@ -91,10 +91,10 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
       if (planTitleError) throw new Error(planTitleError.message);
 
       const planTitleMap = new Map(
-        (planRows ?? []).map((p) => [p.id as string, p.title as string]),
+        (planRows ?? []).map((p) => [p.id as string, p.title as string])
       );
       const planScheduledMap = new Map(
-        (planRows ?? []).map((p) => [p.id as string, (p.scheduled_for as string | null) ?? null]),
+        (planRows ?? []).map((p) => [p.id as string, (p.scheduled_for as string | null) ?? null])
       );
 
       // Step 4 — uploader profiles
@@ -144,10 +144,7 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
           planScheduledFor: planScheduledMap.get(gPlanId) ?? null,
           photos,
         }))
-        .sort(
-          (a, b) =>
-            (b.photos[0]?.createdAt ?? '').localeCompare(a.photos[0]?.createdAt ?? ''),
-        );
+        .sort((a, b) => (b.photos[0]?.createdAt ?? '').localeCompare(a.photos[0]?.createdAt ?? ''));
 
       const recentPhotos: PlanPhotoWithTitle[] = assembled.slice(0, 6).map((photo) => ({
         ...photo,
@@ -176,7 +173,7 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
       if (storageError) {
         console.error(
           '[useAllPlanPhotos] Storage delete failed (row already deleted):',
-          storageError.message,
+          storageError.message
         );
       }
     },
@@ -193,14 +190,15 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
           .map((g) =>
             g.planId === input.planId
               ? { ...g, photos: g.photos.filter((p) => p.id !== input.photoId) }
-              : g,
+              : g
           )
           .filter((g) => g.photos.length > 0);
         const recentPhotos = old.recentPhotos.filter((p) => p.id !== input.photoId);
         return { groups, recentPhotos };
       });
-      queryClient.setQueryData<PlanPhotoWithUploader[]>(photosKey, (old) =>
-        old?.filter((p) => p.id !== input.photoId) ?? old,
+      queryClient.setQueryData<PlanPhotoWithUploader[]>(
+        photosKey,
+        (old) => old?.filter((p) => p.id !== input.photoId) ?? old
       );
 
       return { previousAggregate, previousPerPlan };
@@ -210,10 +208,7 @@ export function useAllPlanPhotos(): UseAllPlanPhotosResult {
         queryClient.setQueryData(aggregateKey, ctx.previousAggregate);
       }
       if (ctx?.previousPerPlan) {
-        queryClient.setQueryData(
-          queryKeys.plans.photos(input.planId),
-          ctx.previousPerPlan,
-        );
+        queryClient.setQueryData(queryKeys.plans.photos(input.planId), ctx.previousPerPlan);
       }
     },
     onSettled: (_data, _err, input) => {

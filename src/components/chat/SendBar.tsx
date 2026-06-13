@@ -42,181 +42,189 @@ const ACTIONS: { id: AttachmentAction; icon: ActionIconName; label: string; sub:
 // Height of the circles and the pill's minimum height
 const BAR_ELEMENT_SIZE = 52;
 
-export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply, onPhotoPress }: SendBarProps) {
+export function SendBar({
+  onSend,
+  onAttachmentAction,
+  replyContext,
+  onClearReply,
+  onPhotoPress,
+}: SendBarProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const styles = useMemo(() => StyleSheet.create({
-    // ── Main bar — floats on top of message surface, no border ────────────────
-    container: {
-      flexDirection: 'row',
-      alignItems: 'flex-end',
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.sm,
-      paddingBottom: SPACING.sm + insets.bottom,
-      backgroundColor: colors.surface.base,
-      gap: SPACING.sm,
-    },
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        // ── Main bar — floats on top of message surface, no border ────────────────
+        container: {
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.sm,
+          paddingBottom: SPACING.sm + insets.bottom,
+          backgroundColor: colors.surface.base,
+          gap: SPACING.sm,
+        },
 
-    // ── + button — large dark circle ──────────────────────────────────────────
-    addBtn: {
-      width: BAR_ELEMENT_SIZE,
-      height: BAR_ELEMENT_SIZE,
-      borderRadius: RADII.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface.card,
-    },
+        // ── + button — large dark circle ──────────────────────────────────────────
+        addBtn: {
+          width: BAR_ELEMENT_SIZE,
+          height: BAR_ELEMENT_SIZE,
+          borderRadius: RADII.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.surface.card,
+        },
 
-    // ── Input pill — photo icon lives inside on the right ─────────────────────
-    inputPill: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.full,
-      borderWidth: StyleSheet.hairlineWidth,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderColor: 'rgba(255,255,255,0.10)',
-      paddingLeft: SPACING.lg,
-      paddingRight: SPACING.xs,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: BAR_ELEMENT_SIZE,
-    },
-    input: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-      backgroundColor: 'transparent',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      maxHeight: 120,
-      paddingTop: 0,
-      paddingBottom: 0,
-      paddingHorizontal: 0,
-    },
-    photoBtn: {
-      width: 40,
-      height: 40,
-      borderRadius: RADII.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+        // ── Input pill — photo icon lives inside on the right ─────────────────────
+        inputPill: {
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.full,
+          borderWidth: StyleSheet.hairlineWidth,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          borderColor: 'rgba(255,255,255,0.10)',
+          paddingLeft: SPACING.lg,
+          paddingRight: SPACING.xs,
 
-    // ── Send button — large filled accent circle ───────────────────────────────
-    sendBtn: {
-      width: BAR_ELEMENT_SIZE,
-      height: BAR_ELEMENT_SIZE,
-      borderRadius: RADII.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.interactive.accent,
-    },
-    sendBtnInactive: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      opacity: 0.35,
-    },
+          minHeight: BAR_ELEMENT_SIZE,
+        },
+        input: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+          backgroundColor: 'transparent',
 
-    // ── Reply bar ─────────────────────────────────────────────────────────────
-    replyBar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      minHeight: 44,
-      backgroundColor: colors.surface.card,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.border,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.sm,
-      gap: SPACING.sm,
-    },
-    replyAccentBar: {
-      width: 3,
-      alignSelf: 'stretch',
-      borderRadius: RADII.full,
-      backgroundColor: colors.interactive.accent,
-    },
-    replyBarContent: {
-      flex: 1,
-    },
-    replyBarLabel: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.interactive.accent,
-    },
-    replyBarPreview: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    replyBarDismiss: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minWidth: 44,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-      justifyContent: 'center',
-      alignItems: 'flex-end',
-    },
+          maxHeight: 120,
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingHorizontal: 0,
+        },
+        photoBtn: {
+          width: 40,
+          height: 40,
+          borderRadius: RADII.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
 
-    // ── Attachment bottom sheet ───────────────────────────────────────────────
-    backdrop: {
-      ...StyleSheet.absoluteFillObject,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    sheet: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: colors.surface.card,
-      borderTopLeftRadius: RADII.lg,
-      borderTopRightRadius: RADII.lg,
-      paddingBottom: SPACING.xxl + insets.bottom,
-    },
-    dragHandle: {
-      width: 40,
-      height: 4,
-      borderRadius: RADII.xs,
-      backgroundColor: colors.border,
-      alignSelf: 'center',
-      marginTop: SPACING.sm,
-      marginBottom: SPACING.md,
-    },
-    actionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      gap: SPACING.md,
-    },
-    actionRowBorder: {
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.border,
-    },
-    actionIconWrapper: {
-      width: 44,
-      height: 44,
-      borderRadius: RADII.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface.overlay,
-    },
-    actionText: {
-      flex: 1,
-    },
-    actionLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-    actionSub: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginTop: 2,
-    },
-  }), [colors, insets.bottom]);
+        // ── Send button — large filled accent circle ───────────────────────────────
+        sendBtn: {
+          width: BAR_ELEMENT_SIZE,
+          height: BAR_ELEMENT_SIZE,
+          borderRadius: RADII.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.interactive.accent,
+        },
+        sendBtnInactive: {
+          opacity: 0.35,
+        },
+
+        // ── Reply bar ─────────────────────────────────────────────────────────────
+        replyBar: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          minHeight: 44,
+          backgroundColor: colors.surface.card,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.sm,
+          gap: SPACING.sm,
+        },
+        replyAccentBar: {
+          width: 3,
+          alignSelf: 'stretch',
+          borderRadius: RADII.full,
+          backgroundColor: colors.interactive.accent,
+        },
+        replyBarContent: {
+          flex: 1,
+        },
+        replyBarLabel: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.interactive.accent,
+        },
+        replyBarPreview: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        replyBarDismiss: {
+          minWidth: 44,
+
+          minHeight: 44,
+          justifyContent: 'center',
+          alignItems: 'flex-end',
+        },
+
+        // ── Attachment bottom sheet ───────────────────────────────────────────────
+        backdrop: {
+          ...StyleSheet.absoluteFillObject,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          backgroundColor: 'rgba(0,0,0,0.5)',
+        },
+        sheet: {
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: colors.surface.card,
+          borderTopLeftRadius: RADII.lg,
+          borderTopRightRadius: RADII.lg,
+          paddingBottom: SPACING.xxl + insets.bottom,
+        },
+        dragHandle: {
+          width: 40,
+          height: 4,
+          borderRadius: RADII.xs,
+          backgroundColor: colors.border,
+          alignSelf: 'center',
+          marginTop: SPACING.sm,
+          marginBottom: SPACING.md,
+        },
+        actionRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          gap: SPACING.md,
+        },
+        actionRowBorder: {
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
+        },
+        actionIconWrapper: {
+          width: 44,
+          height: 44,
+          borderRadius: RADII.md,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.surface.overlay,
+        },
+        actionText: {
+          flex: 1,
+        },
+        actionLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+        actionSub: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          marginTop: 2,
+        },
+      }),
+    [colors, insets.bottom]
+  );
 
   const [text, setText] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
@@ -338,12 +346,7 @@ export function SendBar({ onSend, onAttachmentAction, replyContext, onClearReply
         </TouchableOpacity>
       </View>
 
-      <Modal
-        visible={menuVisible}
-        transparent
-        animationType="none"
-        onRequestClose={closeMenu}
-      >
+      <Modal visible={menuVisible} transparent animationType="none" onRequestClose={closeMenu}>
         <TouchableWithoutFeedback onPress={closeMenu}>
           <View style={styles.backdrop} />
         </TouchableWithoutFeedback>

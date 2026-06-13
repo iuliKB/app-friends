@@ -28,49 +28,53 @@ const MOOD_DISPLAY: Record<string, string> = { free: "I'm Free", maybe: 'Maybe',
 export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
   const { colors } = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      ...colors.cardElevation,
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-    },
-    dot: {
-      width: 10,
-      height: 10,
-      borderRadius: RADII.full,
-    },
-    dotInline: {
-      marginRight: SPACING.sm,
-    },
-    bottomRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    textContainer: {
-      flex: 1,
-    },
-    title: {
-      fontSize: FONT_SIZE.xxl,
-      fontFamily: FONT_FAMILY.display.bold,
-      color: colors.text.primary,
-    },
-    titleInactive: {
-      color: colors.text.secondary,
-    },
-    subtitle: {
-      fontSize: FONT_SIZE.sm,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-    editIcon: {
-      marginLeft: SPACING.md,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          ...colors.cardElevation,
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+        },
+        dot: {
+          width: 10,
+          height: 10,
+          borderRadius: RADII.full,
+        },
+        dotInline: {
+          marginRight: SPACING.sm,
+        },
+        bottomRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        },
+        textContainer: {
+          flex: 1,
+        },
+        title: {
+          fontSize: FONT_SIZE.xxl,
+          fontFamily: FONT_FAMILY.display.bold,
+          color: colors.text.primary,
+        },
+        titleInactive: {
+          color: colors.text.secondary,
+        },
+        subtitle: {
+          fontSize: FONT_SIZE.sm,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+        editIcon: {
+          marginLeft: SPACING.md,
+        },
+      }),
+    [colors]
+  );
 
   // 1. Status reading (same pattern as OwnStatusPill)
   const currentStatus = useStatusStore((s) => s.currentStatus);
@@ -171,10 +175,17 @@ export function OwnStatusCard({ onPress }: OwnStatusCardProps) {
       <Animated.View style={{ transform: [{ scale: cardScaleAnim }] }}>
         <View style={styles.bottomRow}>
           <Animated.View
-            style={[styles.dot, styles.dotInline, { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] }]}
+            style={[
+              styles.dot,
+              styles.dotInline,
+              { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] },
+            ]}
           />
           <View style={styles.textContainer}>
-            <Text style={[styles.title, !hasActiveStatus && styles.titleInactive]} numberOfLines={1}>
+            <Text
+              style={[styles.title, !hasActiveStatus && styles.titleInactive]}
+              numberOfLines={1}
+            >
               {titleText}
             </Text>
             {subtitleText !== null && (

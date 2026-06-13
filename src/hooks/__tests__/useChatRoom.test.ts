@@ -14,6 +14,8 @@ import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useChatRoom } from '../useChatRoom';
+
 // Chainable supabase mock — supports .from().select().eq().order().limit() returning data.
 function makeChain(rows: any[] = [], err: any = null): any {
   const result = { data: rows, error: err } as any;
@@ -55,7 +57,7 @@ jest.mock('@/lib/supabase', () => {
 
 jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (
-    selector: (s: { session: { user: { id: string; user_metadata: any } } }) => unknown,
+    selector: (s: { session: { user: { id: string; user_metadata: any } } }) => unknown
   ) =>
     selector({
       session: { user: { id: 'u1', user_metadata: { display_name: 'Me', avatar_url: null } } },
@@ -85,8 +87,6 @@ jest.mock('@/lib/realtimeBridge', () => ({
   _resetRealtimeBridgeForTests: jest.fn(),
 }));
 
-import { useChatRoom } from '../useChatRoom';
-
 describe('useChatRoom (migrated to TanStack Query)', () => {
   beforeEach(() => {
     mockFrom.mockReset();
@@ -101,7 +101,7 @@ describe('useChatRoom (migrated to TanStack Query)', () => {
     const { wrapper } = createTestQueryClient();
     const { result } = renderHook(
       () => useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
-      { wrapper },
+      { wrapper }
     );
     // Public surface intentionally verbose — ChatRoomScreen reads many fields.
     expect(typeof result.current.sendMessage).toBe('function');
@@ -118,7 +118,7 @@ describe('useChatRoom (migrated to TanStack Query)', () => {
     const { wrapper } = createTestQueryClient();
     const { unmount } = renderHook(
       () => useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
-      { wrapper },
+      { wrapper }
     );
     await waitFor(() => {
       expect(mock_subscribeChatRoom).toHaveBeenCalled();
@@ -132,7 +132,7 @@ describe('useChatRoom (migrated to TanStack Query)', () => {
     const { wrapper, client } = createTestQueryClient();
     const { result } = renderHook(
       () => useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
-      { wrapper },
+      { wrapper }
     );
     await waitFor(() => expect(result.current.loading).toBe(false));
     const cached = client.getQueryData(queryKeys.chat.messages('p1'));
@@ -156,9 +156,8 @@ describe('Phase 32 tiered onSettled — useChatRoom send mutations', () => {
     const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
 
     const { result } = renderHook(
-      () =>
-        useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
-      { wrapper },
+      () => useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
+      { wrapper }
     );
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -180,9 +179,8 @@ describe('Phase 32 tiered onSettled — useChatRoom send mutations', () => {
     const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
 
     const { result } = renderHook(
-      () =>
-        useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
-      { wrapper },
+      () => useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
+      { wrapper }
     );
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -203,9 +201,8 @@ describe('Phase 32 tiered onSettled — useChatRoom send mutations', () => {
     const invalidateSpy = jest.spyOn(client, 'invalidateQueries');
 
     const { result } = renderHook(
-      () =>
-        useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
-      { wrapper },
+      () => useChatRoom({ planId: 'p1', dmChannelId: undefined, groupChannelId: undefined }),
+      { wrapper }
     );
     await waitFor(() => expect(result.current.loading).toBe(false));
 

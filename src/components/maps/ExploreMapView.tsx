@@ -19,15 +19,7 @@ import * as Location from 'expo-location';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  useTheme,
-  SPACING,
-  RADII,
-  FONT_SIZE,
-  FONT_FAMILY,
-  SHADOWS,
-  ANIMATION,
-} from '@/theme';
+import { useTheme, SPACING, RADII, FONT_SIZE, FONT_FAMILY, SHADOWS, ANIMATION } from '@/theme';
 import { DARK_MAP_STYLE } from '@/lib/maps';
 import { EventArtwork, formatEventLabels } from '@/components/plans/EventArtwork';
 import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_GAP } from '@/components/common/CustomTabBar';
@@ -59,7 +51,9 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
   const mapRef = useRef<MapView | null>(null);
   const carouselRef = useRef<FlatList<PlanWithMembers> | null>(null);
 
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
+    null
+  );
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -128,7 +122,7 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       },
-      350,
+      350
     );
   }, []);
 
@@ -141,7 +135,7 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       },
-      400,
+      400
     );
   }, [userLocation]);
 
@@ -161,7 +155,7 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
         }, 450);
       });
     },
-    [animateMapToPlan, listVisible],
+    [animateMapToPlan, listVisible]
   );
 
   const handleCarouselMomentumEnd = useCallback(
@@ -175,14 +169,14 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
       const plan = visiblePlans[clamped];
       if (plan) animateMapToPlan(plan);
     },
-    [animateMapToPlan, selectedIndex, visiblePlans],
+    [animateMapToPlan, selectedIndex, visiblePlans]
   );
 
   const handleOpenPlan = useCallback(
     (planId: string) => {
       router.push(`/plans/${planId}` as never);
     },
-    [router],
+    [router]
   );
 
   const styles = useMemo(
@@ -225,7 +219,7 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
           fontSize: FONT_SIZE.md,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           paddingVertical: 0,
         },
         // Round floating action buttons (right column)
@@ -350,7 +344,7 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
           flexShrink: 1,
         },
       }),
-    [colors, isDark],
+    [colors, isDark]
   );
 
   if (isLoadingLocation) {
@@ -396,10 +390,7 @@ export function ExploreMapView({ plans }: ExploreMapViewProps) {
               }}
             >
               <View
-                style={[
-                  styles.pinWrapper,
-                  isSelected ? { transform: [{ scale: 1.12 }] } : null,
-                ]}
+                style={[styles.pinWrapper, isSelected ? { transform: [{ scale: 1.12 }] } : null]}
               >
                 <View style={[styles.pin, isSelected && styles.pinSelected]}>
                   {hasImage ? (

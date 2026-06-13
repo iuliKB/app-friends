@@ -106,7 +106,7 @@ export function useFriends(): UseFriendsResult {
     queryFn: async (): Promise<FriendRow[]> => {
       const { data, error } = await supabase.rpc('get_friends');
       if (error) throw error;
-      return ((data ?? []) as unknown) as FriendRow[];
+      return (data ?? []) as unknown as FriendRow[];
     },
     enabled: !!userId,
   });
@@ -124,10 +124,10 @@ export function useFriends(): UseFriendsResult {
         .select('user_id, effective_status, context_tag, status_expires_at, last_active_at')
         .in('user_id', friendIds);
       if (error) throw error;
-      return ((data ?? []) as unknown) as StatusRow[];
+      return (data ?? []) as unknown as StatusRow[];
     },
     enabled: !!userId && friendIds.length > 0,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     meta: { friendIdsKey } as any,
   });
 
@@ -209,7 +209,7 @@ export function useFriends(): UseFriendsResult {
         .from('friendships')
         .select('id, status, requester_id')
         .or(
-          `and(requester_id.eq.${myId},addressee_id.eq.${targetUserId}),and(requester_id.eq.${targetUserId},addressee_id.eq.${myId})`,
+          `and(requester_id.eq.${myId},addressee_id.eq.${targetUserId}),and(requester_id.eq.${targetUserId},addressee_id.eq.${myId})`
         )
         .maybeSingle();
 
@@ -308,7 +308,7 @@ export function useFriends(): UseFriendsResult {
         .from('friendships')
         .delete()
         .or(
-          `and(requester_id.eq.${myId},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${myId})`,
+          `and(requester_id.eq.${myId},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${myId})`
         );
       if (error) throw error;
       return data;
@@ -363,7 +363,7 @@ export function useFriends(): UseFriendsResult {
       const filtered = (data ?? []).filter((p) => p.id !== userId) as Profile[];
       return { data: filtered, error: null };
     },
-    [userId],
+    [userId]
   );
 
   return {

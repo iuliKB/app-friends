@@ -18,8 +18,8 @@ const TABS: { key: ChatTab; label: string }[] = [
 export function ChatTabBar({ activeTab, onTabChange }: ChatTabBarProps) {
   const { colors } = useTheme();
 
-  const [tabLayouts, setTabLayouts] = useState<Array<{ x: number; width: number } | null>>(
-    TABS.map(() => null),
+  const [tabLayouts, setTabLayouts] = useState<({ x: number; width: number } | null)[]>(
+    TABS.map(() => null)
   );
   const indicatorLeft = useRef(new Animated.Value(0)).current;
   const indicatorWidth = useRef(new Animated.Value(0)).current;
@@ -44,37 +44,41 @@ export function ChatTabBar({ activeTab, onTabChange }: ChatTabBarProps) {
     ]).start();
   }, [activeTab, tabLayouts, indicatorLeft, indicatorWidth]);
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    tab: {
-      flex: 1,
-      alignItems: 'center',
-      paddingVertical: SPACING.md,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginBottom: -1,
-    },
-    label: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    labelActive: {
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.primary,
-    },
-    indicator: {
-      position: 'absolute',
-      bottom: 0,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 2,
-      backgroundColor: colors.interactive.accent,
-      borderRadius: 1,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        tab: {
+          flex: 1,
+          alignItems: 'center',
+          paddingVertical: SPACING.md,
+
+          marginBottom: -1,
+        },
+        label: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        labelActive: {
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.primary,
+        },
+        indicator: {
+          position: 'absolute',
+          bottom: 0,
+
+          height: 2,
+          backgroundColor: colors.interactive.accent,
+          borderRadius: 1,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <View style={styles.container}>
@@ -97,15 +101,11 @@ export function ChatTabBar({ activeTab, onTabChange }: ChatTabBarProps) {
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
           >
-            <Text style={[styles.label, isActive && styles.labelActive]}>
-              {tab.label}
-            </Text>
+            <Text style={[styles.label, isActive && styles.labelActive]}>{tab.label}</Text>
           </TouchableOpacity>
         );
       })}
-      <Animated.View
-        style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]}
-      />
+      <Animated.View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
     </View>
   );
 }

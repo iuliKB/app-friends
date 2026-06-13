@@ -93,11 +93,7 @@ const KeyboardAvoidingView = ({ children, ...props }) =>
 // via the `onClick` prop name (matching TouchableOpacity) so fireEvent.press
 // works against backdrops in tests.
 const TouchableWithoutFeedback = ({ children, onPress, ...props }) =>
-  React.createElement(
-    'TouchableWithoutFeedback',
-    { ...props, onClick: onPress },
-    children
-  );
+  React.createElement('TouchableWithoutFeedback', { ...props, onClick: onPress }, children);
 
 const useColorScheme = jest.fn(() => 'light');
 const useWindowDimensions = jest.fn(() => ({ width: 375, height: 812, scale: 2, fontScale: 1 }));

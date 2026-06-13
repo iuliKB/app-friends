@@ -42,7 +42,7 @@ export function ImageViewerModal({ visible, imageUrl, onClose }: ImageViewerModa
           [
             { text: 'Open Settings', onPress: () => Linking.openSettings() },
             { text: 'Cancel', style: 'cancel' },
-          ],
+          ]
         );
         return;
       }
@@ -122,9 +122,9 @@ const styles = StyleSheet.create({
   btnTopLeft: {
     position: 'absolute',
     left: SPACING.lg,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     minWidth: 44,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
@@ -132,9 +132,9 @@ const styles = StyleSheet.create({
   btnTopRight: {
     position: 'absolute',
     right: SPACING.lg,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     minWidth: 44,
-    // eslint-disable-next-line campfire/no-hardcoded-styles
+
     minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',

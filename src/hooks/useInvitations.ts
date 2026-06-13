@@ -83,14 +83,11 @@ export function useInvitations(): {
       // Step 4: get profiles for all involved users (creators + members)
       const allUserIds = new Set<string>();
       for (const p of plans as { created_by: string }[]) allUserIds.add(p.created_by);
-      for (const m of ((allMembers ?? []) as { user_id: string }[])) {
+      for (const m of (allMembers ?? []) as { user_id: string }[]) {
         allUserIds.add(m.user_id);
       }
 
-      let profileMap = new Map<
-        string,
-        { display_name: string; avatar_url: string | null }
-      >();
+      let profileMap = new Map<string, { display_name: string; avatar_url: string | null }>();
 
       if (allUserIds.size > 0) {
         const { data: profiles } = await supabase
@@ -99,15 +96,15 @@ export function useInvitations(): {
           .in('id', [...allUserIds]);
 
         profileMap = new Map(
-          ((profiles ?? []) as { id: string; display_name: string; avatar_url: string | null }[]).map(
-            (p) => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }],
-          ),
+          (
+            (profiles ?? []) as { id: string; display_name: string; avatar_url: string | null }[]
+          ).map((p) => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }])
         );
       }
 
       // Step 5: group members by plan (exclude current user)
       const membersByPlan = new Map<string, InvitedMember[]>();
-      for (const m of ((allMembers ?? []) as { plan_id: string; user_id: string }[])) {
+      for (const m of (allMembers ?? []) as { plan_id: string; user_id: string }[]) {
         if (m.user_id === userId) continue;
         if (!membersByPlan.has(m.plan_id)) membersByPlan.set(m.plan_id, []);
         const profile = profileMap.get(m.user_id);
@@ -118,13 +115,15 @@ export function useInvitations(): {
         });
       }
 
-      return (plans as {
-        id: string;
-        title: string;
-        scheduled_for: string | null;
-        location: string | null;
-        created_by: string;
-      }[]).map((p) => {
+      return (
+        plans as {
+          id: string;
+          title: string;
+          scheduled_for: string | null;
+          location: string | null;
+          created_by: string;
+        }[]
+      ).map((p) => {
         const creatorProfile = profileMap.get(p.created_by);
         return {
           plan_id: p.id,
@@ -156,11 +155,11 @@ export function useInvitations(): {
     onMutate: async (planId: string) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.status.invitations(userId ?? '') });
       const previous = queryClient.getQueryData<PlanInvitation[]>(
-        queryKeys.status.invitations(userId ?? ''),
+        queryKeys.status.invitations(userId ?? '')
       );
       queryClient.setQueryData<PlanInvitation[]>(
         queryKeys.status.invitations(userId ?? ''),
-        (old) => (old ?? []).filter((inv) => inv.plan_id !== planId),
+        (old) => (old ?? []).filter((inv) => inv.plan_id !== planId)
       );
       return { previous };
     },
@@ -193,11 +192,11 @@ export function useInvitations(): {
     onMutate: async (planId: string) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.status.invitations(userId ?? '') });
       const previous = queryClient.getQueryData<PlanInvitation[]>(
-        queryKeys.status.invitations(userId ?? ''),
+        queryKeys.status.invitations(userId ?? '')
       );
       queryClient.setQueryData<PlanInvitation[]>(
         queryKeys.status.invitations(userId ?? ''),
-        (old) => (old ?? []).filter((inv) => inv.plan_id !== planId),
+        (old) => (old ?? []).filter((inv) => inv.plan_id !== planId)
       );
       return { previous };
     },

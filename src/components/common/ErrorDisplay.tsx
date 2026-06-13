@@ -17,38 +17,42 @@ export function ErrorDisplay({
   onRetry,
 }: ErrorDisplayProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    screenContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: SPACING.xxl,
-    },
-    screenMessage: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.lg,
-    },
-    retryButton: {
-      marginTop: SPACING.xl,
-      paddingHorizontal: SPACING.xl,
-      paddingVertical: SPACING.md,
-      borderRadius: RADII.md,
-      backgroundColor: colors.interactive.accent,
-    },
-    retryText: {
-      color: colors.surface.base,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-    },
-    inlineMessage: {
-      color: colors.interactive.destructive,
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screenContainer: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: SPACING.xxl,
+        },
+        screenMessage: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.lg,
+        },
+        retryButton: {
+          marginTop: SPACING.xl,
+          paddingHorizontal: SPACING.xl,
+          paddingVertical: SPACING.md,
+          borderRadius: RADII.md,
+          backgroundColor: colors.interactive.accent,
+        },
+        retryText: {
+          color: colors.surface.base,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+        },
+        inlineMessage: {
+          color: colors.interactive.destructive,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+        },
+      }),
+    [colors]
+  );
 
   useEffect(() => {
     if (technicalDetails) {

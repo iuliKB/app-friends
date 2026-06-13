@@ -15,6 +15,8 @@ import { renderHook, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useIOUSummary } from '../useIOUSummary';
+
 const mockRpc = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -26,8 +28,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u-self' } } }),
 }));
-
-import { useIOUSummary } from '../useIOUSummary';
 
 describe('useIOUSummary (migrated to TanStack Query)', () => {
   beforeEach(() => mockRpc.mockReset());

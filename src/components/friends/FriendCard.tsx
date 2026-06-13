@@ -14,30 +14,34 @@ interface FriendCardProps {
 
 export function FriendCard({ friend, onPress }: FriendCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      minHeight: 64,
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.lg,
-    },
-    info: {
-      flex: 1,
-      marginLeft: SPACING.lg,
-    },
-    displayName: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    username: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      marginTop: SPACING.xs,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          minHeight: 64,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.lg,
+        },
+        info: {
+          flex: 1,
+          marginLeft: SPACING.lg,
+        },
+        displayName: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        username: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          marginTop: SPACING.xs,
+        },
+      }),
+    [colors]
+  );
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>

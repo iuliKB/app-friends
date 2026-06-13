@@ -48,9 +48,11 @@ export default function EditProfileScreen() {
     // (supabase as any) cast — database.ts regen deferred; bio column exists on live DB
     // (Plan 33-01 migration 0027) but generated types don't include it yet. Same pattern
     // as Phase 31/32 polls/habits un-codegen'd columns.
-    ;(supabase as any)
+    (supabase as any)
       .from('profiles')
-      .select('display_name, avatar_url, birthday_month, birthday_day, birthday_year, username, bio')
+      .select(
+        'display_name, avatar_url, birthday_month, birthday_day, birthday_year, username, bio'
+      )
       .eq('id', session.user.id)
       .single()
       .then(({ data, error }: { data: any; error: any }) => {
@@ -305,20 +307,25 @@ export default function EditProfileScreen() {
           {/* ── Bio ── */}
           <View style={styles.fieldLabelRow}>
             <View style={styles.fieldLabelLeft}>
-              <Ionicons name="chatbubble-ellipses-outline" size={12} color={colors.text.secondary} />
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={12}
+                color={colors.text.secondary}
+              />
               <Text style={styles.fieldLabel}>Bio</Text>
             </View>
             <Text
-              style={[
-                styles.charCountInline,
-                bio.length > 144 && { color: colors.feedback.error },
-              ]}
+              style={[styles.charCountInline, bio.length > 144 && { color: colors.feedback.error }]}
             >
               {bio.length}/160
             </Text>
           </View>
           <TextInput
-            style={[styles.textInput, styles.bioTextInput, (saving || savingBio) && styles.inputDisabled]}
+            style={[
+              styles.textInput,
+              styles.bioTextInput,
+              (saving || savingBio) && styles.inputDisabled,
+            ]}
             value={bio}
             onChangeText={setBio}
             placeholder="A short something about you"

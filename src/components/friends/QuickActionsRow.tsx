@@ -41,7 +41,7 @@ export function QuickActionsRow({
           marginTop: SPACING.xl,
         },
       }),
-    [colors],
+    [colors]
   );
 
   return (

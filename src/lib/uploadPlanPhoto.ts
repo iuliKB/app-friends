@@ -20,11 +20,10 @@ export async function uploadPlanPhoto(
 ): Promise<string | null> {
   try {
     // D-12: Compress before upload — gallery photos viewed full-screen (1920px / 0.85)
-    const compressed = await manipulateAsync(
-      localUri,
-      [{ resize: { width: 1920 } }],
-      { compress: 0.85, format: SaveFormat.JPEG }
-    );
+    const compressed = await manipulateAsync(localUri, [{ resize: { width: 1920 } }], {
+      compress: 0.85,
+      format: SaveFormat.JPEG,
+    });
 
     // D-04: path format {plan_id}/{user_id}/{photo_id}.jpg
     // crypto.randomUUID() unavailable in Hermes — use established project pattern
@@ -42,7 +41,7 @@ export async function uploadPlanPhoto(
       .from('plan-gallery')
       .upload(path, arrayBuffer, {
         contentType: 'image/jpeg', // D-11: forced — prevents executable disguise
-        upsert: false,             // D-11: new path per photo; no overwrite
+        upsert: false, // D-11: new path per photo; no overwrite
       });
 
     if (uploadError) {

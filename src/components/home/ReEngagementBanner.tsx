@@ -20,44 +20,48 @@ interface ReEngagementBannerProps {
 
 export function ReEngagementBanner({ onUpdatePressed }: ReEngagementBannerProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    banner: {
-      backgroundColor: colors.offline.bg,
-      overflow: 'hidden',
-      paddingHorizontal: SPACING.lg,
-    },
-    content: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: SPACING.md,
-    },
-    copy: {
-      flex: 1,
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.offline.text,
-    },
-    actions: {
-      flexDirection: 'row',
-      gap: SPACING.xs,
-    },
-    button: {
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
-      borderRadius: RADII.sm,
-      backgroundColor: colors.surface.base,
-    },
-    buttonPressed: {
-      opacity: 0.7,
-    },
-    buttonLabel: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        banner: {
+          backgroundColor: colors.offline.bg,
+          overflow: 'hidden',
+          paddingHorizontal: SPACING.lg,
+        },
+        content: {
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: SPACING.md,
+        },
+        copy: {
+          flex: 1,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.offline.text,
+        },
+        actions: {
+          flexDirection: 'row',
+          gap: SPACING.xs,
+        },
+        button: {
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+          borderRadius: RADII.sm,
+          backgroundColor: colors.surface.base,
+        },
+        buttonPressed: {
+          opacity: 0.7,
+        },
+        buttonLabel: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+        },
+      }),
+    [colors]
+  );
 
   const { currentStatus, heartbeatState, touch, setStatus } = useStatus();
   const [locallyDismissed, setLocallyDismissed] = useState(false);

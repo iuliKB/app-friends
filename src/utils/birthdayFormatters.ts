@@ -10,7 +10,7 @@ export function formatDaysUntil(days: number): string {
 export function formatBirthdayDate(month: number, day: number): string {
   // Use year 2000 as a neutral anchor — year is irrelevant for month/day display.
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(
-    new Date(2000, month - 1, day),
+    new Date(2000, month - 1, day)
   );
 }
 // Combined display: `${formatBirthdayDate(m, d)} · ${formatDaysUntil(days)}`

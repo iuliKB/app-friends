@@ -44,8 +44,19 @@ export default function FriendBirthdayPage() {
   function invalidateChatList() {
     void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(userId) });
   }
-  const { items, loading: wishListLoading, error: wishListError, refetch: refetchWishList, toggleClaim } = useFriendWishList(friendId);
-  const { friends, loading: friendsLoading, error: friendsError, refetch: refetchFriends } = useFriendsOfFriend(friendId);
+  const {
+    items,
+    loading: wishListLoading,
+    error: wishListError,
+    refetch: refetchWishList,
+    toggleClaim,
+  } = useFriendWishList(friendId);
+  const {
+    friends,
+    loading: friendsLoading,
+    error: friendsError,
+    refetch: refetchFriends,
+  } = useFriendsOfFriend(friendId);
 
   // Group member selection state (D-16: birthday friend is excluded from picker)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -69,14 +80,11 @@ export default function FriendBirthdayPage() {
     const groupName = `${friendName}'s birthday`;
     const memberIds = Array.from(selectedIds);
 
-    const { data: groupChannelId, error: rpcErr } = await supabase.rpc(
-      'create_birthday_group',
-      {
-        p_name: groupName,
-        p_member_ids: memberIds,
-        p_birthday_person_id: friendId,
-      }
-    );
+    const { data: groupChannelId, error: rpcErr } = await supabase.rpc('create_birthday_group', {
+      p_name: groupName,
+      p_member_ids: memberIds,
+      p_birthday_person_id: friendId,
+    });
 
     setCreating(false);
 
@@ -105,108 +113,112 @@ export default function FriendBirthdayPage() {
 
   const isLoading = wishListLoading || friendsLoading;
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    centered: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.surface.base,
-    },
-    sectionLabel: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xl,
-      paddingBottom: SPACING.sm,
-    },
-    sectionSub: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-      marginBottom: SPACING.sm,
-    },
-    emptyText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.md,
-    },
-    errorText: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.interactive.destructive,
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.md,
-    },
-    pickerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      gap: SPACING.md,
-      backgroundColor: colors.surface.base,
-    },
-    pickerRowSelected: {
-      backgroundColor: colors.surface.card,
-    },
-    pickerName: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    checkbox: {
-      width: 24,
-      height: 24,
-      borderRadius: RADII.sm,
-      borderWidth: 2,
-      borderColor: colors.border,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    checkboxSelected: {
-      backgroundColor: colors.interactive.accent,
-      borderColor: colors.interactive.accent,
-    },
-    checkmark: {
-      fontSize: FONT_SIZE.sm,
-      color: colors.surface.base,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontWeight: '700',
-    },
-    buttonWrapper: {
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.xl,
-    },
-    planButton: {
-      backgroundColor: colors.interactive.accent,
-      borderRadius: RADII.lg,
-      paddingVertical: SPACING.md,
-      alignItems: 'center',
-    },
-    planButtonDisabled: {
-      opacity: 0.4,
-    },
-    planButtonText: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.bold,
-      color: colors.surface.base,
-    },
-    planButtonHint: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.sm,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        centered: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.surface.base,
+        },
+        sectionLabel: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.xl,
+          paddingBottom: SPACING.sm,
+        },
+        sectionSub: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          paddingHorizontal: SPACING.lg,
+          marginBottom: SPACING.sm,
+        },
+        emptyText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          paddingHorizontal: SPACING.lg,
+          paddingBottom: SPACING.md,
+        },
+        errorText: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.interactive.destructive,
+          paddingHorizontal: SPACING.lg,
+          paddingBottom: SPACING.md,
+        },
+        pickerRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          gap: SPACING.md,
+          backgroundColor: colors.surface.base,
+        },
+        pickerRowSelected: {
+          backgroundColor: colors.surface.card,
+        },
+        pickerName: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        checkbox: {
+          width: 24,
+          height: 24,
+          borderRadius: RADII.sm,
+          borderWidth: 2,
+          borderColor: colors.border,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        checkboxSelected: {
+          backgroundColor: colors.interactive.accent,
+          borderColor: colors.interactive.accent,
+        },
+        checkmark: {
+          fontSize: FONT_SIZE.sm,
+          color: colors.surface.base,
+
+          fontWeight: '700',
+        },
+        buttonWrapper: {
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.xl,
+        },
+        planButton: {
+          backgroundColor: colors.interactive.accent,
+          borderRadius: RADII.lg,
+          paddingVertical: SPACING.md,
+          alignItems: 'center',
+        },
+        planButtonDisabled: {
+          opacity: 0.4,
+        },
+        planButtonText: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.bold,
+          color: colors.surface.base,
+        },
+        planButtonHint: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.sm,
+        },
+      }),
+    [colors]
+  );
 
   if (isLoading) {
     return (
@@ -240,18 +252,12 @@ export default function FriendBirthdayPage() {
       }
     >
       {/* Wish List Section */}
-      <Text style={styles.sectionLabel}>
-        {friendName}'s Wish List
-      </Text>
+      <Text style={styles.sectionLabel}>{friendName}'s Wish List</Text>
 
       {wishListError ? (
-        <Text style={styles.errorText}>
-          {wishListError}
-        </Text>
+        <Text style={styles.errorText}>{wishListError}</Text>
       ) : items.length === 0 ? (
-        <Text style={styles.emptyText}>
-          {friendName} hasn't added any wishes yet.
-        </Text>
+        <Text style={styles.emptyText}>{friendName} hasn't added any wishes yet.</Text>
       ) : (
         items.map((item) => (
           <WishListItem
@@ -267,12 +273,8 @@ export default function FriendBirthdayPage() {
       )}
 
       {/* Friend Picker Section (D-13, D-14) */}
-      <Text style={styles.sectionLabel}>
-        Plan Birthday With
-      </Text>
-      <Text style={styles.sectionSub}>
-        Select friends to include in a secret group chat.
-      </Text>
+      <Text style={styles.sectionLabel}>Plan Birthday With</Text>
+      <Text style={styles.sectionSub}>Select friends to include in a secret group chat.</Text>
 
       {friendsError ? (
         <Text style={styles.errorText}>{friendsError}</Text>
@@ -302,9 +304,7 @@ export default function FriendBirthdayPage() {
           disabled={creating || selectedIds.size === 0}
           accessibilityLabel="Plan birthday group chat"
         >
-          <Text style={styles.planButtonText}>
-            {creating ? 'Creating...' : 'Plan Birthday'}
-          </Text>
+          <Text style={styles.planButtonText}>{creating ? 'Creating...' : 'Plan Birthday'}</Text>
         </Pressable>
         {selectedIds.size === 0 && (
           <Text style={styles.planButtonHint}>
@@ -343,11 +343,7 @@ function FriendPickerRow({ friend, selected, onToggle, styles }: FriendPickerRow
       onPress={onToggle}
       accessibilityLabel={`${selected ? 'Deselect' : 'Select'} ${friend.display_name}`}
     >
-      <AvatarCircle
-        size={36}
-        imageUri={friend.avatar_url}
-        displayName={friend.display_name}
-      />
+      <AvatarCircle size={36} imageUri={friend.avatar_url} displayName={friend.display_name} />
       <Text style={styles.pickerName} numberOfLines={1}>
         {friend.display_name}
       </Text>

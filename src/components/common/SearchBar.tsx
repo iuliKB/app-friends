@@ -9,11 +9,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export function SearchBar({
-  value,
-  onChangeText,
-  placeholder = 'Search',
-}: SearchBarProps) {
+export function SearchBar({ value, onChangeText, placeholder = 'Search' }: SearchBarProps) {
   const { colors } = useTheme();
 
   const styles = useMemo(
@@ -38,7 +34,7 @@ export function SearchBar({
           fontSize: FONT_SIZE.md,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           paddingVertical: 0,
         },
       }),

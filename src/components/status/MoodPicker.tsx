@@ -81,9 +81,7 @@ function ensureFuture(d: Date): Date {
   return next;
 }
 
-type WindowSelection =
-  | { kind: 'preset'; id: WindowId }
-  | { kind: 'custom'; expiry: Date };
+type WindowSelection = { kind: 'preset'; id: WindowId } | { kind: 'custom'; expiry: Date };
 
 export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProps) {
   const { colors, isDark } = useTheme();
@@ -200,22 +198,19 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
     setCustomTimeOpen(false);
   }, []);
 
-  const handleCustomTimeChange = useCallback(
-    (event: DateTimePickerEvent, date?: Date) => {
-      if (Platform.OS === 'android') {
-        if (event.type === 'set' && date) {
-          const fixed = ensureFuture(date);
-          setCustomTime(fixed);
-          setSelectedWindow({ kind: 'custom', expiry: fixed });
-        }
-        setCustomTimeOpen(false);
-        return;
+  const handleCustomTimeChange = useCallback((event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      if (event.type === 'set' && date) {
+        const fixed = ensureFuture(date);
+        setCustomTime(fixed);
+        setSelectedWindow({ kind: 'custom', expiry: fixed });
       }
-      // iOS spinner — track temp value; user confirms below.
-      if (date) setCustomTime(date);
-    },
-    []
-  );
+      setCustomTimeOpen(false);
+      return;
+    }
+    // iOS spinner — track temp value; user confirms below.
+    if (date) setCustomTime(date);
+  }, []);
 
   const confirmCustomTime = useCallback(() => {
     const fixed = ensureFuture(customTime);
@@ -298,10 +293,7 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
         : colors.status.busy;
   }, [activeMood, colors]);
 
-  const inactiveMoods = useMemo(
-    () => MOOD_ORDER.filter((m) => m !== activeMood),
-    [activeMood]
-  );
+  const inactiveMoods = useMemo(() => MOOD_ORDER.filter((m) => m !== activeMood), [activeMood]);
   const activePresets = MOOD_PRESETS[activeMood];
 
   const isWindowSelected = useCallback(
@@ -611,10 +603,7 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
                 key={preset.id}
                 onPress={() => handlePresetPress(preset.id)}
                 disabled={saving}
-                style={[
-                  styles.tagChip,
-                  isSelected && { backgroundColor: activeColor + '33' },
-                ]}
+                style={[styles.tagChip, isSelected && { backgroundColor: activeColor + '33' }]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
               >
@@ -697,9 +686,7 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
               accessibilityLabel="Add custom tag"
             >
               <Ionicons name="add" size={14} color={colors.text.secondary} />
-              <Text style={[styles.tagChipLabel, { color: colors.text.secondary }]}>
-                custom
-              </Text>
+              <Text style={[styles.tagChipLabel, { color: colors.text.secondary }]}>custom</Text>
             </Pressable>
           )}
         </View>
@@ -724,12 +711,7 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
                 accessibilityState={{ selected }}
                 accessibilityLabel={`Duration ${opt.label}`}
               >
-                <Text
-                  style={[
-                    styles.windowCellLabel,
-                    selected && { color: colors.surface.base },
-                  ]}
-                >
+                <Text style={[styles.windowCellLabel, selected && { color: colors.surface.base }]}>
                   {opt.label}
                 </Text>
               </Pressable>
@@ -798,9 +780,7 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
                 accessibilityRole="button"
                 accessibilityLabel={`Use until ${formatTimeLabel(customTime)}`}
               >
-                <Text
-                  style={[styles.customTimeConfirmLabel, { color: colors.surface.base }]}
-                >
+                <Text style={[styles.customTimeConfirmLabel, { color: colors.surface.base }]}>
                   Use until {formatTimeLabel(customTime)}
                 </Text>
               </Pressable>
@@ -813,7 +793,11 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
       <View style={styles.divider} />
       {inactiveMoods.map((m) => {
         const color =
-          m === 'free' ? colors.status.free : m === 'maybe' ? colors.status.maybe : colors.status.busy;
+          m === 'free'
+            ? colors.status.free
+            : m === 'maybe'
+              ? colors.status.maybe
+              : colors.status.busy;
         return (
           <Pressable
             key={m}
@@ -849,10 +833,7 @@ export function MoodPicker({ onCommit, onClose, visible = true }: MoodPickerProp
       )}
 
       {/* Success ✓ flash */}
-      <Animated.View
-        style={[styles.successOverlay, { opacity: successAnim }]}
-        pointerEvents="none"
-      >
+      <Animated.View style={[styles.successOverlay, { opacity: successAnim }]} pointerEvents="none">
         <Ionicons name="checkmark-circle" size={88} color={colors.interactive.accent} />
       </Animated.View>
     </View>

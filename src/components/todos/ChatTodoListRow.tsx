@@ -38,7 +38,10 @@ function daysUntilLocal(dueDateLocal: string): number {
   return Math.round((due - today) / (1000 * 60 * 60 * 24));
 }
 
-function formatDueLabel(dateLocal: string | null, completed: boolean): {
+function formatDueLabel(
+  dateLocal: string | null,
+  completed: boolean
+): {
   text: string | null;
   isOverdue: boolean;
 } {

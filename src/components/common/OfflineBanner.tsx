@@ -8,20 +8,24 @@ export function OfflineBanner() {
   const { isConnected } = useNetworkStatus();
   const heightAnim = useRef(new Animated.Value(isConnected ? 0 : 32)).current;
 
-  const styles = useMemo(() => StyleSheet.create({
-    banner: {
-      backgroundColor: colors.offline.bg,
-      overflow: 'hidden',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    text: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.offline.text,
-      textAlign: 'center',
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        banner: {
+          backgroundColor: colors.offline.bg,
+          overflow: 'hidden',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        text: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.offline.text,
+          textAlign: 'center',
+        },
+      }),
+    [colors]
+  );
 
   useEffect(() => {
     Animated.timing(heightAnim, {

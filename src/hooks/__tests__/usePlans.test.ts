@@ -17,6 +17,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { usePlans } from '../usePlans';
+
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -30,8 +32,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u-self' } } }),
 }));
-
-import { usePlans } from '../usePlans';
 
 const PLAN_ID = 'p1';
 const TOMORROW = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
@@ -98,7 +98,9 @@ function setupListMock() {
         select: () => ({
           in: () =>
             Promise.resolve({
-              data: [{ plan_id: PLAN_ID, user_id: 'u-self', rsvp: 'going', joined_at: '2026-05-12' }],
+              data: [
+                { plan_id: PLAN_ID, user_id: 'u-self', rsvp: 'going', joined_at: '2026-05-12' },
+              ],
               error: null,
             }),
         }),
@@ -190,7 +192,7 @@ describe('usePlans (migrated to TanStack Query)', () => {
     });
     expect(outcome?.error).toBe('rsvp boom');
 
-    const detail = client.getQueryData(detailKey) as { members: Array<{ rsvp: string }> };
+    const detail = client.getQueryData(detailKey) as { members: { rsvp: string }[] };
     expect(detail.members[0]!.rsvp).toBe('going'); // rolled back
   });
 
@@ -221,9 +223,7 @@ describe('usePlans (migrated to TanStack Query)', () => {
       return { insert: () => Promise.resolve({ data: null, error: null }) };
     });
 
-    let outcome:
-      | { planId: string | null; error: Error | null }
-      | undefined;
+    let outcome: { planId: string | null; error: Error | null } | undefined;
     await act(async () => {
       outcome = await result.current.createPlan({
         title: 'New Plan',

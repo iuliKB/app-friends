@@ -40,95 +40,98 @@ export function ReactionsSheet({
   onClose,
 }: ReactionsSheetProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    sheet: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: colors.surface.card,
-      borderTopLeftRadius: RADII.lg,
-      borderTopRightRadius: RADII.lg,
-      paddingBottom: SPACING.xl,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      maxHeight: '60%',
-    },
-    handle: {
-      alignSelf: 'center',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 36,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 4,
-      borderRadius: RADII.full,
-      backgroundColor: colors.border,
-      marginTop: SPACING.sm,
-      marginBottom: SPACING.sm,
-    },
-    tabRow: {
-      flexDirection: 'row',
-      paddingHorizontal: SPACING.md,
-      gap: SPACING.xs,
-      flexWrap: 'wrap',
-    },
-    tab: {
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
-      borderRadius: RADII.full,
-      backgroundColor: colors.surface.overlay,
-    },
-    tabActive: {
-      backgroundColor: colors.interactive.accent,
-    },
-    tabText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-    },
-    tabTextActive: {
-      color: colors.surface.base,
-    },
-    divider: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 1,
-      backgroundColor: colors.border,
-      marginTop: SPACING.sm,
-    },
-    loader: {
-      marginTop: SPACING.xl,
-    },
-    list: {
-      flex: 1,
-    },
-    listContent: {
-      paddingHorizontal: SPACING.md,
-      paddingTop: SPACING.sm,
-    },
-    row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-      paddingVertical: SPACING.sm,
-    },
-    name: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    nameOwn: {
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.interactive.accent,
-    },
-    rowEmoji: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      fontSize: 22,
-    },
-    removeHint: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        sheet: {
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: colors.surface.card,
+          borderTopLeftRadius: RADII.lg,
+          borderTopRightRadius: RADII.lg,
+          paddingBottom: SPACING.xl,
+
+          maxHeight: '60%',
+        },
+        handle: {
+          alignSelf: 'center',
+
+          width: 36,
+
+          height: 4,
+          borderRadius: RADII.full,
+          backgroundColor: colors.border,
+          marginTop: SPACING.sm,
+          marginBottom: SPACING.sm,
+        },
+        tabRow: {
+          flexDirection: 'row',
+          paddingHorizontal: SPACING.md,
+          gap: SPACING.xs,
+          flexWrap: 'wrap',
+        },
+        tab: {
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+          borderRadius: RADII.full,
+          backgroundColor: colors.surface.overlay,
+        },
+        tabActive: {
+          backgroundColor: colors.interactive.accent,
+        },
+        tabText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+        },
+        tabTextActive: {
+          color: colors.surface.base,
+        },
+        divider: {
+          height: 1,
+          backgroundColor: colors.border,
+          marginTop: SPACING.sm,
+        },
+        loader: {
+          marginTop: SPACING.xl,
+        },
+        list: {
+          flex: 1,
+        },
+        listContent: {
+          paddingHorizontal: SPACING.md,
+          paddingTop: SPACING.sm,
+        },
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          paddingVertical: SPACING.sm,
+        },
+        name: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        nameOwn: {
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.interactive.accent,
+        },
+        rowEmoji: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          fontSize: 22,
+        },
+        removeHint: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   const [rows, setRows] = useState<ReactionRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,9 +173,7 @@ export function ReactionsSheet({
         return;
       }
 
-      const profileMap = new Map(
-        (profilesData ?? []).map((p) => [p.id, p])
-      );
+      const profileMap = new Map((profilesData ?? []).map((p) => [p.id, p]));
       setRows(
         reactionsData.map((r) => ({
           emoji: r.emoji,
@@ -195,8 +196,7 @@ export function ReactionsSheet({
   const emojiSet = [...new Set(rows.map((r) => r.emoji))];
   const tabs = loading ? [ALL_TAB, ...reactions.map((r) => r.emoji)] : [ALL_TAB, ...emojiSet];
 
-  const visibleRows =
-    activeTab === ALL_TAB ? rows : rows.filter((r) => r.emoji === activeTab);
+  const visibleRows = activeTab === ALL_TAB ? rows : rows.filter((r) => r.emoji === activeTab);
 
   function handleReactionRowPress(row: ReactionRow) {
     if (row.userId !== currentUserId) return;
@@ -207,16 +207,15 @@ export function ReactionsSheet({
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
-        {/* eslint-disable-next-line campfire/no-hardcoded-styles */}
+        {}
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
       </TouchableWithoutFeedback>
       <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
         <View style={styles.handle} />
         <View style={styles.tabRow}>
           {tabs.map((tab) => {
-            const count = tab === ALL_TAB
-              ? rows.length
-              : rows.filter((r) => r.emoji === tab).length;
+            const count =
+              tab === ALL_TAB ? rows.length : rows.filter((r) => r.emoji === tab).length;
             return (
               <TouchableOpacity
                 key={tab}
@@ -255,9 +254,7 @@ export function ReactionsSheet({
                     {isOwn ? 'You' : row.displayName}
                   </Text>
                   <Text style={styles.rowEmoji}>{row.emoji}</Text>
-                  {isOwn && (
-                    <Text style={styles.removeHint}>Tap to remove</Text>
-                  )}
+                  {isOwn && <Text style={styles.removeHint}>Tap to remove</Text>}
                 </TouchableOpacity>
               );
             })}

@@ -34,10 +34,10 @@ export function SkeletonPulse({ width, height }: SkeletonPulseProps) {
     const loop = Animated.loop(
       Animated.timing(translateX, {
         toValue: containerWidth,
-        duration: ANIMATION.duration.verySlow,   // 1200ms — looping ambient animation (D-05)
-        easing: ANIMATION.easing.decelerate(),   // Easing.out(Easing.ease) — smooth left-to-right glide
-        useNativeDriver: true,                   // translateX on transform is native-eligible
-        isInteraction: false,                    // never block FlatList rendering or gesture detection
+        duration: ANIMATION.duration.verySlow, // 1200ms — looping ambient animation (D-05)
+        easing: ANIMATION.easing.decelerate(), // Easing.out(Easing.ease) — smooth left-to-right glide
+        useNativeDriver: true, // translateX on transform is native-eligible
+        isInteraction: false, // never block FlatList rendering or gesture detection
       })
     );
 
@@ -48,15 +48,19 @@ export function SkeletonPulse({ width, height }: SkeletonPulseProps) {
   // D-03 (locked): always RADII.sm, no borderRadius prop.
   // overflow: 'hidden' clips the gradient band at the rectangle boundary — without this
   // the shimmer bleeds outside the skeleton rectangle.
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      width,
-      height,
-      borderRadius: RADII.sm,
-      backgroundColor: colors.surface.card,
-      overflow: 'hidden',
-    },
-  }), [colors, width, height]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          width,
+          height,
+          borderRadius: RADII.sm,
+          backgroundColor: colors.surface.card,
+          overflow: 'hidden',
+        },
+      }),
+    [colors, width, height]
+  );
 
   function handleLayout(e: LayoutChangeEvent) {
     if (typeof width !== 'number') {
@@ -65,22 +69,13 @@ export function SkeletonPulse({ width, height }: SkeletonPulseProps) {
   }
 
   return (
-    <View
-      style={styles.container}
-      onLayout={handleLayout}
-      accessibilityLabel="Loading"
-    >
+    <View style={styles.container} onLayout={handleLayout} accessibilityLabel="Loading">
       {/*
         Gate: do not render the gradient until containerWidth is known.
         Prevents a visible glitch frame with translateX at its initial value before onLayout fires.
       */}
       {containerWidth !== null && (
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            { transform: [{ translateX }] },
-          ]}
-        >
+        <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX }] }]}>
           {/*
             Three-stop gradient: transparent → colors.surface.overlay → transparent
             Horizontal direction (x: 0→1, y constant) produces the left-to-right sweep.

@@ -16,42 +16,46 @@ export function QRCodeDisplay() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    card: {
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.xl,
-      padding: SPACING.xl,
-      alignItems: 'center',
-    },
-    displayName: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.primary,
-      textAlign: 'center',
-      marginTop: SPACING.lg,
-    },
-    username: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: SPACING.xs,
-    },
-    hint: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      paddingHorizontal: SPACING.xxl,
-      marginTop: SPACING.xl,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        card: {
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.xl,
+          padding: SPACING.xl,
+          alignItems: 'center',
+        },
+        displayName: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.primary,
+          textAlign: 'center',
+          marginTop: SPACING.lg,
+        },
+        username: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          marginTop: SPACING.xs,
+        },
+        hint: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+          textAlign: 'center',
+          paddingHorizontal: SPACING.xxl,
+          marginTop: SPACING.xl,
+        },
+      }),
+    [colors]
+  );
 
   useEffect(() => {
     async function loadProfile() {

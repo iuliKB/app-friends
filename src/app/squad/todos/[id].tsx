@@ -136,9 +136,7 @@ export default function TodoDetailScreen() {
     //    list scope columns and resolve the name in a follow-up query.
     const { data: chatData, error: chatErr } = await (supabase as any)
       .from('chat_todo_items')
-      .select(
-        '*, chat_todo_lists!inner(group_channel_id, plan_id, dm_channel_id)'
-      )
+      .select('*, chat_todo_lists!inner(group_channel_id, plan_id, dm_channel_id)')
       .eq('id', todoId)
       .maybeSingle();
 

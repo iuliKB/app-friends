@@ -109,7 +109,7 @@ export function ActionIconButton({
           textAlign: 'center',
         },
       }),
-    [colors, disabled],
+    [colors, disabled]
   );
 
   return (
@@ -128,7 +128,9 @@ export function ActionIconButton({
         <Animated.View style={[styles.circle, animatedStyle]}>
           <Ionicons name={iconName} size={ICON_GLYPH_SIZE} color={glyphColor} />
         </Animated.View>
-        <Text style={styles.label} numberOfLines={1}>{label}</Text>
+        <Text style={styles.label} numberOfLines={1}>
+          {label}
+        </Text>
       </View>
     </Pressable>
   );

@@ -14,6 +14,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useExpenseCreate } from '../useExpenseCreate';
+
 const mockRpc = jest.fn();
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
@@ -37,8 +39,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u-self' } } }),
 }));
-
-import { useExpenseCreate } from '../useExpenseCreate';
 
 describe('useExpenseCreate (migrated to TanStack Query)', () => {
   beforeEach(() => {
@@ -105,12 +105,12 @@ describe('useExpenseCreate (migrated to TanStack Query)', () => {
         p_title: 'Dinner',
         p_total_amount_cents: 4200,
         p_split_mode: 'even',
-      }),
+      })
     );
     expect(mockPush).toHaveBeenCalledWith('/squad/expenses/new-expense-id');
 
     const invalidatedKeys = invalidateSpy.mock.calls.map((c) =>
-      JSON.stringify((c[0] as { queryKey: unknown }).queryKey),
+      JSON.stringify((c[0] as { queryKey: unknown }).queryKey)
     );
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.expenses.list('u-self')));
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.expenses.iouSummary('u-self')));

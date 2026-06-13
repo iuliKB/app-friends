@@ -26,50 +26,52 @@ function formatUntil(expiresAt: string): string {
   const m = d.getMinutes();
   const period = h >= 12 ? 'pm' : 'am';
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  return m === 0
-    ? `until ${h12}${period}`
-    : `until ${h12}:${String(m).padStart(2, '0')}${period}`;
+  return m === 0 ? `until ${h12}${period}` : `until ${h12}:${String(m).padStart(2, '0')}${period}`;
 }
 
 export function OwnStatusPill({ onPress, sessionCount }: OwnStatusPillProps) {
   const { colors } = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    pill: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.full,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.xs,
-      gap: SPACING.xs,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      maxWidth: 200,  // prevents overflow into title — no exact token
-    },
-    dot: {
-      width: 8,
-      height: 8,
-      borderRadius: RADII.full,
-    },
-    label: {
-      flex: 1,
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    editIcon: {
-      fontSize: FONT_SIZE.sm,
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        pill: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.full,
+          borderWidth: 1,
+          borderColor: colors.border,
+          paddingHorizontal: SPACING.md,
+          paddingVertical: SPACING.xs,
+          gap: SPACING.xs,
+
+          maxWidth: 200, // prevents overflow into title — no exact token
+        },
+        dot: {
+          width: 8,
+          height: 8,
+          borderRadius: RADII.full,
+        },
+        label: {
+          flex: 1,
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        editIcon: {
+          fontSize: FONT_SIZE.sm,
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
 
   // 1. Status reading
   const currentStatus = useStatusStore((s) => s.currentStatus);
   const heartbeatState = computeHeartbeatState(
     currentStatus?.status_expires_at ?? null,
-    currentStatus?.last_active_at ?? null,
+    currentStatus?.last_active_at ?? null
   );
   const hasActiveStatus = currentStatus !== null && heartbeatState !== 'dead';
 
@@ -96,7 +98,7 @@ export function OwnStatusPill({ onPress, sessionCount }: OwnStatusPillProps) {
           toValue: 1.4,
           duration: 700,
           useNativeDriver: true,
-          isInteraction: false,  // D-04: never block FlatList rendering
+          isInteraction: false, // D-04: never block FlatList rendering
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
@@ -112,9 +114,9 @@ export function OwnStatusPill({ onPress, sessionCount }: OwnStatusPillProps) {
 
   // 4. Dot color
   const dotColorMap: Record<HeartbeatState, string> = {
-    alive: colors.status.free,    // green
-    fading: colors.status.maybe,  // yellow
-    dead: colors.text.secondary,  // gray
+    alive: colors.status.free, // green
+    fading: colors.status.maybe, // yellow
+    dead: colors.text.secondary, // gray
   };
 
   const dotColor = hasActiveStatus ? dotColorMap[heartbeatState] : colors.text.secondary;
@@ -140,10 +142,7 @@ export function OwnStatusPill({ onPress, sessionCount }: OwnStatusPillProps) {
       style={styles.pill}
     >
       <Animated.View
-        style={[
-          styles.dot,
-          { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] },
-        ]}
+        style={[styles.dot, { backgroundColor: dotColor, transform: [{ scale: pulseAnim }] }]}
       />
       <Text style={styles.label} numberOfLines={1}>
         {pillText}

@@ -28,25 +28,19 @@ export interface UseMyWishListResult {
   loading: boolean;
   error: string | null;
   refetch: () => Promise<unknown>;
-  addItem: (
-    title: string,
-    url?: string,
-    notes?: string,
-  ) => Promise<{ error: Error | null }>;
+  addItem: (title: string, url?: string, notes?: string) => Promise<{ error: Error | null }>;
   updateItem: (
     itemId: string,
     title: string,
     url?: string,
-    notes?: string,
+    notes?: string
   ) => Promise<{ error: Error | null }>;
   deleteItem: (itemId: string) => Promise<{ error: Error | null }>;
 }
 
 // Hermes-safe UUID template (v1.5 STATE decision — crypto.randomUUID unavailable).
 function tempId(): string {
-  return 'tmp-xxxxxxxxxxxxxxxx'.replace(/x/g, () =>
-    Math.floor(Math.random() * 16).toString(16),
-  );
+  return 'tmp-xxxxxxxxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
 }
 
 export function useMyWishList(): UseMyWishListResult {
@@ -65,7 +59,7 @@ export function useMyWishList(): UseMyWishListResult {
         .eq('user_id', userId)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return ((data ?? []) as unknown) as WishListItem[];
+      return (data ?? []) as unknown as WishListItem[];
     },
     enabled: !!userId,
   });
@@ -105,12 +99,7 @@ export function useMyWishList(): UseMyWishListResult {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (input: {
-      itemId: string;
-      title: string;
-      url?: string;
-      notes?: string;
-    }) => {
+    mutationFn: async (input: { itemId: string; title: string; url?: string; notes?: string }) => {
       if (!userId) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('wish_list_items')
@@ -126,17 +115,19 @@ export function useMyWishList(): UseMyWishListResult {
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: listKey });
       const previous = queryClient.getQueryData<WishListItem[]>(listKey);
-      queryClient.setQueryData<WishListItem[]>(listKey, (old) =>
-        old?.map((it) =>
-          it.id === input.itemId
-            ? {
-                ...it,
-                title: input.title,
-                url: input.url ?? null,
-                notes: input.notes ?? null,
-              }
-            : it,
-        ) ?? [],
+      queryClient.setQueryData<WishListItem[]>(
+        listKey,
+        (old) =>
+          old?.map((it) =>
+            it.id === input.itemId
+              ? {
+                  ...it,
+                  title: input.title,
+                  url: input.url ?? null,
+                  notes: input.notes ?? null,
+                }
+              : it
+          ) ?? []
       );
       return { previous };
     },
@@ -164,7 +155,7 @@ export function useMyWishList(): UseMyWishListResult {
       await queryClient.cancelQueries({ queryKey: listKey });
       const previous = queryClient.getQueryData<WishListItem[]>(listKey);
       queryClient.setQueryData<WishListItem[]>(listKey, (old) =>
-        (old ?? []).filter((it) => it.id !== itemId),
+        (old ?? []).filter((it) => it.id !== itemId)
       );
       return { previous };
     },

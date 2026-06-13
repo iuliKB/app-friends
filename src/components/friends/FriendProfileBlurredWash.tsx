@@ -29,7 +29,10 @@ interface FriendProfileBlurredWashProps {
   washOpacity: SharedValue<number>; // 0..1 from header's useDerivedValue on scrollY
 }
 
-export function FriendProfileBlurredWash({ avatarUrl, washOpacity }: FriendProfileBlurredWashProps) {
+export function FriendProfileBlurredWash({
+  avatarUrl,
+  washOpacity,
+}: FriendProfileBlurredWashProps) {
   const { colors, isDark } = useTheme();
   const [washReady, setWashReady] = useState(false);
   const loadOpacity = useSharedValue(0);
@@ -51,7 +54,7 @@ export function FriendProfileBlurredWash({ avatarUrl, washOpacity }: FriendProfi
       isDark
         ? (['rgba(14, 15, 17, 0.35)', 'rgba(14, 15, 17, 0.95)'] as const)
         : (['rgba(245, 246, 248, 0.45)', 'rgba(245, 246, 248, 0.95)'] as const),
-    [isDark],
+    [isDark]
   );
 
   // Compose external wash opacity (scroll-driven) with internal load-in opacity.
@@ -70,7 +73,7 @@ export function FriendProfileBlurredWash({ avatarUrl, washOpacity }: FriendProfi
           backgroundColor: colors.surface.card, // surface.elevated → surface.card per PATTERNS §Corrections #2
         },
       }),
-    [colors],
+    [colors]
   );
 
   return (
@@ -86,11 +89,7 @@ export function FriendProfileBlurredWash({ avatarUrl, washOpacity }: FriendProfi
       ) : (
         <View style={styles.fallback} />
       )}
-      <LinearGradient
-        colors={gradientColors}
-        locations={[0, 1]}
-        style={StyleSheet.absoluteFill}
-      />
+      <LinearGradient colors={gradientColors} locations={[0, 1]} style={StyleSheet.absoluteFill} />
     </Animated.View>
   );
 }

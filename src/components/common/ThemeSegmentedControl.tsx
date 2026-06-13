@@ -111,7 +111,7 @@ export function ThemeSegmentedControl() {
             <Ionicons
               name={seg.icon as never}
               size={14}
-              color={isActive ? '#0E0F11' : colors.text.secondary} // eslint-disable-line campfire/no-hardcoded-styles
+              color={isActive ? '#0E0F11' : colors.text.secondary}
             />
             <Text style={[styles.label, isActive && styles.activeLabel]}>{seg.label}</Text>
           </TouchableOpacity>

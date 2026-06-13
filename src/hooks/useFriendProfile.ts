@@ -74,7 +74,7 @@ export function useFriendProfile(friendId: string): UseFriendProfileResult {
       const profileRes = await (supabase as any)
         .from('profiles')
         .select(
-          'display_name, username, avatar_url, birthday_month, birthday_day, birthday_year, timezone, bio',
+          'display_name, username, avatar_url, birthday_month, birthday_day, birthday_year, timezone, bio'
         )
         .eq('id', friendId)
         .maybeSingle();
@@ -86,7 +86,7 @@ export function useFriendProfile(friendId: string): UseFriendProfileResult {
         .from('friendships')
         .select('created_at')
         .or(
-          `and(requester_id.eq.${userId},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${userId})`,
+          `and(requester_id.eq.${userId},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${userId})`
         )
         .eq('status', 'accepted')
         .maybeSingle();
@@ -95,16 +95,14 @@ export function useFriendProfile(friendId: string): UseFriendProfileResult {
       // Step 3: status. Opportunistic shared-slice read from home cache; direct
       // fallback when home cache is empty (deep-link entry).
       const homeStatuses = queryClient.getQueryData<HomeStatusSlice[]>(
-        queryKeys.home.friends(userId),
+        queryKeys.home.friends(userId)
       );
       let statusRow: HomeStatusSlice | null =
         homeStatuses?.find((s) => s.user_id === friendId) ?? null;
       if (!statusRow) {
         const res = await supabase
           .from('effective_status')
-          .select(
-            'user_id, effective_status, context_tag, status_expires_at, last_active_at',
-          )
+          .select('user_id, effective_status, context_tag, status_expires_at, last_active_at')
           .eq('user_id', friendId)
           .maybeSingle();
         if (res.error) throw res.error;

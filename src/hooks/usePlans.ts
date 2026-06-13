@@ -45,13 +45,8 @@ export interface UsePlansResult {
   refreshing: boolean;
   fetchPlans: () => Promise<unknown>;
   handleRefresh: () => Promise<unknown>;
-  createPlan: (
-    input: CreatePlanInput
-  ) => Promise<{ planId: string | null; error: Error | null }>;
-  rsvp: (
-    planId: string,
-    status: 'going' | 'maybe' | 'out'
-  ) => Promise<{ error: string | null }>;
+  createPlan: (input: CreatePlanInput) => Promise<{ planId: string | null; error: Error | null }>;
+  rsvp: (planId: string, status: 'going' | 'maybe' | 'out') => Promise<{ error: string | null }>;
 }
 
 export function usePlans(): UsePlansResult {
@@ -153,10 +148,7 @@ export function usePlans(): UsePlansResult {
   // queryKeys.plans.detail(planId) optimistically; rolls back both on error;
   // invalidates list + detail + home.upcomingEvents on settle.
   const rsvpMutation = useMutation({
-    mutationFn: async (input: {
-      planId: string;
-      status: 'going' | 'maybe' | 'out';
-    }) => {
+    mutationFn: async (input: { planId: string; status: 'going' | 'maybe' | 'out' }) => {
       if (!userId) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('plan_members')
@@ -169,10 +161,10 @@ export function usePlans(): UsePlansResult {
       await queryClient.cancelQueries({ queryKey: queryKeys.plans.list(userId ?? '') });
       await queryClient.cancelQueries({ queryKey: queryKeys.plans.detail(input.planId) });
       const previousList = queryClient.getQueryData<PlanWithMembers[]>(
-        queryKeys.plans.list(userId ?? ''),
+        queryKeys.plans.list(userId ?? '')
       );
       const previousDetail = queryClient.getQueryData<PlanWithMembers>(
-        queryKeys.plans.detail(input.planId),
+        queryKeys.plans.detail(input.planId)
       );
       // Defensive: only mutate the caller's own member row (T-31-14).
       queryClient.setQueryData<PlanWithMembers[]>(
@@ -183,11 +175,11 @@ export function usePlans(): UsePlansResult {
               ? {
                   ...p,
                   members: p.members.map((m) =>
-                    m.user_id === userId ? { ...m, rsvp: input.status } : m,
+                    m.user_id === userId ? { ...m, rsvp: input.status } : m
                   ),
                 }
-              : p,
-          ) ?? [],
+              : p
+          ) ?? []
       );
       queryClient.setQueryData<PlanWithMembers | undefined>(
         queryKeys.plans.detail(input.planId),
@@ -196,10 +188,10 @@ export function usePlans(): UsePlansResult {
             ? {
                 ...old,
                 members: old.members.map((m) =>
-                  m.user_id === userId ? { ...m, rsvp: input.status } : m,
+                  m.user_id === userId ? { ...m, rsvp: input.status } : m
                 ),
               }
-            : old,
+            : old
       );
       return { previousList, previousDetail };
     },
@@ -208,10 +200,7 @@ export function usePlans(): UsePlansResult {
         queryClient.setQueryData(queryKeys.plans.list(userId ?? ''), ctx.previousList);
       }
       if (ctx?.previousDetail) {
-        queryClient.setQueryData(
-          queryKeys.plans.detail(input.planId),
-          ctx.previousDetail,
-        );
+        queryClient.setQueryData(queryKeys.plans.detail(input.planId), ctx.previousDetail);
       }
     },
     onSettled: (_data, _err, input) => {

@@ -16,6 +16,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useFriends } from '../useFriends';
+
 const mockRpc = jest.fn();
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
@@ -34,8 +36,6 @@ jest.mock('@/hooks/usePushNotifications', () => ({
   markPushPromptEligible: jest.fn(() => Promise.resolve()),
 }));
 
-import { useFriends } from '../useFriends';
-
 const FRIEND_ROW = {
   friend_id: 'f1',
   username: 'alice',
@@ -47,8 +47,7 @@ const FRIEND_ROW = {
 
 function setupFriendsListMock() {
   mockRpc.mockImplementation((rpcName: string) => {
-    if (rpcName === 'get_friends')
-      return Promise.resolve({ data: [FRIEND_ROW], error: null });
+    if (rpcName === 'get_friends') return Promise.resolve({ data: [FRIEND_ROW], error: null });
     return Promise.resolve({ data: null, error: null });
   });
   // effective_status query + pending requests query
@@ -133,7 +132,7 @@ describe('useFriends (migrated to TanStack Query)', () => {
     expect(outcome?.error).toBeNull();
 
     const invalidatedKeys = invalidateSpy.mock.calls.map((c) =>
-      JSON.stringify((c[0] as { queryKey: unknown }).queryKey),
+      JSON.stringify((c[0] as { queryKey: unknown }).queryKey)
     );
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.friends.list('u-self')));
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.friends.pendingRequests('u-self')));
@@ -160,7 +159,7 @@ describe('useFriends (migrated to TanStack Query)', () => {
     });
 
     const invalidatedKeys = invalidateSpy.mock.calls.map((c) =>
-      JSON.stringify((c[0] as { queryKey: unknown }).queryKey),
+      JSON.stringify((c[0] as { queryKey: unknown }).queryKey)
     );
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.friends.list('u-self')));
     expect(invalidatedKeys).toContain(JSON.stringify(queryKeys.home.all()));

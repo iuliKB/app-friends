@@ -31,74 +31,74 @@ interface OptionRowProps {
 function OptionRow({ option, isSelected, hasVoted, totalVotes, onPress, colors }: OptionRowProps) {
   const widthAnim = useRef(new Animated.Value(0)).current;
 
-  const styles = useMemo(() => StyleSheet.create({
-    optionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.sm,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 44,
-      gap: SPACING.sm,
-    },
-    radioCircle: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 20,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 20,
-      borderRadius: RADII.full,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderWidth: 1.5,
-      flexShrink: 0,
-    },
-    radioInner: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 8,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 8,
-      borderRadius: RADII.full,
-      backgroundColor: colors.surface.base,
-      alignSelf: 'center',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginTop: 4,
-    },
-    optionLabel: {
-      flex: 1,
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-    },
-    optionLabelSelected: {
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.interactive.accent,
-    },
-    barTrack: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 6,
-      backgroundColor: colors.surface.overlay,
-      borderRadius: RADII.xs,
-      overflow: 'hidden',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      width: 80,
-      flexShrink: 0,
-    },
-    barFill: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 6,
-      borderRadius: RADII.xs,
-    },
-    voteCount: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minWidth: 16,
-      textAlign: 'right',
-    },
-    voteCountSelected: {
-      color: colors.interactive.accent,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        optionRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.sm,
+
+          minHeight: 44,
+          gap: SPACING.sm,
+        },
+        radioCircle: {
+          width: 20,
+
+          height: 20,
+          borderRadius: RADII.full,
+
+          borderWidth: 1.5,
+          flexShrink: 0,
+        },
+        radioInner: {
+          width: 8,
+
+          height: 8,
+          borderRadius: RADII.full,
+          backgroundColor: colors.surface.base,
+          alignSelf: 'center',
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          marginTop: 4,
+        },
+        optionLabel: {
+          flex: 1,
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+        },
+        optionLabelSelected: {
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.interactive.accent,
+        },
+        barTrack: {
+          height: 6,
+          backgroundColor: colors.surface.overlay,
+          borderRadius: RADII.xs,
+          overflow: 'hidden',
+
+          width: 80,
+          flexShrink: 0,
+        },
+        barFill: {
+          height: 6,
+          borderRadius: RADII.xs,
+        },
+        voteCount: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
+
+          minWidth: 16,
+          textAlign: 'right',
+        },
+        voteCountSelected: {
+          color: colors.interactive.accent,
+        },
+      }),
+    [colors]
+  );
 
   useEffect(() => {
     if (hasVoted) {
@@ -138,7 +138,10 @@ function OptionRow({ option, isSelected, hasVoted, totalVotes, onPress, colors }
       </View>
 
       {/* Label */}
-      <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]} numberOfLines={2}>
+      <Text
+        style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}
+        numberOfLines={2}
+      >
         {option.label}
       </Text>
 
@@ -151,9 +154,7 @@ function OptionRow({ option, isSelected, hasVoted, totalVotes, onPress, colors }
                 styles.barFill,
                 {
                   width: widthAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-                  backgroundColor: isSelected
-                    ? colors.interactive.accent
-                    : colors.surface.overlay,
+                  backgroundColor: isSelected ? colors.interactive.accent : colors.surface.overlay,
                 },
               ]}
             />
@@ -169,99 +170,106 @@ function OptionRow({ option, isSelected, hasVoted, totalVotes, onPress, colors }
 
 export function PollCard({ message, lastPollVoteEvent }: PollCardProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    card: {
-      width: '100%',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.lg,
-      paddingVertical: SPACING.md,
-      marginBottom: SPACING.xs,
-      borderWidth: StyleSheet.hairlineWidth,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      borderColor: 'rgba(255,255,255,0.08)',
-      overflow: 'hidden',
-    },
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          width: '100%',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.lg,
+          paddingVertical: SPACING.md,
+          marginBottom: SPACING.xs,
+          borderWidth: StyleSheet.hairlineWidth,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          borderColor: 'rgba(255,255,255,0.08)',
+          overflow: 'hidden',
+        },
 
-    // ── Header ────────────────────────────────────────────────────────────────
-    header: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      paddingHorizontal: SPACING.lg,
-      marginBottom: SPACING.md,
-      gap: SPACING.sm,
-    },
-    iconBadge: {
-      width: 28,
-      height: 28,
-      borderRadius: RADII.full,
-      backgroundColor: colors.interactive.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginTop: 1,
-    },
-    question: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      lineHeight: FONT_SIZE.lg * 1.4,
-    },
-    pollChip: {
-      backgroundColor: colors.surface.overlay,
-      borderRadius: RADII.full,
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: colors.border,
-      flexShrink: 0,
-    },
-    pollChipText: {
-      fontSize: FONT_SIZE.xs,
-      fontFamily: FONT_FAMILY.body.semibold,
-      color: colors.text.secondary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      textTransform: 'uppercase',
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      letterSpacing: 0.6,
-    },
+        // ── Header ────────────────────────────────────────────────────────────────
+        header: {
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          paddingHorizontal: SPACING.lg,
+          marginBottom: SPACING.md,
+          gap: SPACING.sm,
+        },
+        iconBadge: {
+          width: 28,
+          height: 28,
+          borderRadius: RADII.full,
+          backgroundColor: colors.interactive.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
 
-    // ── Divider ───────────────────────────────────────────────────────────────
-    divider: {
-      height: StyleSheet.hairlineWidth,
-      backgroundColor: colors.border,
-      marginVertical: SPACING.xs,
-    },
+          marginTop: 1,
+        },
+        question: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          lineHeight: FONT_SIZE.lg * 1.4,
+        },
+        pollChip: {
+          backgroundColor: colors.surface.overlay,
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.border,
+          flexShrink: 0,
+        },
+        pollChipText: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.text.secondary,
 
-    // ── Footer ────────────────────────────────────────────────────────────────
-    footer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.xs,
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.sm,
-    },
-    footerText: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-    },
-    footerHint: {
-      fontSize: FONT_SIZE.sm,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.secondary,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      marginLeft: 'auto' as unknown as number,
-    },
-  }), [colors]);
+          textTransform: 'uppercase',
+
+          letterSpacing: 0.6,
+        },
+
+        // ── Divider ───────────────────────────────────────────────────────────────
+        divider: {
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: colors.border,
+          marginVertical: SPACING.xs,
+        },
+
+        // ── Footer ────────────────────────────────────────────────────────────────
+        footer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.sm,
+        },
+        footerText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+        },
+        footerHint: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.secondary,
+
+          marginLeft: 'auto' as unknown as number,
+        },
+      }),
+    [colors]
+  );
 
   const { pollState, loading, vote, unVote } = usePoll(message.poll_id, lastPollVoteEvent);
 
   if (!message.poll_id || message.pending) {
     return (
       <View style={styles.card}>
-        <ActivityIndicator color={colors.interactive.accent} style={{ paddingVertical: SPACING.lg }} />
+        <ActivityIndicator
+          color={colors.interactive.accent}
+          style={{ paddingVertical: SPACING.lg }}
+        />
       </View>
     );
   }
@@ -269,7 +277,10 @@ export function PollCard({ message, lastPollVoteEvent }: PollCardProps) {
   if (loading || !pollState) {
     return (
       <View style={styles.card}>
-        <ActivityIndicator color={colors.interactive.accent} style={{ paddingVertical: SPACING.lg }} />
+        <ActivityIndicator
+          color={colors.interactive.accent}
+          style={{ paddingVertical: SPACING.lg }}
+        />
       </View>
     );
   }
@@ -320,9 +331,7 @@ export function PollCard({ message, lastPollVoteEvent }: PollCardProps) {
         <Text style={styles.footerText}>
           {pollState.totalVotes === 1 ? '1 vote' : `${pollState.totalVotes} votes`}
         </Text>
-        {!hasVoted && (
-          <Text style={styles.footerHint}>Tap to vote</Text>
-        )}
+        {!hasVoted && <Text style={styles.footerHint}>Tap to vote</Text>}
       </View>
     </View>
   );

@@ -19,9 +19,15 @@ function _bezier(x1: number, y1: number, x2: number, y2: number): EasingFn {
   const kSplineTableSize = 11;
   const kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
 
-  function a(aA1: number, aA2: number) { return 1.0 - 3.0 * aA2 + 3.0 * aA1; }
-  function b(aA1: number, aA2: number) { return 3.0 * aA2 - 6.0 * aA1; }
-  function c(aA1: number) { return 3.0 * aA1; }
+  function a(aA1: number, aA2: number) {
+    return 1.0 - 3.0 * aA2 + 3.0 * aA1;
+  }
+  function b(aA1: number, aA2: number) {
+    return 3.0 * aA2 - 6.0 * aA1;
+  }
+  function c(aA1: number) {
+    return 3.0 * aA1;
+  }
   function calcBezier(aT: number, aA1: number, aA2: number) {
     return ((a(aA1, aA2) * aT + b(aA1, aA2)) * aT + c(aA1)) * aT;
   }
@@ -40,11 +46,17 @@ function _bezier(x1: number, y1: number, x2: number, y2: number): EasingFn {
     let intervalStart = 0.0;
     let currentSample = 1;
     const lastSample = kSplineTableSize - 1;
-    for (; currentSample !== lastSample && (sampleValues[currentSample] ?? 0) <= aX; ++currentSample) {
+    for (
+      ;
+      currentSample !== lastSample && (sampleValues[currentSample] ?? 0) <= aX;
+      ++currentSample
+    ) {
       intervalStart += kSampleStepSize;
     }
     --currentSample;
-    const dist = (aX - (sampleValues[currentSample] ?? 0)) / ((sampleValues[currentSample + 1] ?? 0) - (sampleValues[currentSample] ?? 0));
+    const dist =
+      (aX - (sampleValues[currentSample] ?? 0)) /
+      ((sampleValues[currentSample + 1] ?? 0) - (sampleValues[currentSample] ?? 0));
     const guessForT = intervalStart + dist * kSampleStepSize;
     const initialSlope = getSlope(guessForT, x1, x2);
     if (initialSlope >= NEWTON_MIN_SLOPE) {
@@ -58,13 +70,19 @@ function _bezier(x1: number, y1: number, x2: number, y2: number): EasingFn {
     } else if (initialSlope === 0.0) {
       return guessForT;
     } else {
-      let aA = intervalStart, aB = intervalStart + kSampleStepSize;
-      let currentX: number, currentT: number = 0;
+      let aA = intervalStart,
+        aB = intervalStart + kSampleStepSize;
+      let currentX: number,
+        currentT: number = 0;
       let i = 0;
       do {
         currentT = aA + (aB - aA) / 2.0;
         currentX = calcBezier(currentT, x1, x2) - aX;
-        if (currentX > 0.0) { aB = currentT; } else { aA = currentT; }
+        if (currentX > 0.0) {
+          aB = currentT;
+        } else {
+          aA = currentT;
+        }
       } while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
       return currentT;
     }
@@ -95,16 +113,16 @@ const _ease = _bezier(0.42, 0, 1.0, 1.0);
 
 export const ANIMATION = {
   duration: {
-    fast: 200,       // quick UI responses, haptic confirms
-    normal: 300,     // state transitions, reveals
-    slow: 700,       // emphasis animations, status pulses
-    verySlow: 1200,  // looping ambient animations (radar pulse, skeleton shimmer)
+    fast: 200, // quick UI responses, haptic confirms
+    normal: 300, // state transitions, reveals
+    slow: 700, // emphasis animations, status pulses
+    verySlow: 1200, // looping ambient animations (radar pulse, skeleton shimmer)
     staggerDelay: 80, // entrance stagger interval for dashboard cards (SQUAD-03)
   },
   easing: {
-    standard:   () => _inOut(_ease),  // balanced — state transitions
-    decelerate: () => _out(_ease),    // fast-in, slow-out — content arriving
-    accelerate: () => _ease,          // slow-in, fast-out — content leaving
+    standard: () => _inOut(_ease), // balanced — state transitions
+    decelerate: () => _out(_ease), // fast-in, slow-out — content arriving
+    accelerate: () => _ease, // slow-in, fast-out — content leaving
     spring: { damping: 15, stiffness: 120 }, // Reanimated withSpring config (data only — no import needed)
   },
 } as const;

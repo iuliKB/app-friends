@@ -39,7 +39,7 @@ export async function scheduleMorningPrompt(hour: number, minute: number): Promi
         categoryIdentifier: 'morning_prompt',
         data: { kind: 'morning_prompt' },
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       trigger: {
         hour,
         minute,

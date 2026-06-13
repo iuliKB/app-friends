@@ -49,47 +49,51 @@ function parseTextSegments(text: string): TextSegment[] {
 
 export function LinkDumpField({ planId, initialValue }: LinkDumpFieldProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: SPACING.md,
-    },
-    headerLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    headerTitle: {
-      fontSize: FONT_SIZE.xl,
-      fontFamily: FONT_FAMILY.display.semibold,
-      color: colors.text.primary,
-      marginLeft: SPACING.sm,
-    },
-    content: {
-      gap: SPACING.sm,
-    },
-    displayText: {
-      fontSize: FONT_SIZE.lg,
-      color: colors.text.primary,
-      marginBottom: SPACING.xs,
-    },
-    urlText: {
-      color: colors.interactive.accent,
-      textDecorationLine: 'underline',
-    },
-    textInput: {
-      fontSize: FONT_SIZE.lg,
-      fontFamily: FONT_FAMILY.body.regular,
-      color: colors.text.primary,
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      padding: SPACING.lg,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      minHeight: 80,
-      textAlignVertical: 'top',
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        header: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: SPACING.md,
+        },
+        headerLeft: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        headerTitle: {
+          fontSize: FONT_SIZE.xl,
+          fontFamily: FONT_FAMILY.display.semibold,
+          color: colors.text.primary,
+          marginLeft: SPACING.sm,
+        },
+        content: {
+          gap: SPACING.sm,
+        },
+        displayText: {
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.primary,
+          marginBottom: SPACING.xs,
+        },
+        urlText: {
+          color: colors.interactive.accent,
+          textDecorationLine: 'underline',
+        },
+        textInput: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.body.regular,
+          color: colors.text.primary,
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.md,
+          padding: SPACING.lg,
+
+          minHeight: 80,
+          textAlignVertical: 'top',
+        },
+      }),
+    [colors]
+  );
 
   const [expanded, setExpanded] = useState(false);
   const [localText, setLocalText] = useState(initialValue ?? '');

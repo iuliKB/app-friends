@@ -107,7 +107,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
         },
         heroAddCover: {
           width: '100%',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           height: 96,
           flexDirection: 'row',
           alignItems: 'center',
@@ -142,7 +142,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
           alignItems: 'center',
           justifyContent: 'center',
           gap: SPACING.sm,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           height: 52,
           paddingHorizontal: SPACING.xl,
           borderRadius: RADII.full,
@@ -150,11 +150,11 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
           backgroundColor: 'rgba(185,255,59,0.92)',
           // eslint-disable-next-line campfire/no-hardcoded-styles
           shadowColor: '#000',
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           shadowOpacity: 0.35,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           shadowRadius: 16,
-          // eslint-disable-next-line campfire/no-hardcoded-styles
+
           shadowOffset: { width: 0, height: 6 },
           elevation: 8,
         },
@@ -738,7 +738,11 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
                   </Text>
                   {plan.scheduled_for ? (
                     <View style={styles.summaryMetaRow}>
-                      <Ionicons name="calendar-outline" size={16} color={colors.interactive.accent} />
+                      <Ionicons
+                        name="calendar-outline"
+                        size={16}
+                        color={colors.interactive.accent}
+                      />
                       <Text style={styles.summaryMetaText} numberOfLines={1}>
                         {formatPlanTime(plan.scheduled_for)}
                       </Text>
@@ -746,7 +750,11 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
                   ) : null}
                   {plan.location ? (
                     <View style={styles.summaryMetaRow}>
-                      <Ionicons name="location-outline" size={16} color={colors.interactive.accent} />
+                      <Ionicons
+                        name="location-outline"
+                        size={16}
+                        color={colors.interactive.accent}
+                      />
                       <Text style={styles.summaryMetaText} numberOfLines={2}>
                         {plan.location}
                       </Text>

@@ -16,6 +16,8 @@ import { renderHook, act } from '@testing-library/react-native';
 import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 import { queryKeys } from '@/lib/queryKeys';
 
+import { useChatTodos } from '../useChatTodos';
+
 const mockRpc = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -31,8 +33,6 @@ jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: { user: { id: string } } }) => unknown) =>
     selector({ session: { user: { id: 'u1' } } }),
 }));
-
-import { useChatTodos } from '../useChatTodos';
 
 describe('useChatTodos (migrated to TanStack Query)', () => {
   beforeEach(() => {
@@ -61,7 +61,7 @@ describe('useChatTodos (migrated to TanStack Query)', () => {
         p_assignee_id: 'u-other',
         p_title: 'Buy bread',
         p_is_list: false,
-      }),
+      })
     );
   });
 
@@ -88,7 +88,7 @@ describe('useChatTodos (migrated to TanStack Query)', () => {
         p_plan_id: 'plan-7',
         p_dm_channel_id: null,
         p_is_list: true,
-      }),
+      })
     );
   });
 
@@ -111,7 +111,7 @@ describe('useChatTodos (migrated to TanStack Query)', () => {
         p_group_channel_id: null,
         p_plan_id: null,
         p_dm_channel_id: 'dm-9',
-      }),
+      })
     );
   });
 

@@ -47,13 +47,7 @@ const URGENT_BDAY_DAYS = 7;
 const URGENT_IOU_CENTS = 2000;
 const STREAK_BRAG_THRESHOLD = 3;
 
-export type SpotlightKind =
-  | 'birthday'
-  | 'iou'
-  | 'habit'
-  | 'todo'
-  | 'streak'
-  | 'fallback';
+export type SpotlightKind = 'birthday' | 'iou' | 'habit' | 'todo' | 'streak' | 'fallback';
 
 export interface SpotlightItem {
   kind: SpotlightKind;
@@ -99,10 +93,7 @@ export interface SpotlightSources {
  * Requires `HabitOverviewRow.last_checkin_date_local` +
  * `current_week_completions` (supplied by Plan 01 get_habits_overview RPC).
  */
-function isHabitAboutToBreak(
-  habit: HabitOverviewRow,
-  today: Date = new Date()
-): boolean {
+function isHabitAboutToBreak(habit: HabitOverviewRow, today: Date = new Date()): boolean {
   if (habit.did_me_check_in_today) return false;
 
   if (habit.cadence === 'daily') {
@@ -282,13 +273,7 @@ export function useSpotlight(): UseSpotlightResult {
         habits: { habits: habits.habits },
         todos: { mine: todos.mine },
       }),
-    [
-      birthdays,
-      iou,
-      streak,
-      habits.habits,
-      todos.mine,
-    ],
+    [birthdays, iou, streak, habits.habits, todos.mine]
   );
 
   // Mirror the derivation into the canonical cache slot so future consumers
@@ -297,10 +282,7 @@ export function useSpotlight(): UseSpotlightResult {
   // also touches the spotlight derivation (Pitfall 10 fan-out parity).
   useEffect(() => {
     if (!userId) return;
-    queryClient.setQueryData<SpotlightItem>(
-      queryKeys.home.spotlight(userId),
-      derived,
-    );
+    queryClient.setQueryData<SpotlightItem>(queryKeys.home.spotlight(userId), derived);
   }, [queryClient, userId, derived]);
 
   // The useQuery wrapper anchors the spotlight to the canonical cache slot.
@@ -322,11 +304,7 @@ export function useSpotlight(): UseSpotlightResult {
   });
 
   const loading =
-    habits.loading ||
-    todos.loading ||
-    birthdays.loading ||
-    iou.loading ||
-    streak.loading;
+    habits.loading || todos.loading || birthdays.loading || iou.loading || streak.loading;
 
   return {
     item: query.data ?? derived,

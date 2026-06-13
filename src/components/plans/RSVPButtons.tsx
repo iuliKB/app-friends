@@ -1,5 +1,12 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 
@@ -15,41 +22,48 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export function RSVPButtons({ currentRsvp, onRsvp, disabled = false }: RSVPButtonsProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      gap: SPACING.sm,
-    },
-    button: {
-      flex: 1,
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 44,
-      borderRadius: RADII.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    buttonInactive: {
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    label: {
-      fontSize: FONT_SIZE.md,
-      fontFamily: FONT_FAMILY.display.semibold,
-    },
-    labelActive: {
-      color: colors.surface.base,
-    },
-    labelInactive: {
-      color: colors.text.secondary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          gap: SPACING.sm,
+        },
+        button: {
+          flex: 1,
 
-  const RSVP_OPTIONS: { value: RsvpValue; label: string; activeColor: string }[] = useMemo(() => [
-    { value: 'going', label: 'Going', activeColor: colors.status.free },
-    { value: 'maybe', label: 'Maybe', activeColor: colors.status.maybe },
-    { value: 'out', label: 'Out', activeColor: colors.status.busy },
-  ], [colors]);
+          height: 44,
+          borderRadius: RADII.md,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        buttonInactive: {
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        label: {
+          fontSize: FONT_SIZE.md,
+          fontFamily: FONT_FAMILY.display.semibold,
+        },
+        labelActive: {
+          color: colors.surface.base,
+        },
+        labelInactive: {
+          color: colors.text.secondary,
+        },
+      }),
+    [colors]
+  );
+
+  const RSVP_OPTIONS: { value: RsvpValue; label: string; activeColor: string }[] = useMemo(
+    () => [
+      { value: 'going', label: 'Going', activeColor: colors.status.free },
+      { value: 'maybe', label: 'Maybe', activeColor: colors.status.maybe },
+      { value: 'out', label: 'Out', activeColor: colors.status.busy },
+    ],
+    [colors]
+  );
 
   const [savingRsvp, setSavingRsvp] = useState<RsvpValue | null>(null);
 

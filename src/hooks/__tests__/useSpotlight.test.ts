@@ -22,7 +22,18 @@ import type { StreakData } from '../useStreakData';
 import type { UpcomingBirthdaysData } from '../useUpcomingBirthdays';
 import type { HabitOverviewRow } from '@/types/habits';
 import type { MyTodoRow } from '@/types/todos';
-import { selectSpotlight } from '../useSpotlight';
+import { selectSpotlight, useSpotlight } from '../useSpotlight';
+
+// ---------------------------------------------------------------------------
+// Phase 31 Plan 07 — useSpotlight() hook (TanStack Query–backed)
+// ---------------------------------------------------------------------------
+
+/**
+ * @jest-environment jsdom
+ */
+
+import { renderHook, waitFor } from '@testing-library/react-native';
+import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
 
 const emptyIOU: IOUSummaryData = {
   rows: [],
@@ -169,17 +180,6 @@ describe('selectSpotlight (Phase 29.1 D-16)', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Phase 31 Plan 07 — useSpotlight() hook (TanStack Query–backed)
-// ---------------------------------------------------------------------------
-
-/**
- * @jest-environment jsdom
- */
-
-import { renderHook, waitFor } from '@testing-library/react-native';
-import { createTestQueryClient } from '@/__mocks__/createTestQueryClient';
-
 const mockRpc = jest.fn();
 const mockFrom = jest.fn();
 jest.mock('@/lib/supabase', () => ({
@@ -202,8 +202,6 @@ jest.mock('@/lib/realtimeBridge', () => ({
   subscribePollVotes: jest.fn(() => () => {}),
   _resetRealtimeBridgeForTests: jest.fn(),
 }));
-
-import { useSpotlight } from '../useSpotlight';
 
 describe('useSpotlight() hook (Phase 31 Plan 07)', () => {
   beforeEach(() => {

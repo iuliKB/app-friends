@@ -133,9 +133,9 @@ export function PlanCreateModal() {
     const { planId, error } = await createPlan({
       title: title.trim(),
       scheduledFor,
-      location: locationLabel,     // was: location (string), now: locationLabel (string | null)
-      latitude,                     // new — Phase 20
-      longitude,                    // new — Phase 20
+      location: locationLabel, // was: location (string), now: locationLabel (string | null)
+      latitude, // new — Phase 20
+      longitude, // new — Phase 20
       invitedFriendIds: Array.from(selectedFriendIds),
     });
     setCreating(false);
@@ -154,10 +154,7 @@ export function PlanCreateModal() {
       const publicUrl = await uploadPlanCover(planId, coverImageUri);
       if (publicUrl) {
         // Update the plan with the cover URL
-        await supabase
-          .from('plans')
-          .update({ cover_image_url: publicUrl })
-          .eq('id', planId);
+        await supabase.from('plans').update({ cover_image_url: publicUrl }).eq('id', planId);
         // Invalidate plan caches so EventCard / list / home all pick up the
         // new cover URL via TanStack Query (Phase 31 Plan 04 — replaces the
         // stripped usePlansStore.setPlans server-data mirror).
@@ -172,133 +169,136 @@ export function PlanCreateModal() {
     router.push(`/plans/${planId}` as never);
   }
 
-  const styles = useMemo(() => StyleSheet.create({
-    root: {
-      flex: 1,
-      backgroundColor: colors.surface.base,
-    },
-    scrollView: {
-      flex: 1,
-    },
-    scrollContent: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      paddingBottom: 40, // no exact token — between xxl(32) and 48
-    },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xl,
-      paddingBottom: SPACING.lg,
-    },
-    headerTitle: {
-      fontSize: FONT_SIZE.xxl,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-    },
-    fieldGroup: {
-      paddingHorizontal: SPACING.lg,
-      marginBottom: SPACING.xl,
-    },
-    fieldLabel: {
-      fontSize: FONT_SIZE.md,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.secondary,
-      marginBottom: SPACING.sm,
-    },
-    textInput: {
-      fontSize: FONT_SIZE.lg,
-      fontWeight: FONT_WEIGHT.regular,
-      color: colors.text.primary,
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      padding: SPACING.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    coverImagePicker: {
-      // eslint-disable-next-line campfire/no-hardcoded-styles
-      height: 100,
-      borderRadius: RADII.md,
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      overflow: 'hidden',
-    },
-    coverImagePlaceholder: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: SPACING.xs,
-    },
-    coverImagePlaceholderText: {
-      fontSize: FONT_SIZE.sm,
-      color: colors.text.secondary,
-    },
-    timeRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surface.card,
-      borderRadius: RADII.md,
-      padding: SPACING.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: SPACING.sm,
-    },
-    timeText: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      color: colors.text.primary,
-    },
-    friendSection: {
-      paddingHorizontal: SPACING.lg,
-      marginBottom: SPACING.xl,
-    },
-    friendSectionHeading: {
-      fontSize: FONT_SIZE.xl,
-      fontWeight: FONT_WEIGHT.semibold,
-      color: colors.text.primary,
-      marginBottom: SPACING.lg,
-    },
-    noFriendsText: {
-      fontSize: FONT_SIZE.lg,
-      color: colors.text.secondary,
-    },
-    friendRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: SPACING.md,
-      gap: SPACING.md,
-    },
-    friendName: {
-      flex: 1,
-      fontSize: FONT_SIZE.lg,
-      color: colors.text.primary,
-    },
-    checkbox: {
-      marginLeft: SPACING.xs,
-    },
-    createButton: {
-      paddingHorizontal: SPACING.lg,
-    },
-    locationTrigger: {
-      height: 48,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: SPACING.sm,
-      backgroundColor: colors.surface.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: RADII.lg,
-      paddingHorizontal: SPACING.md,
-    },
-    locationTriggerText: {
-      flex: 1,
-      fontSize: FONT_SIZE.md,
-      color: colors.text.primary,
-    },
-  }), [colors]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        root: {
+          flex: 1,
+          backgroundColor: colors.surface.base,
+        },
+        scrollView: {
+          flex: 1,
+        },
+        scrollContent: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          paddingBottom: 40, // no exact token — between xxl(32) and 48
+        },
+        header: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.lg,
+          paddingTop: SPACING.xl,
+          paddingBottom: SPACING.lg,
+        },
+        headerTitle: {
+          fontSize: FONT_SIZE.xxl,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+        },
+        fieldGroup: {
+          paddingHorizontal: SPACING.lg,
+          marginBottom: SPACING.xl,
+        },
+        fieldLabel: {
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.secondary,
+          marginBottom: SPACING.sm,
+        },
+        textInput: {
+          fontSize: FONT_SIZE.lg,
+          fontWeight: FONT_WEIGHT.regular,
+          color: colors.text.primary,
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.md,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        coverImagePicker: {
+          height: 100,
+          borderRadius: RADII.md,
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+          overflow: 'hidden',
+        },
+        coverImagePlaceholder: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.xs,
+        },
+        coverImagePlaceholderText: {
+          fontSize: FONT_SIZE.sm,
+          color: colors.text.secondary,
+        },
+        timeRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface.card,
+          borderRadius: RADII.md,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          gap: SPACING.sm,
+        },
+        timeText: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.primary,
+        },
+        friendSection: {
+          paddingHorizontal: SPACING.lg,
+          marginBottom: SPACING.xl,
+        },
+        friendSectionHeading: {
+          fontSize: FONT_SIZE.xl,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.primary,
+          marginBottom: SPACING.lg,
+        },
+        noFriendsText: {
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.secondary,
+        },
+        friendRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: SPACING.md,
+          gap: SPACING.md,
+        },
+        friendName: {
+          flex: 1,
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.primary,
+        },
+        checkbox: {
+          marginLeft: SPACING.xs,
+        },
+        createButton: {
+          paddingHorizontal: SPACING.lg,
+        },
+        locationTrigger: {
+          height: 48,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: RADII.lg,
+          paddingHorizontal: SPACING.md,
+        },
+        locationTriggerText: {
+          flex: 1,
+          fontSize: FONT_SIZE.md,
+          color: colors.text.primary,
+        },
+      }),
+    [colors]
+  );
 
   function renderFriendRow({ item }: { item: FriendWithStatus }) {
     const isSelected = selectedFriendIds.has(item.friend_id);
@@ -364,7 +364,6 @@ export function PlanCreateModal() {
             {coverImageUri ? (
               <Image
                 source={{ uri: coverImageUri }}
-                // eslint-disable-next-line campfire/no-hardcoded-styles
                 style={{ width: '100%', height: '100%', borderRadius: RADII.md }}
                 contentFit="cover"
               />
@@ -415,11 +414,7 @@ export function PlanCreateModal() {
             accessibilityRole="button"
             accessibilityLabel={locationLabel ? 'Change location' : 'Add location'}
           >
-            <Ionicons
-              name="location-outline"
-              size={20}
-              color={colors.interactive.accent}
-            />
+            <Ionicons name="location-outline" size={20} color={colors.interactive.accent} />
             <Text
               style={[
                 styles.locationTriggerText,
