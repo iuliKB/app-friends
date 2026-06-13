@@ -35,7 +35,7 @@ function makeChain(rows: any[] = [], err: any = null): any {
   return chain;
 }
 
-const mockFrom = jest.fn(() => makeChain([]));
+const mockFrom = jest.fn((..._args: any[]) => makeChain([]));
 jest.mock('@/lib/supabase', () => {
   // Inline chainable channel mock so jest.mock factory has no out-of-scope refs.
   function inlineChannel(): any {
@@ -79,8 +79,8 @@ jest.mock('@/lib/uploadChatMedia', () => ({
 // Capture the unsubscribe returned by subscribeChatRoom so the test can assert teardown.
 const mockChatRoomUnsubscribe = jest.fn();
 const mockAuxUnsubscribe = jest.fn();
-const mock_subscribeChatRoom = jest.fn(() => mockChatRoomUnsubscribe);
-const mock_subscribeChatAux = jest.fn(() => mockAuxUnsubscribe);
+const mock_subscribeChatRoom = jest.fn((..._args: any[]) => mockChatRoomUnsubscribe);
+const mock_subscribeChatAux = jest.fn((..._args: any[]) => mockAuxUnsubscribe);
 jest.mock('@/lib/realtimeBridge', () => ({
   subscribeChatRoom: (...args: unknown[]) => mock_subscribeChatRoom(...args),
   subscribeChatAux: (...args: unknown[]) => mock_subscribeChatAux(...args),

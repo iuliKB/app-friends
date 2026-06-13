@@ -77,6 +77,7 @@ function urgentDailyHabit(): HabitOverviewRow {
     weekly_target: null,
     is_solo: true,
     members_total: 1,
+    accepted_total: 1,
     completed_today: 0,
     did_me_check_in_today: false,
     last_checkin_date_local: yesterdayLocalStr(),

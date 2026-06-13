@@ -37,7 +37,7 @@ jest.mock('@/lib/dateLocal', () => ({ todayLocal: () => '2026-05-13' }));
 
 // realtimeBridge mock — capture unsubscribe to assert teardown.
 const mockUnsubscribe = jest.fn();
-const mock_subscribeHabitCheckins = jest.fn(() => mockUnsubscribe);
+const mock_subscribeHabitCheckins = jest.fn((..._args: any[]) => mockUnsubscribe);
 jest.mock('@/lib/realtimeBridge', () => ({
   subscribeHabitCheckins: (...args: unknown[]) => mock_subscribeHabitCheckins(...args),
   _resetRealtimeBridgeForTests: jest.fn(),

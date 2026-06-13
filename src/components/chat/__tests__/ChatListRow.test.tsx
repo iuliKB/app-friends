@@ -68,7 +68,7 @@ function findIonicons(getByTestId: ReturnType<typeof render>['UNSAFE_getAllByTyp
   try {
     // UNSAFE_getAllByType('Ionicons') works because the mock returns the
     // string 'Ionicons' as the component — RNTL's host-string element type.
-    return getByTestId('Ionicons');
+    return getByTestId('Ionicons' as never);
   } catch {
     return [];
   }

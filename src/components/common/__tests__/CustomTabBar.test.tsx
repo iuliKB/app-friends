@@ -17,6 +17,7 @@
 
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { CustomTabBar } from '../CustomTabBar';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 
@@ -52,7 +53,7 @@ function makeProps() {
     emit: jest.fn(() => ({ defaultPrevented: false })),
     navigate: jest.fn(),
   };
-  return { state, navigation } as never;
+  return { state, navigation } as unknown as BottomTabBarProps;
 }
 
 describe('CustomTabBar visibility (Phase 30 Plan 04 — Task 1)', () => {

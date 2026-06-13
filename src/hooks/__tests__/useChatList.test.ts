@@ -37,7 +37,7 @@ function makeChain(rows: any[] = [], err: any = null) {
   return chain;
 }
 
-const mockFrom = jest.fn(() => makeChain([]));
+const mockFrom = jest.fn((..._args: any[]) => makeChain([]));
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     from: (...args: any[]) => mockFrom(...args),
@@ -60,7 +60,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 // realtimeBridge mock — subscribeChatList is now mounted by useChatList.
 // Return a jest.fn() unsubscribe so the useEffect cleanup is a safe no-op.
 const mockChatListUnsubscribe = jest.fn();
-const mockSubscribeChatList = jest.fn(() => mockChatListUnsubscribe);
+const mockSubscribeChatList = jest.fn((..._args: any[]) => mockChatListUnsubscribe);
 jest.mock('@/lib/realtimeBridge', () => ({
   subscribeChatList: (...args: unknown[]) => mockSubscribeChatList(...args),
   _resetRealtimeBridgeForTests: jest.fn(),

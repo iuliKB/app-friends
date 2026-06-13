@@ -35,7 +35,7 @@ jest.mock('@/stores/useAuthStore', () => ({
 }));
 
 const mockUnsubscribe = jest.fn();
-const mock_subscribeHomeStatuses = jest.fn(() => mockUnsubscribe);
+const mock_subscribeHomeStatuses = jest.fn((..._args: any[]) => mockUnsubscribe);
 jest.mock('@/lib/realtimeBridge', () => ({
   subscribeHomeStatuses: (...args: unknown[]) => mock_subscribeHomeStatuses(...args),
   _resetRealtimeBridgeForTests: jest.fn(),
