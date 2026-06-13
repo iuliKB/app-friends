@@ -346,8 +346,13 @@ export function SendBar({
         </TouchableOpacity>
       </View>
 
-      <Modal visible={menuVisible} transparent animationType="none" onRequestClose={closeMenu}>
-        <TouchableWithoutFeedback onPress={closeMenu}>
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="none"
+        onRequestClose={() => closeMenu()}
+      >
+        <TouchableWithoutFeedback onPress={() => closeMenu()}>
           <View style={styles.backdrop} />
         </TouchableWithoutFeedback>
 
