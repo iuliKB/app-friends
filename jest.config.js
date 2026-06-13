@@ -29,6 +29,11 @@ module.exports = {
     '/node_modules/',
     '/.claude/',
   ],
+  // Ignore leftover agent worktrees under .claude/ so their package.json does
+  // not collide with the root package.json in Haste's module map.
+  modulePathIgnorePatterns: [
+    '<rootDir>/.claude/',
+  ],
   setupFiles: [
     '<rootDir>/src/__mocks__/jest-setup.js',
   ],
