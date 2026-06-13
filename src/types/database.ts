@@ -704,6 +704,73 @@ export type Database = {
         };
         Relationships: [];
       };
+      // Phase 12 v1.5 (migration 0018) — chat polls
+      polls: {
+        Row: {
+          id: string;
+          message_id: string;
+          question: string;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          message_id: string;
+          question: string;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          message_id?: string;
+          question?: string;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      poll_options: {
+        Row: {
+          id: string;
+          poll_id: string;
+          label: string;
+          position: number;
+        };
+        Insert: {
+          id?: string;
+          poll_id: string;
+          label: string;
+          position: number;
+        };
+        Update: {
+          id?: string;
+          poll_id?: string;
+          label?: string;
+          position?: number;
+        };
+        Relationships: [];
+      };
+      poll_votes: {
+        Row: {
+          poll_id: string;
+          option_id: string;
+          user_id: string;
+          voted_at: string;
+        };
+        Insert: {
+          poll_id: string;
+          option_id: string;
+          user_id: string;
+          voted_at?: string;
+        };
+        Update: {
+          poll_id?: string;
+          option_id?: string;
+          user_id?: string;
+          voted_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       // Phase 2 v1.3 (migration 0009) — effective status view (security_invoker=true).
@@ -725,6 +792,15 @@ export type Database = {
       rsvp_status: 'invited' | 'going' | 'maybe' | 'out';
     };
     Functions: {
+      // Phase 12 v1.5 (migration 0018) — atomic poll creation (poll + options + message link)
+      create_poll: {
+        Args: {
+          p_message_id: string;
+          p_question: string;
+          p_options: string[];
+        };
+        Returns: string;
+      };
       is_friend_of: {
         Args: {
           target_user: string;
