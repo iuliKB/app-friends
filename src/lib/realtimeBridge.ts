@@ -172,6 +172,10 @@ export interface ChatRoomFilter {
   channelId: string;
   /** Which column on `messages` to filter by. The caller picks based on chat kind. */
   column: 'plan_id' | 'dm_channel_id' | 'group_channel_id';
+  /** The `messages` table has no sender_display_name/sender_avatar_url columns —
+   * those are joined client-side. Without this, a raw realtime row would land in
+   * the cache missing those fields and crash AvatarCircle's getInitials(). */
+  enrichMessage?: (row: Record<string, unknown>) => unknown;
 }
 
 /** Subscribe to chat_room messages for a given channelId. Hybrid (research §Pattern 6):
@@ -195,7 +199,7 @@ export function subscribeChatRoom(
 ): Unsubscribe {
   const filterSpec: ChatRoomFilter =
     typeof arg === 'string' ? { channelId: arg, column: 'plan_id' } : arg;
-  const { channelId, column } = filterSpec;
+  const { channelId, column, enrichMessage } = filterSpec;
   const channelName = `chat-${channelId}`;
   const existing = registry.get(channelName);
   if (existing) {
@@ -211,8 +215,11 @@ export function subscribeChatRoom(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'messages', filter },
       (payload: { new: { id?: string } & Record<string, unknown> }) => {
-        const incoming = payload?.new;
-        if (!incoming?.id) return;
+        const rawIncoming = payload?.new;
+        if (!rawIncoming?.id) return;
+        const incoming = (enrichMessage ? enrichMessage(rawIncoming) : rawIncoming) as {
+          id: string;
+        } & Record<string, unknown>;
         queryClient.setQueryData<any[]>(queryKeys.chat.messages(channelId), (old) => {
           if (!old) return old;
           // 1) Optimistic replacement: same client-generated id flagged pending

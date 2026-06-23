@@ -101,6 +101,25 @@ export function useChatRoom({
     };
   }
 
+  // Realtime INSERT payloads are raw `messages` rows — sender_display_name/avatar_url
+  // are joined client-side, not real columns, so they must be enriched before the row
+  // enters the cache (otherwise AvatarCircle crashes on an undefined displayName).
+  function enrichRealtimeRow(row: Record<string, unknown>): MessageWithProfile {
+    return enrichMessage({
+      id: row.id as string,
+      plan_id: (row.plan_id as string | null) ?? null,
+      dm_channel_id: (row.dm_channel_id as string | null) ?? null,
+      group_channel_id: (row.group_channel_id as string | null) ?? null,
+      sender_id: row.sender_id as string,
+      body: (row.body as string | null) ?? null,
+      created_at: row.created_at as string,
+      image_url: (row.image_url as string | null) ?? null,
+      reply_to_message_id: (row.reply_to_message_id as string | null) ?? null,
+      message_type: ((row.message_type as string) ?? 'text') as MessageType,
+      poll_id: (row.poll_id as string | null) ?? null,
+    });
+  }
+
   const messagesQuery = useQuery({
     queryKey: queryKeys.chat.messages(channelId),
     queryFn: async (): Promise<MessageWithProfile[]> => {
@@ -221,7 +240,11 @@ export function useChatRoom({
   // are global; we filter client-side after dispatch).
   useEffect(() => {
     if (!channelId) return;
-    return subscribeChatRoom(queryClient, { channelId, column: filterColumn });
+    return subscribeChatRoom(queryClient, {
+      channelId,
+      column: filterColumn,
+      enrichMessage: enrichRealtimeRow,
+    });
   }, [queryClient, channelId, filterColumn]);
 
   // Reactions + poll_votes inline subscription (preserve pre-migration behavior).

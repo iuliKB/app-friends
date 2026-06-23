@@ -11,6 +11,7 @@ interface AvatarCircleProps {
 }
 
 function getInitials(displayName: string): string {
+  if (!displayName) return '';
   return displayName
     .trim()
     .split(/\s+/)
