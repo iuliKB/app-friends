@@ -3,5 +3,20 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "workbench.colorCustomizations": {
+    "editorError.foreground": "#00000000",
+    "editorWarning.foreground": "#00000000",
+    "editorInfo.foreground": "#00000000",
+    "editorHint.foreground": "#00000000",
+    "editorError.border": "#00000000",
+    "editorWarning.border": "#00000000",
+    "editorInfo.border": "#00000000",
+    "editorHint.border": "#00000000",
+    "problemsErrorIcon.foreground": "#00000000",
+    "problemsWarningIcon.foreground": "#00000000",
+    "problemsInfoIcon.foreground": "#00000000"
+  },
+  "editor.lightbulb.enabled": false,
+  "problems.visibility": false
 }
