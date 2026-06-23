@@ -1,8 +1,9 @@
 // Phase 7 — BirthdaysScreen (BDAY-02).
 // Stack screen at /squad/birthdays — registered by squad/_layout.tsx.
-// Renders a calendar header (month grid with birthday markers) followed by a
-// FlatList of birthday rows sorted by days_until ASC (RPC order). Today rows
-// get an accent-tinted background. Pull-to-refresh supported.
+// Renders a calendar header (defaults to a one-week strip, expandable to the
+// full month grid) followed by a FlatList of birthday rows sorted by
+// days_until ASC (RPC order). Today rows get an accent-tinted background.
+// Pull-to-refresh supported.
 // DO NOT wrap FlatList in a ScrollView — breaks Android scroll silently.
 // The calendar lives in ListHeaderComponent so it scrolls with the list.
 
@@ -23,7 +24,12 @@ import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import { BirthdayCalendar } from '@/components/birthdays/BirthdayCalendar';
 import { useUpcomingBirthdays, type BirthdayEntry } from '@/hooks/useUpcomingBirthdays';
-import { formatDaysUntil, formatBirthdayDate, formatTurningAge } from '@/utils/birthdayFormatters';
+import {
+  formatDaysUntil,
+  formatBirthdayDate,
+  formatTurningAge,
+  startOfWeek,
+} from '@/utils/birthdayFormatters';
 
 const TODAY_BG = 'rgba(249, 115, 22, 0.12)'; // accent orange at 12% opacity — no theme token for this
 
@@ -35,6 +41,8 @@ export default function BirthdaysScreen() {
   const today = useMemo(() => new Date(), []);
   const [viewMonth, setViewMonth] = useState(today.getMonth() + 1);
   const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  const [expanded, setExpanded] = useState(false);
 
   const goPrevMonth = useCallback(() => {
     setViewMonth((m) => {
@@ -56,11 +64,33 @@ export default function BirthdaysScreen() {
     });
   }, []);
 
-  const goToToday = useCallback(() => {
-    const now = new Date();
-    setViewMonth(now.getMonth() + 1);
-    setViewYear(now.getFullYear());
+  const goPrevWeek = useCallback(() => {
+    setWeekStart((d) => {
+      const next = new Date(d);
+      next.setDate(next.getDate() - 7);
+      return next;
+    });
   }, []);
+
+  const goNextWeek = useCallback(() => {
+    setWeekStart((d) => {
+      const next = new Date(d);
+      next.setDate(next.getDate() + 7);
+      return next;
+    });
+  }, []);
+
+  const toggleExpanded = useCallback(() => setExpanded((e) => !e), []);
+
+  const goToToday = useCallback(() => {
+    if (expanded) {
+      const now = new Date();
+      setViewMonth(now.getMonth() + 1);
+      setViewYear(now.getFullYear());
+    } else {
+      setWeekStart(startOfWeek(new Date()));
+    }
+  }, [expanded]);
 
   const handleSelectDay = useCallback(
     (entry: BirthdayEntry) => {
@@ -140,10 +170,15 @@ export default function BirthdaysScreen() {
     <View>
       <BirthdayCalendar
         entries={entries}
+        expanded={expanded}
+        onToggleExpanded={toggleExpanded}
         viewMonth={viewMonth}
         viewYear={viewYear}
         onPrevMonth={goPrevMonth}
         onNextMonth={goNextMonth}
+        weekStart={weekStart}
+        onPrevWeek={goPrevWeek}
+        onNextWeek={goNextWeek}
         onSelectDay={handleSelectDay}
         onGoToToday={goToToday}
       />

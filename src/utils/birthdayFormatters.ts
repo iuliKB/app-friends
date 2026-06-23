@@ -13,6 +13,13 @@ export function formatBirthdayDate(month: number, day: number): string {
     new Date(2000, month - 1, day)
   );
 }
+
+// Returns the Sunday (local midnight) of the week containing `date`.
+export function startOfWeek(date: Date): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
 // Combined display: `${formatBirthdayDate(m, d)} · ${formatDaysUntil(days)}`
 // → "Jan 15 · Today" / "Jan 15 · Tomorrow" / "Jan 15 · In 3 days"
 

@@ -1,24 +1,45 @@
-// Compact month-grid calendar for /squad/birthdays. Renders the visible month
-// as a 5- or 6-row grid (dynamic, depending on the month's start weekday and
-// length). Today is a filled dark disc with bold white text; birthdays are
-// filled accent discs; today's birthday combines both with a dark ring around
-// the accent disc. Header + "Today" jump pill live in a single row.
+// Compact calendar for /squad/birthdays. Defaults to a one-week strip;
+// tapping the chevron expands to the full month grid (and back). Week and
+// month navigation are independent — collapsing/expanding doesn't reset
+// either's position. Today is a filled dark disc/pill with bold white text;
+// birthdays are filled accent discs/pills; today's birthday combines both
+// with a dark ring around the accent fill.
 
-import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import {
+  Animated,
+  LayoutAnimation,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  UIManager,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 import type { BirthdayEntry } from '@/hooks/useUpcomingBirthdays';
+
+// Required for LayoutAnimation on Android (no-op on iOS); idempotent on multiple calls.
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const;
 const ROW_HEIGHT = 40;
+const PILL_HEIGHT = 64;
 
 interface BirthdayCalendarProps {
   entries: BirthdayEntry[];
+  expanded: boolean;
+  onToggleExpanded: () => void;
   viewMonth: number; // 1-12
   viewYear: number;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  weekStart: Date; // Sunday (local midnight) of the displayed week
+  onPrevWeek: () => void;
+  onNextWeek: () => void;
   onSelectDay?: (entry: BirthdayEntry) => void;
   onGoToToday?: () => void;
 }
@@ -30,6 +51,14 @@ interface DayCell {
   inCurrentMonth: boolean;
   isToday: boolean;
   entry: BirthdayEntry | undefined;
+}
+
+function isSameDate(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 function buildMonthMatrix(year: number, month1: number): DayCell[] {
@@ -89,37 +118,79 @@ function buildMonthMatrix(year: number, month1: number): DayCell[] {
   return cells;
 }
 
+function buildWeekCells(weekStart: Date): DayCell[] {
+  const today = new Date();
+  const cells: DayCell[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    cells.push({
+      day: d.getDate(),
+      month: d.getMonth() + 1,
+      year: d.getFullYear(),
+      inCurrentMonth: true,
+      isToday: isSameDate(d, today),
+      entry: undefined,
+    });
+  }
+  return cells;
+}
+
 export function BirthdayCalendar({
   entries,
+  expanded,
+  onToggleExpanded,
   viewMonth,
   viewYear,
   onPrevMonth,
   onNextMonth,
+  weekStart,
+  onPrevWeek,
+  onNextWeek,
   onSelectDay,
   onGoToToday,
 }: BirthdayCalendarProps) {
   const { colors } = useTheme();
 
+  const chevronRotation = useRef(new Animated.Value(expanded ? 1 : 0)).current;
+  useEffect(() => {
+    Animated.timing(chevronRotation, {
+      toValue: expanded ? 1 : 0,
+      duration: ANIMATION.duration.fast,
+      useNativeDriver: true,
+    }).start();
+  }, [expanded, chevronRotation]);
+
   const today = useMemo(() => new Date(), []);
   const isCurrentMonth = today.getFullYear() === viewYear && today.getMonth() + 1 === viewMonth;
+  const isCurrentWeek = useMemo(() => {
+    const todayWeekStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - today.getDay()
+    );
+    return isSameDate(todayWeekStart, weekStart);
+  }, [today, weekStart]);
 
+  // Keyed by "month-day" only (no year) — entries repeat every year.
   const entriesByDay = useMemo(() => {
     const map = new Map<string, BirthdayEntry>();
     for (const e of entries) {
-      if (e.birthday_month !== viewMonth) continue;
       const key = `${e.birthday_month}-${e.birthday_day}`;
       if (!map.has(key)) map.set(key, e);
     }
     return map;
-  }, [entries, viewMonth]);
+  }, [entries]);
 
-  const cells = useMemo(() => {
+  const monthCells = useMemo(() => {
     const grid = buildMonthMatrix(viewYear, viewMonth);
-    return grid.map((c) => ({
-      ...c,
-      entry: c.inCurrentMonth ? entriesByDay.get(`${c.month}-${c.day}`) : undefined,
-    }));
+    return grid.map((c) => ({ ...c, entry: entriesByDay.get(`${c.month}-${c.day}`) }));
   }, [entriesByDay, viewMonth, viewYear]);
+
+  const weekCells = useMemo(() => {
+    const cells = buildWeekCells(weekStart);
+    return cells.map((c) => ({ ...c, entry: entriesByDay.get(`${c.month}-${c.day}`) }));
+  }, [entriesByDay, weekStart]);
 
   const monthLabel = useMemo(
     () =>
@@ -129,6 +200,11 @@ export function BirthdayCalendar({
     [viewMonth, viewYear]
   );
 
+  const weekLabel = useMemo(
+    () => new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(weekStart),
+    [weekStart]
+  );
+
   const todayLabel = useMemo(
     () =>
       new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(
@@ -136,6 +212,16 @@ export function BirthdayCalendar({
       ),
     [today]
   );
+
+  const handleToggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    onToggleExpanded();
+  };
+
+  const chevronRotate = chevronRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
 
   const styles = useMemo(
     () =>
@@ -265,17 +351,152 @@ export function BirthdayCalendar({
         cellPressed: {
           opacity: 0.7,
         },
+        weekStrip: {
+          flexDirection: 'row',
+        },
+        pillWrapper: {
+          flex: 1,
+          marginHorizontal: 3, // eslint-disable-line campfire/no-hardcoded-styles
+        },
+        dayPill: {
+          height: PILL_HEIGHT,
+          borderRadius: RADII.lg,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 4, // eslint-disable-line campfire/no-hardcoded-styles
+        },
+        pillWeekday: {
+          fontFamily: FONT_FAMILY.body.semibold,
+          fontSize: FONT_SIZE.xs,
+          color: colors.text.secondary,
+          textTransform: 'uppercase',
+
+          letterSpacing: 0.4,
+        },
+        pillDayNumber: {
+          fontFamily: FONT_FAMILY.display.bold,
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.primary,
+        },
+        toggleRow: {
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingTop: SPACING.sm,
+        },
+        toggleRowPressed: {
+          opacity: 0.6,
+        },
       }),
     [colors]
   );
+
+  const renderMonthCell = (c: DayCell, idx: number) => {
+    const hasBirthday = !!c.entry;
+    const interactive = hasBirthday && !!onSelectDay;
+    const isTodayOnly = c.isToday && !hasBirthday;
+    const isTodayBirthday = c.isToday && hasBirthday;
+    const isBirthdayOnly = hasBirthday && !c.isToday;
+    const useLightText = isTodayOnly || isBirthdayOnly || isTodayBirthday;
+
+    const inner = (
+      <View
+        style={[
+          styles.cellInner,
+          isTodayOnly && styles.cellToday,
+          isBirthdayOnly && styles.cellBirthday,
+          isTodayBirthday && styles.cellTodayBirthday,
+        ]}
+      >
+        <Text
+          style={[
+            styles.dayText,
+            !c.inCurrentMonth && styles.dayTextMuted,
+            useLightText && styles.dayTextOnDark,
+          ]}
+        >
+          {c.day}
+        </Text>
+      </View>
+    );
+
+    if (interactive) {
+      return (
+        <Pressable
+          key={`${c.year}-${c.month}-${c.day}-${idx}`}
+          style={({ pressed }) => [styles.cell, pressed && styles.cellPressed]}
+          onPress={() => onSelectDay!(c.entry!)}
+          accessibilityRole="button"
+          accessibilityLabel={`${c.entry!.display_name}'s birthday on ${monthLabel.split(' ')[0]} ${c.day}`}
+        >
+          {inner}
+        </Pressable>
+      );
+    }
+
+    return (
+      <View key={`${c.year}-${c.month}-${c.day}-${idx}`} style={styles.cell}>
+        {inner}
+      </View>
+    );
+  };
+
+  const renderWeekPill = (c: DayCell, idx: number) => {
+    const hasBirthday = !!c.entry;
+    const interactive = hasBirthday && !!onSelectDay;
+    const isTodayOnly = c.isToday && !hasBirthday;
+    const isTodayBirthday = c.isToday && hasBirthday;
+    const isBirthdayOnly = hasBirthday && !c.isToday;
+    const useLightText = isTodayOnly || isBirthdayOnly || isTodayBirthday;
+    const weekdayAbbrev = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(
+      new Date(c.year, c.month - 1, c.day)
+    );
+
+    const inner = (
+      <View
+        style={[
+          styles.dayPill,
+          isTodayOnly && styles.cellToday,
+          isBirthdayOnly && styles.cellBirthday,
+          isTodayBirthday && styles.cellTodayBirthday,
+        ]}
+      >
+        <Text style={[styles.pillWeekday, useLightText && styles.dayTextOnDark]}>
+          {weekdayAbbrev}
+        </Text>
+        <Text style={[styles.pillDayNumber, useLightText && styles.dayTextOnDark]}>{c.day}</Text>
+      </View>
+    );
+
+    if (interactive) {
+      return (
+        <Pressable
+          key={`${c.year}-${c.month}-${c.day}-${idx}`}
+          style={({ pressed }) => [styles.pillWrapper, pressed && styles.cellPressed]}
+          onPress={() => onSelectDay!(c.entry!)}
+          accessibilityRole="button"
+          accessibilityLabel={`${c.entry!.display_name}'s birthday on ${weekdayAbbrev} ${c.day}`}
+        >
+          {inner}
+        </Pressable>
+      );
+    }
+
+    return (
+      <View key={`${c.year}-${c.month}-${c.day}-${idx}`} style={styles.pillWrapper}>
+        {inner}
+      </View>
+    );
+  };
+
+  const showTodayPill = (expanded ? !isCurrentMonth : !isCurrentWeek) && !!onGoToToday;
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.monthTitle}>{monthLabel}</Text>
+          <Text style={styles.monthTitle}>{expanded ? monthLabel : weekLabel}</Text>
           <View style={styles.headerRight}>
-            {!isCurrentMonth && onGoToToday ? (
+            {showTodayPill ? (
               <Pressable
                 style={({ pressed }) => [styles.jumpPill, pressed && styles.jumpPillPressed]}
                 onPress={onGoToToday}
@@ -289,18 +510,18 @@ export function BirthdayCalendar({
             ) : null}
             <Pressable
               style={({ pressed }) => [styles.navButton, pressed && styles.navButtonPressed]}
-              onPress={onPrevMonth}
+              onPress={expanded ? onPrevMonth : onPrevWeek}
               accessibilityRole="button"
-              accessibilityLabel="Previous month"
+              accessibilityLabel={expanded ? 'Previous month' : 'Previous week'}
               hitSlop={8}
             >
               <Ionicons name="chevron-back" size={18} color={colors.text.primary} />
             </Pressable>
             <Pressable
               style={({ pressed }) => [styles.navButton, pressed && styles.navButtonPressed]}
-              onPress={onNextMonth}
+              onPress={expanded ? onNextMonth : onNextWeek}
               accessibilityRole="button"
-              accessibilityLabel="Next month"
+              accessibilityLabel={expanded ? 'Next month' : 'Next week'}
               hitSlop={8}
             >
               <Ionicons name="chevron-forward" size={18} color={colors.text.primary} />
@@ -308,65 +529,32 @@ export function BirthdayCalendar({
           </View>
         </View>
 
-        <View style={styles.weekRow}>
-          {WEEKDAYS.map((w, i) => (
-            <View key={`${w}-${i}`} style={styles.weekCell}>
-              <Text style={styles.weekLabel}>{w}</Text>
+        {expanded ? (
+          <>
+            <View style={styles.weekRow}>
+              {WEEKDAYS.map((w, i) => (
+                <View key={`${w}-${i}`} style={styles.weekCell}>
+                  <Text style={styles.weekLabel}>{w}</Text>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+            <View style={styles.grid}>{monthCells.map((c, idx) => renderMonthCell(c, idx))}</View>
+          </>
+        ) : (
+          <View style={styles.weekStrip}>{weekCells.map((c, idx) => renderWeekPill(c, idx))}</View>
+        )}
 
-        <View style={styles.grid}>
-          {cells.map((c, idx) => {
-            const hasBirthday = !!c.entry;
-            const interactive = hasBirthday && !!onSelectDay;
-            const isTodayOnly = c.isToday && !hasBirthday;
-            const isTodayBirthday = c.isToday && hasBirthday;
-            const isBirthdayOnly = hasBirthday && !c.isToday;
-            const useLightText = isTodayOnly || isBirthdayOnly || isTodayBirthday;
-
-            const inner = (
-              <View
-                style={[
-                  styles.cellInner,
-                  isTodayOnly && styles.cellToday,
-                  isBirthdayOnly && styles.cellBirthday,
-                  isTodayBirthday && styles.cellTodayBirthday,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.dayText,
-                    !c.inCurrentMonth && styles.dayTextMuted,
-                    useLightText && styles.dayTextOnDark,
-                  ]}
-                >
-                  {c.day}
-                </Text>
-              </View>
-            );
-
-            if (interactive) {
-              return (
-                <Pressable
-                  key={`${c.year}-${c.month}-${c.day}-${idx}`}
-                  style={({ pressed }) => [styles.cell, pressed && styles.cellPressed]}
-                  onPress={() => onSelectDay!(c.entry!)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${c.entry!.display_name}'s birthday on ${monthLabel.split(' ')[0]} ${c.day}`}
-                >
-                  {inner}
-                </Pressable>
-              );
-            }
-
-            return (
-              <View key={`${c.year}-${c.month}-${c.day}-${idx}`} style={styles.cell}>
-                {inner}
-              </View>
-            );
-          })}
-        </View>
+        <Pressable
+          style={({ pressed }) => [styles.toggleRow, pressed && styles.toggleRowPressed]}
+          onPress={handleToggle}
+          accessibilityRole="button"
+          accessibilityLabel={expanded ? 'Show this week only' : 'Show full month'}
+          hitSlop={8}
+        >
+          <Animated.View style={{ transform: [{ rotate: chevronRotate }] }}>
+            <Ionicons name="chevron-down" size={18} color={colors.text.secondary} />
+          </Animated.View>
+        </Pressable>
       </View>
     </View>
   );
