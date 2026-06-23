@@ -19,7 +19,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { EmptyState } from '@/components/common/EmptyState';
 import { BirthdayCalendar } from '@/components/birthdays/BirthdayCalendar';
@@ -140,13 +140,45 @@ export default function BirthdaysScreen() {
           color: colors.text.secondary,
           marginTop: SPACING.xs,
         },
-        rowDays: {
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
+        dateBadge: {
+          width: 44, // eslint-disable-line campfire/no-hardcoded-styles
+          height: 44, // eslint-disable-line campfire/no-hardcoded-styles
+          borderRadius: RADII.lg,
+          backgroundColor: colors.interactive.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        dateBadgeMonth: {
+          fontSize: FONT_SIZE.xs,
+          fontFamily: FONT_FAMILY.body.semibold,
+          color: colors.surface.card,
+          textTransform: 'uppercase',
+        },
+        dateBadgeDay: {
+          fontSize: FONT_SIZE.lg,
+          fontFamily: FONT_FAMILY.display.bold,
+          color: colors.surface.card,
+        },
+        daysPill: {
+          borderRadius: RADII.full,
+          paddingHorizontal: SPACING.sm,
+          paddingVertical: SPACING.xs,
+          backgroundColor: colors.surface.card,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        daysPillToday: {
+          backgroundColor: 'rgba(185, 255, 59, 0.18)', // accent tint, higher opacity for small surface
+          borderColor: colors.interactive.accent,
+        },
+        daysPillText: {
+          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.semibold,
           color: colors.text.secondary,
         },
-        rowDaysToday: {
-          color: colors.interactive.accent,
+        daysPillTextToday: {
+          color: colors.text.primary,
+          fontFamily: FONT_FAMILY.body.bold,
         },
         sectionHeader: {
           paddingHorizontal: SPACING.lg,
@@ -233,8 +265,13 @@ interface BirthdayRowStyles {
   rowMiddle: ViewStyle;
   rowName: TextStyle;
   rowDate: TextStyle;
-  rowDays: TextStyle;
-  rowDaysToday: TextStyle;
+  dateBadge: ViewStyle;
+  dateBadgeMonth: TextStyle;
+  dateBadgeDay: TextStyle;
+  daysPill: ViewStyle;
+  daysPillToday: ViewStyle;
+  daysPillText: TextStyle;
+  daysPillTextToday: TextStyle;
 }
 
 interface BirthdayRowProps {
@@ -252,7 +289,12 @@ function BirthdayRow({ entry, styles }: BirthdayRowProps) {
       : null;
   const daysLabel = formatDaysUntil(entry.days_until);
 
-  const combinedLabel = [dateLabel, ageLabel, daysLabel].filter(Boolean).join(' · ');
+  const combinedLabel = [dateLabel, ageLabel].filter(Boolean).join(' · ');
+
+  // Abbreviated month for the date badge — neutral year-2000 anchor, same convention as formatBirthdayDate.
+  const monthAbbrev = new Intl.DateTimeFormat('en-US', { month: 'short' })
+    .format(new Date(2000, entry.birthday_month - 1, 1))
+    .toUpperCase();
 
   return (
     <Pressable
@@ -268,14 +310,22 @@ function BirthdayRow({ entry, styles }: BirthdayRowProps) {
       }
       testID="birthday-row"
     >
-      <AvatarCircle size={40} imageUri={entry.avatar_url} displayName={entry.display_name} />
+      <View style={styles.dateBadge}>
+        <Text style={styles.dateBadgeMonth}>{monthAbbrev}</Text>
+        <Text style={styles.dateBadgeDay}>{entry.birthday_day}</Text>
+      </View>
+      <View style={{ marginLeft: SPACING.md }}>
+        <AvatarCircle size={36} imageUri={entry.avatar_url} displayName={entry.display_name} />
+      </View>
       <View style={styles.rowMiddle}>
         <Text style={styles.rowName} numberOfLines={1}>
           {entry.display_name}
         </Text>
         <Text style={styles.rowDate}>{combinedLabel}</Text>
       </View>
-      <Text style={[styles.rowDays, isToday && styles.rowDaysToday]}>{daysLabel}</Text>
+      <View style={[styles.daysPill, isToday && styles.daysPillToday]}>
+        <Text style={[styles.daysPillText, isToday && styles.daysPillTextToday]}>{daysLabel}</Text>
+      </View>
     </Pressable>
   );
 }
