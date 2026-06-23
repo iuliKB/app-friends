@@ -141,8 +141,8 @@ export default function BirthdaysScreen() {
           marginTop: SPACING.xs,
         },
         dateBadge: {
-          width: 44, // eslint-disable-line campfire/no-hardcoded-styles
-          height: 44, // eslint-disable-line campfire/no-hardcoded-styles
+          width: 44,
+          height: 44,
           borderRadius: RADII.lg,
           backgroundColor: colors.interactive.accent,
           alignItems: 'center',
@@ -168,7 +168,7 @@ export default function BirthdaysScreen() {
           borderColor: colors.border,
         },
         daysPillToday: {
-          backgroundColor: 'rgba(185, 255, 59, 0.18)', // accent tint, higher opacity for small surface
+          backgroundColor: 'rgba(185, 255, 59, 0.18)', // eslint-disable-line campfire/no-hardcoded-styles -- accent tint, higher opacity for small surface, no theme token for this
           borderColor: colors.interactive.accent,
         },
         daysPillText: {
