@@ -29,7 +29,7 @@ Phase: 33
 Plan: Not started
 Plans: 4 of 4 complete
 Status: Phase complete — ready for verification
-Last activity: 2026-05-13
+Last activity: 2026-06-23 - Completed quick task 260623-sb3: Improve birthday screen UI (rounder calendar, swipe nav, fixed duplicate days-until, date-badge row redesign, accent-tinted background)
 
 ## Phase Structure
 
@@ -216,6 +216,7 @@ Requirements covered: 4 / 4 (Phases 30 + 31 introduce architectural work; requir
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
 | 260513-5as | Add useTabBarSpacing hook for consistent bottom-nav clearance across tab screens | 2026-05-13 | 6bc55d8 | Verified | [260513-5as-add-usetabbarspacing-hook-for-consistent](./quick/260513-5as-add-usetabbarspacing-hook-for-consistent/) |
+| 260623-sb3 | Improve birthday screen UI: rounder calendar card, swipe month/week nav, fix duplicate days-until, date-badge row redesign, accent-tinted calendar background | 2026-06-23 | a104970 | Completed | [260623-sb3-improve-birthday-screen-ui-rounder-calen](./quick/260623-sb3-improve-birthday-screen-ui-rounder-calen/) |
 | Phase 31 P01 | 17min | 9 tasks | 12 files |
 | Phase 31 P02 | 6min | 5 tasks | 5 files |
 | Phase 31 P03 | 8min | 5 tasks | 12 files |
