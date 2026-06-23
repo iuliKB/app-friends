@@ -16,9 +16,13 @@ import {
   UIManager,
   View,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
 import type { BirthdayEntry } from '@/hooks/useUpcomingBirthdays';
+
+const SWIPE_THRESHOLD_PX = 50; // px — short, deliberate swipe; lower than FriendSwipeCard's screen-width-relative threshold since this is a compact calendar, not a full-width card
 
 // Required for LayoutAnimation on Android (no-op on iOS); idempotent on multiple calls.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -223,6 +227,23 @@ export function BirthdayCalendar({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
   });
+
+  const swipeGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-10, 10])
+        .failOffsetY([-15, 15])
+        .onEnd((e) => {
+          if (Math.abs(e.translationX) < SWIPE_THRESHOLD_PX) return;
+          const goNext = e.translationX < 0; // swipe left = next
+          if (expanded) {
+            runOnJS(goNext ? onNextMonth : onPrevMonth)();
+          } else {
+            runOnJS(goNext ? onNextWeek : onPrevWeek)();
+          }
+        }),
+    [expanded, onNextMonth, onPrevMonth, onNextWeek, onPrevWeek]
+  );
 
   const styles = useMemo(
     () =>
@@ -530,20 +551,28 @@ export function BirthdayCalendar({
           </View>
         </View>
 
-        {expanded ? (
-          <>
-            <View style={styles.weekRow}>
-              {WEEKDAYS.map((w, i) => (
-                <View key={`${w}-${i}`} style={styles.weekCell}>
-                  <Text style={styles.weekLabel}>{w}</Text>
+        <GestureDetector gesture={swipeGesture}>
+          <View>
+            {expanded ? (
+              <>
+                <View style={styles.weekRow}>
+                  {WEEKDAYS.map((w, i) => (
+                    <View key={`${w}-${i}`} style={styles.weekCell}>
+                      <Text style={styles.weekLabel}>{w}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
-            <View style={styles.grid}>{monthCells.map((c, idx) => renderMonthCell(c, idx))}</View>
-          </>
-        ) : (
-          <View style={styles.weekStrip}>{weekCells.map((c, idx) => renderWeekPill(c, idx))}</View>
-        )}
+                <View style={styles.grid}>
+                  {monthCells.map((c, idx) => renderMonthCell(c, idx))}
+                </View>
+              </>
+            ) : (
+              <View style={styles.weekStrip}>
+                {weekCells.map((c, idx) => renderWeekPill(c, idx))}
+              </View>
+            )}
+          </View>
+        </GestureDetector>
 
         <Pressable
           style={({ pressed }) => [styles.toggleRow, pressed && styles.toggleRowPressed]}
