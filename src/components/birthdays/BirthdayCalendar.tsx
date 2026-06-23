@@ -28,6 +28,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const;
 const ROW_HEIGHT = 40;
 const PILL_HEIGHT = 64;
+const ACCENT_TINT_BG = 'rgba(185, 255, 59, 0.08)'; // accent green at 8% opacity — no theme token for this
 
 interface BirthdayCalendarProps {
   entries: BirthdayEntry[];
@@ -230,11 +231,11 @@ export function BirthdayCalendar({
           paddingHorizontal: SPACING.lg,
           paddingTop: SPACING.md,
           paddingBottom: SPACING.lg,
-          backgroundColor: colors.surface.base,
+          backgroundColor: ACCENT_TINT_BG,
         },
         card: {
           backgroundColor: colors.surface.card,
-          borderRadius: RADII.lg,
+          borderRadius: RADII.xl,
           paddingVertical: SPACING.md,
           paddingHorizontal: SPACING.md,
           borderWidth: 1,
