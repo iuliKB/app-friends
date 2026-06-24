@@ -23,11 +23,6 @@ const ICON_BY_ACCENT: Record<SpotlightItem['accent'], keyof typeof Ionicons.glyp
   neutral: 'sparkles-outline',
 };
 
-// Halo: a large soft-edged circle in the accent color, positioned top-right
-// and clipped by BentoCard's overflow:hidden. Reads as a radial accent glow
-// without needing react-native-svg or a real radial gradient.
-const HALO_SIZE = 220;
-
 export function SpotlightTile({ item, loading }: SpotlightTileProps) {
   const { colors } = useTheme();
   const router = useRouter();
@@ -55,24 +50,6 @@ export function SpotlightTile({ item, loading }: SpotlightTileProps) {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        halo: {
-          position: 'absolute',
-          width: HALO_SIZE,
-          height: HALO_SIZE,
-          borderRadius: HALO_SIZE / 2,
-          top: -HALO_SIZE * 0.45,
-          right: -HALO_SIZE * 0.3,
-          backgroundColor: accentColor + '24',
-        },
-        haloInner: {
-          position: 'absolute',
-          width: HALO_SIZE * 0.55,
-          height: HALO_SIZE * 0.55,
-          borderRadius: (HALO_SIZE * 0.55) / 2,
-          top: -HALO_SIZE * 0.2,
-          right: -HALO_SIZE * 0.08,
-          backgroundColor: accentColor + '33',
-        },
         headerRow: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -147,13 +124,9 @@ export function SpotlightTile({ item, loading }: SpotlightTileProps) {
     <BentoCard
       variant="spotlight"
       onPress={() => router.push(item.href as never)}
-      borderColor={accentColor + '33'}
       accessibilityRole="button"
       accessibilityLabel={`${item.title}. ${item.subtitle}. ${item.cta}.`}
     >
-      <View style={styles.halo} pointerEvents="none" />
-      <View style={styles.haloInner} pointerEvents="none" />
-
       <View style={styles.headerRow}>
         {showAvatar ? (
           <AvatarCircle

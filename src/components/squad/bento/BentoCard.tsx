@@ -7,43 +7,27 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  useReducedMotion,
-} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { RADII, SPACING } from '@/theme';
-import { TILE_SURFACE, SPOTLIGHT_SHADOW } from './tileSurface';
+import { useTheme, RADII, SPACING } from '@/theme';
 
 interface BentoCardProps extends AccessibilityProps {
   onPress?: () => void;
   variant?: 'tile' | 'spotlight';
   containerStyle?: StyleProp<ViewStyle>;
-  borderColor?: string;
   children: React.ReactNode;
 }
 
-// Spring config — fast, low-damping enough to feel tactile without bouncing.
-const PRESS_SPRING = { damping: 18, stiffness: 320, mass: 0.5 };
-const PRESS_SCALE = 0.97;
-
+// Flat surfaces — matches StreakCard and the rest of the app. Depth comes from
+// surface.card (#1D2027) on surface.base (#0E0F11), not gradients/shadows/borders.
+// Press feedback is a simple opacity dab (like StreakCard.cardPressed), not a spring.
 export function BentoCard({
   onPress,
   variant = 'tile',
   containerStyle,
-  borderColor,
   children,
   ...a11y
 }: BentoCardProps) {
-  const scale = useSharedValue(1);
-  const reduceMotion = useReducedMotion();
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const { colors } = useTheme();
 
   const styles = useMemo(
     () =>
@@ -51,35 +35,19 @@ export function BentoCard({
         outer: {
           borderRadius: RADII.lg,
           overflow: 'hidden',
-          ...(variant === 'spotlight' ? SPOTLIGHT_SHADOW : null),
+          backgroundColor: colors.surface.card,
         },
-        gradient: {
+        inner: {
           flex: 1,
           padding: variant === 'spotlight' ? SPACING.xl : SPACING.lg,
           minHeight: variant === 'tile' ? 132 : undefined,
           justifyContent: variant === 'tile' ? 'space-between' : undefined,
-          borderRadius: RADII.lg,
-          borderWidth: 1,
-          borderColor: borderColor ?? TILE_SURFACE.hairlineBorder,
         },
-        pressable: { flex: 1 },
       }),
-    [variant, borderColor]
+    [colors, variant]
   );
 
-  const gradientColors =
-    variant === 'spotlight' ? TILE_SURFACE.spotlightGradient : TILE_SURFACE.tileGradient;
-
-  const inner = (
-    <LinearGradient
-      colors={gradientColors as unknown as readonly [string, string]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
-    >
-      {children}
-    </LinearGradient>
-  );
+  const inner = <View style={styles.inner}>{children}</View>;
 
   if (!onPress) {
     return (
@@ -89,27 +57,16 @@ export function BentoCard({
     );
   }
 
-  const handlePressIn = () => {
-    if (!reduceMotion) {
-      scale.value = withSpring(PRESS_SCALE, PRESS_SPRING);
-    }
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-  };
-  const handlePressOut = () => {
-    scale.value = withSpring(1, PRESS_SPRING);
-  };
-
   return (
-    <Animated.View style={[styles.outer, containerStyle, animatedStyle]}>
-      <Pressable
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={styles.pressable}
-        {...a11y}
-      >
-        {inner}
-      </Pressable>
-    </Animated.View>
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      }}
+      style={({ pressed }) => [styles.outer, containerStyle, pressed && { opacity: 0.85 }]}
+      {...a11y}
+    >
+      {inner}
+    </Pressable>
   );
 }
