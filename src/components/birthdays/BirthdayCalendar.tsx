@@ -18,8 +18,10 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII, ANIMATION } from '@/theme';
+import { AvatarCircle } from '@/components/common/AvatarCircle';
 import type { BirthdayEntry } from '@/hooks/useUpcomingBirthdays';
 
 const SWIPE_THRESHOLD_PX = 50; // px — short, deliberate swipe; lower than FriendSwipeCard's screen-width-relative threshold since this is a compact calendar, not a full-width card
@@ -30,9 +32,13 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const;
-const ROW_HEIGHT = 40;
-const PILL_HEIGHT = 64;
-const ACCENT_TINT_BG = 'rgba(185, 255, 59, 0.08)'; // accent green at 8% opacity — no theme token for this
+const ROW_HEIGHT = 46;
+const PILL_HEIGHT = 68;
+// Intentional top-down accent gradient for the calendar card: the next-event-card
+// green (interactive.accent) fades from a visible tint at the top to transparent,
+// letting the opaque surface.card base show through lower down. No theme token for this.
+const CARD_GRADIENT_DARK = ['rgba(185, 255, 59, 0.12)', 'rgba(185, 255, 59, 0)'] as const; // #B9FF3B
+const CARD_GRADIENT_LIGHT = ['rgba(77, 124, 0, 0.08)', 'rgba(77, 124, 0, 0)'] as const; // #4D7C00
 
 interface BirthdayCalendarProps {
   entries: BirthdayEntry[];
@@ -155,7 +161,7 @@ export function BirthdayCalendar({
   onSelectDay,
   onGoToToday,
 }: BirthdayCalendarProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   const chevronRotation = useRef(new Animated.Value(expanded ? 1 : 0)).current;
   useEffect(() => {
@@ -205,10 +211,19 @@ export function BirthdayCalendar({
     [viewMonth, viewYear]
   );
 
-  const weekLabel = useMemo(
-    () => new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(weekStart),
-    [weekStart]
-  );
+  // Week-view title shows the actual date range so each week reads distinctly
+  // (e.g. "Jun 22 – 28", or "Jun 29 – Jul 5" across a month boundary) — a plain
+  // "Month Year" looked identical week to week and made navigation feel like a no-op.
+  const weekRangeLabel = useMemo(() => {
+    const end = new Date(weekStart);
+    end.setDate(weekStart.getDate() + 6);
+    const monthFmt = new Intl.DateTimeFormat('en-US', { month: 'short' });
+    const startMonth = monthFmt.format(weekStart);
+    const endMonth = monthFmt.format(end);
+    return weekStart.getMonth() === end.getMonth()
+      ? `${startMonth} ${weekStart.getDate()} – ${end.getDate()}`
+      : `${startMonth} ${weekStart.getDate()} – ${endMonth} ${end.getDate()}`;
+  }, [weekStart]);
 
   const todayLabel = useMemo(
     () =>
@@ -217,6 +232,18 @@ export function BirthdayCalendar({
       ),
     [today]
   );
+
+  // Month name + year shown as the card's prominent title (split so the year can
+  // carry the brand accent). In week view the main line is the date range.
+  const monthName = useMemo(
+    () =>
+      new Intl.DateTimeFormat('en-US', { month: 'long' }).format(
+        new Date(viewYear, viewMonth - 1, 1)
+      ),
+    [viewMonth, viewYear]
+  );
+  const titleMain = expanded ? monthName : weekRangeLabel;
+  const titleYear = String(expanded ? viewYear : weekStart.getFullYear());
 
   const handleToggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -252,7 +279,6 @@ export function BirthdayCalendar({
           paddingHorizontal: SPACING.lg,
           paddingTop: SPACING.md,
           paddingBottom: SPACING.lg,
-          backgroundColor: ACCENT_TINT_BG,
         },
         card: {
           backgroundColor: colors.surface.card,
@@ -261,54 +287,86 @@ export function BirthdayCalendar({
           paddingHorizontal: SPACING.md,
           borderWidth: 1,
           borderColor: colors.border,
-          ...colors.cardElevation,
+          overflow: 'hidden', // clip the accent gradient + top highlight to the rounded corners
+          // Deeper, softer drop shadow than the standard card elevation — adds the
+          // "lift" the flat version was missing.
+          shadowColor: '#000', // eslint-disable-line campfire/no-hardcoded-styles -- shadow color, theme-agnostic
+          shadowOpacity: isDark ? 0.45 : 0.16,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 10 },
+          elevation: 8,
+        },
+        // 1px translucent highlight along the very top edge — reads as a light
+        // source hitting the card, reinforcing depth (mainly visible in dark mode).
+        topHighlight: {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 1,
+          backgroundColor: 'rgba(255, 255, 255, 0.18)', // eslint-disable-line campfire/no-hardcoded-styles -- specular edge highlight, no theme token
         },
         header: {
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-between',
           paddingHorizontal: SPACING.xs,
-          marginBottom: SPACING.sm,
+          marginBottom: SPACING.md,
         },
-        monthTitle: {
+        titleBlock: {
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'baseline',
+          gap: SPACING.sm,
+        },
+        titleMain: {
           fontFamily: FONT_FAMILY.display.bold,
-          fontSize: FONT_SIZE.lg,
+          fontSize: FONT_SIZE.xxl,
           color: colors.text.primary,
 
-          letterSpacing: -0.3,
+          letterSpacing: -0.5,
         },
-        headerRight: {
+        titleYear: {
+          fontFamily: FONT_FAMILY.display.semibold,
+          fontSize: FONT_SIZE.lg,
+          color: colors.text.secondary,
+        },
+        navGroup: {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: SPACING.xs,
+          gap: SPACING.sm,
         },
         navButton: {
-          width: 30,
-          height: 30,
+          width: 34,
+          height: 34,
           borderRadius: RADII.full,
           alignItems: 'center',
           justifyContent: 'center',
+          backgroundColor: colors.surface.base,
+          borderWidth: 1,
+          borderColor: colors.border,
         },
         navButtonPressed: {
-          backgroundColor: colors.surface.base,
+          borderColor: colors.interactive.accent,
         },
-        jumpPill: {
+        todayLink: {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 4, // eslint-disable-line campfire/no-hardcoded-styles
-          paddingHorizontal: SPACING.sm,
-          paddingVertical: 4, // eslint-disable-line campfire/no-hardcoded-styles
+          gap: SPACING.xs,
+          alignSelf: 'center',
+          paddingVertical: SPACING.xs,
+          paddingHorizontal: SPACING.md,
           borderRadius: RADII.full,
-          backgroundColor: colors.interactive.accent,
-          marginRight: SPACING.xs,
+          borderWidth: 1,
+          borderColor: colors.interactive.accent,
+          marginBottom: SPACING.sm,
         },
-        jumpPillPressed: {
-          opacity: 0.85,
+        todayLinkPressed: {
+          opacity: 0.6,
         },
-        jumpPillText: {
+        todayLinkText: {
           fontFamily: FONT_FAMILY.body.semibold,
           fontSize: FONT_SIZE.xs,
-          color: colors.surface.card,
+          color: colors.interactive.accent,
           textTransform: 'uppercase',
 
           letterSpacing: 0.5,
@@ -323,7 +381,7 @@ export function BirthdayCalendar({
         },
         weekLabel: {
           fontFamily: FONT_FAMILY.body.semibold,
-          fontSize: FONT_SIZE.xs,
+          fontSize: FONT_SIZE.sm,
           color: colors.text.secondary,
           textTransform: 'uppercase',
 
@@ -340,8 +398,8 @@ export function BirthdayCalendar({
           justifyContent: 'center',
         },
         cellInner: {
-          width: 32,
-          height: 32,
+          width: 38,
+          height: 38,
           borderRadius: RADII.full,
           alignItems: 'center',
           justifyContent: 'center',
@@ -357,9 +415,27 @@ export function BirthdayCalendar({
           borderWidth: 2,
           borderColor: colors.text.primary,
         },
+        // Accent glow behind today's cell — the focal point of the grid.
+        cellTodayGlow: {
+          shadowColor: colors.interactive.accent,
+          shadowOpacity: 0.7,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 0 },
+          elevation: 6,
+        },
+        // Ringed mini-avatar shown in cells that have a birthday.
+        avatarRing: {
+          borderRadius: RADII.full,
+          borderWidth: 2,
+          borderColor: colors.interactive.accent,
+          overflow: 'hidden',
+        },
+        avatarRingToday: {
+          borderColor: colors.text.primary,
+        },
         dayText: {
-          fontFamily: FONT_FAMILY.body.medium,
-          fontSize: FONT_SIZE.sm,
+          fontFamily: FONT_FAMILY.body.semibold,
+          fontSize: FONT_SIZE.lg,
           color: colors.text.primary,
         },
         dayTextMuted: {
@@ -389,7 +465,7 @@ export function BirthdayCalendar({
         },
         pillWeekday: {
           fontFamily: FONT_FAMILY.body.semibold,
-          fontSize: FONT_SIZE.xs,
+          fontSize: FONT_SIZE.sm,
           color: colors.text.secondary,
           textTransform: 'uppercase',
 
@@ -397,7 +473,7 @@ export function BirthdayCalendar({
         },
         pillDayNumber: {
           fontFamily: FONT_FAMILY.display.bold,
-          fontSize: FONT_SIZE.lg,
+          fontSize: FONT_SIZE.xxl,
           color: colors.text.primary,
         },
         toggleRow: {
@@ -409,7 +485,7 @@ export function BirthdayCalendar({
           opacity: 0.6,
         },
       }),
-    [colors]
+    [colors, isDark]
   );
 
   const renderMonthCell = (c: DayCell, idx: number) => {
@@ -417,23 +493,30 @@ export function BirthdayCalendar({
     const interactive = hasBirthday && !!onSelectDay;
     const isTodayOnly = c.isToday && !hasBirthday;
     const isTodayBirthday = c.isToday && hasBirthday;
-    const isBirthdayOnly = hasBirthday && !c.isToday;
-    const useLightText = isTodayOnly || isBirthdayOnly || isTodayBirthday;
 
-    const inner = (
+    const inner = hasBirthday ? (
+      <View style={c.isToday ? styles.cellTodayGlow : undefined}>
+        <View style={[styles.avatarRing, isTodayBirthday && styles.avatarRingToday]}>
+          <AvatarCircle
+            size={34}
+            imageUri={c.entry!.avatar_url}
+            displayName={c.entry!.display_name}
+          />
+        </View>
+      </View>
+    ) : (
       <View
         style={[
           styles.cellInner,
           isTodayOnly && styles.cellToday,
-          isBirthdayOnly && styles.cellBirthday,
-          isTodayBirthday && styles.cellTodayBirthday,
+          isTodayOnly && styles.cellTodayGlow,
         ]}
       >
         <Text
           style={[
             styles.dayText,
             !c.inCurrentMonth && styles.dayTextMuted,
-            useLightText && styles.dayTextOnDark,
+            isTodayOnly && styles.dayTextOnDark,
           ]}
         >
           {c.day}
@@ -467,8 +550,6 @@ export function BirthdayCalendar({
     const interactive = hasBirthday && !!onSelectDay;
     const isTodayOnly = c.isToday && !hasBirthday;
     const isTodayBirthday = c.isToday && hasBirthday;
-    const isBirthdayOnly = hasBirthday && !c.isToday;
-    const useLightText = isTodayOnly || isBirthdayOnly || isTodayBirthday;
     const weekdayAbbrev = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(
       new Date(c.year, c.month - 1, c.day)
     );
@@ -478,14 +559,25 @@ export function BirthdayCalendar({
         style={[
           styles.dayPill,
           isTodayOnly && styles.cellToday,
-          isBirthdayOnly && styles.cellBirthday,
-          isTodayBirthday && styles.cellTodayBirthday,
+          isTodayOnly && styles.cellTodayGlow,
         ]}
       >
-        <Text style={[styles.pillWeekday, useLightText && styles.dayTextOnDark]}>
+        <Text style={[styles.pillWeekday, isTodayOnly && styles.dayTextOnDark]}>
           {weekdayAbbrev}
         </Text>
-        <Text style={[styles.pillDayNumber, useLightText && styles.dayTextOnDark]}>{c.day}</Text>
+        {hasBirthday ? (
+          <View style={c.isToday ? styles.cellTodayGlow : undefined}>
+            <View style={[styles.avatarRing, isTodayBirthday && styles.avatarRingToday]}>
+              <AvatarCircle
+                size={38}
+                imageUri={c.entry!.avatar_url}
+                displayName={c.entry!.display_name}
+              />
+            </View>
+          </View>
+        ) : (
+          <Text style={[styles.pillDayNumber, isTodayOnly && styles.dayTextOnDark]}>{c.day}</Text>
+        )}
       </View>
     );
 
@@ -515,21 +607,22 @@ export function BirthdayCalendar({
   return (
     <View style={styles.container}>
       <View style={styles.card}>
+        <LinearGradient
+          colors={isDark ? CARD_GRADIENT_DARK : CARD_GRADIENT_LIGHT}
+          locations={[0, 0.75]}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
+        {isDark ? <View style={styles.topHighlight} pointerEvents="none" /> : null}
+
         <View style={styles.header}>
-          <Text style={styles.monthTitle}>{expanded ? monthLabel : weekLabel}</Text>
-          <View style={styles.headerRight}>
-            {showTodayPill ? (
-              <Pressable
-                style={({ pressed }) => [styles.jumpPill, pressed && styles.jumpPillPressed]}
-                onPress={onGoToToday}
-                accessibilityRole="button"
-                accessibilityLabel={`Jump to today, ${todayLabel}`}
-                hitSlop={6}
-              >
-                <Ionicons name="locate-outline" size={11} color={colors.surface.card} />
-                <Text style={styles.jumpPillText}>Today</Text>
-              </Pressable>
-            ) : null}
+          <View style={styles.titleBlock}>
+            <Text style={styles.titleMain} numberOfLines={1}>
+              {titleMain}
+            </Text>
+            <Text style={styles.titleYear}>{titleYear}</Text>
+          </View>
+          <View style={styles.navGroup}>
             <Pressable
               style={({ pressed }) => [styles.navButton, pressed && styles.navButtonPressed]}
               onPress={expanded ? onPrevMonth : onPrevWeek}
@@ -550,6 +643,19 @@ export function BirthdayCalendar({
             </Pressable>
           </View>
         </View>
+
+        {showTodayPill ? (
+          <Pressable
+            style={({ pressed }) => [styles.todayLink, pressed && styles.todayLinkPressed]}
+            onPress={onGoToToday}
+            accessibilityRole="button"
+            accessibilityLabel={`Jump to today, ${todayLabel}`}
+            hitSlop={6}
+          >
+            <Ionicons name="arrow-back" size={12} color={colors.interactive.accent} />
+            <Text style={styles.todayLinkText}>Back to today</Text>
+          </Pressable>
+        ) : null}
 
         <GestureDetector gesture={swipeGesture}>
           <View>
