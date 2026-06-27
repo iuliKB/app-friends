@@ -7,6 +7,7 @@ import type { ViewPreference } from '@/hooks/useViewPreference';
 interface FriendsSectionHeaderProps {
   freeCount: number;
   maybeCount: number;
+  busyCount: number;
   totalActiveCount: number;
   view: ViewPreference;
   onViewChange: (v: ViewPreference) => void;
@@ -16,6 +17,7 @@ interface FriendsSectionHeaderProps {
 export function FriendsSectionHeader({
   freeCount,
   maybeCount,
+  busyCount,
   totalActiveCount,
   view,
   onViewChange,
@@ -23,7 +25,7 @@ export function FriendsSectionHeader({
 }: FriendsSectionHeaderProps) {
   const { colors } = useTheme();
 
-  const showMoodRow = freeCount > 0 || maybeCount > 0;
+  const showMoodRow = freeCount > 0 || maybeCount > 0 || busyCount > 0;
 
   const styles = useMemo(
     () =>
@@ -87,7 +89,7 @@ export function FriendsSectionHeader({
           {showMoodRow && (
             <View
               style={styles.moodRow}
-              accessibilityLabel={`${freeCount} free, ${maybeCount} maybe`}
+              accessibilityLabel={`${freeCount} free, ${maybeCount} maybe, ${busyCount} busy`}
             >
               {freeCount > 0 && (
                 <View style={styles.moodItem}>
@@ -102,6 +104,14 @@ export function FriendsSectionHeader({
                   <View style={[styles.dot, { backgroundColor: colors.status.maybe }]} />
                   <Text style={styles.moodText}>
                     <Text style={styles.moodCount}>{maybeCount}</Text> maybe
+                  </Text>
+                </View>
+              )}
+              {busyCount > 0 && (
+                <View style={styles.moodItem}>
+                  <View style={[styles.dot, { backgroundColor: colors.status.busy }]} />
+                  <Text style={styles.moodText}>
+                    <Text style={styles.moodCount}>{busyCount}</Text> busy
                   </Text>
                 </View>
               )}

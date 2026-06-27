@@ -88,9 +88,10 @@ export function HomeScreen() {
   const [sheetVisible, setSheetVisible] = useState(false);
 
   // --- Friend counts for the section header (and deck sizing below) ---
-  const { freeCount, maybeCount, totalActiveCount } = useMemo(() => {
+  const { freeCount, maybeCount, busyCount, totalActiveCount } = useMemo(() => {
     let free = 0;
     let maybe = 0;
+    let busy = 0;
     let active = 0;
     for (const f of friends) {
       const state = computeHeartbeatState(f.status_expires_at, f.last_active_at);
@@ -98,8 +99,9 @@ export function HomeScreen() {
       active++;
       if (f.status === 'free') free++;
       else if (f.status === 'maybe') maybe++;
+      else if (f.status === 'busy') busy++;
     }
-    return { freeCount: free, maybeCount: maybe, totalActiveCount: active };
+    return { freeCount: free, maybeCount: maybe, busyCount: busy, totalActiveCount: active };
   }, [friends]);
 
   // --- Radar / cards view toggle + crossfade ---
@@ -241,6 +243,7 @@ export function HomeScreen() {
             <FriendsSectionHeader
               freeCount={freeCount}
               maybeCount={maybeCount}
+              busyCount={busyCount}
               totalActiveCount={totalActiveCount}
               view={view}
               onViewChange={setView}
