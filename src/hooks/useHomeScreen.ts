@@ -22,6 +22,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useHomeStore } from '@/stores/useHomeStore';
 import { queryKeys } from '@/lib/queryKeys';
 import { subscribeHomeStatuses } from '@/lib/realtimeBridge';
+import { computeHeartbeatState } from '@/lib/heartbeat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 import type { StatusValue } from '@/types/app';
 
@@ -120,19 +121,37 @@ export function useHomeScreen(): UseHomeScreenResult {
     setLastActiveAt(next);
   }, [statusesQuery.data, setLastActiveAt]);
 
-  const merged: FriendWithStatus[] = (friendsQuery.data ?? []).map((r) => {
-    const status = (statusesQuery.data ?? []).find((s) => s.user_id === r.friend_id);
-    return {
-      friend_id: r.friend_id,
-      username: r.username ?? '',
-      display_name: r.display_name,
-      avatar_url: r.avatar_url,
-      status: ((status?.effective_status as StatusValue) ?? 'maybe') as StatusValue,
-      context_tag: status?.context_tag ?? null,
-      status_expires_at: status?.status_expires_at ?? null,
-      last_active_at: status?.last_active_at ?? null,
-    };
-  });
+  const merged: FriendWithStatus[] = (friendsQuery.data ?? [])
+    .map((r) => {
+      const status = (statusesQuery.data ?? []).find((s) => s.user_id === r.friend_id);
+      return {
+        friend_id: r.friend_id,
+        username: r.username ?? '',
+        display_name: r.display_name,
+        avatar_url: r.avatar_url,
+        status: ((status?.effective_status as StatusValue) ?? 'maybe') as StatusValue,
+        context_tag: status?.context_tag ?? null,
+        status_expires_at: status?.status_expires_at ?? null,
+        last_active_at: status?.last_active_at ?? null,
+      };
+    })
+    // Availability-first ordering so the radar surfaces who you can actually reach:
+    // free → maybe → busy → stale/no-status (dead). Fading sinks slightly within its
+    // status. Within a tier, most-recently-active first, then name for stability.
+    .sort((a, b) => {
+      const rank = (f: FriendWithStatus) => {
+        const hb = computeHeartbeatState(f.status_expires_at, f.last_active_at);
+        if (hb === 'dead') return 4;
+        const base = f.status === 'free' ? 0 : f.status === 'maybe' ? 1 : 2;
+        return hb === 'fading' ? base + 0.5 : base;
+      };
+      const diff = rank(a) - rank(b);
+      if (diff !== 0) return diff;
+      const aT = a.last_active_at ? Date.parse(a.last_active_at) : 0;
+      const bT = b.last_active_at ? Date.parse(b.last_active_at) : 0;
+      if (aT !== bT) return bT - aT;
+      return a.display_name.localeCompare(b.display_name);
+    });
 
   const refetch = useCallback(async () => {
     return Promise.all([friendsQuery.refetch(), statusesQuery.refetch()]);

@@ -4,12 +4,11 @@
 // pulse + glow). Friends 7+ overflow into a horizontal chip row below.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, FlatList, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Line, Stop } from 'react-native-svg';
 import { useTheme, FONT_FAMILY, RADII, SPACING } from '@/theme';
 import { RadarBubble, BubbleSizeMap } from '@/components/home/RadarBubble';
-import { OverflowChip } from '@/components/home/OverflowChip';
 import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import type { FriendWithStatus } from '@/hooks/useFriends';
@@ -21,9 +20,21 @@ interface RadarViewProps {
   loading?: boolean;
 }
 
+// Radar height is fully determined by friend count: <=3 friends → 1 row, else 2.
+// Exported so HomeScreen's view-switcher can size itself exactly (no dead space)
+// without duplicating the row-threshold rule.
+export function getRadarHeight(friendCount: number): number {
+  return Math.min(friendCount, 8) <= 3 ? 160 : 260;
+}
+
 // --- Sweep tuning ---
 
 const SWEEP_DURATION_MS = 7500;
+
+// --- Capacity + rotation ---
+
+const RADAR_CAP = 8; // max bubbles shown at once (4x2 grid)
+const ROTATION_MS = 30000; // how often the tail rotates when friends > RADAR_CAP
 
 // --- Skeleton blob layout (HOME-01) ---
 
@@ -55,10 +66,11 @@ function hashToFloat(str: string, seed: number): number {
 function computeScatterPositions(
   friends: FriendWithStatus[],
   containerWidth: number,
-  radarHeight: number
+  radarHeight: number,
+  cols: number,
+  sizeScale: number
 ): BubblePosition[] {
   const rows = friends.length <= 3 ? 1 : 2;
-  const cols = Math.min(friends.length, 3);
   const cellWidth = containerWidth / cols;
   const cellHeight = radarHeight / rows;
   const margin = 4;
@@ -66,7 +78,7 @@ function computeScatterPositions(
   return friends.map((friend, index) => {
     const heartbeat = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
     const status = heartbeat === 'dead' ? 'dead' : friend.status;
-    const bubbleSize = BubbleSizeMap[status] ?? 36;
+    const bubbleSize = (BubbleSizeMap[status] ?? 36) * sizeScale;
     const bubbleRadius = bubbleSize / 2;
 
     const cellCol = index % cols;
@@ -145,23 +157,52 @@ export function RadarView({ friends, loading }: RadarViewProps) {
           fontFamily: FONT_FAMILY.body.bold,
           color: colors.surface.base,
         },
-        overflowRow: {
-          marginTop: SPACING.sm,
-        },
-        overflowContent: {
-          paddingHorizontal: SPACING.lg,
-          paddingVertical: SPACING.sm,
-        },
       }),
     [colors, isDark]
   );
 
-  // Adaptive height
-  const radarRows = friends.length <= 3 ? 1 : 2;
-  const RADAR_HEIGHT = radarRows === 1 ? 160 : 260;
+  // Cap at 8 bubbles (4x2 grid), overflow row removed. When the user has more than
+  // 8 friends, rotate the lower-priority tail through the spare slots so everyone
+  // gets airtime over time. `friends` arrives availability-sorted (free first), so
+  // the top free/maybe friends stay visible and only the tail cycles.
+  const [rotationOffset, setRotationOffset] = useState(0);
+  useEffect(() => {
+    if (friends.length <= RADAR_CAP) {
+      setRotationOffset(0);
+      return;
+    }
+    const id = setInterval(() => setRotationOffset((o) => o + 1), ROTATION_MS);
+    return () => clearInterval(id);
+  }, [friends.length]);
 
-  const radarFriends = useMemo(() => friends.slice(0, 6), [friends]);
-  const overflowFriends = useMemo(() => friends.slice(6), [friends]);
+  const radarFriends = useMemo(() => {
+    if (friends.length <= RADAR_CAP) return friends;
+    // Sticky head: keep the top free+alive friends pinned (at least one slot stays
+    // free to rotate so the tail — and any extra free friends — still surface).
+    const freeAlive = friends.filter(
+      (f) =>
+        f.status === 'free' &&
+        computeHeartbeatState(f.status_expires_at, f.last_active_at) !== 'dead'
+    ).length;
+    const sticky = Math.min(freeAlive, RADAR_CAP - 1);
+    const rotatingCount = RADAR_CAP - sticky;
+    const pool = friends.slice(sticky);
+    const result = friends.slice(0, sticky);
+    for (let i = 0; i < rotatingCount; i++) {
+      const idx = (rotationOffset * rotatingCount + i) % pool.length;
+      const picked = pool[idx];
+      if (picked) result.push(picked);
+    }
+    return result;
+  }, [friends, rotationOffset]);
+
+  // Adaptive grid: 1 row for <=3, else 2 rows. Columns grow to 4 to fit up to 8
+  // without an overflow row. 4-col mode shrinks bubbles so they don't crowd.
+  const radarRows = radarFriends.length <= 3 ? 1 : 2;
+  const radarCols =
+    radarRows === 1 ? radarFriends.length : Math.min(4, Math.ceil(radarFriends.length / 2));
+  const bubbleSizeScale = radarCols >= 4 ? 0.82 : 1;
+  const RADAR_HEIGHT = getRadarHeight(radarFriends.length);
 
   const [containerWidth, setContainerWidth] = useState(0);
   const [positions, setPositions] = useState<BubblePosition[]>([]);
@@ -171,7 +212,13 @@ export function RadarView({ friends, loading }: RadarViewProps) {
 
   useEffect(() => {
     if (containerWidth === 0) return;
-    const computed = computeScatterPositions(radarFriends, containerWidth, RADAR_HEIGHT);
+    const computed = computeScatterPositions(
+      radarFriends,
+      containerWidth,
+      RADAR_HEIGHT,
+      radarCols,
+      bubbleSizeScale
+    );
     setPositions(computed);
   }, [containerWidth, radarKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -214,7 +261,7 @@ export function RadarView({ friends, loading }: RadarViewProps) {
       if (!friend || !pos) continue;
       const heartbeat = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
       if (heartbeat === 'dead') continue;
-      const size = BubbleSizeMap[friend.status] ?? 36;
+      const size = (BubbleSizeMap[friend.status] ?? 36) * bubbleSizeScale;
       const fcx = pos.left + size / 2;
       const fcy = pos.top + size / 2;
       // Angle from "You" to friend: 0deg = +X (right), increases clockwise (matches CSS rotate).
@@ -371,25 +418,12 @@ export function RadarView({ friends, loading }: RadarViewProps) {
                 depthScale={pos.depthScale}
                 depthOpacity={pos.depthOpacity}
                 scanTrigger={scanTriggers[friend.friend_id]}
+                sizeScale={bubbleSizeScale}
               />
             </View>
           );
         })}
       </View>
-
-      {/* Overflow row */}
-      {overflowFriends.length > 0 && (
-        <FlatList
-          data={overflowFriends}
-          keyExtractor={(item) => item.friend_id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.overflowContent}
-          style={styles.overflowRow}
-          accessibilityLabel={`${overflowFriends.length} more friends`}
-          renderItem={({ item }) => <OverflowChip friend={item} />}
-        />
-      )}
     </View>
   );
 }

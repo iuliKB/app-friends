@@ -14,8 +14,8 @@ import { useStatusStore } from '@/stores/useStatusStore';
 import { computeHeartbeatState } from '@/lib/heartbeat';
 import { StatusPickerSheet } from '@/components/status/StatusPickerSheet';
 import { OnboardingHintSheet } from '@/components/onboarding/OnboardingHintSheet';
-import { RadarView } from '@/components/home/RadarView';
-import { CardStackView } from '@/components/home/CardStackView';
+import { RadarView, getRadarHeight } from '@/components/home/RadarView';
+import { CardStackView, getCardsHeight } from '@/components/home/CardStackView';
 import { useViewPreference } from '@/hooks/useViewPreference';
 import { useTabBarSpacing } from '@/hooks/useTabBarSpacing';
 import { usePlans } from '@/hooks/usePlans';
@@ -32,10 +32,8 @@ import { useTodos } from '@/hooks/useTodos';
 
 // Heights for the radar / cards crossfade container — close to parity with
 // the radar (260px), so the parent height barely shifts between modes.
-const VIEW_HEIGHT = {
-  radar: 290,
-  cards: 290,
-};
+// Radar and cards heights are derived per friend-count via getRadarHeight /
+// getCardsHeight so the view-switcher container has no dead space.
 
 const ONBOARDING_FLAG_KEY = '@campfire/onboarding_hint_shown';
 
@@ -65,11 +63,12 @@ export function HomeScreen() {
   const habits = useHabits();
   const todos = useTodos();
 
-  // OVR-06: 60s tick to force heartbeat re-evaluation across own + friend rows
-  // without a refetch.
+  // OVR-06: 30s tick to force heartbeat re-evaluation across own + friend rows
+  // without a refetch. Also drives the radar's availability re-sort so free→fading
+  // →dead transitions re-rank bubbles without waiting on a network event.
   const [, setHeartbeatTick] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setHeartbeatTick((t) => t + 1), 60_000);
+    const id = setInterval(() => setHeartbeatTick((t) => t + 1), 30_000);
     return () => clearInterval(id);
   }, []);
 
@@ -88,6 +87,21 @@ export function HomeScreen() {
   // --- Status picker sheet ---
   const [sheetVisible, setSheetVisible] = useState(false);
 
+  // --- Friend counts for the section header (and deck sizing below) ---
+  const { freeCount, maybeCount, totalActiveCount } = useMemo(() => {
+    let free = 0;
+    let maybe = 0;
+    let active = 0;
+    for (const f of friends) {
+      const state = computeHeartbeatState(f.status_expires_at, f.last_active_at);
+      if (state === 'dead') continue;
+      active++;
+      if (f.status === 'free') free++;
+      else if (f.status === 'maybe') maybe++;
+    }
+    return { freeCount: free, maybeCount: maybe, totalActiveCount: active };
+  }, [friends]);
+
   // --- Radar / cards view toggle + crossfade ---
   const [view, setView, prefLoading] = useViewPreference();
 
@@ -95,7 +109,11 @@ export function HomeScreen() {
   const cardsOpacity = useRef(new Animated.Value(0)).current;
   // Container height animates between radar (compact) and cards (tall) modes —
   // cards view is position:absolute so it doesn't push parent layout on its own.
-  const switcherHeight = useRef(new Animated.Value(VIEW_HEIGHT.radar)).current;
+  const switcherHeight = useRef(new Animated.Value(getRadarHeight(friends.length))).current;
+  // Radar height tracks friend count (1 row for <=3, 2 rows otherwise);
+  // cards height tracks the active-friend deck so neither leaves dead space.
+  const radarHeight = getRadarHeight(friends.length);
+  const cardsHeight = getCardsHeight(totalActiveCount);
 
   useEffect(() => {
     const isRadar = view === 'radar';
@@ -115,7 +133,7 @@ export function HomeScreen() {
         isInteraction: false,
       }),
       Animated.timing(switcherHeight, {
-        toValue: isRadar ? VIEW_HEIGHT.radar : VIEW_HEIGHT.cards,
+        toValue: isRadar ? radarHeight : cardsHeight,
         duration: 250,
         easing: Easing.inOut(Easing.ease),
         // height can't use native driver — runs on JS thread in parallel
@@ -123,22 +141,7 @@ export function HomeScreen() {
         isInteraction: false,
       }),
     ]).start();
-  }, [view, radarOpacity, cardsOpacity, switcherHeight]);
-
-  // --- Friend counts for the section header ---
-  const { freeCount, maybeCount, totalActiveCount } = useMemo(() => {
-    let free = 0;
-    let maybe = 0;
-    let active = 0;
-    for (const f of friends) {
-      const state = computeHeartbeatState(f.status_expires_at, f.last_active_at);
-      if (state === 'dead') continue;
-      active++;
-      if (f.status === 'free') free++;
-      else if (f.status === 'maybe') maybe++;
-    }
-    return { freeCount: free, maybeCount: maybe, totalActiveCount: active };
-  }, [friends]);
+  }, [view, radarHeight, cardsHeight, radarOpacity, cardsOpacity, switcherHeight]);
 
   // --- Own status, mapped to StatusCard's StatusKey domain ---
   const currentStatus = useStatusStore((s) => s.currentStatus);

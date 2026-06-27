@@ -96,6 +96,8 @@ interface RadarBubbleProps {
   // Increments each time the sweep crosses this bubble's position (parent owns).
   // Resting bubble animates to scan reaction when this changes.
   scanTrigger?: number;
+  // Shrinks bubble dimensions in dense (4-col) radar layouts. 1 = full size.
+  sizeScale?: number;
 }
 
 export function RadarBubble({
@@ -103,6 +105,7 @@ export function RadarBubble({
   depthScale = 1.0,
   depthOpacity = 1.0,
   scanTrigger,
+  sizeScale = 1.0,
 }: RadarBubbleProps) {
   const { colors } = useTheme();
   const styles = useMemo(
@@ -141,8 +144,9 @@ export function RadarBubble({
   const heartbeatState = computeHeartbeatState(friend.status_expires_at, friend.last_active_at);
   const isDead = heartbeatState === 'dead';
 
-  // 2. Bubble size
-  const targetSize = isDead ? (BubbleSizeMap.dead ?? 42) : (BubbleSizeMap[friend.status] ?? 36);
+  // 2. Bubble size (sizeScale shrinks for dense 4-col layouts)
+  const baseSize = isDead ? (BubbleSizeMap.dead ?? 42) : (BubbleSizeMap[friend.status] ?? 36);
+  const targetSize = baseSize * sizeScale;
 
   // 3. Resting opacity (depth multiplier applied at outer wrapper)
   const restOpacity = REST_OPACITY[heartbeatState] ?? REST_OPACITY.alive;

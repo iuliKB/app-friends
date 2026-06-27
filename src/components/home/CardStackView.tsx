@@ -30,6 +30,19 @@ const STACK_CONFIGS = [
   { translateY: 38, scale: 0.88, zIndex: 10, opacity: 0.18 }, // depth 4
 ] as const;
 
+// Front card content height; depth cards match this (see depthCard style).
+const CARD_BASE_HEIGHT = 200;
+
+// Deck height tracks how many cards actually render (min(5, deckSize)) so a small
+// deck doesn't leave dead space below it. Based on deck SIZE, not the current
+// card, so the section height stays stable while swiping. Exported so HomeScreen's
+// view-switcher sizes to it exactly. Includes container paddingVertical (lg x2).
+export function getCardsHeight(deckCount: number): number {
+  const rendered = Math.min(STACK_CONFIGS.length, Math.max(deckCount, 1));
+  const deepestOffset = STACK_CONFIGS[rendered - 1]!.translateY;
+  return CARD_BASE_HEIGHT + deepestOffset + SPACING.lg * 2;
+}
+
 // --- Props ---
 
 export interface CardStackViewProps {
@@ -49,9 +62,8 @@ export function CardStackView({ friends, loading }: CardStackViewProps) {
           paddingVertical: SPACING.lg,
         },
         stackContainer: {
-          // Premium iOS landscape card + 4 depth cards behind it (38px deepest offset)
-
-          height: 240,
+          // Premium iOS landscape card + depth cards behind it.
+          // height set dynamically via inline style (getCardsHeight minus padding).
           // width set dynamically via inline style from onLayout
           position: 'relative',
         },
@@ -149,7 +161,9 @@ export function CardStackView({ friends, loading }: CardStackViewProps) {
   // until they tap "Rewatch" — no auto-loop.
   const [endReached, setEndReached] = useState(false);
 
-  const cardWidth = containerWidth > 0 ? containerWidth * 0.8 : 0;
+  // PROTOTYPE: widen the deck (was 0.8) so it doesn't read as a small card
+  // floating in empty space next to the full-width radar.
+  const cardWidth = containerWidth > 0 ? containerWidth * 0.92 : 0;
 
   // Skeleton: show 2 placeholder cards when loading and no friends yet (HOME-01, D-03)
   if (loading && friends.length === 0 && cardWidth > 0) {
@@ -158,7 +172,12 @@ export function CardStackView({ friends, loading }: CardStackViewProps) {
         style={styles.container}
         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       >
-        <View style={[styles.stackContainer, { width: cardWidth }]}>
+        <View
+          style={[
+            styles.stackContainer,
+            { width: cardWidth, height: getCardsHeight(2) - SPACING.lg * 2 },
+          ]}
+        >
           <SkeletonPulse width={cardWidth} height={80} />
           <View style={{ marginTop: SPACING.sm }}>
             <SkeletonPulse width={cardWidth} height={80} />
@@ -229,6 +248,8 @@ export function CardStackView({ friends, loading }: CardStackViewProps) {
   // --- Stack rendering (D-06) ---
   // Render in reverse order (lowest zIndex first) so the front card lands on top.
   const cardsToRender = Math.min(STACK_CONFIGS.length, deck.length);
+  // Height of the rendered stack — fits the cards actually shown (no dead space).
+  const stackHeight = getCardsHeight(deck.length) - SPACING.lg * 2;
 
   // Total free friends in the deck — used to compute the per-card mutual-context
   // count ("+N mutuals also free") on the front card.
@@ -262,7 +283,7 @@ export function CardStackView({ friends, loading }: CardStackViewProps) {
 
       {/* Stack area — wait for layout measurement */}
       {cardWidth > 0 && !endReached && (
-        <View style={[styles.stackContainer, { width: cardWidth }]}>
+        <View style={[styles.stackContainer, { width: cardWidth, height: stackHeight }]}>
           {STACK_CONFIGS.slice(0, cardsToRender)
             .slice() // avoid mutating const
             .reverse()
