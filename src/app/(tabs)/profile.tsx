@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
+import Notifications from '@/lib/notificationsSafe';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { decode } from 'base64-arraybuffer';
 import * as ImagePicker from 'expo-image-picker';
@@ -207,6 +207,7 @@ export default function ProfileScreen() {
     setMorningDeniedHint(false);
     await AsyncStorage.setItem('campfire:morning_prompt_enabled', value ? 'true' : 'false');
     if (!value) {
+      setShowTimePicker(false);
       await cancelMorningPrompt();
       return;
     }
@@ -438,6 +439,9 @@ export default function ProfileScreen() {
           textAlign: 'center',
           marginTop: SPACING.xxl,
         },
+        timePicker: {
+          alignSelf: 'center',
+        },
         morningHint: {
           fontSize: FONT_SIZE.sm,
           fontFamily: FONT_FAMILY.body.regular,
@@ -637,12 +641,13 @@ export default function ProfileScreen() {
           </Text>
         </TouchableOpacity>
 
-        {showTimePicker && (
+        {showTimePicker && morningEnabled && (
           <DateTimePicker
             value={new Date(2000, 0, 1, morningHour, morningMinute)}
             mode="time"
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={handleMorningTimeChange}
+            style={Platform.OS === 'ios' ? styles.timePicker : undefined}
           />
         )}
 
