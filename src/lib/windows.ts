@@ -14,6 +14,27 @@ export interface WindowOption {
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const THREE_HOURS_MS = 3 * ONE_HOUR_MS;
 
+// "Rest of day" treats the social day as ending at 3am, not midnight, so a
+// status set late at night carries into the early morning (e.g. 23:00 → 03:00)
+// instead of dying at the midnight boundary.
+const DAY_END_HOUR = 3;
+
+/**
+ * The next local wall-clock occurrence of `hour:minute`, today if it's still
+ * ahead of `now`, otherwise tomorrow. Mirrors MoodPicker's `ensureFuture`
+ * roll-forward so clock-anchored windows never land in the past or get capped
+ * at midnight. The old `new Date(now); setHours(...)` form stayed on today's
+ * calendar date, which is the bug this replaces.
+ */
+function nextLocalTime(now: Date, hour: number, minute = 0, second = 0): Date {
+  const d = new Date(now);
+  d.setHours(hour, minute, second, 0);
+  if (d.getTime() <= now.getTime()) {
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+
 /**
  * Returns the visible window options at `now` per D-08 + D-09.
  *
@@ -44,34 +65,28 @@ export function getWindowOptions(now: Date = new Date()): WindowOption[] {
   const past2130 = localHour > 21 || (localHour === 21 && localMinute >= 30);
 
   if (!past1730) {
-    const sixPm = new Date(now);
-    sixPm.setHours(18, 0, 0, 0);
     options.push({
       id: 'until_6pm',
       label: 'Until 6pm',
       ownLabel: 'until 6pm',
-      expiresAt: sixPm,
+      expiresAt: nextLocalTime(now, 18),
     });
   }
 
   if (!past2130) {
-    const tenPm = new Date(now);
-    tenPm.setHours(22, 0, 0, 0);
     options.push({
       id: 'until_10pm',
       label: 'Until 10pm',
       ownLabel: 'until 10pm',
-      expiresAt: tenPm,
+      expiresAt: nextLocalTime(now, 22),
     });
   }
 
-  const endOfDay = new Date(now);
-  endOfDay.setHours(23, 59, 59, 0);
   options.push({
     id: 'rest_of_day',
     label: 'Rest of day',
     ownLabel: 'rest of day',
-    expiresAt: endOfDay,
+    expiresAt: nextLocalTime(now, DAY_END_HOUR),
   });
 
   return options;
@@ -87,21 +102,12 @@ export function computeWindowExpiry(windowId: WindowId, now: Date = new Date()):
       return new Date(now.getTime() + ONE_HOUR_MS);
     case '3h':
       return new Date(now.getTime() + THREE_HOURS_MS);
-    case 'until_6pm': {
-      const d = new Date(now);
-      d.setHours(18, 0, 0, 0);
-      return d;
-    }
-    case 'until_10pm': {
-      const d = new Date(now);
-      d.setHours(22, 0, 0, 0);
-      return d;
-    }
-    case 'rest_of_day': {
-      const d = new Date(now);
-      d.setHours(23, 59, 59, 0);
-      return d;
-    }
+    case 'until_6pm':
+      return nextLocalTime(now, 18);
+    case 'until_10pm':
+      return nextLocalTime(now, 22);
+    case 'rest_of_day':
+      return nextLocalTime(now, DAY_END_HOUR);
   }
 }
 
@@ -121,10 +127,10 @@ export function formatWindowLabel(expiresAt: string | Date, now: Date = new Date
   if (Math.abs(diffMs - ONE_HOUR_MS) < tolerance) return 'for 1h';
   if (Math.abs(diffMs - THREE_HOURS_MS) < tolerance) return 'for 3h';
 
-  // Recognize until_6pm / until_10pm by exact local-hour match
+  // Recognize until_6pm / until_10pm / rest_of_day by exact local-hour match
   if (exp.getHours() === 18 && exp.getMinutes() === 0) return 'until 6pm';
   if (exp.getHours() === 22 && exp.getMinutes() === 0) return 'until 10pm';
-  if (exp.getHours() === 23 && exp.getMinutes() === 59) return 'rest of day';
+  if (exp.getHours() === DAY_END_HOUR && exp.getMinutes() === 0) return 'rest of day';
 
   // Fallback: clock string
   const h = exp.getHours();

@@ -1,39 +1,41 @@
-// Phase 2 v1.3 — Heartbeat client utility (D-15, D-29, OVR-01, OVR-10).
-// Mirrors the SQL logic in supabase/migrations/0009_status_liveness_v1_3.sql:
-//   ALIVE  = status_expires_at > now AND last_active_at > now - 4h
-//   FADING = status_expires_at > now AND last_active_at ∈ [now-8h, now-4h]
-//   DEAD   = status_expires_at < now OR  last_active_at < now - 8h
-// FADING is client-only — the server view encodes only ALIVE vs DEAD (D-16).
+// Heartbeat client utility (intent-first model — see migration
+// 0030_status_intent_first_expiry.sql).
+//   DEAD   = status_expires_at < now                      (expiry is the ONLY kill)
+//   FADING = not expired AND last_active_at < now - 4h     (stale → dim, never delete)
+//   ALIVE  = not expired AND last_active_at ≥ now - 4h
+//
+// Intent-first: the user's chosen expiry decides liveness. Inactivity only
+// DIMS a status (FADING); it never removes it. FADING is client-only — the
+// server view encodes only ALIVE vs DEAD.
 
 import type { HeartbeatState } from '@/types/app';
 
-export const HEARTBEAT_FADING_MS = 4 * 60 * 60 * 1000; // 4 hours
-export const HEARTBEAT_DEAD_MS = 8 * 60 * 60 * 1000; // 8 hours
+export const HEARTBEAT_FADING_MS = 4 * 60 * 60 * 1000; // 4 hours — inactivity → dim
 
 /**
  * Pure function: given an expiry timestamp and a last-active timestamp,
  * return the heartbeat state at `now` (defaults to Date.now()).
  *
- * Inputs may be null/undefined — returns 'dead' in that case so the UI
- * defaults to the DEAD presentation (move to Everyone Else).
+ * Only an expired (or missing) `statusExpiresAt` yields 'dead'. Inactivity
+ * downgrades a live status to 'fading' but never to 'dead' — honoring the
+ * duration the user explicitly chose.
  */
 export function computeHeartbeatState(
   statusExpiresAt: string | null | undefined,
   lastActiveAt: string | null | undefined,
   now: Date = new Date()
 ): HeartbeatState {
-  if (!statusExpiresAt || !lastActiveAt) return 'dead';
+  // No expiry to honor → nothing to show.
+  if (!statusExpiresAt) return 'dead';
 
   const nowMs = now.getTime();
   const expiresMs = new Date(statusExpiresAt).getTime();
-  const activeMs = new Date(lastActiveAt).getTime();
 
-  // Expired or > 8h stale = DEAD
-  if (expiresMs < nowMs || activeMs < nowMs - HEARTBEAT_DEAD_MS) {
-    return 'dead';
-  }
-  // Between 4h and 8h stale = FADING
-  if (activeMs < nowMs - HEARTBEAT_FADING_MS) {
+  // Expired = DEAD. This is the ONLY thing that kills a status now.
+  if (expiresMs < nowMs) return 'dead';
+
+  // Not expired but stale (>4h since last app open) = FADING (dim, still shown).
+  if (lastActiveAt && new Date(lastActiveAt).getTime() < nowMs - HEARTBEAT_FADING_MS) {
     return 'fading';
   }
   return 'alive';
