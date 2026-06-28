@@ -19,8 +19,8 @@ import { supabase } from '@/lib/supabase';
 /** Five distinct entry shapes for `/chat/room`. The kind discriminator selects
  * the branch and gates which other params are required. */
 export type OpenChatParams =
-  | { kind: 'dmChannel'; dmChannelId: string; friendName: string }
-  | { kind: 'dmFriend'; friendId: string; friendName: string }
+  | { kind: 'dmChannel'; dmChannelId: string; friendName: string; avatarUrl?: string | null }
+  | { kind: 'dmFriend'; friendId: string; friendName: string; avatarUrl?: string | null }
   | { kind: 'plan'; planId: string }
   | { kind: 'group'; groupChannelId: string; friendName: string; birthdayPersonId?: string };
 
@@ -44,8 +44,9 @@ function alertError(silent: boolean | undefined): void {
   Alert.alert('Error', "Couldn't open chat. Try again.");
 }
 
-function buildDmUrl(dmChannelId: string, friendName: string): string {
-  return `/chat/room?dm_channel_id=${dmChannelId}&friend_name=${encodeURIComponent(friendName)}`;
+function buildDmUrl(dmChannelId: string, friendName: string, avatarUrl?: string | null): string {
+  const base = `/chat/room?dm_channel_id=${dmChannelId}&friend_name=${encodeURIComponent(friendName)}`;
+  return avatarUrl ? `${base}&avatar_url=${encodeURIComponent(avatarUrl)}` : base;
 }
 
 function buildPlanUrl(planId: string): string {
@@ -81,7 +82,7 @@ export async function openChat(
   options?: OpenChatOptions
 ): Promise<void> {
   if (params.kind === 'dmChannel') {
-    router.push(buildDmUrl(params.dmChannelId, params.friendName) as never);
+    router.push(buildDmUrl(params.dmChannelId, params.friendName, params.avatarUrl) as never);
     return;
   }
 
@@ -109,5 +110,5 @@ export async function openChat(
     return;
   }
 
-  router.push(buildDmUrl(data, params.friendName) as never);
+  router.push(buildDmUrl(data, params.friendName, params.avatarUrl) as never);
 }

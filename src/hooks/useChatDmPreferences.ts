@@ -24,7 +24,12 @@ export interface UseChatDmPreferencesResult {
   refetch: () => Promise<unknown>;
 }
 
-export function useChatDmPreferences(channelId: string | null): UseChatDmPreferencesResult {
+export type ChatPrefType = 'dm' | 'group' | 'plan';
+
+export function useChatDmPreferences(
+  channelId: string | null,
+  chatType: ChatPrefType = 'dm'
+): UseChatDmPreferencesResult {
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id ?? null;
 
@@ -36,7 +41,7 @@ export function useChatDmPreferences(channelId: string | null): UseChatDmPrefere
         .from('chat_preferences')
         .select('is_muted')
         .eq('user_id', userId)
-        .eq('chat_type', 'dm')
+        .eq('chat_type', chatType)
         .eq('chat_id', channelId)
         .maybeSingle();
       if (error) throw error;

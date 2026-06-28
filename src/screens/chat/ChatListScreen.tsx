@@ -65,6 +65,7 @@ export function ChatListScreen() {
         kind: 'dmChannel',
         dmChannelId: item.id,
         friendName: item.title,
+        avatarUrl: item.avatarUrl,
       });
     }
   }

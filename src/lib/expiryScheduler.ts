@@ -10,7 +10,7 @@
 // Consumers:
 //   - src/hooks/useStatus.ts (Plan 03-05) calls scheduleExpiryNotification
 //     on every setStatus and cancelExpiryNotification on signout.
-import * as Notifications from 'expo-notifications';
+import Notifications from '@/lib/notificationsSafe';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 

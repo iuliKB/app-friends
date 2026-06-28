@@ -28,7 +28,8 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as Notifications from 'expo-notifications';
+import Notifications from '@/lib/notificationsSafe';
+import type { NotificationResponse } from 'expo-notifications';
 import { focusManager, onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
@@ -66,7 +67,7 @@ SplashScreen.preventAutoHideAsync();
 // React render tree, so it can NOT use hooks. Reach into Zustand via getState().
 // See .planning/phases/03-friend-went-free-loop/03-RESEARCH.md §Pattern 5 + Pitfall 3.
 async function handleNotificationResponse(
-  response: Notifications.NotificationResponse,
+  response: NotificationResponse,
   router: ReturnType<typeof useRouter>
 ): Promise<void> {
   const category = response.notification.request.content.categoryIdentifier;

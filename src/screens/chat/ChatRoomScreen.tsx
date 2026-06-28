@@ -8,7 +8,6 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -36,7 +35,12 @@ import {
 import { SendBar, type AttachmentAction, type ReplyContext } from '@/components/chat/SendBar';
 import { PinnedPlanBanner } from '@/components/chat/PinnedPlanBanner';
 import { BirthdayWishListPanel } from '@/components/chat/BirthdayWishListPanel';
-import { GroupParticipantsSheet } from '@/components/chat/GroupParticipantsSheet';
+import { GroupAvatar } from '@/components/chat/GroupAvatar';
+import { ChatHeaderPill } from '@/components/chat/ChatHeaderPill';
+import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { useGroupMembers } from '@/hooks/useGroupMembers';
+import { usePlanDetail } from '@/hooks/usePlanDetail';
+import { useDmPartner } from '@/hooks/useDmPartner';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { SkeletonPulse } from '@/components/common/SkeletonPulse';
 import type { MessageWithProfile } from '@/types/chat';
@@ -46,6 +50,7 @@ interface ChatRoomScreenProps {
   dmChannelId?: string;
   groupChannelId?: string;
   friendName?: string;
+  avatarUrl?: string;
   birthdayPersonId?: string;
 }
 
@@ -54,12 +59,12 @@ export function ChatRoomScreen({
   dmChannelId,
   groupChannelId,
   friendName,
+  avatarUrl,
   birthdayPersonId,
 }: ChatRoomScreenProps) {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const router = useRouter();
-  const [participantsVisible, setParticipantsVisible] = useState(false);
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
   const session = useAuthStore((s) => s.session);
@@ -135,25 +140,93 @@ export function ChatRoomScreen({
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('Scroll up to see the original message');
 
+  // Header pill data sources (all gated internally — only the relevant one
+  // fetches for a given chat type).
+  const { members: groupMembers } = useGroupMembers(groupChannelId ?? null);
+  const { plan } = usePlanDetail(planId ?? '');
+  const { partner: dmPartner } = useDmPartner(dmChannelId ?? null);
+
+  const planGoingCount = useMemo(
+    () => (plan?.members ?? []).filter((m) => m.rsvp === 'going').length,
+    [plan]
+  );
+
+  // Header pill for all three chat types (DM / group / plan). Avatar + title +
+  // subtitle (member count / @username / RSVP); tapping opens the matching
+  // chat-info screen. Group names are shown in full (no birthday-suffix strip).
   useEffect(() => {
-    if (!groupChannelId || !friendName) return;
-    const title = birthdayPersonId ? friendName.replace(/'s birthday$/i, '').trim() : friendName;
-    navigation.setOptions({
-      headerTitle: () => (
-        <TouchableOpacity onPress={() => setParticipantsVisible(true)} activeOpacity={0.7}>
-          <Text
-            style={{
-              fontSize: FONT_SIZE.md,
-              fontWeight: FONT_WEIGHT.semibold,
-              color: colors.text.primary,
-            }}
-          >
-            {title}
-          </Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [groupChannelId, friendName, birthdayPersonId, navigation, colors]);
+    if (groupChannelId && friendName) {
+      const count = groupMembers.length;
+      navigation.setOptions({
+        headerTitle: () => (
+          <ChatHeaderPill
+            avatar={<GroupAvatar isBirthday={!!birthdayPersonId} size={32} />}
+            title={friendName}
+            subtitle={count > 0 ? `${count} member${count === 1 ? '' : 's'}` : undefined}
+            onPress={() =>
+              router.push(
+                `/chat/group-info?group_channel_id=${groupChannelId}${
+                  birthdayPersonId ? `&birthday_person_id=${birthdayPersonId}` : ''
+                }` as never
+              )
+            }
+          />
+        ),
+      });
+      return;
+    }
+
+    if (dmChannelId && friendName) {
+      const username = dmPartner?.username ? `@${dmPartner.username}` : undefined;
+      // Prefer the param (instant, no flicker) but fall back to the resolved
+      // partner profile so the avatar loads even when the entry point (radar,
+      // home cards, swipe, friend profile) didn't forward avatar_url.
+      const dmAvatarUri = avatarUrl ?? dmPartner?.avatarUrl ?? null;
+      navigation.setOptions({
+        headerTitle: () => (
+          <ChatHeaderPill
+            avatar={<AvatarCircle size={32} imageUri={dmAvatarUri} displayName={friendName} />}
+            title={friendName}
+            subtitle={username}
+            onPress={() =>
+              router.push(
+                `/chat/dm-info?dm_channel_id=${dmChannelId}&friend_name=${encodeURIComponent(
+                  friendName
+                )}${dmAvatarUri ? `&avatar_url=${encodeURIComponent(dmAvatarUri)}` : ''}` as never
+              )
+            }
+          />
+        ),
+      });
+      return;
+    }
+
+    if (planId && plan) {
+      navigation.setOptions({
+        headerTitle: () => (
+          <ChatHeaderPill
+            avatar={<GroupAvatar variant="plan" size={32} />}
+            title={plan.title}
+            subtitle={planGoingCount > 0 ? `${planGoingCount} going` : undefined}
+            onPress={() => router.push(`/chat/plan-info?plan_id=${planId}` as never)}
+          />
+        ),
+      });
+    }
+  }, [
+    groupChannelId,
+    dmChannelId,
+    planId,
+    friendName,
+    avatarUrl,
+    birthdayPersonId,
+    groupMembers.length,
+    dmPartner,
+    plan,
+    planGoingCount,
+    navigation,
+    router,
+  ]);
 
   function showToast(message?: string) {
     if (message) setToastMessage(message);
@@ -568,13 +641,6 @@ export function ChatRoomScreen({
         onClearReply={() => setReplyContext(null)}
         onPhotoPress={handlePhotoPress}
       />
-      {groupChannelId ? (
-        <GroupParticipantsSheet
-          visible={participantsVisible}
-          onClose={() => setParticipantsVisible(false)}
-          groupChannelId={groupChannelId}
-        />
-      ) : null}
       <ImageViewerModal
         visible={viewerImageUrl !== null}
         imageUrl={viewerImageUrl}

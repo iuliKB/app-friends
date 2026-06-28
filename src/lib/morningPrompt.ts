@@ -10,7 +10,7 @@
 // D-34: AsyncStorage defaults enabled='true', hour='9', minute='0'
 // D-39: this module does NOT modify notifications-init.ts
 
-import * as Notifications from 'expo-notifications';
+import Notifications from '@/lib/notificationsSafe';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 

@@ -448,7 +448,7 @@ export function BirthdayWishListPanel({
         accessibilityLabel={expanded ? 'Collapse birthday panel' : 'Expand birthday panel'}
       >
         <Ionicons name="gift-outline" size={18} color={colors.interactive.accent} />
-        <Text style={styles.headerText}>{name}&apos;s Birthday</Text>
+        <Text style={styles.headerText}>{name}&apos;s Wishlist</Text>
         {dateLabel && !expanded && (
           <View style={styles.dateChip}>
             <Text style={styles.dateChipText}>{dateLabel}</Text>

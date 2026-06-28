@@ -57,6 +57,20 @@ jest.mock('@/hooks/useChatMembers', () => ({
   useChatMembers: () => ({ members: [] }),
 }));
 
+jest.mock('@/hooks/useGroupMembers', () => ({
+  useGroupMembers: () => ({ members: [], refetch: jest.fn() }),
+}));
+
+jest.mock('@/hooks/usePlanDetail', () => ({
+  usePlanDetail: () => ({ plan: null }),
+}));
+
+jest.mock('@/hooks/useDmPartner', () => ({
+  useDmPartner: () => ({ partner: null }),
+}));
+
+jest.mock('@/components/chat/ChatHeaderPill', () => ({ ChatHeaderPill: 'ChatHeaderPill' }));
+
 jest.mock('@/stores/useAuthStore', () => ({
   useAuthStore: (selector: (s: { session: null }) => unknown) => selector({ session: null }),
 }));
@@ -104,9 +118,8 @@ jest.mock('@/components/chat/PinnedPlanBanner', () => ({ PinnedPlanBanner: 'Pinn
 jest.mock('@/components/chat/BirthdayWishListPanel', () => ({
   BirthdayWishListPanel: 'BirthdayWishListPanel',
 }));
-jest.mock('@/components/chat/GroupParticipantsSheet', () => ({
-  GroupParticipantsSheet: 'GroupParticipantsSheet',
-}));
+jest.mock('@/components/chat/GroupAvatar', () => ({ GroupAvatar: 'GroupAvatar' }));
+jest.mock('@/components/common/AvatarCircle', () => ({ AvatarCircle: 'AvatarCircle' }));
 jest.mock('@/components/common/ErrorDisplay', () => ({ ErrorDisplay: 'ErrorDisplay' }));
 jest.mock('@/components/common/SkeletonPulse', () => ({ SkeletonPulse: 'SkeletonPulse' }));
 

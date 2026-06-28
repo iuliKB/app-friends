@@ -36,6 +36,7 @@ export const queryKeys = {
     messages: (channelId: string, opts: { before?: string } = {}) =>
       [...queryKeys.chat.room(channelId), 'messages', opts] as const,
     members: (channelId: string) => [...queryKeys.chat.room(channelId), 'members'] as const,
+    media: (channelId: string) => [...queryKeys.chat.room(channelId), 'media'] as const,
     preferences: (channelId: string) =>
       [...queryKeys.chat.all(), 'preferences', channelId] as const,
   },

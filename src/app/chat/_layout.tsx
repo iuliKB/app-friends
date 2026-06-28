@@ -9,6 +9,8 @@ export default function ChatStackLayout() {
         headerStyle: { backgroundColor: colors.surface.base },
         headerTintColor: colors.text.primary,
         headerShadowVisible: false,
+        // Bare chevron with no "Room" back label (React Navigation 7).
+        headerBackButtonDisplayMode: 'minimal',
       }}
     />
   );

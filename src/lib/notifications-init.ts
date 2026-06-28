@@ -2,7 +2,7 @@
 // MUST be imported before any component renders so iOS categories are bound
 // to the APNs registration at the first requestPermissionsAsync call.
 // See .planning/phases/01-push-infrastructure-dm-entry-point/01-CONTEXT.md D-20, D-21.
-import * as Notifications from 'expo-notifications';
+import Notifications from '@/lib/notificationsSafe';
 import { Platform } from 'react-native';
 
 if (Platform.OS !== 'web') {

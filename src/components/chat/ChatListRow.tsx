@@ -4,6 +4,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { GroupAvatar } from '@/components/chat/GroupAvatar';
 import type { ChatListItem, MessageType } from '@/types/chat';
 
 function formatTimestamp(isoString: string): string {
@@ -88,14 +89,6 @@ export function ChatListRow({ item, onPress, onMarkRead, onMute, onDelete }: Cha
         },
         planIcon: {
           backgroundColor: colors.interactive.accent,
-        },
-        groupIcon: {
-          // eslint-disable-next-line campfire/no-hardcoded-styles
-          backgroundColor: '#9333EA',
-        },
-        birthdayIcon: {
-          // eslint-disable-next-line campfire/no-hardcoded-styles
-          backgroundColor: '#F97316',
         },
         content: {
           flex: 1,
@@ -250,15 +243,7 @@ export function ChatListRow({ item, onPress, onMarkRead, onMute, onDelete }: Cha
               <Ionicons name="calendar-outline" size={22} color="#0E0F11" />
             </View>
           ) : item.type === 'group' ? (
-            <View
-              style={[styles.iconContainer, isBirthday ? styles.birthdayIcon : styles.groupIcon]}
-            >
-              <Ionicons
-                name={isBirthday ? 'gift-outline' : 'people-outline'}
-                size={22}
-                color="#fff"
-              />
-            </View>
+            <GroupAvatar isBirthday={isBirthday} size={48} />
           ) : (
             <AvatarCircle size={48} imageUri={item.avatarUrl} displayName={item.title} />
           )}
