@@ -16,6 +16,7 @@ export interface ExpenseWithFriend {
   title: string;
   totalCents: number;
   payerName: string;
+  createdBy: string; // creator user_id — only the creator may settle (RLS)
   createdAt: string;
   isFullySettled: boolean;
 }
@@ -100,6 +101,7 @@ export function useExpensesWithFriend(friendId: string): ExpensesWithFriendData 
         title: g.title,
         totalCents: g.total_amount_cents,
         payerName: profileMap.get(g.created_by) ?? 'Unknown',
+        createdBy: g.created_by,
         createdAt: g.created_at,
         isFullySettled: settledMap.get(g.id) ?? false,
       }));

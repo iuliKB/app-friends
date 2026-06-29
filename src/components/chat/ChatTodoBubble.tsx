@@ -219,12 +219,15 @@ export function ChatTodoBubble({
   }
 
   function renderCheckbox(itemId: string, completed: boolean) {
+    // Completed = solid accent fill with a dark check (matches the splash
+    // convention of dark text on neon). High contrast beats the old
+    // same-hue check on a 12%-tint fill, which read as a washed-out ring.
     const checkboxStyle = completed
-      ? { backgroundColor: accent + ACCENT_FILL, borderColor: accent }
+      ? { backgroundColor: accent, borderColor: accent }
       : { backgroundColor: 'transparent', borderColor: colors.text.secondary };
     const inner = (
       <View style={[styles.checkbox, checkboxStyle]}>
-        {completed && <Ionicons name="checkmark" size={14} color={accent} />}
+        {completed && <Ionicons name="checkmark-sharp" size={15} color={colors.surface.base} />}
       </View>
     );
     if (!isAssignee) {
@@ -258,7 +261,7 @@ export function ChatTodoBubble({
     const item = items[0];
     const completed = !!item?.completed_at;
     const subline = completed
-      ? `✓ Done ${relativeTime(item!.completed_at!)}`
+      ? `Done ${relativeTime(item!.completed_at!)}`
       : (() => {
           const due = item ? formatDueDate(item.due_date) : null;
           const parts: string[] = [];

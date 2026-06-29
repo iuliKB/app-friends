@@ -10,14 +10,12 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
@@ -28,8 +26,13 @@ import { useGroupMembers } from '@/hooks/useGroupMembers';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
 import { useChatMedia } from '@/hooks/useChatMedia';
 import { useChatDmPreferences } from '@/hooks/useChatDmPreferences';
+import { useChatChannelTodos } from '@/hooks/useChatChannelTodos';
+import { useChatChannelExpenses } from '@/hooks/useChatChannelExpenses';
+import type { ChatScope } from '@/hooks/useChatTodos';
 import { GroupAvatar } from '@/components/chat/GroupAvatar';
 import { SharedMediaGrid } from '@/components/chat/SharedMediaGrid';
+import { SettingsRow } from '@/components/common/SettingsRow';
+import { SettingsSection } from '@/components/common/SettingsSection';
 
 interface GroupInfoScreenProps {
   groupChannelId: string;
@@ -48,6 +51,15 @@ export function GroupInfoScreen({ groupChannelId, birthdayPersonId }: GroupInfoS
   const { media } = useChatMedia({ kind: 'group', groupChannelId });
   const { data: prefs, refetch: refetchPrefs } = useChatDmPreferences(groupChannelId, 'group');
   const isMuted = prefs?.isMuted ?? false;
+
+  const scope = useMemo<ChatScope>(() => ({ kind: 'group', groupChannelId }), [groupChannelId]);
+  const { lists: todoLists } = useChatChannelTodos(scope);
+  const { expenses } = useChatChannelExpenses({ groupChannelId });
+  const openTodoCount = todoLists.reduce(
+    (n, l) => n + l.items.filter((i) => i.completed_at === null).length,
+    0
+  );
+  const unsettledExpenseCount = expenses.filter((e) => !e.isFullySettled).length;
 
   const isCreator = !!detail && detail.createdBy === userId;
   const isBirthday = !!(birthdayPersonId ?? detail?.birthdayPersonId);
@@ -141,43 +153,6 @@ export function GroupInfoScreen({ groupChannelId, birthdayPersonId }: GroupInfoS
           textAlign: 'center',
           paddingHorizontal: SPACING.lg,
         },
-        sectionTitle: {
-          fontSize: FONT_SIZE.xs,
-          fontFamily: FONT_FAMILY.body.semibold,
-          color: colors.text.secondary,
-          paddingHorizontal: SPACING.lg,
-          paddingBottom: SPACING.xs,
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
-        },
-        sectionWrapper: { marginTop: SPACING.xl },
-        card: {
-          backgroundColor: colors.surface.card,
-          borderRadius: RADII.lg,
-          overflow: 'hidden',
-          marginHorizontal: SPACING.lg,
-        },
-        row: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: SPACING.lg,
-          paddingVertical: SPACING.md,
-          gap: SPACING.md,
-          minHeight: 52,
-        },
-        rowBorder: { borderTopWidth: 1, borderTopColor: colors.border },
-        rowLabel: {
-          flex: 1,
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.primary,
-        },
-        countText: {
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.secondary,
-        },
-        destructiveLabel: { color: colors.interactive.destructive },
         mediaCard: { marginHorizontal: SPACING.lg, marginTop: SPACING.xs },
         // Rename modal
         modalBackdrop: {
@@ -228,70 +203,73 @@ export function GroupInfoScreen({ groupChannelId, birthdayPersonId }: GroupInfoS
         </View>
 
         {/* Members → dedicated screen */}
-        <View style={styles.sectionWrapper}>
-          <Text style={styles.sectionTitle}>Members</Text>
-          <View style={styles.card}>
-            <TouchableOpacity
-              style={styles.row}
-              activeOpacity={0.6}
-              onPress={() =>
-                router.push(`/chat/members?group_channel_id=${groupChannelId}` as never)
-              }
-              accessibilityLabel="View group members"
-            >
-              <Ionicons name="people-outline" size={20} color={colors.text.secondary} />
-              <Text style={styles.rowLabel}>Group Members</Text>
-              <Text style={styles.countText}>{members.length}</Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <SettingsSection title="MEMBERS">
+          <SettingsRow
+            icon="people-outline"
+            label="Group Members"
+            value={String(members.length)}
+            onPress={() => router.push(`/chat/members?group_channel_id=${groupChannelId}` as never)}
+            chevron
+            accessibilityLabel="View group members"
+          />
+        </SettingsSection>
+
+        {/* Activity → dedicated screens */}
+        <SettingsSection title="ACTIVITY">
+          <SettingsRow
+            icon="checkbox-outline"
+            label="To-Dos"
+            value={openTodoCount > 0 ? String(openTodoCount) : undefined}
+            onPress={() => router.push(`/chat/todos?group_channel_id=${groupChannelId}` as never)}
+            chevron
+            accessibilityLabel="View to-dos"
+          />
+          <SettingsRow
+            icon="cash-outline"
+            label="Expenses"
+            value={unsettledExpenseCount > 0 ? String(unsettledExpenseCount) : undefined}
+            onPress={() =>
+              router.push(`/chat/expenses?group_channel_id=${groupChannelId}` as never)
+            }
+            chevron
+            accessibilityLabel="View expenses"
+          />
+        </SettingsSection>
 
         {/* Shared media */}
-        <View style={styles.sectionWrapper}>
-          <Text style={styles.sectionTitle}>Shared Media</Text>
+        <SettingsSection title="SHARED MEDIA">
           <View style={styles.mediaCard}>
             <SharedMediaGrid media={media} />
           </View>
-        </View>
+        </SettingsSection>
 
         {/* Settings */}
-        <View style={styles.sectionWrapper}>
-          <Text style={styles.sectionTitle}>Settings</Text>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Ionicons name="notifications-off-outline" size={20} color={colors.text.secondary} />
-              <Text style={styles.rowLabel}>Mute notifications</Text>
-              <Switch
-                value={isMuted}
-                onValueChange={(next) => muteMutation.mutate(next)}
-                disabled={muteMutation.isPending}
-              />
-            </View>
-            {isCreator && (
-              <TouchableOpacity
-                style={[styles.row, styles.rowBorder]}
-                activeOpacity={0.6}
-                onPress={openRename}
-                accessibilityLabel="Rename group"
-              >
-                <Ionicons name="create-outline" size={20} color={colors.text.secondary} />
-                <Text style={styles.rowLabel}>Rename group</Text>
-                <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={[styles.row, styles.rowBorder]}
-              activeOpacity={0.6}
-              onPress={confirmLeave}
-              disabled={leaveMutation.isPending}
-              accessibilityLabel="Leave group"
-            >
-              <Ionicons name="exit-outline" size={20} color={colors.interactive.destructive} />
-              <Text style={[styles.rowLabel, styles.destructiveLabel]}>Leave group</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <SettingsSection title="SETTINGS">
+          <SettingsRow
+            icon="notifications-off-outline"
+            label="Mute notifications"
+            switchValue={isMuted}
+            onToggle={(next) => muteMutation.mutate(next)}
+            switchDisabled={muteMutation.isPending}
+          />
+          {isCreator && (
+            <SettingsRow
+              icon="create-outline"
+              label="Rename group"
+              onPress={openRename}
+              chevron
+              accessibilityLabel="Rename group"
+            />
+          )}
+          <SettingsRow
+            icon="exit-outline"
+            label="Leave group"
+            tone="destructive"
+            onPress={confirmLeave}
+            disabled={leaveMutation.isPending}
+            accessibilityLabel="Leave group"
+          />
+        </SettingsSection>
       </ScrollView>
 
       {/* Rename modal */}

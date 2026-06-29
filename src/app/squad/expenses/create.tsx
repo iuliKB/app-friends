@@ -26,8 +26,11 @@ import { useMemo } from 'react';
 
 export default function ExpenseCreateScreen() {
   const { colors } = useTheme();
-  const { group_channel_id } = useLocalSearchParams<{ group_channel_id?: string }>();
-  const form = useExpenseCreate({ groupChannelId: group_channel_id });
+  const { group_channel_id, plan_id } = useLocalSearchParams<{
+    group_channel_id?: string;
+    plan_id?: string;
+  }>();
+  const form = useExpenseCreate({ groupChannelId: group_channel_id, planId: plan_id });
 
   const styles = useMemo(
     () =>

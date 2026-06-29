@@ -12,7 +12,6 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -29,9 +28,14 @@ import { queryKeys } from '@/lib/queryKeys';
 import { openChat } from '@/lib/openChat';
 import { useChatDmPreferences } from '@/hooks/useChatDmPreferences';
 import { useChatMedia } from '@/hooks/useChatMedia';
+import { useChatChannelTodos } from '@/hooks/useChatChannelTodos';
 import { useDmPartner } from '@/hooks/useDmPartner';
+import { useExpensesWithFriend } from '@/hooks/useExpensesWithFriend';
 import { useFriends } from '@/hooks/useFriends';
+import type { ChatScope } from '@/hooks/useChatTodos';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { SettingsRow } from '@/components/common/SettingsRow';
+import { SettingsSection } from '@/components/common/SettingsSection';
 import { SharedMediaGrid } from '@/components/chat/SharedMediaGrid';
 
 interface DmInfoScreenProps {
@@ -52,6 +56,15 @@ export function DmInfoScreen({ dmChannelId, friendName, avatarUrl }: DmInfoScree
   const { media } = useChatMedia({ kind: 'dm', dmChannelId });
   const { partner } = useDmPartner(dmChannelId);
   const friendId = partner?.friendId ?? null;
+
+  const scope = useMemo<ChatScope>(() => ({ kind: 'dm', dmChannelId }), [dmChannelId]);
+  const { lists: todoLists } = useChatChannelTodos(scope);
+  const { expenses } = useExpensesWithFriend(friendId ?? '');
+  const openTodoCount = todoLists.reduce(
+    (n, l) => n + l.items.filter((i) => i.completed_at === null).length,
+    0
+  );
+  const unsettledExpenseCount = expenses.filter((e) => !e.isFullySettled).length;
 
   const [createVisible, setCreateVisible] = useState(false);
 
@@ -86,37 +99,6 @@ export function DmInfoScreen({ dmChannelId, friendName, avatarUrl }: DmInfoScree
           fontFamily: FONT_FAMILY.display.semibold,
           color: colors.text.primary,
         },
-        sectionTitle: {
-          fontSize: FONT_SIZE.xs,
-          fontFamily: FONT_FAMILY.body.semibold,
-          color: colors.text.secondary,
-          paddingHorizontal: SPACING.lg,
-          paddingBottom: SPACING.xs,
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
-        },
-        sectionWrapper: { marginTop: SPACING.xl },
-        card: {
-          backgroundColor: colors.surface.card,
-          borderRadius: RADII.lg,
-          overflow: 'hidden',
-          marginHorizontal: SPACING.lg,
-        },
-        row: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: SPACING.lg,
-          paddingVertical: SPACING.md,
-          gap: SPACING.md,
-          minHeight: 52,
-        },
-        rowBorder: { borderTopWidth: 1, borderTopColor: colors.border },
-        rowLabel: {
-          flex: 1,
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.primary,
-        },
         mediaCard: {
           marginHorizontal: SPACING.lg,
           marginTop: SPACING.xs,
@@ -134,49 +116,57 @@ export function DmInfoScreen({ dmChannelId, friendName, avatarUrl }: DmInfoScree
           <Text style={styles.name}>{friendName}</Text>
         </View>
 
-        <View style={styles.sectionWrapper}>
-          <Text style={styles.sectionTitle}>Settings</Text>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Ionicons name="notifications-off-outline" size={20} color={colors.text.secondary} />
-              <Text style={styles.rowLabel}>Mute notifications</Text>
-              <Switch
-                value={isMuted}
-                onValueChange={(next) => muteMutation.mutate(next)}
-                disabled={muteMutation.isPending}
-              />
-            </View>
-            <TouchableOpacity
-              style={[styles.row, styles.rowBorder]}
-              activeOpacity={0.6}
-              disabled={!friendId}
-              onPress={() => setCreateVisible(true)}
-              accessibilityLabel="Create a group with this friend"
-            >
-              <Ionicons name="people-outline" size={20} color={colors.text.secondary} />
-              <Text style={styles.rowLabel}>Create Group</Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.row, styles.rowBorder]}
-              activeOpacity={0.6}
-              disabled={!friendId}
-              onPress={() => friendId && router.push(`/friends/${friendId}` as never)}
-              accessibilityLabel="View full profile"
-            >
-              <Ionicons name="person-outline" size={20} color={colors.text.secondary} />
-              <Text style={styles.rowLabel}>View full profile</Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <SettingsSection title="SETTINGS">
+          <SettingsRow
+            icon="notifications-off-outline"
+            label="Mute notifications"
+            switchValue={isMuted}
+            onToggle={(next) => muteMutation.mutate(next)}
+            switchDisabled={muteMutation.isPending}
+          />
+          <SettingsRow
+            icon="people-outline"
+            label="Create Group"
+            onPress={() => setCreateVisible(true)}
+            disabled={!friendId}
+            chevron
+            accessibilityLabel="Create a group with this friend"
+          />
+          <SettingsRow
+            icon="person-outline"
+            label="View full profile"
+            onPress={() => friendId && router.push(`/friends/${friendId}` as never)}
+            disabled={!friendId}
+            chevron
+            accessibilityLabel="View full profile"
+          />
+        </SettingsSection>
 
-        <View style={styles.sectionWrapper}>
-          <Text style={styles.sectionTitle}>Shared Media</Text>
+        <SettingsSection title="ACTIVITY">
+          <SettingsRow
+            icon="checkbox-outline"
+            label="To-Dos"
+            value={openTodoCount > 0 ? String(openTodoCount) : undefined}
+            onPress={() => router.push(`/chat/todos?dm_channel_id=${dmChannelId}` as never)}
+            chevron
+            accessibilityLabel="View to-dos"
+          />
+          <SettingsRow
+            icon="cash-outline"
+            label="Expenses"
+            value={unsettledExpenseCount > 0 ? String(unsettledExpenseCount) : undefined}
+            onPress={() => friendId && router.push(`/chat/expenses?friend_id=${friendId}` as never)}
+            disabled={!friendId}
+            chevron
+            accessibilityLabel="View expenses"
+          />
+        </SettingsSection>
+
+        <SettingsSection title="SHARED MEDIA">
           <View style={styles.mediaCard}>
             <SharedMediaGrid media={media} />
           </View>
-        </View>
+        </SettingsSection>
       </ScrollView>
 
       {friendId && (

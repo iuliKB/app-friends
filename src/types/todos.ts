@@ -81,3 +81,25 @@ export interface ChatTodoRow {
   is_overdue: boolean; // next_due_date < p_today AND items remain
   is_due_today: boolean; // next_due_date = p_today AND items remain
 }
+
+/**
+ * Row returned by get_chat_todos_for_channel(group_channel_id, dm_channel_id)
+ * — every chat to-do list for ONE channel that the caller may see (creator OR
+ * assignee). Powers the To-Dos section on the chat info screens (migration
+ * 0032). Item rows are inlined as `items` so the section renders each one
+ * without an extra round-trip. `is_assignee` marks lists the caller can
+ * complete (complete_chat_todo is assignee-only).
+ */
+export interface ChatChannelTodoRow {
+  list_id: string;
+  created_by: string;
+  assignee_id: string;
+  assignee_name: string | null;
+  title: string;
+  is_list: boolean;
+  created_at: string;
+  is_assignee: boolean;
+  total_count: number;
+  done_count: number;
+  items: ChatTodoItem[];
+}

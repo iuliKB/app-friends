@@ -9,13 +9,17 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme, FONT_FAMILY, FONT_SIZE, RADII, SPACING, ANIMATION } from '@/theme';
-import { TILE_ACCENTS, ACCENT_FILL } from '@/components/squad/bento/tileAccents';
+import { TILE_ACCENTS } from '@/components/squad/bento/tileAccents';
 import type { ChatTodoItem } from '@/types/todos';
 
 interface ChatTodoListRowProps {
   item: ChatTodoItem;
   listTitle: string;
   onToggle: (itemId: string) => Promise<unknown>;
+  // When true the checkbox is read-only (still reflects completion). Used on
+  // the chat-info To-Dos section for lists the caller did not get assigned —
+  // complete_chat_todo is assignee-only, so toggling would no-op server-side.
+  disabled?: boolean;
 }
 
 function formatShortDate(dateLocal: string): string {
@@ -56,7 +60,12 @@ function formatDueLabel(
   return { text: `Due ${formatShortDate(dateLocal)}`, isOverdue: false };
 }
 
-export function ChatTodoListRow({ item, listTitle, onToggle }: ChatTodoListRowProps) {
+export function ChatTodoListRow({
+  item,
+  listTitle,
+  onToggle,
+  disabled = false,
+}: ChatTodoListRowProps) {
   const { colors } = useTheme();
   const checkScale = useRef(new Animated.Value(1)).current;
   const isCompleted = item.completed_at !== null;
@@ -135,7 +144,7 @@ export function ChatTodoListRow({ item, listTitle, onToggle }: ChatTodoListRowPr
 
   const checkboxStyle = isCompleted
     ? {
-        backgroundColor: TILE_ACCENTS.todos + ACCENT_FILL,
+        backgroundColor: TILE_ACCENTS.todos,
         borderColor: TILE_ACCENTS.todos,
       }
     : {
@@ -144,6 +153,7 @@ export function ChatTodoListRow({ item, listTitle, onToggle }: ChatTodoListRowPr
       };
 
   async function handleToggle() {
+    if (disabled) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     checkScale.setValue(0.8);
     Animated.spring(checkScale, {
@@ -173,17 +183,18 @@ export function ChatTodoListRow({ item, listTitle, onToggle }: ChatTodoListRowPr
       accessibilityLabel={a11yRowLabel}
     >
       <Pressable
-        style={styles.toggleWrapper}
+        style={({ pressed }) => [styles.toggleWrapper, pressed && !disabled && { opacity: 0.6 }]}
         onPress={handleToggle}
+        disabled={disabled}
         hitSlop={8}
         accessibilityRole="checkbox"
-        accessibilityState={{ checked: isCompleted }}
+        accessibilityState={{ checked: isCompleted, disabled }}
         accessibilityLabel={a11yToggleLabel}
       >
         <Animated.View
           style={[styles.checkbox, checkboxStyle, { transform: [{ scale: checkScale }] }]}
         >
-          {isCompleted && <Ionicons name="checkmark" size={18} color={TILE_ACCENTS.todos} />}
+          {isCompleted && <Ionicons name="checkmark-sharp" size={18} color={colors.surface.base} />}
         </Animated.View>
       </Pressable>
 

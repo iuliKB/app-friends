@@ -14,7 +14,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme, FONT_SIZE, FONT_FAMILY, RADII, SPACING, ANIMATION } from '@/theme';
-import { TILE_ACCENTS, ACCENT_FILL } from '@/components/squad/bento/tileAccents';
+import { TILE_ACCENTS } from '@/components/squad/bento/tileAccents';
 import type { MyTodoRow, TodoPriority } from '@/types/todos';
 
 interface TodoRowProps {
@@ -159,7 +159,7 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
 
   const checkboxStyle = isCompleted
     ? {
-        backgroundColor: TILE_ACCENTS.todos + ACCENT_FILL,
+        backgroundColor: TILE_ACCENTS.todos,
         borderColor: TILE_ACCENTS.todos,
       }
     : {
@@ -209,7 +209,7 @@ export function TodoRow({ todo, onToggle, onPress }: TodoRowProps) {
         <Animated.View
           style={[styles.checkbox, checkboxStyle, { transform: [{ scale: checkScale }] }]}
         >
-          {isCompleted && <Ionicons name="checkmark" size={18} color={TILE_ACCENTS.todos} />}
+          {isCompleted && <Ionicons name="checkmark-sharp" size={18} color={colors.surface.base} />}
         </Animated.View>
       </Pressable>
 

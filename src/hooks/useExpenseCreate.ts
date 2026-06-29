@@ -66,8 +66,12 @@ interface FriendsQueryShape {
   defaultSelected: Set<string>; // for group-scoped: pre-select all members
 }
 
-export function useExpenseCreate(opts?: { groupChannelId?: string | null }): ExpenseCreateData {
+export function useExpenseCreate(opts?: {
+  groupChannelId?: string | null;
+  planId?: string | null;
+}): ExpenseCreateData {
   const groupChannelId = opts?.groupChannelId ?? null;
+  const planId = opts?.planId ?? null;
   const session = useAuthStore((s) => s.session);
   const userId = session?.user?.id ?? null;
   const router = useRouter();
@@ -95,7 +99,9 @@ export function useExpenseCreate(opts?: { groupChannelId?: string | null }): Exp
   // collide with useFriends's cache.
   const friendsKey = groupChannelId
     ? ([...queryKeys.friends.all(), 'expenseCreatePicker', 'group', groupChannelId] as const)
-    : ([...queryKeys.friends.all(), 'expenseCreatePicker', 'all', userId ?? ''] as const);
+    : planId
+      ? ([...queryKeys.friends.all(), 'expenseCreatePicker', 'plan', planId] as const)
+      : ([...queryKeys.friends.all(), 'expenseCreatePicker', 'all', userId ?? ''] as const);
 
   const friendsQuery = useQuery({
     queryKey: friendsKey,
@@ -107,6 +113,29 @@ export function useExpenseCreate(opts?: { groupChannelId?: string | null }): Exp
           .from('group_channel_members')
           .select('user_id')
           .eq('group_channel_id', groupChannelId);
+        if (membersErr) throw membersErr;
+        const memberIds = (members ?? []).map((m) => m.user_id).filter((id) => id !== userId);
+        if (memberIds.length === 0) {
+          return { entries: [], defaultSelected: new Set() };
+        }
+        const { data: profiles, error: profilesErr } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', memberIds);
+        if (profilesErr) throw profilesErr;
+        const entries: FriendEntry[] = (profiles ?? []).map((p) => ({
+          id: p.id,
+          display_name: (p.display_name as string | null) ?? '',
+          avatar_url: p.avatar_url as string | null,
+        }));
+        return { entries, defaultSelected: new Set(memberIds) };
+      }
+
+      if (planId) {
+        const { data: members, error: membersErr } = await supabase
+          .from('plan_members')
+          .select('user_id')
+          .eq('plan_id', planId);
         if (membersErr) throw membersErr;
         const memberIds = (members ?? []).map((m) => m.user_id).filter((id) => id !== userId);
         if (memberIds.length === 0) {
@@ -171,12 +200,16 @@ export function useExpenseCreate(opts?: { groupChannelId?: string | null }): Exp
       splitMode: 'even' | 'custom';
       customCents: number[] | null;
     }) => {
-      const { data: groupId, error } = await supabase.rpc('create_expense', {
+      // p_group_channel_id ties the expense to a group chat when created from
+      // one (migration 0032). Cast: the param is not yet in generated types.
+      const { data: groupId, error } = await (supabase as any).rpc('create_expense', {
         p_title: input.title,
         p_total_amount_cents: input.totalCents,
         p_participant_ids: input.participantIds,
         p_split_mode: input.splitMode,
         p_custom_cents: input.customCents,
+        p_group_channel_id: groupChannelId,
+        p_plan_id: planId,
       });
       if (error) throw error;
       return groupId as string;
@@ -245,7 +278,10 @@ export function useExpenseCreate(opts?: { groupChannelId?: string | null }): Exp
       });
 
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      router.push(`/squad/expenses/${groupId}` as never);
+      // replace (not push) so tapping back from the detail screen returns to the
+      // list/chat the user came from — not the create form they just submitted,
+      // which made it feel like the expense hadn't been saved.
+      router.replace(`/squad/expenses/${groupId}` as never);
     } catch (_err) {
       setSubmitError("Couldn't create expense. Check your connection and try again.");
     }
