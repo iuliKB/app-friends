@@ -32,6 +32,12 @@ jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
 }));
 
+// Realtime bridge is exercised in realtimeBridge.test.ts — stub it here so the
+// hook's subscribe effect doesn't touch the (unmocked) supabase.channel API.
+jest.mock('@/lib/realtimeBridge', () => ({
+  subscribePlanInvitations: jest.fn(() => jest.fn()),
+}));
+
 function setupInvitationsMock() {
   // Pre-migration step-1: plan_members where user_id=eq self, rsvp='invited'
   // Pre-migration step-2: plans IN planIds

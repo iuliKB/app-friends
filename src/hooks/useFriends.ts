@@ -26,7 +26,7 @@
 //
 // Public shape preserved verbatim.
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -34,6 +34,7 @@ import type { StatusValue, Profile } from '@/types/app';
 import { markPushPromptEligible } from '@/hooks/usePushNotifications';
 import { STATUS_SORT_ORDER } from '@/hooks/useHomeScreen';
 import { queryKeys } from '@/lib/queryKeys';
+import { subscribeFriendRequests } from '@/lib/realtimeBridge';
 
 export interface FriendWithStatus {
   friend_id: string;
@@ -99,6 +100,14 @@ export function useFriends(): UseFriendsResult {
   const pendingKey = queryKeys.friends.pendingRequests(userId ?? '');
   // Home Bento pending-request count widget shares this key (queryKeys.home.pendingRequestCount).
   const homePendingCountKey = queryKeys.home.pendingRequestCount(userId ?? '');
+
+  // Realtime — incoming friend requests from other devices invalidate the pending
+  // list + count + friends list. Ref-counted in the bridge (one channel shared with
+  // usePendingRequestsCount). Phase 33.
+  useEffect(() => {
+    if (!userId) return;
+    return subscribeFriendRequests(queryClient, userId);
+  }, [queryClient, userId]);
 
   // Query 1 — friends list (shared key with useHomeScreen).
   const friendsQuery = useQuery({

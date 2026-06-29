@@ -26,22 +26,42 @@ type MsgEntry = {
   poll_id: string | null;
 };
 
-function previewForLatest(latest: MsgEntry, pollQuestionMap: Map<string, string>): string {
+// Builds the one-line preview shown in the Chat tab. Media-type messages read
+// as full sentences that already name the sender ("You sent a photo" / "John
+// sent a photo"), so ChatListRow does NOT prefix the sender for those kinds.
+// Text messages still return the raw body and ChatListRow prefixes "You: " /
+// "<FirstName>: ". `senderName` is "You" for own messages, the sender's first
+// name for others, or null when unknown (falls back to "Someone").
+function previewForLatest(
+  latest: MsgEntry,
+  senderName: string | null,
+  pollQuestionMap: Map<string, string>
+): string {
+  const who = senderName ?? 'Someone';
   switch (latest.message_type) {
     case 'image':
-      return 'Photo';
+      return `${who} sent a photo`;
     case 'poll': {
       const q = latest.poll_id ? pollQuestionMap.get(latest.poll_id) : null;
-      return q ? `Poll: ${q}` : 'Poll';
+      return q ? `Poll: ${q}` : `${who} sent a poll`;
     }
-    case 'todo': {
-      const body = (latest.body ?? '').trim();
-      return body ? `To-do: ${body}` : 'To-do';
-    }
+    case 'todo':
+      return `${who} shared a to-do`;
     case 'deleted':
       return 'Message deleted';
+    case 'system': {
+      // To-do completion system messages are stored as "✓ <name> completed <item>"
+      // (single item) or "✓ <name> finished <list>" (whole list) by
+      // complete_chat_todo (migration 0026). Reword them for the list preview so
+      // they read clearly with the title quoted and no leading checkmark.
+      const stripped = (latest.body ?? '').replace(/^✓\s*/, '');
+      const completed = stripped.match(/^(.+?) completed (.+)$/);
+      if (completed) return `${completed[1]} completed task "${completed[2]}"`;
+      const finished = stripped.match(/^(.+?) finished (.+)$/);
+      if (finished) return `${finished[1]} finished the list "${finished[2]}"`;
+      return stripped;
+    }
     case 'text':
-    case 'system':
     default:
       return latest.body ?? '';
   }
@@ -281,16 +301,17 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
     if (!title) continue;
     const latest = msgs[0];
     if (!latest) continue;
+    const senderName = senderNameForLatest(latest, currentUserId, firstNameMap);
     const { hasUnread, unreadCount } = await getUnreadInfo(planId, msgs, currentUserId);
     items.push({
       id: planId,
       type: 'plan',
       title,
       avatarUrl: null,
-      lastMessage: previewForLatest(latest, pollQuestionMap),
+      lastMessage: previewForLatest(latest, senderName, pollQuestionMap),
       lastMessageAt: latest.created_at,
       lastMessageKind: latest.message_type,
-      lastMessageSenderName: senderNameForLatest(latest, currentUserId, firstNameMap),
+      lastMessageSenderName: senderName,
       hasUnread,
       unreadCount,
       isMuted: false,
@@ -305,16 +326,17 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
     if (!profile) continue;
     const latest = msgs[0];
     if (!latest) continue;
+    const senderName = senderNameForLatest(latest, currentUserId, firstNameMap);
     const { hasUnread, unreadCount } = await getUnreadInfo(channel.id, msgs, currentUserId);
     items.push({
       id: channel.id,
       type: 'dm',
       title: profile.display_name,
       avatarUrl: profile.avatar_url,
-      lastMessage: previewForLatest(latest, pollQuestionMap),
+      lastMessage: previewForLatest(latest, senderName, pollQuestionMap),
       lastMessageAt: latest.created_at,
       lastMessageKind: latest.message_type,
-      lastMessageSenderName: senderNameForLatest(latest, currentUserId, firstNameMap),
+      lastMessageSenderName: senderName,
       hasUnread,
       unreadCount,
       isMuted: false,
@@ -327,18 +349,19 @@ async function fetchChatList(currentUserId: string): Promise<ChatListItem[]> {
     if (!name) continue;
     const msgs = groupMsgsMap.get(channelId) ?? [];
     const latest = msgs[0];
+    const senderName = latest ? senderNameForLatest(latest, currentUserId, firstNameMap) : null;
     const { hasUnread, unreadCount } = await getUnreadInfo(channelId, msgs, currentUserId);
     items.push({
       id: channelId,
       type: 'group',
       title: name,
       avatarUrl: null,
-      lastMessage: latest ? previewForLatest(latest, pollQuestionMap) : 'No messages yet',
+      lastMessage: latest
+        ? previewForLatest(latest, senderName, pollQuestionMap)
+        : 'No messages yet',
       lastMessageAt: latest?.created_at ?? new Date(0).toISOString(),
       lastMessageKind: (latest?.message_type ?? 'text') as MessageType,
-      lastMessageSenderName: latest
-        ? senderNameForLatest(latest, currentUserId, firstNameMap)
-        : null,
+      lastMessageSenderName: senderName,
       hasUnread,
       unreadCount,
       isMuted: false,

@@ -326,6 +326,105 @@ export function subscribeChatAux(channelId: string, handlers: ChatAuxHandlers): 
   return () => releaseSubscription(channelName);
 }
 
+/** Subscribe to friendships rows addressed to `userId`. Returns unsubscribe.
+ *
+ * This is the cross-device backbone for incoming friend requests: the SENDER's
+ * mutation only invalidates the SENDER's cache, so without this the RECIPIENT
+ * never sees a new/accepted/rejected request until a manual refresh (the pending
+ * queries carry only a 60s staleTime). RLS (friendships_select_participant) lets
+ * the addressee read the row, so Realtime delivers it.
+ *
+ * Filter is `addressee_id=eq.${userId}` — requires REPLICA IDENTITY FULL on
+ * friendships (migration 0034) so the column survives UPDATE/DELETE payloads.
+ *
+ * Aggregate/joined queries — invalidate rather than splice:
+ *   - friends.pendingRequests (the incoming-request list, a profiles join)
+ *   - home.pendingRequestCount (the Bento badge)
+ *   - friends.list (accept flips a row into the friends list)
+ */
+export function subscribeFriendRequests(queryClient: QueryClient, userId: string): Unsubscribe {
+  const channelName = `friend-requests-${userId}`;
+  const existing = registry.get(channelName);
+  if (existing) {
+    existing.refCount++;
+    return () => releaseSubscription(channelName);
+  }
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'friendships',
+        filter: `addressee_id=eq.${userId}`,
+      },
+      (_payload) => {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.friends.pendingRequests(userId) });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.home.pendingRequestCount(userId) });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.friends.list(userId) });
+      }
+    )
+    .subscribe();
+
+  registry.set(channelName, {
+    refCount: 1,
+    teardown: () => {
+      void supabase.removeChannel(channel);
+    },
+  });
+
+  return () => releaseSubscription(channelName);
+}
+
+/** Subscribe to plan_members rows for `userId`. Returns unsubscribe.
+ *
+ * Same cross-device gap as friend requests: a plan creator inviting this user
+ * writes a plan_members row, but the invitee's invitation queries (60s staleTime)
+ * never refetch on their own. RLS (plan_members_select_member) lets an invited
+ * member read their own row, so Realtime delivers the INSERT.
+ *
+ * Filter `user_id=eq.${userId}` — needs REPLICA IDENTITY FULL on plan_members
+ * (migration 0034) so RSVP UPDATEs still carry user_id.
+ *
+ * Invalidates the joined invitations list + its Bento count badge.
+ */
+export function subscribePlanInvitations(queryClient: QueryClient, userId: string): Unsubscribe {
+  const channelName = `plan-invitations-${userId}`;
+  const existing = registry.get(channelName);
+  if (existing) {
+    existing.refCount++;
+    return () => releaseSubscription(channelName);
+  }
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'plan_members',
+        filter: `user_id=eq.${userId}`,
+      },
+      (_payload) => {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.status.invitations(userId) });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.home.invitationCount(userId) });
+      }
+    )
+    .subscribe();
+
+  registry.set(channelName, {
+    refCount: 1,
+    teardown: () => {
+      void supabase.removeChannel(channel);
+    },
+  });
+
+  return () => releaseSubscription(channelName);
+}
+
 /** Subscribe to statuses changes for the caller's friend set. Returns unsubscribe.
  * Channel name is scoped by userId (not friendIds) so refCount works across renders
  * where friendIds changes (a friend being added/removed only invalidates the friends

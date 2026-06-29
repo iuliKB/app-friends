@@ -27,6 +27,7 @@ export const queryKeys = {
     fromChats: (today: string) => [...queryKeys.todos.all(), 'fromChats', today] as const,
     chatList: (groupChannelId: string) =>
       [...queryKeys.todos.all(), 'chatList', groupChannelId] as const,
+    channel: (channelId: string) => [...queryKeys.todos.all(), 'channel', channelId] as const,
   },
 
   chat: {
@@ -47,6 +48,8 @@ export const queryKeys = {
     detail: (planId: string) => [...queryKeys.plans.all(), 'detail', planId] as const,
     photos: (planId: string) => [...queryKeys.plans.all(), 'photos', planId] as const,
     allPhotos: (userId: string) => [...queryKeys.plans.all(), 'allPhotos', userId] as const,
+    recentLocations: (userId: string) =>
+      [...queryKeys.plans.all(), 'recentLocations', userId] as const,
   },
 
   friends: {
@@ -68,6 +71,9 @@ export const queryKeys = {
     detail: (expenseId: string) => [...queryKeys.expenses.all(), 'detail', expenseId] as const,
     withFriend: (friendId: string) =>
       [...queryKeys.expenses.all(), 'withFriend', friendId] as const,
+    channel: (groupChannelId: string) =>
+      [...queryKeys.expenses.all(), 'channel', groupChannelId] as const,
+    planChannel: (planId: string) => [...queryKeys.expenses.all(), 'planChannel', planId] as const,
     iouSummary: (userId: string) => [...queryKeys.expenses.all(), 'iouSummary', userId] as const,
   },
 

@@ -36,6 +36,12 @@ jest.mock('@/hooks/usePushNotifications', () => ({
   markPushPromptEligible: jest.fn(() => Promise.resolve()),
 }));
 
+// Realtime bridge is exercised in realtimeBridge.test.ts — stub it here so the
+// hook's subscribe effect doesn't touch the (unmocked) supabase.channel API.
+jest.mock('@/lib/realtimeBridge', () => ({
+  subscribeFriendRequests: jest.fn(() => jest.fn()),
+}));
+
 const FRIEND_ROW = {
   friend_id: 'f1',
   username: 'alice',

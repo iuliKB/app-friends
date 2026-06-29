@@ -13,10 +13,12 @@
 // the public-shape's local removal of accepted/declined rows is implemented
 // optimistically via setQueryData in onMutate so the UI flips instantly.
 
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { queryKeys } from '@/lib/queryKeys';
+import { subscribePlanInvitations } from '@/lib/realtimeBridge';
 
 export interface InvitedMember {
   user_id: string;
@@ -49,6 +51,14 @@ export function useInvitations(): {
   // Cache key: queryKeys.status.invitations(userId) — plan invitations live in
   // the status taxonomy because the home invitation-count widget aggregates them.
   const invitationsKey = queryKeys.status.invitations(userId ?? '');
+
+  // Realtime — incoming plan invites from the creator's device invalidate the
+  // invitations list + count. Ref-counted in the bridge (one channel shared with
+  // useInvitationCount). Phase 33.
+  useEffect(() => {
+    if (!userId) return;
+    return subscribePlanInvitations(queryClient, userId);
+  }, [queryClient, userId]);
 
   const query = useQuery({
     queryKey: invitationsKey,

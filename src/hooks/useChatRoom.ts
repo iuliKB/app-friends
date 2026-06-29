@@ -225,6 +225,16 @@ export function useChatRoom({
         new Date().toISOString()
       );
 
+      // Reading a chat advances its last_read marker, but the chat-list query
+      // (which derives hasUnread/unreadCount from that marker) holds no dependency
+      // on AsyncStorage and would otherwise keep showing the chat — and the Chat
+      // tab badge (useUnreadChatCount) — as unread until its next refetch. Invalidate
+      // it so the badge clears reactively, the same way the Squad badges invalidate
+      // their count on the relevant change.
+      if (currentUserId) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chat.list(currentUserId) });
+      }
+
       return enriched;
     },
     enabled: !!currentUserId && !!channelId,

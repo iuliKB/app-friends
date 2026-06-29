@@ -200,7 +200,7 @@ describe('useChatList lastMessageKind and lastMessageSenderName', () => {
     expect(list[0]?.lastMessageSenderName).toBe('You');
   });
 
-  it('image message emits lastMessage "Photo" + lastMessageKind "image"', async () => {
+  it('image message emits a sentence preview naming the sender + lastMessageKind "image"', async () => {
     setupRouting({
       plan_members: [],
       dm_channels: [{ id: 'dm1', user_a: 'u1', user_b: 'u2' }],
@@ -225,7 +225,7 @@ describe('useChatList lastMessageKind and lastMessageSenderName', () => {
     });
     const list = await runHookAndGetList();
     expect(list).toHaveLength(1);
-    expect(list[0]?.lastMessage).toBe('Photo');
+    expect(list[0]?.lastMessage).toBe('Bob sent a photo');
     expect(list[0]?.lastMessageKind).toBe('image');
     expect(list[0]?.lastMessageSenderName).toBe('Bob');
   });
@@ -259,7 +259,7 @@ describe('useChatList lastMessageKind and lastMessageSenderName', () => {
     expect(list[0]?.lastMessageKind).toBe('poll');
   });
 
-  it('todo message emits "To-do: <body>" with the body title', async () => {
+  it('todo message emits a sentence preview naming the sender', async () => {
     setupRouting({
       plan_members: [],
       dm_channels: [{ id: 'dm1', user_a: 'u1', user_b: 'u2' }],
@@ -284,7 +284,7 @@ describe('useChatList lastMessageKind and lastMessageSenderName', () => {
     });
     const list = await runHookAndGetList();
     expect(list).toHaveLength(1);
-    expect(list[0]?.lastMessage).toBe('To-do: Buy milk');
+    expect(list[0]?.lastMessage).toBe('Dana shared a to-do');
     expect(list[0]?.lastMessageKind).toBe('todo');
   });
 
@@ -315,6 +315,35 @@ describe('useChatList lastMessageKind and lastMessageSenderName', () => {
     expect(list).toHaveLength(1);
     expect(list[0]?.lastMessage).toBe('Message deleted');
     expect(list[0]?.lastMessageKind).toBe('deleted');
+  });
+
+  it('to-do completion system message reads as a clean quoted sentence (no checkmark)', async () => {
+    setupRouting({
+      plan_members: [],
+      dm_channels: [{ id: 'dm1', user_a: 'u1', user_b: 'u2' }],
+      messages: [
+        {
+          dm_channel_id: 'dm1',
+          plan_id: null,
+          group_channel_id: null,
+          body: '✓ Bob completed Buy milk',
+          created_at: '2026-01-01T00:00:00Z',
+          sender_id: 'u2',
+          message_type: 'system',
+          image_url: null,
+          poll_id: null,
+        },
+      ],
+      profiles: [{ id: 'u2', display_name: 'Bob', first_name: 'Bob' }],
+      group_channel_members: [],
+      group_channels: [],
+      chat_preferences: [],
+      polls: [],
+    });
+    const list = await runHookAndGetList();
+    expect(list).toHaveLength(1);
+    expect(list[0]?.lastMessage).toBe('Bob completed task "Buy milk"');
+    expect(list[0]?.lastMessageKind).toBe('system');
   });
 
   it('group chat with no messages emits "No messages yet" + lastMessageKind "text" + senderName null', async () => {
