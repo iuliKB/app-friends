@@ -63,3 +63,6 @@ IdeasScreen/
 
 # Local image scratch
 assets/images/temp.png
+
+# Thesis documents (not for code repo)
+documentatie/
