@@ -114,46 +114,8 @@ jest.mock('@/components/friends/StatusPill', () => ({
   StatusPill: () => null,
 }));
 
-// Mock the friends components that render native views with icons/palette
-jest.mock('@/components/friends/GroupedInsetSection', () => {
-  const React = require('react');
-  const { View, Text } = require('react-native');
-  return {
-    GroupedInsetSection: ({ title, children }: { title: string; children: React.ReactNode }) =>
-      React.createElement(
-        View,
-        { testID: `section-${title}` },
-        React.createElement(Text, null, title),
-        children
-      ),
-  };
-});
-jest.mock('@/components/friends/ProfileInfoRow', () => {
-  const React = require('react');
-  const { View, Text, TouchableOpacity } = require('react-native');
-  return {
-    ProfileInfoRow: ({
-      label,
-      value,
-      onPress,
-    }: {
-      label: string;
-      value?: string;
-      onPress?: () => void;
-    }) => {
-      const content = React.createElement(
-        View,
-        null,
-        React.createElement(Text, null, label),
-        value ? React.createElement(Text, null, value) : null
-      );
-      if (onPress) {
-        return React.createElement(TouchableOpacity, { onPress }, content);
-      }
-      return content;
-    },
-  };
-});
+// SettingsSection / SettingsRow render with the auto-mocked @/theme + mocked
+// Ionicons, so they're exercised for real here (no per-component mock needed).
 jest.mock('@/components/friends/BioRow', () => {
   const React = require('react');
   const { View, Text } = require('react-native');

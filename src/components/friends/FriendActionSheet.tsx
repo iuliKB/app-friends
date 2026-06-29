@@ -10,9 +10,9 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
+import { SettingsRow } from '@/components/common/SettingsRow';
 import type { FriendWithStatus } from '@/hooks/useFriends';
 
 interface FriendActionSheetProps {
@@ -85,31 +85,6 @@ export function FriendActionSheet({
           fontSize: FONT_SIZE.md,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.secondary,
-        },
-        actionRow: {
-          height: 52,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: SPACING.lg,
-        },
-        disabledRow: {
-          opacity: 0.5,
-        },
-        actionIcon: {
-          marginRight: SPACING.lg,
-        },
-        actionLabel: {
-          fontSize: FONT_SIZE.lg,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.primary,
-        },
-        destructiveLabel: {
-          color: colors.interactive.destructive,
-        },
-        separator: {
-          height: 1,
-          backgroundColor: colors.border,
-          marginHorizontal: SPACING.lg,
         },
         confirmContainer: {
           paddingHorizontal: SPACING.lg,
@@ -226,54 +201,25 @@ export function FriendActionSheet({
             </View>
 
             {/* Actions */}
-            <TouchableOpacity style={styles.actionRow} onPress={onViewProfile} activeOpacity={0.7}>
-              <Ionicons
-                name="person-outline"
-                size={22}
-                color={colors.text.secondary}
-                style={styles.actionIcon}
-              />
-              <Text style={styles.actionLabel}>View profile</Text>
-            </TouchableOpacity>
-            <View style={styles.separator} />
-
-            <TouchableOpacity
-              style={[styles.actionRow, loadingDM && styles.disabledRow]}
+            <SettingsRow icon="person-outline" label="View profile" onPress={onViewProfile} />
+            <SettingsRow
+              icon="chatbubble-outline"
+              label="Start DM"
               onPress={onStartDM}
-              activeOpacity={0.7}
               disabled={loadingDM}
-            >
-              {loadingDM ? (
-                <ActivityIndicator
-                  size="small"
-                  color={colors.text.secondary}
-                  style={styles.actionIcon}
-                />
-              ) : (
-                <Ionicons
-                  name="chatbubble-outline"
-                  size={22}
-                  color={colors.text.secondary}
-                  style={styles.actionIcon}
-                />
-              )}
-              <Text style={styles.actionLabel}>Start DM</Text>
-            </TouchableOpacity>
-            <View style={styles.separator} />
-
-            <TouchableOpacity
-              style={styles.actionRow}
+              trailing={
+                loadingDM ? (
+                  <ActivityIndicator size="small" color={colors.text.secondary} />
+                ) : undefined
+              }
+            />
+            <SettingsRow
+              icon="person-remove-outline"
+              label="Remove friend"
+              tone="destructive"
               onPress={handleRemovePress}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name="person-remove-outline"
-                size={22}
-                color={colors.interactive.destructive}
-                style={styles.actionIcon}
-              />
-              <Text style={[styles.actionLabel, styles.destructiveLabel]}>Remove friend</Text>
-            </TouchableOpacity>
+              hideDivider
+            />
           </>
         ) : (
           <View style={styles.confirmContainer}>

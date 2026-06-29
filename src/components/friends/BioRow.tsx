@@ -1,6 +1,9 @@
-// Phase 33 — Bio variant of ProfileInfoRow with expand/collapse.
+// Bio row — a flat SettingsRow-style row with expand/collapse.
 //
-// Renders the bio paragraph below the standard label row; collapses to 3 lines
+// Matches the minimal SettingsRow look (flat leading icon, full-bleed bottom
+// hairline) but adds a multi-line body below the label, which the single-line
+// SettingsRow can't express. Renders the bio paragraph below the label row;
+// collapses to 3 lines
 // when bio overflows. Tap-to-expand uses LayoutAnimation.configureNext BEFORE
 // setState per Phase 29.1 Pitfall 9 (LayoutAnimation must be configured before
 // the next React render — call site documented in STATE.md row 99).
@@ -18,25 +21,22 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
-import { getIconPalette, ROW_ICON_SIZE, ROW_ICON_GLYPH_SIZE } from './friendIconPalette';
+import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY } from '@/theme';
 
 // Required for LayoutAnimation on Android (no-op on iOS); idempotent on multiple calls.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const ROW_MIN_HEIGHT = 56;
 const BIO_COLLAPSED_LINES = 3;
 
 interface BioRowProps {
   bio: string; // non-empty string; parent (Plan 06 screen) gates this — null bio → don't render BioRow at all
-  isLast?: boolean; // injected by GroupedInsetSection
+  hideDivider?: boolean; // suppress the bottom hairline (e.g. a section's final row)
 }
 
-export function BioRow({ bio, isLast }: BioRowProps) {
+export function BioRow({ bio, hideDivider }: BioRowProps) {
   const { colors } = useTheme();
-  const palette = useMemo(() => getIconPalette('bio', colors), [colors]);
   const [expanded, setExpanded] = useState(false);
   const [overflowing, setOverflowing] = useState(false);
 
@@ -61,19 +61,18 @@ export function BioRow({ bio, isLast }: BioRowProps) {
         row: {
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
-          minHeight: ROW_MIN_HEIGHT,
+          minHeight: 52,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        rowNoDivider: {
+          borderBottomWidth: 0,
         },
         labelRow: {
           flexDirection: 'row',
           alignItems: 'center',
         },
-        iconBubble: {
-          width: ROW_ICON_SIZE,
-          height: ROW_ICON_SIZE,
-          borderRadius: RADII.full,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: palette.bg,
+        icon: {
           marginRight: SPACING.md,
         },
         label: {
@@ -84,27 +83,25 @@ export function BioRow({ bio, isLast }: BioRowProps) {
         },
         body: {
           marginTop: SPACING.xs,
-          marginLeft: ROW_ICON_SIZE + SPACING.md, // indent body under the label, not under the icon
+          marginLeft: FONT_SIZE.xl + SPACING.md, // indent body under the label, not under the icon
           fontSize: FONT_SIZE.lg,
           fontFamily: FONT_FAMILY.body.regular,
           color: colors.text.primary,
 
           lineHeight: 24, // UI-SPEC §Typography — bio paragraph line height
         },
-        hairline: {
-          height: StyleSheet.hairlineWidth,
-          backgroundColor: colors.border,
-          marginLeft: SPACING.lg + ROW_ICON_SIZE + SPACING.md,
-        },
       }),
-    [colors, palette]
+    [colors]
   );
 
   const labelRow = (
     <View style={styles.labelRow}>
-      <View style={styles.iconBubble}>
-        <Ionicons name={palette.ionicon} size={ROW_ICON_GLYPH_SIZE} color={palette.glyph} />
-      </View>
+      <Ionicons
+        name="chatbubble-ellipses-outline"
+        size={FONT_SIZE.xl}
+        color={colors.text.secondary}
+        style={styles.icon}
+      />
       <Text style={styles.label}>Bio</Text>
     </View>
   );
@@ -119,27 +116,24 @@ export function BioRow({ bio, isLast }: BioRowProps) {
     </Text>
   );
 
-  return (
-    <View>
-      {overflowing ? (
-        <Pressable
-          onPress={handleToggle}
-          accessibilityRole="button"
-          accessibilityLabel={`Bio: ${bio}`}
-          accessibilityHint={expanded ? 'Tap to collapse bio' : 'Tap to read full bio'}
-          hitSlop={{ top: 8, bottom: 8, left: 0, right: 0 }}
-          style={styles.row}
-        >
-          {labelRow}
-          {body}
-        </Pressable>
-      ) : (
-        <View style={styles.row} accessibilityRole="text" accessibilityLabel={`Bio: ${bio}`}>
-          {labelRow}
-          {body}
-        </View>
-      )}
-      {!isLast && <View style={styles.hairline} />}
+  const rowStyle = [styles.row, hideDivider && styles.rowNoDivider];
+
+  return overflowing ? (
+    <Pressable
+      onPress={handleToggle}
+      accessibilityRole="button"
+      accessibilityLabel={`Bio: ${bio}`}
+      accessibilityHint={expanded ? 'Tap to collapse bio' : 'Tap to read full bio'}
+      hitSlop={{ top: 8, bottom: 8, left: 0, right: 0 }}
+      style={rowStyle}
+    >
+      {labelRow}
+      {body}
+    </Pressable>
+  ) : (
+    <View style={rowStyle} accessibilityRole="text" accessibilityLabel={`Bio: ${bio}`}>
+      {labelRow}
+      {body}
     </View>
   );
 }

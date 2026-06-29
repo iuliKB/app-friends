@@ -4,7 +4,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -25,6 +24,8 @@ import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { APP_CONFIG } from '@/constants/config';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { ThemeSegmentedControl } from '@/components/common/ThemeSegmentedControl';
+import { SettingsRow } from '@/components/common/SettingsRow';
+import { SettingsSection } from '@/components/common/SettingsSection';
 import {
   registerForPushNotifications,
   unregisterForPushNotifications,
@@ -181,7 +182,7 @@ export default function ProfileScreen() {
         setNotificationsEnabledState(false);
         Alert.alert(
           'Notifications blocked',
-          'Notifications are turned off in iOS Settings. Open Settings → Campfire → Notifications to re-enable.'
+          'Notifications are turned off in Settings. Open Settings → Campfire → Notifications to re-enable.'
         );
       }
     } else {
@@ -228,10 +229,14 @@ export default function ProfileScreen() {
   }
 
   async function handleMorningPrePromptAccept() {
-    setShowMorningPrePrompt(false);
+    // Request before dismissing the pre-prompt — on Android, tearing down the RN
+    // Modal in the same tick races with the OS permission dialog and the result
+    // can come back un-granted even when the user allows. The native dialog
+    // stacks on top of our modal, so keep ours mounted until the request settles.
     const result = await Notifications.requestPermissionsAsync().catch(() => ({
       status: 'denied' as const,
     }));
+    setShowMorningPrePrompt(false);
     if (result.status === 'granted') {
       await ensureMorningPromptScheduled();
     } else {
@@ -381,45 +386,7 @@ export default function ProfileScreen() {
           color: colors.text.primary,
         },
 
-        // ── Original list style below ─────────────────────────────
-        sectionHeader: {
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.secondary,
-          marginTop: SPACING.xl,
-          marginBottom: SPACING.md,
-          paddingHorizontal: SPACING.lg,
-        },
-        row: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          minHeight: 52,
-          paddingHorizontal: SPACING.lg,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        },
-        rowIcon: {
-          marginRight: SPACING.md,
-        },
-        rowLabel: {
-          flex: 1,
-          fontSize: FONT_SIZE.lg,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.primary,
-        },
-        rowRight: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: SPACING.sm,
-        },
-        rowDisabled: {
-          opacity: 0.4,
-        },
-        rowTrailingText: {
-          fontSize: FONT_SIZE.md,
-          fontFamily: FONT_FAMILY.body.regular,
-          color: colors.text.secondary,
-        },
+        // ── Logout / footer ───────────────────────────────────────
         logoutRow: {
           height: 52,
           paddingHorizontal: SPACING.lg,
@@ -518,128 +485,61 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Links (original flat list style) ── */}
-        <TouchableOpacity
-          style={styles.row}
+        {/* ── Links (canonical minimal list style) ── */}
+        <SettingsRow
+          icon="gift-outline"
+          label="My Wish List"
           onPress={() => router.push('/profile/wish-list' as never)}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="gift-outline"
-            size={FONT_SIZE.xl}
-            color={colors.text.secondary}
-            style={styles.rowIcon}
-          />
-          <Text style={styles.rowLabel}>My Wish List</Text>
-          <View style={styles.rowRight}>
-            <Ionicons name="chevron-forward" size={SPACING.lg} color={colors.border} />
-          </View>
-        </TouchableOpacity>
+          chevron
+        />
 
         {/* ── Account ── */}
-        <Text style={styles.sectionHeader}>ACCOUNT</Text>
-
-        <View style={styles.row}>
-          <Ionicons
-            name="mail-outline"
-            size={FONT_SIZE.xl}
-            color={colors.text.secondary}
-            style={styles.rowIcon}
+        <SettingsSection title="ACCOUNT">
+          <SettingsRow icon="mail-outline" label={session?.user?.email ?? ''} />
+          <SettingsRow
+            icon="calendar-outline"
+            label={profile?.created_at ? formatMemberSince(profile.created_at) : ''}
           />
-          <Text style={styles.rowLabel} numberOfLines={1} ellipsizeMode="tail">
-            {session?.user?.email ?? ''}
-          </Text>
-        </View>
-
-        <View style={styles.row}>
-          <Ionicons
-            name="calendar-outline"
-            size={FONT_SIZE.xl}
-            color={colors.text.secondary}
-            style={styles.rowIcon}
-          />
-          <Text style={styles.rowLabel}>
-            {profile?.created_at ? formatMemberSince(profile.created_at) : ''}
-          </Text>
-        </View>
+        </SettingsSection>
 
         {/* ── Appearance ── */}
-        <Text style={styles.sectionHeader}>APPEARANCE</Text>
-        <View style={{ paddingVertical: SPACING.md }}>
-          <ThemeSegmentedControl />
-        </View>
+        <SettingsSection title="APPEARANCE">
+          <View style={{ paddingVertical: SPACING.md }}>
+            <ThemeSegmentedControl />
+          </View>
+        </SettingsSection>
 
         {/* ── Notifications ── */}
-        <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
-
-        <View style={styles.row}>
-          <Ionicons
-            name="notifications-outline"
-            size={FONT_SIZE.xl}
-            color={colors.text.secondary}
-            style={styles.rowIcon}
+        <SettingsSection title="NOTIFICATIONS">
+          <SettingsRow
+            icon="notifications-outline"
+            label="Plan invites"
+            switchValue={notificationsEnabled}
+            onToggle={handleToggleNotifications}
           />
-          <Text style={styles.rowLabel}>Plan invites</Text>
-          <Switch
-            value={notificationsEnabled}
-            onValueChange={handleToggleNotifications}
-            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-            thumbColor={notificationsEnabled ? colors.interactive.accent : colors.border}
+          <SettingsRow
+            icon="people-outline"
+            label="Friend availability"
+            switchValue={friendFreeEnabled}
+            onToggle={handleToggleFriendFree}
           />
-        </View>
-
-        <View style={styles.row}>
-          <Ionicons
-            name="people-outline"
-            size={FONT_SIZE.xl}
-            color={colors.text.secondary}
-            style={styles.rowIcon}
+          <SettingsRow
+            icon="sunny-outline"
+            label="Morning prompt"
+            switchValue={morningEnabled}
+            onToggle={handleToggleMorning}
           />
-          <Text style={styles.rowLabel}>Friend availability</Text>
-          <Switch
-            value={friendFreeEnabled}
-            onValueChange={handleToggleFriendFree}
-            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-            thumbColor={friendFreeEnabled ? colors.interactive.accent : colors.border}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <Ionicons
-            name="sunny-outline"
-            size={FONT_SIZE.xl}
-            color={colors.text.secondary}
-            style={styles.rowIcon}
-          />
-          <Text style={styles.rowLabel}>Morning prompt</Text>
-          <Switch
-            value={morningEnabled}
-            onValueChange={handleToggleMorning}
-            trackColor={{ false: colors.border, true: colors.interactive.accent + '40' }}
-            thumbColor={morningEnabled ? colors.interactive.accent : colors.border}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[styles.row, !morningEnabled && styles.rowDisabled]}
-          onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
-          disabled={!morningEnabled}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="time-outline"
-            size={FONT_SIZE.xl}
-            color={colors.text.secondary}
-            style={styles.rowIcon}
-          />
-          <Text style={styles.rowLabel}>Time</Text>
-          <Text style={styles.rowTrailingText}>
-            {new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
+          <SettingsRow
+            icon="time-outline"
+            label="Time"
+            value={new Date(2000, 0, 1, morningHour, morningMinute).toLocaleTimeString([], {
               hour: 'numeric',
               minute: '2-digit',
             })}
-          </Text>
-        </TouchableOpacity>
+            onPress={() => morningEnabled && setShowTimePicker((v) => !v)}
+            disabled={!morningEnabled}
+          />
+        </SettingsSection>
 
         {showTimePicker && morningEnabled && (
           <DateTimePicker
@@ -653,7 +553,7 @@ export default function ProfileScreen() {
 
         {morningDeniedHint && (
           <Text style={styles.morningHint}>
-            Enable notifications in iOS Settings to receive morning prompts.
+            Enable notifications in Settings to receive morning prompts.
           </Text>
         )}
 

@@ -53,8 +53,8 @@ import { useFriendsOfFriend } from '@/hooks/useFriendsOfFriend';
 
 import { FriendProfileHeader } from '@/components/friends/FriendProfileHeader';
 import { QuickActionsRow } from '@/components/friends/QuickActionsRow';
-import { GroupedInsetSection } from '@/components/friends/GroupedInsetSection';
-import { ProfileInfoRow } from '@/components/friends/ProfileInfoRow';
+import { SettingsSection } from '@/components/common/SettingsSection';
+import { SettingsRow } from '@/components/common/SettingsRow';
 import { BioRow } from '@/components/friends/BioRow';
 import { ErrorDisplay } from '@/components/common/ErrorDisplay';
 import { SkeletonPulse } from '@/components/common/SkeletonPulse';
@@ -523,26 +523,26 @@ export default function FriendProfileScreen() {
         />
 
         {/* INFO section */}
-        <GroupedInsetSection title="INFO">
+        <SettingsSection title="INFO">
           {profile?.bio ? <BioRow bio={profile.bio} /> : null}
           {data?.friendsSince ? (
-            <ProfileInfoRow
-              iconTint="friendsSince"
+            <SettingsRow
+              icon="people-outline"
               label="Friends since"
               value={formatFriendsSince(data.friendsSince)}
               accessibilityLabel={`Friends since ${formatFriendsSince(data.friendsSince)}`}
             />
           ) : null}
           {profile?.birthday_month && profile?.birthday_day ? (
-            <ProfileInfoRow
-              iconTint="birthday"
+            <SettingsRow
+              icon="gift-outline"
               label="Birthday"
               value={formatBirthday(profile.birthday_month, profile.birthday_day)}
               accessibilityLabel={`Birthday ${formatBirthday(profile.birthday_month, profile.birthday_day)}`}
             />
           ) : null}
-          <ProfileInfoRow
-            iconTint="wishlist"
+          <SettingsRow
+            icon="heart-outline"
             label="Wish list"
             value={
               wishListLoading
@@ -560,14 +560,14 @@ export default function FriendProfileScreen() {
           />
           {/* Fallback row when all optional INFO rows are null — always show friends since at minimum */}
           {!profile?.bio && !data?.friendsSince && !profile?.birthday_month ? (
-            <ProfileInfoRow iconTint="friendsSince" label="Friends since" value="Unknown" />
+            <SettingsRow icon="people-outline" label="Friends since" value="Unknown" />
           ) : null}
-        </GroupedInsetSection>
+        </SettingsSection>
 
         {/* MUTUAL section */}
-        <GroupedInsetSection title="MUTUAL">
-          <ProfileInfoRow
-            iconTint="mutualPlans"
+        <SettingsSection title="MUTUAL">
+          <SettingsRow
+            icon="calendar-outline"
             label="Mutual plans"
             value={
               mutuals && mutuals.mutualPlansCount > 0
@@ -585,8 +585,8 @@ export default function FriendProfileScreen() {
               mutuals && mutuals.mutualPlansCount > 0 ? 'Opens the list of mutual plans' : undefined
             }
           />
-          <ProfileInfoRow
-            iconTint="mutualFriends"
+          <SettingsRow
+            icon="people-circle-outline"
             label="Mutual friends"
             value={
               mutuals && mutuals.mutualFriendsCount > 0
@@ -606,8 +606,8 @@ export default function FriendProfileScreen() {
                 : undefined
             }
           />
-          <ProfileInfoRow
-            iconTint="sharedPhotos"
+          <SettingsRow
+            icon="images-outline"
             label="Shared photos"
             value={
               mutuals && mutuals.sharedPhotosCount > 0
@@ -621,17 +621,17 @@ export default function FriendProfileScreen() {
               mutuals && mutuals.sharedPhotosCount > 0 ? 'Opens shared photos' : undefined
             }
           />
-          <ProfileInfoRow
-            iconTint="iou"
+          <SettingsRow
+            icon="wallet-outline"
             label="IOU balance"
             value={iouValue}
             accessibilityLabel={`IOU balance: ${iouValue}`}
           />
-        </GroupedInsetSection>
+        </SettingsSection>
 
         {/* WISH LIST section (anchored for INFO → Wish list nav row scroll-to) */}
         <View onLayout={handleWishlistAnchorLayout} />
-        <GroupedInsetSection title="WISH LIST">
+        <SettingsSection title="WISH LIST">
           {wishListLoading ? (
             <ActivityIndicator
               size="small"
@@ -653,7 +653,7 @@ export default function FriendProfileScreen() {
               />
             ))
           )}
-        </GroupedInsetSection>
+        </SettingsSection>
       </Animated.ScrollView>
 
       {/* Full-screen avatar viewer */}
