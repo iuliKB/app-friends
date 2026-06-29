@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme, SPACING, FONT_SIZE, FONT_FAMILY, RADII } from '@/theme';
 import { AvatarCircle } from '@/components/common/AvatarCircle';
 import { GroupAvatar } from '@/components/chat/GroupAvatar';
-import type { ChatListItem, MessageType } from '@/types/chat';
+import type { ChatListItem } from '@/types/chat';
 
 function formatTimestamp(isoString: string): string {
   const date = new Date(isoString);
@@ -20,22 +20,6 @@ function formatTimestamp(isoString: string): string {
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return date.toLocaleDateString([], { weekday: 'short' });
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-}
-
-function getPreviewIcon(kind: MessageType): keyof typeof Ionicons.glyphMap | null {
-  switch (kind) {
-    case 'image':
-      return 'image-outline';
-    case 'poll':
-      return 'stats-chart-outline';
-    case 'todo':
-      return 'checkbox-outline';
-    case 'text':
-    case 'system':
-    case 'deleted':
-    default:
-      return null;
-  }
 }
 
 interface ChatListRowProps {
@@ -130,9 +114,6 @@ export function ChatListRow({ item, onPress, onMarkRead, onMute, onDelete }: Cha
           alignItems: 'center',
           flex: 1,
           marginRight: SPACING.sm,
-        },
-        previewIcon: {
-          marginRight: SPACING.xs,
         },
         previewItalic: {
           fontStyle: 'italic',
@@ -258,23 +239,17 @@ export function ChatListRow({ item, onPress, onMarkRead, onMute, onDelete }: Cha
           </View>
           <View style={styles.row2}>
             <View style={styles.previewWrap}>
-              {(() => {
-                const iconName = getPreviewIcon(item.lastMessageKind);
-                return iconName ? (
-                  <Ionicons
-                    name={iconName}
-                    size={14}
-                    color={colors.text.secondary}
-                    style={styles.previewIcon}
-                  />
-                ) : null;
-              })()}
               <Text
                 style={[styles.preview, item.hasUnread && styles.previewUnread]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {item.lastMessageSenderName ? `${item.lastMessageSenderName}: ` : ''}
+                {/* Only text previews are name-prefixed ("You: hi"). Media-type
+                    previews are full sentences that already name the sender
+                    ("You sent a photo"), so they render without a prefix. */}
+                {item.lastMessageKind === 'text' && item.lastMessageSenderName
+                  ? `${item.lastMessageSenderName}: `
+                  : ''}
                 {item.lastMessageKind === 'deleted' ? (
                   <Text
                     style={[

@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -55,6 +56,7 @@ interface MessageBubbleProps {
 
 const PRESET_EMOJIS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
 const STRIP_HEIGHT = 52; // tap target height + padding
+const PILL_HEIGHT = 56; // action pill height + padding (used to clamp against the screen bottom)
 
 const EMOJI_NAMES: Record<string, string> = {
   '❤️': 'heart',
@@ -436,13 +438,16 @@ export function MessageBubble({
   );
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [pillY, setPillY] = useState(0);
+  const [anchorY, setAnchorY] = useState(0);
   const [reactionsSheetVisible, setReactionsSheetVisible] = useState(false);
 
-  const emojiStripTop = Math.max(
-    SPACING.xl + STRIP_HEIGHT + SPACING.sm,
-    pillY - STRIP_HEIGHT - SPACING.sm
-  );
+  const { height: windowHeight } = useWindowDimensions();
+  // iMessage-style placement anchored to the long-pressed bubble: the reaction
+  // strip sits just ABOVE the touch point and the action pill just BELOW it, so
+  // the menu hugs the message instead of floating near the top of the screen.
+  // Both are clamped inside the screen so edge bubbles still show the full menu.
+  const emojiStripTop = Math.max(SPACING.xxl, anchorY - STRIP_HEIGHT - SPACING.md);
+  const pillTop = Math.min(windowHeight - PILL_HEIGHT - SPACING.xxl, anchorY + SPACING.md);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -496,7 +501,7 @@ export function MessageBubble({
       stiffness: ANIMATION.easing.spring.stiffness,
       isInteraction: false,
     }).start();
-    setPillY(Math.max(60, event.nativeEvent.pageY - 80));
+    setAnchorY(event.nativeEvent.pageY);
     setMenuVisible(true);
   }
 
@@ -572,7 +577,7 @@ export function MessageBubble({
         })}
       </View>
       {/* Existing pill — UNCHANGED */}
-      <View style={[styles.contextPill, { top: pillY }]}>
+      <View style={[styles.contextPill, { top: pillTop }]}>
         {!isPoll && (
           <TouchableOpacity
             onPress={handleReply}
@@ -687,6 +692,8 @@ export function MessageBubble({
               {isImage ? (
                 <TouchableOpacity
                   onPress={() => message.image_url && onImagePress?.(message.image_url)}
+                  onLongPress={handleLongPress}
+                  delayLongPress={250}
                   activeOpacity={0.9}
                   accessibilityLabel={
                     message.pending
@@ -812,6 +819,8 @@ export function MessageBubble({
               {isImage ? (
                 <TouchableOpacity
                   onPress={() => message.image_url && onImagePress?.(message.image_url)}
+                  onLongPress={handleLongPress}
+                  delayLongPress={250}
                   activeOpacity={0.9}
                   accessibilityLabel={
                     message.pending

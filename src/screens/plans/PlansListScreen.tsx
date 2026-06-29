@@ -370,7 +370,7 @@ export function PlansListScreen() {
         />
       </View>
       {viewMode === 'map' ? (
-        <ExploreMapView plans={plans} />
+        <ExploreMapView plans={plans} onCreatePlan={() => router.push('/plan-create')} />
       ) : loading && plans.length === 0 ? (
         <View style={{ paddingHorizontal: SPACING.lg, gap: SPACING.md, paddingTop: SPACING.md }}>
           {Array.from({ length: 3 }).map((_, i) => (

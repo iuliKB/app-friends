@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, FONT_SIZE, FONT_FAMILY } from '@/theme';
 import { usePendingRequestsCount } from '@/hooks/usePendingRequestsCount';
 import { useInvitationCount } from '@/hooks/useInvitationCount';
+import { useUnreadChatCount } from '@/hooks/useUnreadChatCount';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 
 // Height of the tab bar pill and its gap above the bottom safe area inset.
@@ -36,6 +37,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { count: pendingCount } = usePendingRequestsCount();
   const { count: invitationCount } = useInvitationCount();
+  const { count: unreadChatCount } = useUnreadChatCount();
 
   const styles = useMemo(
     () =>
@@ -116,6 +118,23 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           justifyContent: 'center',
           paddingHorizontal: 3,
         },
+        // Center (Explore) floating button is larger and has no icon wrapper, so the
+        // badge is positioned against the 54px button itself. A ring matching the bar
+        // background keeps it legible where it overlaps the lime fill.
+        centerBadge: {
+          position: 'absolute',
+          top: 2,
+          right: 2,
+          backgroundColor: colors.interactive.destructive,
+          borderRadius: 9,
+          minWidth: 18,
+          height: 18,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: 3,
+          borderWidth: 2,
+          borderColor: isDark ? 'rgba(21, 23, 28, 1)' : '#FFFFFF',
+        },
         badgeText: {
           color: '#fff',
           fontSize: 10,
@@ -131,6 +150,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const badges: Record<string, number> = {
     squad: pendingCount,
     plans: invitationCount,
+    chat: unreadChatCount,
   };
 
   return (
@@ -163,9 +183,14 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
                   style={styles.centerButton}
                   activeOpacity={0.85}
                   accessibilityRole="button"
-                  accessibilityLabel="Home"
+                  accessibilityLabel={TAB_LABELS[route.name]}
                 >
                   <Ionicons name={config.focused} size={26} color="#0E0F11" />
+                  {badge > 0 && (
+                    <View style={styles.centerBadge}>
+                      <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               </View>
             );

@@ -8,6 +8,7 @@ import {
   Modal,
   PanResponder,
   Platform,
+  ScrollView,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
@@ -34,8 +35,14 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [sheetHeight, setSheetHeight] = useState<number>(SCREEN_HEIGHT);
+  // Mirror of sheetHeight read by the slide-in effect so a keyboard-driven height
+  // change doesn't re-trigger (and replay) the open animation.
+  const sheetHeightRef = useRef(SCREEN_HEIGHT);
+  // Keyboard height (px) — caps the sheet's max height so it fits above the
+  // keyboard; 0 when the keyboard is hidden.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  const keyboardOffset = useRef(new Animated.Value(0)).current; // shifts sheet up when keyboard opens
+  const keyboardLift = useRef(new Animated.Value(0)).current; // raises the sheet onto the keyboard top
   const handleScale = useRef(new Animated.Value(1)).current; // C3
   const reduceMotionRef = useRef(false);
 
@@ -56,7 +63,7 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
   useEffect(() => {
     if (visible) {
       Haptics.selectionAsync().catch(() => {});
-      translateY.setValue(sheetHeight);
+      translateY.setValue(sheetHeightRef.current);
       if (reduceMotionRef.current) {
         translateY.setValue(0);
       } else {
@@ -67,9 +74,9 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
         }).start();
       }
     } else {
-      translateY.setValue(sheetHeight);
+      translateY.setValue(sheetHeightRef.current);
     }
-  }, [visible, sheetHeight, translateY]);
+  }, [visible, translateY]);
 
   const dismiss = useCallback(() => {
     if (reduceMotionRef.current) {
@@ -95,22 +102,32 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
     return () => handler.remove();
   }, [visible, dismiss]);
 
-  // Keyboard shift — moves the sheet up by the keyboard height so the focused
-  // input stays visible. Composed with translateY so dismiss + slide stay smooth.
+  // Keyboard handling. Android (softwareKeyboardLayoutMode="resize", Expo default)
+  // already shrinks the modal window so the bottom-anchored sheet sits above the
+  // keyboard — manually lifting there would double-count and leave a gap. iOS does
+  // not resize, so we lift the sheet by the keyboard height ourselves. Either way
+  // we cap the sheet's max height to the space above the keyboard so a tall sheet's
+  // header never clips off the top.
   useEffect(() => {
     if (!visible) return;
-    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const dur = Platform.OS === 'ios' ? 250 : 150;
+    const isIOS = Platform.OS === 'ios';
+    const showEvt = isIOS ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvt = isIOS ? 'keyboardWillHide' : 'keyboardDidHide';
+    const dur = isIOS ? 250 : 150;
     const showSub = Keyboard.addListener(showEvt, (e) => {
-      Animated.timing(keyboardOffset, {
-        toValue: -(e.endCoordinates?.height ?? 0),
+      const kbHeight = e.endCoordinates?.height ?? 0;
+      setKeyboardHeight(kbHeight);
+      if (!isIOS) return; // Android already resized the window for us.
+      Animated.timing(keyboardLift, {
+        toValue: -kbHeight,
         duration: dur,
         useNativeDriver: true,
       }).start();
     });
     const hideSub = Keyboard.addListener(hideEvt, () => {
-      Animated.timing(keyboardOffset, {
+      setKeyboardHeight(0);
+      if (!isIOS) return;
+      Animated.timing(keyboardLift, {
         toValue: 0,
         duration: dur,
         useNativeDriver: true,
@@ -120,11 +137,11 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
       showSub.remove();
       hideSub.remove();
     };
-  }, [visible, keyboardOffset]);
+  }, [visible, keyboardLift]);
 
   const composedTranslateY = useMemo(
-    () => Animated.add(translateY, keyboardOffset),
-    [translateY, keyboardOffset]
+    () => Animated.add(translateY, keyboardLift),
+    [translateY, keyboardLift]
   );
 
   const panResponder = useMemo(
@@ -192,6 +209,7 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
     (e: LayoutChangeEvent) => {
       const h = e.nativeEvent.layout.height;
       if (h > 0 && Math.abs(h - sheetHeight) > 1) {
+        sheetHeightRef.current = h;
         setSheetHeight(h);
       }
     },
@@ -218,6 +236,11 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
           shadowOpacity: 0.12,
           shadowRadius: 12,
           elevation: 16,
+        },
+        scroll: {
+          // Shrinks within the sheet's maxHeight so the body scrolls instead of
+          // clipping the commit button when content is tall (small screens).
+          flexShrink: 1,
         },
         dragHandleArea: {
           height: HANDLE_TOUCH_HEIGHT,
@@ -250,7 +273,16 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
 
       <Animated.View
         onLayout={onSheetLayout}
-        style={[styles.sheet, { transform: [{ translateY: composedTranslateY }] }]}
+        style={[
+          styles.sheet,
+          keyboardHeight > 0 && {
+            maxHeight: Math.max(
+              MAX_SHEET_HEIGHT * 0.5,
+              SCREEN_HEIGHT - keyboardHeight - insets.top
+            ),
+          },
+          { transform: [{ translateY: composedTranslateY }] },
+        ]}
         accessibilityViewIsModal
         accessibilityLabel="Set your status"
         onAccessibilityEscape={dismiss}
@@ -270,7 +302,14 @@ export function StatusPickerSheet({ visible, onClose }: StatusPickerSheetProps) 
           />
         </View>
 
-        <MoodPicker onCommit={dismiss} onClose={dismiss} visible={visible} />
+        <ScrollView
+          style={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <MoodPicker onCommit={dismiss} onClose={dismiss} visible={visible} />
+        </ScrollView>
       </Animated.View>
     </Modal>
   );

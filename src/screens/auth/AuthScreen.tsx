@@ -5,6 +5,7 @@ import * as WebBrowser from 'expo-web-browser';
 import React, { useRef, useMemo, useState } from 'react';
 import {
   Animated,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -31,8 +32,10 @@ import { supabase } from '@/lib/supabase';
 // Required at module level for expo-web-browser OAuth redirect completion
 WebBrowser.maybeCompleteAuthSession();
 
-const TOS_URL = 'https://campfire.app/tos';
-const PRIVACY_URL = 'https://campfire.app/privacy';
+// TODO: replace YOUR-DOMAIN with the real hosted Terms of Service / Privacy Policy
+// pages before shipping (Apple/Google require a working Privacy Policy URL).
+const TOS_URL = 'https://YOUR-DOMAIN/tos';
+const PRIVACY_URL = 'https://YOUR-DOMAIN/privacy';
 
 type Tab = 'login' | 'signup';
 type AuthMode = 'login' | 'reset' | 'reset-sent';
@@ -345,6 +348,14 @@ export default function AuthScreen() {
           // eslint-disable-next-line campfire/no-hardcoded-styles
           fontSize: 32, // no exact token
         },
+        headerLogo: {
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          width: 72, // app-icon mark, no exact token
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          height: 72,
+          // eslint-disable-next-line campfire/no-hardcoded-styles
+          borderRadius: 16,
+        },
         headerTitle: {
           fontSize: FONT_SIZE.display,
           fontFamily: FONT_FAMILY.display.bold,
@@ -489,7 +500,11 @@ export default function AuthScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Ionicons name="flame" size={40} color={colors.interactive.accent} />
+            <Image
+              source={require('../../../assets/images/icon.png')}
+              style={styles.headerLogo}
+              accessibilityIgnoresInvertColors
+            />
             <Text style={styles.headerTitle}>Campfire</Text>
             <Text style={styles.headerTagline}>Your friends, one app.</Text>
           </View>

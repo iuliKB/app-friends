@@ -56,7 +56,12 @@ function formatTime(date: Date): string {
 export function PlanCreateModal() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { preselect_friend_id } = useLocalSearchParams<{ preselect_friend_id?: string }>();
+  const { preselect_friend_id, lat, lng, location } = useLocalSearchParams<{
+    preselect_friend_id?: string;
+    lat?: string;
+    lng?: string;
+    location?: string;
+  }>();
   const { createPlan } = usePlans();
   const { fetchFriends } = useFriends();
   const queryClient = useQueryClient();
@@ -64,9 +69,10 @@ export function PlanCreateModal() {
 
   const [title, setTitle] = useState(getDefaultTitle());
   const [scheduledFor, setScheduledFor] = useState(getNextRoundHour());
-  const [locationLabel, setLocationLabel] = useState<string | null>(null);
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
+  // Prefill from a map-marker "Create plan here" deep link (Explore screen).
+  const [locationLabel, setLocationLabel] = useState<string | null>(location ?? null);
+  const [latitude, setLatitude] = useState<number | null>(lat != null ? Number(lat) : null);
+  const [longitude, setLongitude] = useState<number | null>(lng != null ? Number(lng) : null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [friends, setFriends] = useState<FriendWithStatus[]>([]);
   const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(new Set());

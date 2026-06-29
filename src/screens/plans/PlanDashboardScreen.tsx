@@ -41,6 +41,8 @@ import { showActionSheet } from '@/lib/action-sheet';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CELL_SIZE = (screenWidth - SPACING.lg * 2 - SPACING.xs * 2) / 3;
+// Mirrors the per-uploader cap enforced server-side in add_plan_photo (migration 0021).
+const MAX_PHOTOS_PER_USER = 10;
 
 interface PlanDashboardScreenProps {
   planId: string;
@@ -224,6 +226,11 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
           fontSize: FONT_SIZE.xl,
           fontWeight: FONT_WEIGHT.semibold,
           color: colors.text.primary,
+        },
+        photoCounter: {
+          fontSize: FONT_SIZE.sm,
+          fontWeight: FONT_WEIGHT.semibold,
+          color: colors.text.secondary,
         },
         subSectionTitle: {
           fontSize: FONT_SIZE.md,
@@ -604,19 +611,37 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
   const currentUserId = session?.user?.id ?? '';
   const ownPhotoCount = photos.filter((p) => p.uploaderId === currentUserId).length;
 
+  async function uploadMany(uris: string[]) {
+    let capHit = false;
+    let failed = false;
+    // Sequential so the server-side per-uploader cap check stays consistent and
+    // we don't fire 10 concurrent storage uploads.
+    for (const uri of uris) {
+      const { error } = await uploadPhoto(uri);
+      if (error === 'photo_cap_exceeded') {
+        capHit = true;
+        break; // remaining picks would all fail the same way
+      } else if (error === 'upload_failed') {
+        failed = true;
+      }
+    }
+    if (capHit) {
+      Alert.alert('Limit Reached', 'You can upload up to 10 photos per plan.');
+    } else if (failed) {
+      Alert.alert('Error', 'Some photos could not be uploaded. Try again.');
+    }
+  }
+
   async function pickFromLibrary() {
+    const remaining = MAX_PHOTOS_PER_USER - ownPhotoCount;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.8,
+      allowsMultipleSelection: true,
+      selectionLimit: remaining,
     });
-    const asset = result.assets?.[0];
-    if (result.canceled || !asset) return;
-    const { error } = await uploadPhoto(asset.uri);
-    if (error === 'photo_cap_exceeded') {
-      Alert.alert('Limit Reached', 'You can upload up to 10 photos per plan.');
-    } else if (error === 'upload_failed') {
-      Alert.alert('Error', 'Could not upload photo. Try again.');
-    }
+    if (result.canceled || !result.assets?.length) return;
+    await uploadMany(result.assets.map((a) => a.uri));
   }
 
   async function pickFromCamera() {
@@ -626,12 +651,7 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
     });
     const asset = result.assets?.[0];
     if (result.canceled || !asset) return;
-    const { error } = await uploadPhoto(asset.uri);
-    if (error === 'photo_cap_exceeded') {
-      Alert.alert('Limit Reached', 'You can upload up to 10 photos per plan.');
-    } else if (error === 'upload_failed') {
-      Alert.alert('Error', 'Could not upload photo. Try again.');
-    }
+    await uploadMany([asset.uri]);
   }
 
   function handleAddPhoto() {
@@ -978,8 +998,13 @@ export function PlanDashboardScreen({ planId }: PlanDashboardScreenProps) {
             <View style={styles.photosSection}>
               <View style={styles.sectionHeaderRow}>
                 <Text style={styles.sectionTitle}>{'Memories of this meetup'}</Text>
+                {isMember && (
+                  <Text style={styles.photoCounter}>
+                    {`${ownPhotoCount}/${MAX_PHOTOS_PER_USER}`}
+                  </Text>
+                )}
               </View>
-              {isMember && ownPhotoCount < 10 && (
+              {isMember && ownPhotoCount < MAX_PHOTOS_PER_USER && (
                 <TouchableOpacity
                   style={styles.addPhotoRow}
                   onPress={handleAddPhoto}

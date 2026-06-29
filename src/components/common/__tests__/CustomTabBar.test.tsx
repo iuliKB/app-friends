@@ -37,6 +37,10 @@ jest.mock('@/hooks/useInvitationCount', () => ({
   useInvitationCount: () => ({ count: 0, refetch: jest.fn() }),
 }));
 
+jest.mock('@/hooks/useUnreadChatCount', () => ({
+  useUnreadChatCount: () => ({ count: 0 }),
+}));
+
 function makeProps() {
   // BottomTabBarProps stub — only `state` and `navigation` are read.
   const state = {

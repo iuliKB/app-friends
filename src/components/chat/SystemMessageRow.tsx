@@ -6,7 +6,7 @@
 //
 // Rendering contract (Pitfall 9 + 10):
 //   • centered single line, FONT_SIZE.xs, body.regular, italic, text.secondary
-//   • leading Ionicons "checkmark" glyph in colors.interactive.accent
+//   • plain text, no leading glyph (the literal "✓ " completion prefix is stripped)
 //   • no avatar, no bubble background, no long-press menu (the dispatcher in
 //     MessageBubble bails on isSystem before any long-press handling)
 //   • a11y: accessibilityRole="text", accessibilityLabel=`System: ${body}`
@@ -15,7 +15,6 @@
 
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme, FONT_FAMILY, FONT_SIZE, SPACING } from '@/theme';
 
 interface SystemMessageRowProps {
@@ -48,16 +47,15 @@ export function SystemMessageRow({ body }: SystemMessageRowProps) {
     [colors]
   );
 
-  // The `complete_chat_todo` RPC stores bodies as `"✓ Sam completed Buy bread"`
-  // (literal U+2713 prefix). The renderer also prepends an Ionicons checkmark
-  // glyph per the design contract — so strip the literal prefix to avoid
-  // showing two check icons.
+  // Completion bodies are stored with a literal "✓ " prefix by
+  // `complete_chat_todo` (migrations 0024/0026); group events have none
+  // (migration 0029). System rows render as plain centered italic text with no
+  // leading glyph, so strip the literal prefix when present.
   const displayBody = body.replace(/^✓\s+/, '');
 
   return (
     <View style={styles.container} accessibilityRole="text" accessibilityLabel={`System: ${body}`}>
       <View style={styles.inner}>
-        <Ionicons name="checkmark" size={12} color={colors.interactive.accent} />
         <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">
           {displayBody}
         </Text>

@@ -899,6 +899,7 @@ export type Database = {
           p_participant_ids: string[];
           p_split_mode?: 'even' | 'custom';
           p_custom_cents?: number[] | null;
+          p_group_channel_id?: string | null; // migration 0032 — tie to a group chat
         };
         Returns: string; // uuid of new iou_groups row
       };

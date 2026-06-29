@@ -101,4 +101,19 @@ describe('MessageBubble system render branch', () => {
     expect(queryByText('Sam completed Buy bread')).toBeTruthy();
     expect(queryByText('✓ Sam completed Buy bread')).toBeNull();
   });
+
+  // Group events ("X invited Y to the group", "X created the group") are also
+  // message_type='system' but have no "✓ " prefix — they must NOT render the
+  // checkmark glyph, which only makes sense for to-do completions.
+  it('does NOT render a checkmark glyph for non-completion (invite) system messages', () => {
+    const inviteMessage: MessageWithProfile = {
+      ...baseSystemMessage,
+      id: 'm2',
+      body: 'Sam invited Alex to the group',
+    };
+    const { queryByText, UNSAFE_queryAllByType } = renderBubble(inviteMessage, 'u-self');
+    expect(queryByText('Sam invited Alex to the group')).toBeTruthy();
+    // Ionicons is mocked to the string 'Ionicons'; no instance => no checkmark.
+    expect(UNSAFE_queryAllByType('Ionicons' as never)).toHaveLength(0);
+  });
 });

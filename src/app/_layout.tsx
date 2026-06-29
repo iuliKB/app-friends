@@ -30,7 +30,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Notifications from '@/lib/notificationsSafe';
 import type { NotificationResponse } from 'expo-notifications';
-import { focusManager, onlineManager } from '@tanstack/react-query';
+import { focusManager, onlineManager, defaultShouldDehydrateQuery } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { useReactQueryDevTools } from '@dev-plugins/react-query';
@@ -433,7 +433,10 @@ export default function RootLayout() {
               const [root, sub] = query.queryKey as readonly string[];
               if (root === 'chat') return false;
               if (root === 'plans' && (sub === 'photos' || sub === 'allPhotos')) return false;
-              return true;
+              // Fall through to the library default (success-only). Persisting
+              // pending/errored queries makes RQ warn when a dehydrated-pending
+              // query later rejects (e.g. a cold RPC) — success-only avoids it.
+              return defaultShouldDehydrateQuery(query);
             },
           },
         }}

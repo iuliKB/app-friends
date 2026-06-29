@@ -1,10 +1,10 @@
 /**
  * ChatListRow test scaffold — Phase 32 Plan 02.
  *
- * Validates the kind-aware preview rendering introduced in Plan 32-02:
- *   • Ionicons icon rendered for image / poll / todo kinds
- *   • No icon for text / system / deleted kinds
- *   • Sender prefix "You: " for own messages, "<FirstName>: " for others
+ * Validates the kind-aware preview rendering:
+ *   • Media kinds (image / poll / todo) render full-sentence previews with NO
+ *     leading preview icon and NO sender-name prefix
+ *   • Text kind is name-prefixed ("You: " / "<FirstName>: ")
  *   • No prefix when lastMessageSenderName is null (no-messages branch)
  *   • Deleted kind renders preview body in italic (fontStyle: 'italic')
  *
@@ -61,95 +61,55 @@ function renderRow(overrides: Partial<ChatListItem> = {}) {
   );
 }
 
-// Helper: find all Ionicons host components rendered (excluding the swipe
-// action icons which we don't render in unit tests since renderRightActions is
-// triggered only on swipe).
-function findIonicons(getByTestId: ReturnType<typeof render>['UNSAFE_getAllByType']) {
-  try {
-    // UNSAFE_getAllByType('Ionicons') works because the mock returns the
-    // string 'Ionicons' as the component — RNTL's host-string element type.
-    return getByTestId('Ionicons' as never);
-  } catch {
-    return [];
-  }
-}
-
-// Look up a <Text> node by its direct children value (handles mixed-children rows
-// where getByText would match the concatenated text across the whole subtree).
-type TextElement = { props: { children?: unknown; style?: unknown } };
-function findTextNodeWithChildren(
-  allTexts: TextElement[],
-  childValue: unknown
-): TextElement | undefined {
-  return allTexts.find((el) => {
-    const c = el.props.children;
-    // Direct string match
-    if (c === childValue) return true;
-    // Array children — check if the array contains the value
-    if (Array.isArray(c)) return c.includes(childValue);
-    return false;
-  });
-}
-
 describe('ChatListRow — Phase 32 preview rendering', () => {
-  it('image kind renders image-outline icon next to "Photo"', () => {
-    const { UNSAFE_getAllByType } = renderRow({
+  it('image kind renders the sentence preview with no name prefix and no preview icon', () => {
+    const { getByText, queryByText, UNSAFE_queryAllByType } = renderRow({
       lastMessageKind: 'image',
-      lastMessage: 'Photo',
+      lastMessage: 'Alice sent a photo',
       lastMessageSenderName: 'Alice',
       title: 'Alice Chat',
     });
-    // The outer preview <Text> has children ["Alice: ", "Photo"] — verify "Photo" appears
-    const allTexts = UNSAFE_getAllByType('Text' as unknown as React.ComponentType) as TextElement[];
-    const previewText = findTextNodeWithChildren(allTexts, 'Photo');
-    expect(previewText).toBeTruthy();
-    // An Ionicons element with name="image-outline" is present
-    const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
-    const previewIcon = icons.find(
-      (el: { props: { name?: string } }) => el.props.name === 'image-outline'
-    );
-    expect(previewIcon).toBeTruthy();
+    // Full-sentence preview already names the sender — no "Alice: " prefix.
+    expect(getByText('Alice sent a photo')).toBeTruthy();
+    expect(queryByText('Alice: ')).toBeNull();
+    // No leading preview icon for media kinds anymore.
+    const icons = UNSAFE_queryAllByType('Ionicons' as unknown as React.ComponentType);
+    expect(
+      icons.find((el: { props: { name?: string } }) => el.props.name === 'image-outline')
+    ).toBeFalsy();
   });
 
-  it('poll kind renders stats-chart-outline icon next to "Poll: Pizza?"', () => {
-    const { UNSAFE_getAllByType } = renderRow({
+  it('poll kind renders "Poll: Pizza?" with no name prefix and no preview icon', () => {
+    const { getByText, queryByText, UNSAFE_queryAllByType } = renderRow({
       lastMessageKind: 'poll',
       lastMessage: 'Poll: Pizza?',
       lastMessageSenderName: 'Alice',
       title: 'Alice Chat',
     });
-    const allTexts = UNSAFE_getAllByType('Text' as unknown as React.ComponentType) as TextElement[];
-    const previewText = findTextNodeWithChildren(allTexts, 'Poll: Pizza?');
-    expect(previewText).toBeTruthy();
-    const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
-    const previewIcon = icons.find(
-      (el: { props: { name?: string } }) => el.props.name === 'stats-chart-outline'
-    );
-    expect(previewIcon).toBeTruthy();
+    expect(getByText('Poll: Pizza?')).toBeTruthy();
+    expect(queryByText('Alice: ')).toBeNull();
+    const icons = UNSAFE_queryAllByType('Ionicons' as unknown as React.ComponentType);
+    expect(
+      icons.find((el: { props: { name?: string } }) => el.props.name === 'stats-chart-outline')
+    ).toBeFalsy();
   });
 
-  it('todo kind renders checkbox-outline icon next to "To-do: Buy milk" with "You: " prefix', () => {
-    const { UNSAFE_getAllByType } = renderRow({
+  it('todo kind renders the sentence preview with no name prefix and no preview icon', () => {
+    const { getByText, queryByText, UNSAFE_queryAllByType } = renderRow({
       lastMessageKind: 'todo',
-      lastMessage: 'To-do: Buy milk',
+      lastMessage: 'You shared a to-do',
       lastMessageSenderName: 'You',
       title: 'Group Chat',
     });
-    // The outer preview <Text> has children ["You: ", "To-do: Buy milk"]
-    const allTexts = UNSAFE_getAllByType('Text' as unknown as React.ComponentType) as TextElement[];
-    const previewText = findTextNodeWithChildren(allTexts, 'To-do: Buy milk');
-    expect(previewText).toBeTruthy();
-    // Sender prefix "You: " is a sibling child
-    const prefixText = findTextNodeWithChildren(allTexts, 'You: ');
-    expect(prefixText).toBeTruthy();
-    const icons = UNSAFE_getAllByType('Ionicons' as unknown as React.ComponentType);
-    const previewIcon = icons.find(
-      (el: { props: { name?: string } }) => el.props.name === 'checkbox-outline'
-    );
-    expect(previewIcon).toBeTruthy();
+    expect(getByText('You shared a to-do')).toBeTruthy();
+    expect(queryByText('You: ')).toBeNull();
+    const icons = UNSAFE_queryAllByType('Ionicons' as unknown as React.ComponentType);
+    expect(
+      icons.find((el: { props: { name?: string } }) => el.props.name === 'checkbox-outline')
+    ).toBeFalsy();
   });
 
-  it('deleted kind renders "Message deleted" in italic with sender prefix upright — no preview icon', () => {
+  it('deleted kind renders "Message deleted" in italic with no name prefix — no preview icon', () => {
     const { UNSAFE_getAllByType, UNSAFE_queryAllByType } = renderRow({
       lastMessageKind: 'deleted',
       lastMessage: 'Message deleted',
